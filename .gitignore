@@ -1,0 +1,18 @@
+# Node
+node_modules
+dist
+build
+
+# .NET
+bin/
+obj/
+
+# VS
+.vs/
+.vscode/
+
+# Env
+.env
+
+# Logs
+*.log
