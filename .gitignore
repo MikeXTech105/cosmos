@@ -1,18 +1,5 @@
-# Node
 node_modules
+bin
+obj
 dist
-build
-
-# .NET
-bin/
-obj/
-
-# VS
-.vs/
-.vscode/
-
-# Env
 .env
-
-# Logs
-*.log
