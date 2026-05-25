@@ -5,7 +5,7 @@ function App() {
 
   const [result, setResult] = useState('')
 
-  const apiUrl = '/api/test'
+  const apiUrl = `${import.meta.env.VITE_API_URL}/test`
 
   const testHello = async () => {
     try {
