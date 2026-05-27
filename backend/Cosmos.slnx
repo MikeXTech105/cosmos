@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Cosmos.API/Cosmos.API.csproj" />
+    <Project Path="src/Cosmos.Application/Cosmos.Application.csproj" />
+    <Project Path="src/Cosmos.Domain/Cosmos.Domain.csproj" />
+    <Project Path="src/Cosmos.Infrastructure/Cosmos.Infrastructure.csproj" />
+    <Project Path="src/Cosmos.Shared/Cosmos.Shared.csproj" />
+  </Folder>
+</Solution>
