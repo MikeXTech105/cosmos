@@ -5,7 +5,7 @@ services:
   cosmos_api:
 
     build:
-      context: ./backend/CosmosERP.API
+      context: ./backend
 
     container_name: cosmos_api
 
