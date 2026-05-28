@@ -77,11 +77,19 @@ builder.Services.AddCors(options =>
         var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
         if (origins.Length == 0)
         {
-            policy.AllowAnyOrigin();
+            policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
         }
         else
         {
-            policy.WithOrigins(origins);
+            policy
+            .WithOrigins(origins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
         }
 
         policy.AllowAnyHeader().AllowAnyMethod();
