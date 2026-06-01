@@ -18,6 +18,22 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
         .WriteTo.File("logs/cosmos-api-.log", rollingInterval: RollingInterval.Day);
 });
 
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser>(provider =>
 {
@@ -88,6 +104,8 @@ app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
+app.UseCors("CorsPolicy");
+
 app.UseAuthentication();
 app.UseMiddleware<JwtClaimsMiddleware>();
 app.UseAuthorization();
@@ -95,7 +113,6 @@ app.UseMiddleware<AuditMiddleware>();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
-
 app.Run();
 
 public partial class Program;
