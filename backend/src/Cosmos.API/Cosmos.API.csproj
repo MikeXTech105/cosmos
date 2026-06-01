@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cosmos.Application\Cosmos.Application.csproj" />
+    <ProjectReference Include="..\Cosmos.Contracts\Cosmos.Contracts.csproj" />
+    <ProjectReference Include="..\Cosmos.Domain\Cosmos.Domain.csproj" />
+    <ProjectReference Include="..\Cosmos.Infrastructure\Cosmos.Infrastructure.csproj" />
+    <ProjectReference Include="..\Cosmos.Persistence\Cosmos.Persistence.csproj" />
+    <ProjectReference Include="..\Cosmos.Shared\Cosmos.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

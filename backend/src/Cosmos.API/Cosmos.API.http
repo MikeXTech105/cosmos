@@ -1,0 +1,6 @@
+@Cosmos.API_HostAddress = http://localhost:5278
+
+GET {{Cosmos.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

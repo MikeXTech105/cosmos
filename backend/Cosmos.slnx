@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Dockerfile" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Cosmos.API/Cosmos.API.csproj" />
+    <Project Path="src/Cosmos.Application/Cosmos.Application.csproj" />
+    <Project Path="src/Cosmos.Contracts/Cosmos.Contracts.csproj" />
+    <Project Path="src/Cosmos.Domain/Cosmos.Domain.csproj" />
+    <Project Path="src/Cosmos.Infrastructure/Cosmos.Infrastructure.csproj" />
+    <Project Path="src/Cosmos.Persistence/Cosmos.Persistence.csproj" />
+    <Project Path="src/Cosmos.Shared/Cosmos.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Cosmos.Tests/Cosmos.Tests.csproj" />
+  </Folder>
+</Solution>
