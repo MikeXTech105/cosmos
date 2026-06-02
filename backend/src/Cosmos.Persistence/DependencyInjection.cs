@@ -18,6 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IPageRepository, PageRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();
+        services.AddScoped<IPartyRepository, PartyRepository>();
+        services.AddScoped<IPartySettingsRepository, PartySettingsRepository>();
         return services;
     }
 }

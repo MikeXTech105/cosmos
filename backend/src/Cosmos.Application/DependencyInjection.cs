@@ -15,6 +15,8 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPageService, PageService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IPartyService, PartyService>();
+        services.AddScoped<IPartySettingsService, PartySettingsService>();
         return services;
     }
 }
