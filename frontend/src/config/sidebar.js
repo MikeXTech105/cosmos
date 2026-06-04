@@ -1,4 +1,4 @@
-export const enabledModules = ["dashboard", "users", "roles"];
+export const enabledModules = ["dashboard", "users", "roles", "pages"];
 
 export const sidebarCategories = [
   {
@@ -51,13 +51,21 @@ export const sidebarModules = {
     categoryId: "rbac",
     sortOrder: 20,
   },
+  pages: {
+    id: "pages",
+    label: "Pages",
+    route: "/pages",
+    icon: "pages",
+    categoryId: "rbac",
+    sortOrder: 30,
+  },
   permissions: {
     id: "permissions",
     label: "Permissions",
     route: "/permissions",
     icon: "permissions",
     categoryId: "rbac",
-    sortOrder: 30,
+    sortOrder: 40,
   },
   customers: {
     id: "customers",

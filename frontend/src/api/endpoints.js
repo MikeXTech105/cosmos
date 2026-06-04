@@ -15,6 +15,10 @@ export const ENDPOINTS = {
 
   ROLE_BY_ID: (id) => `/api/roles/${id}`,
 
+  PAGES: "/api/pages",
+
+  PAGE_BY_ID: (id) => `/api/pages/${id}`,
+
   USERS: "/api/users",
 
   USER_BY_ID: (id) => `/api/users/${id}`,
