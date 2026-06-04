@@ -1,4 +1,4 @@
-export const enabledModules = ["dashboard", "users"];
+export const enabledModules = ["dashboard", "users", "roles"];
 
 export const sidebarCategories = [
   {

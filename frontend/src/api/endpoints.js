@@ -13,6 +13,8 @@ export const ENDPOINTS = {
 
   ROLES: "/api/roles",
 
+  ROLE_BY_ID: (id) => `/api/roles/${id}`,
+
   USERS: "/api/users",
 
   USER_BY_ID: (id) => `/api/users/${id}`,
