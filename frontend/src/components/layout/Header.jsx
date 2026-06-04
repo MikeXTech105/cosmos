@@ -1,71 +1,92 @@
-import { KeyRound, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { useDispatch, useSelector } from "react-redux";
+import {
+  Bell,
+  Command,
+  Moon,
+  Plus,
+  Search,
+  Sun,
+} from "lucide-react";
+import { useState } from "react";
 
-import { logoutUser } from "../../services/authService";
-import { clearCredentials } from "../../store/slices/authSlice";
-import { clearAuthData } from "../../utils/authStorage";
-
-const getDisplayName = (user) => {
-  return (
-    user?.fullName ??
-    user?.name ??
-    user?.username ??
-    user?.email ??
-    "COSMOS user"
-  );
-};
+import { useSidebar } from "../../hooks/useSidebar";
+import Breadcrumbs from "./Breadcrumbs";
+import SearchCommand from "./SearchCommand";
+import UserMenu from "./UserMenu";
 
 const Header = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { refreshToken, user } = useSelector((state) => state.auth);
-
-  const handleLogout = async () => {
-    try {
-      if (refreshToken) {
-        await logoutUser({ refreshToken });
-      }
-
-      toast.success("Signed out successfully");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message ?? "Signed out locally. Server logout failed.",
-      );
-    } finally {
-      clearAuthData();
-      dispatch(clearCredentials());
-      navigate("/login", { replace: true });
-    }
-  };
+  const [darkMode, setDarkMode] = useState(false);
+  const { openCommand } = useSidebar();
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-white px-6">
-      <div>
-        <p className="text-sm font-semibold text-gray-900">COSMOS ERP</p>
-        <p className="text-xs text-gray-500">{getDisplayName(user)}</p>
-      </div>
+    <>
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
+          <div className="min-w-0 pl-12 md:pl-0">
+            <Breadcrumbs />
+          </div>
 
-      <div className="flex items-center gap-2">
-        <Link
-          to="/change-password"
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          <KeyRound className="h-4 w-4" />
-          Password
-        </Link>
+          <button
+            type="button"
+            onClick={openCommand}
+            className="hidden h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-sm text-slate-400 transition-all hover:border-slate-300 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 md:flex"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="truncate">Search pages, users, settings...</span>
+            </span>
 
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-gray-900 px-3 text-sm font-medium text-white transition-colors hover:bg-gray-800"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </button>
-      </div>
-    </header>
+            <span className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+              <Command className="h-3 w-3" /> K
+            </span>
+          </button>
+
+          <div className="flex min-w-0 items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={openCommand}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 md:hidden"
+              aria-label="Open search"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Notifications"
+            >
+              <Bell className="h-4 w-4" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDarkMode((value) => !value)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Toggle theme"
+            >
+              {darkMode ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="hidden h-9 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 xl:inline-flex"
+            >
+              <Plus className="h-4 w-4" />
+              Quick Action
+            </button>
+
+            <UserMenu />
+          </div>
+        </div>
+      </header>
+
+      <SearchCommand />
+    </>
   );
 };
 

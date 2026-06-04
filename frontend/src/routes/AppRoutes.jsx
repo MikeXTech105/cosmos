@@ -7,7 +7,7 @@ import ChangePassword from "../pages/auth/ChangePassword";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Permission from "../pages/permissions/Permission";
 import Role from "../pages/roles/Role";
-import User from "../pages/users/User";
+import Users from "../pages/users/Users";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import AuthLayout from "../layouts/AuthLayout";
@@ -38,7 +38,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/users" element={<User />} />
+        <Route path="/users" element={<Users />} />
         <Route path="/roles" element={<Role />} />
         <Route path="/permissions" element={<Permission />} />
         <Route path="/change-password" element={<ChangePassword />} />

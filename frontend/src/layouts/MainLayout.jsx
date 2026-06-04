@@ -5,14 +5,16 @@ import Sidebar from "../components/layout/Sidebar";
 
 const MainLayout = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-slate-50 text-slate-950">
       <Sidebar />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header />
 
-        <main className="flex-1 overflow-y-auto p-4">
-          <Outlet />
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-[1600px] px-5 py-6 md:px-6">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

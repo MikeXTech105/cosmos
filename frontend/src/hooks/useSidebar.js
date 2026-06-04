@@ -1,0 +1,356 @@
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+
+import { getIconComponent } from "../config/iconMap";
+import {
+  getEnabledSidebarModules,
+  getSidebarCategory,
+} from "../config/sidebar";
+import {
+  closeCommand,
+  closeMobileSidebar,
+  expandSidebarGroups,
+  openCommand,
+  openMobileSidebar,
+  resetSidebarSearch,
+  setSidebarSearchQuery,
+  toggleSidebar,
+  toggleSidebarGroup,
+} from "../store/slices/sidebarSlice";
+
+const getPageId = (page) => {
+  return String(page.pageId ?? page.id ?? page._id ?? page.route ?? page.pageName);
+};
+
+const getParentId = (page) => {
+  const parentId = page.parentId ?? page.parentPageId ?? page.parent_id;
+
+  return parentId === null || parentId === undefined || parentId === ""
+    ? null
+    : String(parentId);
+};
+
+const getPageLabel = (page) => {
+  return (
+    page.pageName ??
+    page.displayName ??
+    page.name ??
+    page.title ??
+    page.route ??
+    "Untitled"
+  );
+};
+
+const normalizeRoute = (route) => {
+  if (!route) {
+    return null;
+  }
+
+  const nextRoute = String(route).trim();
+
+  if (!nextRoute) {
+    return null;
+  }
+
+  return nextRoute.startsWith("/") ? nextRoute : `/${nextRoute}`;
+};
+
+const getPageRoute = (page) => {
+  return normalizeRoute(page.route ?? page.path ?? page.url);
+};
+
+const getSortOrder = (page) => {
+  return Number(
+    page.sortOrder ??
+      page.displayOrder ??
+      page.sequence ??
+      page.order ??
+      page.position ??
+      0,
+  );
+};
+
+const permissionAllowsView = (permission) => {
+  if (!permission) {
+    return true;
+  }
+
+  if (typeof permission === "string") {
+    const normalized = permission.toLowerCase();
+
+    return ["view", "read", "list", "access"].some((action) =>
+      normalized.includes(action),
+    );
+  }
+
+  return (
+    permission.canView ??
+    permission.view ??
+    permission.read ??
+    permission.list ??
+    permission.access ??
+    true
+  );
+};
+
+const canViewPage = (page) => {
+  if (page.isActive === false || page.isVisible === false || page.hidden) {
+    return false;
+  }
+
+  if (page.canView === false || page.view === false) {
+    return false;
+  }
+
+  const permissions = page.permissions;
+
+  if (!permissions) {
+    return true;
+  }
+
+  if (Array.isArray(permissions)) {
+    return permissions.length === 0 || permissions.some(permissionAllowsView);
+  }
+
+  if (typeof permissions === "object") {
+    if (
+      permissions.canView === false ||
+      permissions.view === false ||
+      permissions.read === false ||
+      permissions.access === false
+    ) {
+      return false;
+    }
+
+    return permissionAllowsView(permissions);
+  }
+
+  return Boolean(permissions);
+};
+
+const sortMenuItems = (items) => {
+  return [...items]
+    .sort((first, second) => {
+      if (first.sortOrder !== second.sortOrder) {
+        return first.sortOrder - second.sortOrder;
+      }
+
+      return first.label.localeCompare(second.label);
+    })
+    .map((item) => ({
+      ...item,
+      children: sortMenuItems(item.children),
+    }));
+};
+
+const getPageByRoute = (pages, route) => {
+  return pages.find((page) => getPageRoute(page) === route);
+};
+
+const createItem = ({ module, page }) => {
+  const iconName = page?.icon ?? page?.iconName ?? page?.moduleIcon ?? module.icon;
+
+  return {
+    raw: page ?? module,
+    id: String(page ? getPageId(page) : module.id),
+    parentId: page ? getParentId(page) : null,
+    label: page ? getPageLabel(page) : module.label,
+    route: module.route,
+    iconName,
+    Icon: getIconComponent(iconName),
+    description:
+      page?.description ?? page?.moduleName ?? page?.categoryName ?? module.description ?? "",
+    sortOrder: page ? getSortOrder(page) || module.sortOrder : module.sortOrder,
+    children: [],
+  };
+};
+
+const createCategoryItem = (category) => ({
+  id: `category-${category.id}`,
+  parentId: null,
+  label: category.label,
+  route: null,
+  iconName: category.icon,
+  Icon: getIconComponent(category.icon),
+  description: category.description ?? "",
+  sortOrder: category.sortOrder ?? 0,
+  children: [],
+});
+
+const buildMenuTree = (pages) => {
+  const groupMap = new Map();
+  const rootItems = [];
+  const enabledModules = getEnabledSidebarModules();
+
+  enabledModules.forEach((module) => {
+    const page = getPageByRoute(pages, module.route);
+
+    if (page && !canViewPage(page)) {
+      return;
+    }
+
+    const item = createItem({ module, page });
+
+    if (!module.categoryId) {
+      rootItems.push(item);
+      return;
+    }
+
+    const category = getSidebarCategory(module.categoryId);
+
+    if (!category) {
+      rootItems.push(item);
+      return;
+    }
+
+    if (!groupMap.has(category.id)) {
+      groupMap.set(category.id, createCategoryItem(category));
+    }
+
+    groupMap.get(category.id).children.push(item);
+  });
+
+  groupMap.forEach((group) => {
+    rootItems.push(group);
+  });
+
+  return sortMenuItems(rootItems);
+};
+
+const isRouteActive = (pathname, route) => {
+  return Boolean(route && (pathname === route || pathname.startsWith(`${route}/`)));
+};
+
+const markActiveItems = (items, pathname) => {
+  return items.map((item) => {
+    const children = markActiveItems(item.children, pathname);
+    const isActive = isRouteActive(pathname, item.route);
+    const hasActiveChild = children.some(
+      (child) => child.isActive || child.hasActiveChild,
+    );
+
+    return {
+      ...item,
+      children,
+      isActive,
+      hasActiveChild,
+    };
+  });
+};
+
+const filterMenuTree = (items, query) => {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return items;
+  }
+
+  return items.reduce((filteredItems, item) => {
+    const children = filterMenuTree(item.children, normalizedQuery);
+    const haystack = [item.label, item.route, item.iconName, item.description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (haystack.includes(normalizedQuery) || children.length > 0) {
+      filteredItems.push({
+        ...item,
+        children,
+      });
+    }
+
+    return filteredItems;
+  }, []);
+};
+
+const flattenMenuItems = (items, ancestors = []) => {
+  return items.flatMap((item) => {
+    const nextAncestors = [...ancestors, item];
+    const current = item.route
+      ? [
+          {
+            ...item,
+            ancestors,
+            modulePath: ancestors.map((ancestor) => ancestor.label).join(" / "),
+          },
+        ]
+      : [];
+
+    return [...current, ...flattenMenuItems(item.children, nextAncestors)];
+  });
+};
+
+const getActiveTrail = (items) => {
+  for (const item of items) {
+    if (item.isActive) {
+      return [item];
+    }
+
+    if (item.hasActiveChild) {
+      return [item, ...getActiveTrail(item.children)];
+    }
+  }
+
+  return [];
+};
+
+export const useSidebar = () => {
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const pages = useSelector((state) => state.auth.pages);
+  const sidebar = useSelector((state) => state.sidebar);
+
+  const menuTree = useMemo(() => buildMenuTree(pages), [pages]);
+
+  const activeMenuTree = useMemo(
+    () => markActiveItems(menuTree, location.pathname),
+    [location.pathname, menuTree],
+  );
+
+  const activeTrail = useMemo(
+    () => getActiveTrail(activeMenuTree),
+    [activeMenuTree],
+  );
+
+  const filteredMenuTree = useMemo(
+    () => filterMenuTree(activeMenuTree, sidebar.searchQuery),
+    [activeMenuTree, sidebar.searchQuery],
+  );
+
+  const flatMenuItems = useMemo(
+    () => flattenMenuItems(activeMenuTree),
+    [activeMenuTree],
+  );
+
+  useEffect(() => {
+    const groupIds = activeTrail
+      .filter((item) => item.children.length > 0)
+      .map((item) => item.id);
+
+    if (groupIds.length > 0) {
+      dispatch(expandSidebarGroups(groupIds));
+    }
+  }, [activeTrail, dispatch]);
+
+  return {
+    activeTrail,
+    commandOpen: sidebar.commandOpen,
+    expandedGroupIds: sidebar.expandedGroupIds,
+    flatMenuItems,
+    hasPages: activeMenuTree.length > 0,
+    isCollapsed: sidebar.isCollapsed,
+    isMobileOpen: sidebar.isMobileOpen,
+    menuTree: filteredMenuTree,
+    rawMenuTree: activeMenuTree,
+    searchQuery: sidebar.searchQuery,
+    closeCommand: () => dispatch(closeCommand()),
+    closeMobileSidebar: () => dispatch(closeMobileSidebar()),
+    openCommand: () => dispatch(openCommand()),
+    openMobileSidebar: () => dispatch(openMobileSidebar()),
+    resetSearch: () => dispatch(resetSidebarSearch()),
+    setSearchQuery: (query) => dispatch(setSidebarSearchQuery(query)),
+    toggleCollapsed: () => dispatch(toggleSidebar()),
+    toggleGroup: (groupId) => dispatch(toggleSidebarGroup(groupId)),
+  };
+};
