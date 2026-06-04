@@ -27,7 +27,7 @@ const ChartSkeleton = ({ tall = false }) => {
 const Dashboard = () => {
   return (
     <section>
-      <div className="mb-5 flex items-start justify-between gap-4">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-slate-950">
             Analytics Overview
@@ -39,7 +39,7 @@ const Dashboard = () => {
 
         <button
           type="button"
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Refresh

@@ -109,7 +109,7 @@ const UserModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -119,14 +119,14 @@ const UserModal = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="user-modal-title"
-            className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.22)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.22)] sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                   <ShieldCheck className="h-5 w-5" />
@@ -157,7 +157,7 @@ const UserModal = ({
             </div>
 
             {isLoading ? (
-              <div className="grid gap-4 px-6 py-6 sm:grid-cols-2">
+              <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2 sm:px-6 sm:py-6">
                 {Array.from({ length: 6 }, (_, index) => (
                   <div
                     key={index}
@@ -166,8 +166,11 @@ const UserModal = ({
                 ))}
               </div>
             ) : (
-              <form onSubmit={handleSubmit(submitForm)}>
-                <div className="grid gap-5 px-6 py-5 sm:grid-cols-2">
+              <form
+                className="flex min-h-0 flex-1 flex-col"
+                onSubmit={handleSubmit(submitForm)}
+              >
+                <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-5 py-5 sm:grid-cols-2 sm:px-6">
                   <div>
                     <label
                       htmlFor="username"
@@ -301,7 +304,7 @@ const UserModal = ({
                   </label>
                 </div>
 
-                <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end">
+                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                   <button
                     type="button"
                     onClick={onClose}

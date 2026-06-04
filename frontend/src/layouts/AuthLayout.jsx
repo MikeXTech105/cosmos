@@ -7,7 +7,7 @@ import { AUTH_FEATURES, AUTH_STATS } from "../constants/authConstants";
 const AuthLayout = () => {
   return (
     <div
-      className="min-h-screen w-full relative overflow-hidden flex items-center justify-center px-4 py-10"
+      className="relative flex min-h-dvh w-full items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-14 sm:py-10"
       style={{ backgroundColor: "#08090d" }}
     >
       <div
@@ -182,7 +182,7 @@ const AuthLayout = () => {
           </motion.div>
         </div>
 
-        <div className="flex flex-col justify-center px-8 py-10 lg:px-10">
+        <div className="flex flex-col justify-center px-5 py-8 sm:px-8 sm:py-10 lg:px-10">
           <Outlet />
         </div>
       </motion.div>

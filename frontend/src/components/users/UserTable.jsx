@@ -3,15 +3,6 @@ import { Plus, RefreshCw, UsersRound } from "lucide-react";
 import UserActions from "./UserActions";
 import UserStatusBadge from "./UserStatusBadge";
 
-const getInitials = (name = "") => {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-};
-
 const formatDate = (value) => {
   if (!value) {
     return "-";
@@ -36,19 +27,19 @@ const RolePills = ({ roles }) => {
   }
 
   return (
-    <div className="flex max-w-[260px] flex-wrap gap-1.5">
-      {roles.slice(0, 2).map((role) => (
+    <div className="flex min-w-0 flex-wrap gap-1.5">
+      {roles.slice(0, 1).map((role) => (
         <span
           key={role.id ?? role.name}
-          className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-100"
+          className="inline-flex max-w-full items-center truncate rounded-full bg-blue-50/70 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-100"
         >
           {role.name}
         </span>
       ))}
 
-      {roles.length > 2 && (
+      {roles.length > 1 && (
         <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-          +{roles.length - 2}
+          +{roles.length - 1}
         </span>
       )}
     </div>
@@ -58,8 +49,8 @@ const RolePills = ({ roles }) => {
 const TableSkeleton = () => {
   return Array.from({ length: 6 }, (_, index) => (
     <tr key={index}>
-      <td colSpan={8} className="px-5 py-4">
-        <div className="h-12 animate-pulse rounded-2xl bg-slate-100" />
+      <td colSpan={7} className="px-4 py-3.5">
+        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
       </td>
     </tr>
   ));
@@ -110,16 +101,13 @@ const MobileUserCard = ({ user, actions }) => {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-            {getInitials(user.fullName || user.username)}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-slate-950">
-              {user.fullName || user.username}
-            </p>
-            <p className="truncate text-xs text-slate-500">@{user.username}</p>
-          </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-slate-950">
+            {user.fullName || user.username}
+          </p>
+          <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
+            @{user.username}
+          </p>
         </div>
 
         <UserActions user={user} {...actions} />
@@ -186,74 +174,82 @@ const UserTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:block">
-        <div className="overflow-x-auto">
-          <table className="min-w-[1120px] border-separate border-spacing-0 text-left">
-            <thead className="sticky top-0 z-10 bg-slate-50">
-              <tr>
-                {[
-                  "Avatar",
-                  "Username",
-                  "Full Name",
-                  "Email",
-                  "Role",
-                  "Status",
-                  "Created Date",
-                  "Actions",
-                ].map((heading) => (
-                  <th
-                    key={heading}
-                    className="whitespace-nowrap border-b border-slate-100 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400"
-                  >
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
+        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
+          <colgroup>
+            <col className="w-[14%]" />
+            <col className="w-[18%]" />
+            <col />
+            <col className="w-[14%]" />
+            <col className="w-[11%]" />
+            <col className="w-[15%]" />
+            <col className="w-[112px]" />
+          </colgroup>
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <tr>
+              {[
+                "Username",
+                "Full Name",
+                "Email",
+                "Role",
+                "Status",
+                "Created Date",
+                "Actions",
+              ].map((heading) => (
+                <th
+                  key={heading}
+                  className={[
+                    "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400",
+                    heading === "Actions" ? "text-right" : "",
+                  ].join(" ")}
+                >
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-            <tbody>
-              {isLoading ? (
-                <TableSkeleton />
-              ) : (
-                users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="group transition-colors hover:bg-slate-50/80"
-                  >
-                    <td className="border-b border-slate-100 px-5 py-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-sm">
-                        {getInitials(user.fullName || user.username)}
-                      </div>
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
-                      <p className="text-sm font-semibold text-slate-950">
-                        {user.username}
-                      </p>
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4 text-sm font-medium text-slate-700">
+          <tbody>
+            {isLoading ? (
+              <TableSkeleton />
+            ) : (
+              users.map((user) => (
+                <tr
+                  key={user.id}
+                  className="group transition-colors hover:bg-slate-50/80 focus-within:bg-blue-50/30"
+                >
+                  <td className="border-b border-slate-100 px-4 py-3.5">
+                    <p className="truncate text-sm font-semibold text-slate-950">
+                      {user.username}
+                    </p>
+                  </td>
+                  <td className="border-b border-slate-100 px-4 py-3.5">
+                    <p className="truncate text-sm font-medium text-slate-700">
                       {user.fullName || "-"}
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4 text-sm text-slate-600">
+                    </p>
+                  </td>
+                  <td className="border-b border-slate-100 px-4 py-3.5">
+                    <p className="truncate text-sm text-slate-600">
                       {user.email}
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
-                      <RolePills roles={user.roles} />
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
-                      <UserStatusBadge isActive={user.isActive} />
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4 text-sm text-slate-500">
-                      {formatDate(user.createdAt)}
-                    </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
-                      <UserActions user={user} {...actions} />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </p>
+                  </td>
+                  <td className="border-b border-slate-100 px-4 py-3.5">
+                    <RolePills roles={user.roles} />
+                  </td>
+                  <td className="border-b border-slate-100 px-4 py-3.5">
+                    <UserStatusBadge isActive={user.isActive} />
+                  </td>
+                  <td className="whitespace-nowrap border-b border-slate-100 px-4 py-3.5 text-sm text-slate-500">
+                    {formatDate(user.createdAt)}
+                  </td>
+                  <td className="border-b border-slate-100 px-3 py-3.5">
+                    <UserActions user={user} {...actions} />
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

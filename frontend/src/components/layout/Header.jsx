@@ -2,7 +2,6 @@ import {
   Bell,
   Command,
   Moon,
-  Plus,
   Search,
   Sun,
 } from "lucide-react";
@@ -20,7 +19,7 @@ const Header = () => {
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
-        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 px-3 sm:gap-3 sm:px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
           <div className="min-w-0 pl-12 md:pl-0">
             <Breadcrumbs />
           </div>
@@ -70,14 +69,6 @@ const Header = () => {
               ) : (
                 <Moon className="h-4 w-4" />
               )}
-            </button>
-
-            <button
-              type="button"
-              className="hidden h-9 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 xl:inline-flex"
-            >
-              <Plus className="h-4 w-4" />
-              Quick Action
             </button>
 
             <UserMenu />

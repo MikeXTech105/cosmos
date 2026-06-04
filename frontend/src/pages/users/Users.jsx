@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import AppTooltip from "../../components/common/AppTooltip";
 import UserFilters from "../../components/users/UserFilters";
 import UserModal from "../../components/users/UserModal";
 import UserTable from "../../components/users/UserTable";
@@ -190,7 +191,6 @@ const normalizeUser = (user) => {
     id,
     isActive: normalizeActiveState(user),
     roles: normalizeRoles(roles),
-    updatedAt: user?.updatedAt ?? user?.updatedDate ?? user?.modifiedOn,
     username,
   };
 };
@@ -718,32 +718,43 @@ const Users = () => {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap xl:justify-end">
-          <button
-            type="button"
-            onClick={loadUsers}
-            disabled={isLoading}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
-          <button
-            type="button"
-            onClick={handleExport}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
-          >
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-          <button
-            type="button"
-            onClick={openCreateModal}
-            disabled={!capabilities.canCreate || !capabilities.canAssignRole}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Plus className="h-4 w-4" />
-            Add User
-          </button>
+          <AppTooltip label="Refresh Users">
+            <button
+              type="button"
+              onClick={loadUsers}
+              disabled={isLoading}
+              aria-label="Refresh Users"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </button>
+          </AppTooltip>
+          <AppTooltip label="Export Users">
+            <button
+              type="button"
+              onClick={handleExport}
+              aria-label="Export Users"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </button>
+          </AppTooltip>
+          <AppTooltip label="Add User">
+            <button
+              type="button"
+              onClick={openCreateModal}
+              disabled={!capabilities.canCreate || !capabilities.canAssignRole}
+              aria-label="Add User"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              Add User
+            </button>
+          </AppTooltip>
         </div>
       </div>
 

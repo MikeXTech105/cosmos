@@ -215,7 +215,7 @@ const Sidebar = () => {
       <motion.aside
         animate={{ width: isTablet || isCollapsed ? 80 : 280 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden h-screen shrink-0 border-r border-slate-200 bg-white md:block"
+        className="hidden h-dvh shrink-0 border-r border-slate-200 bg-white md:block"
       >
         <SidebarContent compact={isTablet} />
       </motion.aside>

@@ -60,21 +60,21 @@ const SearchCommand = () => {
     <AnimatePresence>
       {commandOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/30 px-4 pt-20 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/30 px-3 pt-4 backdrop-blur-sm sm:px-4 sm:pt-20"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onMouseDown={handleClose}
         >
           <motion.div
-            className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.24)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.24)] sm:max-h-[calc(100dvh-6rem)]"
             initial={{ opacity: 0, y: -12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex h-14 items-center gap-3 border-b border-slate-100 px-4">
+            <div className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-100 px-4">
               <Search className="h-4 w-4 text-slate-400" />
               <input
                 value={query}
@@ -93,7 +93,7 @@ const SearchCommand = () => {
               </button>
             </div>
 
-            <div className="max-h-[420px] overflow-y-auto p-2">
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
               {results.map((item) => {
                 const Icon = item.Icon;
 
@@ -133,7 +133,7 @@ const SearchCommand = () => {
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2 text-[11px] text-slate-500">
+            <div className="hidden shrink-0 items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2 text-[11px] text-slate-500 sm:flex">
               <span>Press Enter after selecting a result</span>
               <span>Esc to close</span>
             </div>
