@@ -12,7 +12,7 @@ const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const Pages = lazy(() => import("../pages/pages/index.js"));
-const Permission = lazy(() => import("../pages/permissions/Permission"));
+const Permissions = lazy(() => import("../pages/permissions/index.js"));
 const Roles = lazy(() => import("../pages/roles/index.js"));
 const Users = lazy(() => import("../pages/users/index.js"));
 
@@ -53,7 +53,7 @@ const AppRoutes = () => {
           <Route path="/users" element={<Users />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/pages" element={<Pages />} />
-          <Route path="/permissions" element={<Permission />} />
+          <Route path="/permissions" element={<Permissions />} />
           <Route path="/change-password" element={<ChangePassword />} />
         </Route>
 

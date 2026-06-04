@@ -1,4 +1,10 @@
-export const enabledModules = ["dashboard", "users", "roles", "pages"];
+export const enabledModules = [
+  "dashboard",
+  "users",
+  "roles",
+  "pages",
+  "permissions",
+];
 
 export const sidebarCategories = [
   {
