@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   Trash2,
   UserCheck,
-  UsersRound,
   UserX,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -15,11 +14,12 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppTooltip from "../../components/common/AppTooltip";
-import UserFilters from "../../components/users/UserFilters";
-import UserModal from "../../components/users/UserModal";
-import UserTable from "../../components/users/UserTable";
 import { roleService } from "../../services/roleService";
 import { userService } from "../../services/userService";
+import UserFilters from "./UserFilters";
+import UserModal from "./UserModal";
+import UserStats from "./UserStats";
+import UserTable from "./UserTable";
 
 const DEFAULT_FILTERS = {
   roleId: "all",
@@ -238,24 +238,6 @@ const getPrimaryRoleId = (user) => {
   const roleId = user?.roles?.[0]?.id;
 
   return roleId === undefined || roleId === null ? "" : String(roleId);
-};
-
-const StatCard = ({ icon: Icon, label, value }) => {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-          <Icon className="h-4 w-4" />
-        </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-            {label}
-          </p>
-          <p className="mt-0.5 text-lg font-bold text-slate-950">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
@@ -758,15 +740,11 @@ const Users = () => {
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <StatCard icon={UsersRound} label="Total Users" value={stats.total} />
-        <StatCard icon={UserCheck} label="Active On Page" value={stats.active} />
-        <StatCard
-          icon={UserX}
-          label="Inactive On Page"
-          value={stats.inactive}
-        />
-      </div>
+      <UserStats
+        active={stats.active}
+        inactive={stats.inactive}
+        total={stats.total}
+      />
 
       <UserFilters
         filters={filterControls}
@@ -789,11 +767,13 @@ const Users = () => {
           onDelete: (user) => openConfirmation("delete", user),
           onEdit: openEditModal,
         }}
+        currentPage={page}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
         onCreate={openCreateModal}
         onRetry={loadUsers}
+        pageSize={pageSize}
         users={users}
       />
 

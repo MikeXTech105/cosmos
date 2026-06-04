@@ -1,7 +1,27 @@
 import { Plus, RefreshCw, UsersRound } from "lucide-react";
 
 import UserActions from "./UserActions";
-import UserStatusBadge from "./UserStatusBadge";
+
+const statusStyles = {
+  active: "bg-emerald-50/70 text-emerald-700 ring-emerald-200/70",
+  inactive: "bg-red-50/70 text-red-700 ring-red-200/70",
+};
+
+const UserStatusBadge = ({ isActive }) => {
+  const status = isActive ? "active" : "inactive";
+
+  return (
+    <span
+      className={[
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset",
+        statusStyles[status],
+      ].join(" ")}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-75" />
+      {isActive ? "Active" : "Inactive"}
+    </span>
+  );
+};
 
 const formatDate = (value) => {
   if (!value) {
@@ -49,7 +69,7 @@ const RolePills = ({ roles }) => {
 const TableSkeleton = () => {
   return Array.from({ length: 6 }, (_, index) => (
     <tr key={index}>
-      <td colSpan={7} className="px-4 py-3.5">
+      <td colSpan={8} className="px-4 py-3.5">
         <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
       </td>
     </tr>
@@ -97,14 +117,19 @@ const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
   );
 };
 
-const MobileUserCard = ({ user, actions }) => {
+const MobileUserCard = ({ actions, serialNumber, user }) => {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-950">
-            {user.fullName || user.username}
-          </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-400">
+              #{serialNumber}
+            </span>
+            <p className="truncate text-sm font-bold text-slate-950">
+              {user.fullName || user.username}
+            </p>
+          </div>
           <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
             @{user.username}
           </p>
@@ -139,11 +164,13 @@ const MobileUserCard = ({ user, actions }) => {
 
 const UserTable = ({
   actions,
+  currentPage = 1,
   errorMessage,
   hasError,
   isLoading,
   onCreate,
   onRetry,
+  pageSize = 10,
   users,
 }) => {
   if (!isLoading && (hasError || users.length === 0)) {
@@ -169,18 +196,24 @@ const UserTable = ({
                 className="h-40 animate-pulse rounded-2xl bg-slate-100"
               />
             ))
-          : users.map((user) => (
-              <MobileUserCard key={user.id} user={user} actions={actions} />
+          : users.map((user, index) => (
+              <MobileUserCard
+                key={user.id}
+                actions={actions}
+                serialNumber={(currentPage - 1) * pageSize + index + 1}
+                user={user}
+              />
             ))}
       </div>
 
       <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
-            <col className="w-[14%]" />
-            <col className="w-[18%]" />
+            <col className="w-[56px]" />
+            <col className="w-[13%]" />
+            <col className="w-[17%]" />
             <col />
-            <col className="w-[14%]" />
+            <col className="w-[13%]" />
             <col className="w-[11%]" />
             <col className="w-[15%]" />
             <col className="w-[112px]" />
@@ -188,6 +221,7 @@ const UserTable = ({
           <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
             <tr>
               {[
+                "#",
                 "Username",
                 "Full Name",
                 "Email",
@@ -200,6 +234,7 @@ const UserTable = ({
                   key={heading}
                   className={[
                     "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400",
+                    heading === "#" ? "text-center" : "",
                     heading === "Actions" ? "text-right" : "",
                   ].join(" ")}
                 >
@@ -213,11 +248,14 @@ const UserTable = ({
             {isLoading ? (
               <TableSkeleton />
             ) : (
-              users.map((user) => (
+              users.map((user, index) => (
                 <tr
                   key={user.id}
                   className="group transition-colors hover:bg-slate-50/80 focus-within:bg-blue-50/30"
                 >
+                  <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
+                    {(currentPage - 1) * pageSize + index + 1}
+                  </td>
                   <td className="border-b border-slate-100 px-4 py-3.5">
                     <p className="truncate text-sm font-semibold text-slate-950">
                       {user.username}

@@ -1,6 +1,6 @@
 import { CheckCircle2, Pencil, Trash2, XCircle } from "lucide-react";
 
-import AppTooltip from "../common/AppTooltip";
+import AppTooltip from "../../components/common/AppTooltip";
 
 const ActionButton = ({ className, icon: Icon, label, onClick }) => {
   return (

@@ -13,7 +13,7 @@ const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const Permission = lazy(() => import("../pages/permissions/Permission"));
 const Role = lazy(() => import("../pages/roles/Role"));
-const Users = lazy(() => import("../pages/users/Users"));
+const Users = lazy(() => import("../pages/users/index.js"));
 
 const RouteFallback = () => {
   return (
