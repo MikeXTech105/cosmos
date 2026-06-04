@@ -18,7 +18,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-slate-100/60 glass">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 px-3 sm:gap-3 sm:px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
           <div className="min-w-0 pl-12 md:pl-0">
             <Breadcrumbs />
@@ -27,7 +27,7 @@ const Header = () => {
           <button
             type="button"
             onClick={openCommand}
-            className="hidden h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-sm text-slate-400 transition-all hover:border-slate-300 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 md:flex"
+            className="hidden h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white/80 px-3 text-left text-sm text-slate-400 transition-all hover:border-slate-300 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
           >
             <span className="flex min-w-0 items-center gap-2">
               <Search className="h-4 w-4 shrink-0" />
@@ -55,7 +55,7 @@ const Header = () => {
               aria-label="Notifications"
             >
               <Bell className="h-4 w-4" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white" />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
             </button>
 
             <button

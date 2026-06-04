@@ -37,7 +37,7 @@ const SidebarContent = ({ compact = false, mobile = false }) => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col">
       <div
         className={[
           "relative flex h-[70px] items-center",
@@ -45,7 +45,7 @@ const SidebarContent = ({ compact = false, mobile = false }) => {
         ].join(" ")}
       >
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white shadow-sm">
             C
           </div>
 
@@ -112,7 +112,7 @@ const SidebarContent = ({ compact = false, mobile = false }) => {
                 }
               }}
               placeholder="Search menu"
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-12 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white/60 pl-9 pr-12 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10"
             />
             <span className="absolute right-2 top-1/2 inline-flex h-6 -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 text-[10px] font-semibold text-slate-400">
               <Command className="h-3 w-3" /> K
@@ -153,7 +153,7 @@ const SidebarContent = ({ compact = false, mobile = false }) => {
 
         {!hasPages && (
           <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-center">
-            <ShieldCheck className="mx-auto h-5 w-5 text-blue-500" />
+            <ShieldCheck className="mx-auto h-5 w-5 text-brand" />
             {!collapsed && (
               <>
                 <p className="mt-2 text-sm font-semibold text-slate-700">
@@ -175,10 +175,10 @@ const SidebarContent = ({ compact = false, mobile = false }) => {
       </div>
 
       {!collapsed && (
-        <div className="border-t border-slate-100 p-4">
-          <div className="rounded-2xl bg-slate-50 p-3">
+        <div className="border-t border-slate-100/60 p-4">
+          <div className="glass-card rounded-2xl p-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
                 S
               </div>
               <div className="min-w-0">
@@ -215,7 +215,7 @@ const Sidebar = () => {
       <motion.aside
         animate={{ width: isTablet || isCollapsed ? 80 : 280 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="hidden h-dvh shrink-0 border-r border-slate-200 bg-white md:block"
+        className="hidden h-dvh shrink-0 border-r border-slate-100/60 glass-strong md:block"
       >
         <SidebarContent compact={isTablet} />
       </motion.aside>
@@ -223,7 +223,7 @@ const Sidebar = () => {
       <button
         type="button"
         onClick={openMobileSidebar}
-        className="fixed left-4 top-4 z-40 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm md:hidden"
+        className="fixed left-4 top-4 z-40 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 glass text-slate-700 shadow-sm md:hidden"
         aria-label="Open navigation"
       >
         <Menu className="h-4 w-4" />
@@ -243,7 +243,7 @@ const Sidebar = () => {
             />
 
             <motion.aside
-              className="fixed inset-y-0 left-0 z-50 w-[min(86vw,320px)] border-r border-slate-200 bg-white shadow-2xl md:hidden"
+              className="fixed inset-y-0 left-0 z-50 w-[min(86vw,320px)] border-r border-slate-100/60 glass-strong shadow-2xl md:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

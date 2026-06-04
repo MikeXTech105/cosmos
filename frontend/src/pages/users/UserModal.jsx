@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const inputClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const userSchema = (mode) =>
   z.object({
@@ -119,16 +119,16 @@ const UserModal = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="user-modal-title"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.22)] sm:max-h-[calc(100dvh-3rem)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)] sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-100/60 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
@@ -287,7 +287,7 @@ const UserModal = ({
                     </div>
                   )}
 
-                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-2xl border border-slate-100/60 glass-card px-4 py-3">
                     <span>
                       <span className="block text-sm font-semibold text-slate-900">
                         Active account
@@ -298,24 +298,24 @@ const UserModal = ({
                     </span>
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-blue-600"
+                      className="h-4 w-4 accent-[#4F46E5]"
                       {...register("isActive")}
                     />
                   </label>
                 </div>
 
-                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100/60 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitDisabled}
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {isSubmitting
                       ? "Saving..."

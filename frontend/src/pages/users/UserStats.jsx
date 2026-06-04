@@ -1,10 +1,10 @@
 import { UserCheck, UsersRound, UserX } from "lucide-react";
 
-const StatCard = ({ icon: Icon, label, value }) => {
+const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+    <div className="glass-card rounded-2xl px-4 py-3">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}>
           <Icon className="h-4 w-4" />
         </div>
         <div>
@@ -21,9 +21,9 @@ const StatCard = ({ icon: Icon, label, value }) => {
 const UserStats = ({ active, inactive, total }) => {
   return (
     <div className="grid gap-3 md:grid-cols-3">
-      <StatCard icon={UsersRound} label="Total Users" value={total} />
-      <StatCard icon={UserCheck} label="Active On Page" value={active} />
-      <StatCard icon={UserX} label="Inactive On Page" value={inactive} />
+      <StatCard icon={UsersRound} label="Total Users" value={total} colorClass="bg-brand-light text-brand" />
+      <StatCard icon={UserCheck} label="Active On Page" value={active} colorClass="bg-green-50 text-green-600" />
+      <StatCard icon={UserX} label="Inactive On Page" value={inactive} colorClass="bg-red-50 text-red-500" />
     </div>
   );
 };

@@ -13,7 +13,7 @@ const UserFilters = ({
     filters.search || filters.status !== "all" || filters.roleId !== "all";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="glass-card rounded-2xl p-3">
       <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -21,14 +21,14 @@ const UserFilters = ({
             value={filters.search}
             onChange={(event) => onChange({ search: event.target.value })}
             placeholder="Search by username, name, or email..."
-            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white/70 pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10"
           />
         </label>
 
         <select
           value={filters.status}
           onChange={(event) => onChange({ status: event.target.value })}
-          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
           aria-label="Filter by status"
         >
           <option value="all">All status</option>
@@ -40,7 +40,7 @@ const UserFilters = ({
           value={filters.roleId}
           onChange={(event) => onChange({ roleId: event.target.value })}
           disabled={isRolesLoading || Boolean(rolesError)}
-          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
           aria-label="Filter by role"
         >
           <option value="all">
@@ -61,7 +61,7 @@ const UserFilters = ({
           type="button"
           onClick={onClear}
           disabled={!hasActiveFilters}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
         >
           <RotateCcw className="h-4 w-4" />
           Clear

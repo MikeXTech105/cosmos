@@ -51,7 +51,7 @@ const RolePills = ({ roles }) => {
       {roles.slice(0, 1).map((role) => (
         <span
           key={role.id ?? role.name}
-          className="inline-flex max-w-full items-center truncate rounded-full bg-blue-50/70 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-100"
+          className="inline-flex max-w-full items-center truncate rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10"
         >
           {role.name}
         </span>
@@ -79,7 +79,7 @@ const TableSkeleton = () => {
 const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
         <UsersRound className="h-6 w-6" />
       </div>
 
@@ -106,7 +106,7 @@ const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
           <button
             type="button"
             onClick={onCreate}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
           >
             <Plus className="h-4 w-4" />
             Create User
@@ -119,7 +119,7 @@ const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
 
 const MobileUserCard = ({ actions, serialNumber, user }) => {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="glass-card rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -175,7 +175,7 @@ const UserTable = ({
 }) => {
   if (!isLoading && (hasError || users.length === 0)) {
     return (
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl glass-card shadow-sm">
         <EmptyState
           hasError={hasError}
           errorMessage={errorMessage}
@@ -206,7 +206,7 @@ const UserTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
+      <div className="hidden overflow-hidden rounded-2xl glass-card lg:block">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[56px]" />
@@ -251,7 +251,7 @@ const UserTable = ({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                  className="group transition-colors hover:bg-slate-50/80 focus-within:bg-blue-50/30"
+                  className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20"
                 >
                   <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}

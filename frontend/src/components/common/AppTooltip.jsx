@@ -57,7 +57,7 @@ const AppTooltip = ({ children, label }) => {
         <motion.span
           id={id}
           role="tooltip"
-          className="pointer-events-none fixed z-[100] whitespace-nowrap rounded-lg bg-slate-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-[0_8px_24px_rgba(15,23,42,0.24)]"
+          className="pointer-events-none fixed z-[100] whitespace-nowrap rounded-lg glass-strong px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 shadow-md"
           style={{
             left: position.left,
             top: position.top,

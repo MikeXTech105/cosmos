@@ -288,7 +288,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-dialog-title"
-            className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.22)]"
+            className="w-full max-w-md overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -313,12 +313,12 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               </p>
             </div>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-100/60 px-6 py-4 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={onCancel}
                 disabled={confirmation.isSubmitting}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -687,7 +687,7 @@ const Users = () => {
     <section className="min-w-0 space-y-5">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
             <ShieldCheck className="h-3.5 w-3.5" />
             RBAC / User Management
           </div>
@@ -706,7 +706,7 @@ const Users = () => {
               onClick={loadUsers}
               disabled={isLoading}
               aria-label="Refresh Users"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
@@ -719,7 +719,7 @@ const Users = () => {
               type="button"
               onClick={handleExport}
               aria-label="Export Users"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white hover:shadow-sm active:scale-[0.98] sm:w-auto"
             >
               <Download className="h-4 w-4" />
               Export
@@ -731,7 +731,7 @@ const Users = () => {
               onClick={openCreateModal}
               disabled={!capabilities.canCreate || !capabilities.canAssignRole}
               aria-label="Add User"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
               <Plus className="h-4 w-4" />
               Add User
@@ -777,7 +777,7 @@ const Users = () => {
         users={users}
       />
 
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div className="glass-card flex flex-col gap-3 rounded-2xl px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
         <p>
           Showing{" "}
           <span className="font-semibold text-slate-900">{rangeStart}</span> to{" "}
@@ -792,7 +792,7 @@ const Users = () => {
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="h-9 rounded-xl border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+              className="h-9 rounded-xl border border-slate-200 bg-white/80 px-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
               aria-label="Rows per page"
             >
               {PAGE_SIZE_OPTIONS.map((option) => (
@@ -808,7 +808,7 @@ const Users = () => {
               type="button"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={isLoading || page <= 1}
-              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
@@ -821,7 +821,7 @@ const Users = () => {
                 setPage((current) => Math.min(totalPages, current + 1))
               }
               disabled={isLoading || page >= totalPages}
-              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </button>
