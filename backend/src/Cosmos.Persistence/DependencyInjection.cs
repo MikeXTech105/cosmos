@@ -20,6 +20,9 @@ public static class DependencyInjection
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IPartyRepository, PartyRepository>();
         services.AddScoped<IPartySettingsRepository, PartySettingsRepository>();
+        services.AddScoped<IItemRepository, ItemRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IUnitRepository, UnitRepository>();
         return services;
     }
 }
