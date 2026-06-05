@@ -8,6 +8,11 @@ import {
   getSidebarCategory,
 } from "../config/sidebar";
 import {
+  canViewPermission,
+  findPermissionPage,
+  isSuperAdminAuth,
+} from "./usePermission";
+import {
   closeCommand,
   closeMobileSidebar,
   expandSidebarGroups,
@@ -42,24 +47,6 @@ const getPageLabel = (page) => {
   );
 };
 
-const normalizeRoute = (route) => {
-  if (!route) {
-    return null;
-  }
-
-  const nextRoute = String(route).trim();
-
-  if (!nextRoute) {
-    return null;
-  }
-
-  return nextRoute.startsWith("/") ? nextRoute : `/${nextRoute}`;
-};
-
-const getPageRoute = (page) => {
-  return normalizeRoute(page.route ?? page.path ?? page.url);
-};
-
 const getSortOrder = (page) => {
   return Number(
     page.sortOrder ??
@@ -69,64 +56,6 @@ const getSortOrder = (page) => {
       page.position ??
       0,
   );
-};
-
-const permissionAllowsView = (permission) => {
-  if (!permission) {
-    return true;
-  }
-
-  if (typeof permission === "string") {
-    const normalized = permission.toLowerCase();
-
-    return ["view", "read", "list", "access"].some((action) =>
-      normalized.includes(action),
-    );
-  }
-
-  return (
-    permission.canView ??
-    permission.view ??
-    permission.read ??
-    permission.list ??
-    permission.access ??
-    true
-  );
-};
-
-const canViewPage = (page) => {
-  if (page.isActive === false || page.isVisible === false || page.hidden) {
-    return false;
-  }
-
-  if (page.canView === false || page.view === false) {
-    return false;
-  }
-
-  const permissions = page.permissions;
-
-  if (!permissions) {
-    return true;
-  }
-
-  if (Array.isArray(permissions)) {
-    return permissions.length === 0 || permissions.some(permissionAllowsView);
-  }
-
-  if (typeof permissions === "object") {
-    if (
-      permissions.canView === false ||
-      permissions.view === false ||
-      permissions.read === false ||
-      permissions.access === false
-    ) {
-      return false;
-    }
-
-    return permissionAllowsView(permissions);
-  }
-
-  return Boolean(permissions);
 };
 
 const sortMenuItems = (items) => {
@@ -142,10 +71,6 @@ const sortMenuItems = (items) => {
       ...item,
       children: sortMenuItems(item.children),
     }));
-};
-
-const getPageByRoute = (pages, route) => {
-  return pages.find((page) => getPageRoute(page) === route);
 };
 
 const createItem = ({ module, page }) => {
@@ -178,15 +103,21 @@ const createCategoryItem = (category) => ({
   children: [],
 });
 
-const buildMenuTree = (pages) => {
+const buildMenuTree = (pages, isSuperAdmin) => {
   const groupMap = new Map();
   const rootItems = [];
   const enabledModules = getEnabledSidebarModules();
 
   enabledModules.forEach((module) => {
-    const page = getPageByRoute(pages, module.route);
+    const page = isSuperAdmin
+      ? null
+      : findPermissionPage(pages, {
+          id: module.id,
+          label: module.label,
+          route: module.route,
+        });
 
-    if (page && !canViewPage(page)) {
+    if (!isSuperAdmin && (!page || !canViewPermission(page))) {
       return;
     }
 
@@ -299,9 +230,19 @@ export const useSidebar = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const pages = useSelector((state) => state.auth.pages);
+  const roles = useSelector((state) => state.auth.roles);
+  const user = useSelector((state) => state.auth.user);
   const sidebar = useSelector((state) => state.sidebar);
 
-  const menuTree = useMemo(() => buildMenuTree(pages), [pages]);
+  const isSuperAdmin = useMemo(
+    () => isSuperAdminAuth({ roles, user }),
+    [roles, user],
+  );
+
+  const menuTree = useMemo(
+    () => buildMenuTree(pages, isSuperAdmin),
+    [isSuperAdmin, pages],
+  );
 
   const activeMenuTree = useMemo(
     () => markActiveItems(menuTree, location.pathname),

@@ -24,19 +24,66 @@ const userSchema = (mode) =>
     roleId: z.string().min(1, "Role is required"),
   });
 
-const getPrimaryRoleId = (user) => {
-  const roleId = user?.roles?.[0]?.id;
+const normalizeLookupValue = (value) => {
+  return String(value ?? "").trim().toLowerCase();
+};
+
+const getPrimaryRole = (user) => {
+  if (Array.isArray(user?.roles) && user.roles.length > 0) {
+    return user.roles[0];
+  }
+
+  if (user?.role && typeof user.role === "object") {
+    return user.role;
+  }
+
+  const roleId = user?.roleId ?? user?.roleID ?? user?.role_id;
+  const roleName =
+    user?.roleName ??
+    user?.roleLabel ??
+    (typeof user?.role === "string" ? user.role : undefined);
+
+  if (roleId !== undefined || roleName !== undefined) {
+    return {
+      id: roleId ?? roleName,
+      name: roleName ?? roleId,
+    };
+  }
+
+  return null;
+};
+
+const getPrimaryRoleId = (user, roleOptions = []) => {
+  const role = getPrimaryRole(user);
+  const roleId = role?.id;
+  const roleName = role?.name ?? role?.roleName ?? role?.label;
+  const normalizedRoleId = normalizeLookupValue(roleId);
+  const normalizedRoleName = normalizeLookupValue(roleName);
+  const matchedRole = roleOptions.find((option) => {
+    const optionId = normalizeLookupValue(option.id);
+    const optionName = normalizeLookupValue(option.name);
+
+    return (
+      (normalizedRoleId && optionId === normalizedRoleId) ||
+      (normalizedRoleName && optionName === normalizedRoleName) ||
+      (normalizedRoleId && optionName === normalizedRoleId)
+    );
+  });
+
+  if (matchedRole?.id !== undefined && matchedRole.id !== null) {
+    return String(matchedRole.id);
+  }
 
   return roleId === undefined || roleId === null ? "" : String(roleId);
 };
 
-const getDefaultValues = (user, mode) => ({
+const getDefaultValues = (user, mode, roleId = "") => ({
   username: mode === "create" ? "" : user?.username ?? "",
   email: user?.email ?? "",
   fullName: user?.fullName ?? "",
   password: "",
   isActive: user?.isActive ?? true,
-  roleId: getPrimaryRoleId(user),
+  roleId,
 });
 
 const FieldError = ({ error }) => {
@@ -61,6 +108,10 @@ const UserModal = ({
 }) => {
   const isEdit = mode === "edit";
   const schema = useMemo(() => userSchema(mode), [mode]);
+  const defaultRoleId = useMemo(
+    () => getPrimaryRoleId(user, roleOptions),
+    [roleOptions, user],
+  );
 
   const {
     handleSubmit,
@@ -69,14 +120,14 @@ const UserModal = ({
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: getDefaultValues(user, mode),
+    defaultValues: getDefaultValues(user, mode, defaultRoleId),
   });
 
   useEffect(() => {
     if (isOpen) {
-      reset(getDefaultValues(user, mode));
+      reset(getDefaultValues(user, mode, defaultRoleId));
     }
-  }, [isOpen, mode, reset, user]);
+  }, [defaultRoleId, isOpen, mode, reset, user]);
 
   const submitForm = (values) => {
     const selectedRole = roleOptions.find((role) => {

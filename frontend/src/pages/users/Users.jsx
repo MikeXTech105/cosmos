@@ -125,6 +125,71 @@ const normalizeRoles = (roles) => {
   return roleList.map(normalizeRole).filter(Boolean);
 };
 
+const normalizeLookupValue = (value) => {
+  return String(value ?? "").trim().toLowerCase();
+};
+
+const getRawUserRoles = (user) => {
+  const assignedRoles =
+    user?.roles ?? user?.roleList ?? user?.userRoles ?? user?.assignedRoles;
+
+  if (assignedRoles) {
+    return assignedRoles;
+  }
+
+  if (user?.role && typeof user.role === "object") {
+    return user.role;
+  }
+
+  const roleId = user?.roleId ?? user?.roleID ?? user?.role_id;
+  const roleName =
+    user?.roleName ??
+    user?.roleLabel ??
+    (typeof user?.role === "string" ? user.role : undefined);
+
+  if (roleId !== undefined || roleName !== undefined) {
+    return {
+      id: roleId ?? roleName,
+      name: roleName ?? roleId,
+    };
+  }
+
+  return null;
+};
+
+const findMatchingRoleOption = (role, roleOptions = []) => {
+  const roleId = normalizeLookupValue(role?.id);
+  const roleName = normalizeLookupValue(role?.name);
+
+  return roleOptions.find((option) => {
+    const optionId = normalizeLookupValue(option.id);
+    const optionName = normalizeLookupValue(option.name);
+
+    return (
+      (roleId && optionId === roleId) ||
+      (roleName && optionName === roleName) ||
+      (roleId && optionName === roleId)
+    );
+  });
+};
+
+const reconcileRolesWithOptions = (roles, roleOptions = []) => {
+  return normalizeRoles(roles).map((role) => {
+    const matchedRole = findMatchingRoleOption(role, roleOptions);
+
+    if (!matchedRole) {
+      return role;
+    }
+
+    return {
+      ...role,
+      description: matchedRole.description ?? role.description,
+      id: matchedRole.id,
+      name: matchedRole.name,
+    };
+  });
+};
+
 const dedupeRoles = (roles) => {
   const roleMap = new Map();
 
@@ -164,7 +229,7 @@ const normalizeActiveState = (user) => {
   return Boolean(rawValue);
 };
 
-const normalizeUser = (user) => {
+const normalizeUser = (user, roleOptions = []) => {
   const fullName =
     user?.fullName ??
     user?.name ??
@@ -177,12 +242,6 @@ const normalizeUser = (user) => {
     user?.email?.split("@")?.[0] ??
     "user";
   const id = user?.id ?? user?.userId ?? user?.userID ?? user?._id ?? username;
-  const roles =
-    user?.roles ??
-    user?.roleList ??
-    user?.userRoles ??
-    user?.assignedRoles ??
-    user?.role;
 
   return {
     createdAt: user?.createdAt ?? user?.createdDate ?? user?.createdOn,
@@ -190,7 +249,9 @@ const normalizeUser = (user) => {
     fullName: fullName || username,
     id,
     isActive: normalizeActiveState(user),
-    roles: normalizeRoles(roles),
+    roles: dedupeRoles(
+      reconcileRolesWithOptions(getRawUserRoles(user), roleOptions),
+    ),
     username,
   };
 };
@@ -406,9 +467,11 @@ const Users = () => {
       );
 
       setRoleOptions(normalizedRoles);
+      return normalizedRoles;
     } catch (error) {
       setRoleOptions([]);
       setRolesError(getErrorMessage(error, "Unable to load roles."));
+      return [];
     } finally {
       setIsRolesLoading(false);
     }
@@ -517,21 +580,26 @@ const Users = () => {
   };
 
   const openEditModal = async (user) => {
-    loadRoles();
+    const rolesPromise = loadRoles();
+
     setModalState({
       isLoading: true,
       isOpen: true,
       mode: "edit",
-      user,
+      user: normalizeUser(user, roleOptions),
     });
 
     try {
-      const response = await userService.getUserById(user.id);
+      const [response, latestRoleOptions] = await Promise.all([
+        userService.getUserById(user.id),
+        rolesPromise,
+      ]);
+
       setModalState({
         isLoading: false,
         isOpen: true,
         mode: "edit",
-        user: normalizeUser(extractSingleUser(response.data)),
+        user: normalizeUser(extractSingleUser(response.data), latestRoleOptions),
       });
     } catch (error) {
       toast.error(

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import PermissionGuard from "./PermissionGuard";
 
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
@@ -50,10 +51,38 @@ const AppRoutes = () => {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/pages" element={<Pages />} />
-          <Route path="/permissions" element={<Permissions />} />
+          <Route
+            path="/users"
+            element={
+              <PermissionGuard route="/users" pageName="Users">
+                <Users />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/roles"
+            element={
+              <PermissionGuard route="/roles" pageName="Roles">
+                <Roles />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/pages"
+            element={
+              <PermissionGuard route="/pages" pageName="Pages">
+                <Pages />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/permissions"
+            element={
+              <PermissionGuard route="/permissions" pageName="Permissions">
+                <Permissions />
+              </PermissionGuard>
+            }
+          />
           <Route path="/change-password" element={<ChangePassword />} />
         </Route>
 
