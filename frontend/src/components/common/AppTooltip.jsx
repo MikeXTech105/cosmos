@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   cloneElement,
   isValidElement,
+  useCallback,
   useEffect,
   useId,
   useRef,
@@ -19,8 +20,14 @@ const AppTooltip = ({ children, label }) => {
     top: 0,
   });
 
+  const closeTooltip = useCallback(() => {
+    setOpen((current) => (current ? false : current));
+  }, []);
+
   useEffect(() => {
-    const closeTooltip = () => setOpen(false);
+    if (!open) {
+      return undefined;
+    }
 
     window.addEventListener("resize", closeTooltip);
     window.addEventListener("scroll", closeTooltip, true);
@@ -29,7 +36,7 @@ const AppTooltip = ({ children, label }) => {
       window.removeEventListener("resize", closeTooltip);
       window.removeEventListener("scroll", closeTooltip, true);
     };
-  }, []);
+  }, [closeTooltip, open]);
 
   const showTooltip = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -48,7 +55,7 @@ const AppTooltip = ({ children, label }) => {
       ),
       top: below ? rect.bottom + 8 : rect.top - 8,
     });
-    setOpen(true);
+    setOpen((current) => (current ? current : true));
   };
 
   const tooltip = (
@@ -82,9 +89,9 @@ const AppTooltip = ({ children, label }) => {
         ref={triggerRef}
         className="inline-flex"
         onMouseEnter={showTooltip}
-        onMouseLeave={() => setOpen(false)}
+        onMouseLeave={closeTooltip}
         onFocusCapture={showTooltip}
-        onBlurCapture={() => setOpen(false)}
+        onBlurCapture={closeTooltip}
       >
         {isValidElement(children)
           ? cloneElement(children, {

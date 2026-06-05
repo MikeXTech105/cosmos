@@ -1,5 +1,5 @@
 import { FolderTree, Plus, RefreshCw } from "lucide-react";
-import { createElement } from "react";
+import { createElement, memo } from "react";
 
 import { getIconComponent } from "../../config/iconMap";
 import PageActions from "./PageActions";
@@ -273,4 +273,4 @@ const PageTable = ({
   );
 };
 
-export default PageTable;
+export default memo(PageTable);

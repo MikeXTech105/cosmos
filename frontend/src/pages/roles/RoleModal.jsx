@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShieldCheck, X } from "lucide-react";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -221,4 +221,4 @@ const RoleModal = ({
   );
 };
 
-export default RoleModal;
+export default memo(RoleModal);

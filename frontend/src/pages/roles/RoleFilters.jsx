@@ -1,4 +1,5 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
+import { memo } from "react";
 
 const RoleFilters = ({ filters, onChange, onClear, resultCount }) => {
   const hasActiveFilters = filters.search || filters.status !== "all";
@@ -46,4 +47,4 @@ const RoleFilters = ({ filters, onChange, onClear, resultCount }) => {
   );
 };
 
-export default RoleFilters;
+export default memo(RoleFilters);

@@ -353,11 +353,7 @@ const Roles = () => {
   }, [filters, page, pageSize]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadRoles();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadRoles);
   }, [loadRoles]);
 
   useEffect(() => {
@@ -396,24 +392,24 @@ const Roles = () => {
     };
   }, [roles, totalItems]);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalState((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  };
+  }, []);
 
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(() => {
     setModalState({
       isLoading: false,
       isOpen: true,
       mode: "create",
       role: null,
     });
-  };
+  }, []);
 
-  const openRoleModal = async (mode, role) => {
+  const openRoleModal = useCallback(async (mode, role) => {
     setModalState({
       isLoading: true,
       isOpen: true,
@@ -438,9 +434,9 @@ const Roles = () => {
         isLoading: false,
       }));
     }
-  };
+  }, []);
 
-  const submitRole = async (payload) => {
+  const submitRole = useCallback(async (payload) => {
     try {
       if (modalState.mode === "edit") {
         await roleService.updateRole(modalState.role.id, payload);
@@ -462,27 +458,27 @@ const Roles = () => {
         ),
       );
     }
-  };
+  }, [closeModal, loadRoles, modalState.mode, modalState.role]);
 
-  const openConfirmation = (type, role) => {
+  const openConfirmation = useCallback((type, role) => {
     setConfirmation({
       isOpen: true,
       isSubmitting: false,
       role,
       type,
     });
-  };
+  }, []);
 
-  const closeConfirmation = () => {
+  const closeConfirmation = useCallback(() => {
     setConfirmation({
       isOpen: false,
       isSubmitting: false,
       role: null,
       type: null,
     });
-  };
+  }, []);
 
-  const confirmAction = async () => {
+  const confirmAction = useCallback(async () => {
     if (!confirmation.role) {
       return;
     }
@@ -525,9 +521,9 @@ const Roles = () => {
         isSubmitting: false,
       }));
     }
-  };
+  }, [closeConfirmation, confirmation.role, confirmation.type, loadRoles]);
 
-  const handleFilterChange = (patch) => {
+  const handleFilterChange = useCallback((patch) => {
     if (Object.hasOwn(patch, "search")) {
       setSearchInput(patch.search);
     }
@@ -542,22 +538,46 @@ const Roles = () => {
       }));
       setPage(1);
     }
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchInput(DEFAULT_FILTERS.search);
     setFilters(DEFAULT_FILTERS);
     setPage(1);
-  };
+  }, []);
 
-  const handlePageSizeChange = (event) => {
+  const handlePageSizeChange = useCallback((event) => {
     setPageSize(Number(event.target.value));
     setPage(1);
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     toast.info("Export is available as a UI action and will connect to reporting.");
-  };
+  }, []);
+
+  const tableActions = useMemo(
+    () => ({
+      canActivate: capabilities.canActivate,
+      canDeactivate: capabilities.canDeactivate,
+      canDelete: capabilities.canDelete,
+      canEdit: capabilities.canUpdate,
+      canView: capabilities.canView,
+      onActivate: (role) => openConfirmation("activate", role),
+      onDeactivate: (role) => openConfirmation("deactivate", role),
+      onDelete: (role) => openConfirmation("delete", role),
+      onEdit: (role) => openRoleModal("edit", role),
+      onView: (role) => openRoleModal("view", role),
+    }),
+    [
+      capabilities.canActivate,
+      capabilities.canDeactivate,
+      capabilities.canDelete,
+      capabilities.canUpdate,
+      capabilities.canView,
+      openConfirmation,
+      openRoleModal,
+    ],
+  );
 
   return (
     <section className="min-w-0 space-y-5">
@@ -630,18 +650,7 @@ const Roles = () => {
       />
 
       <RoleTable
-        actions={{
-          canActivate: capabilities.canActivate,
-          canDeactivate: capabilities.canDeactivate,
-          canDelete: capabilities.canDelete,
-          canEdit: capabilities.canUpdate,
-          canView: capabilities.canView,
-          onActivate: (role) => openConfirmation("activate", role),
-          onDeactivate: (role) => openConfirmation("deactivate", role),
-          onDelete: (role) => openConfirmation("delete", role),
-          onEdit: (role) => openRoleModal("edit", role),
-          onView: (role) => openRoleModal("view", role),
-        }}
+        actions={tableActions}
         currentPage={page}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}

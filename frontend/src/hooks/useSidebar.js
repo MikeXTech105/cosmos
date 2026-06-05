@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
@@ -270,9 +270,42 @@ export const useSidebar = () => {
       .map((item) => item.id);
 
     if (groupIds.length > 0) {
-      dispatch(expandSidebarGroups(groupIds));
+      const collapsedGroupIds = groupIds.filter(
+        (groupId) => !sidebar.expandedGroupIds[groupId],
+      );
+
+      if (collapsedGroupIds.length > 0) {
+        dispatch(expandSidebarGroups(collapsedGroupIds));
+      }
     }
-  }, [activeTrail, dispatch]);
+  }, [activeTrail, dispatch, sidebar.expandedGroupIds]);
+
+  const closeCommandHandler = useCallback(() => dispatch(closeCommand()), [dispatch]);
+  const closeMobileSidebarHandler = useCallback(
+    () => dispatch(closeMobileSidebar()),
+    [dispatch],
+  );
+  const openCommandHandler = useCallback(() => dispatch(openCommand()), [dispatch]);
+  const openMobileSidebarHandler = useCallback(
+    () => dispatch(openMobileSidebar()),
+    [dispatch],
+  );
+  const resetSearchHandler = useCallback(
+    () => dispatch(resetSidebarSearch()),
+    [dispatch],
+  );
+  const setSearchQueryHandler = useCallback(
+    (query) => dispatch(setSidebarSearchQuery(query)),
+    [dispatch],
+  );
+  const toggleCollapsedHandler = useCallback(
+    () => dispatch(toggleSidebar()),
+    [dispatch],
+  );
+  const toggleGroupHandler = useCallback(
+    (groupId) => dispatch(toggleSidebarGroup(groupId)),
+    [dispatch],
+  );
 
   return {
     activeTrail,
@@ -285,13 +318,13 @@ export const useSidebar = () => {
     menuTree: filteredMenuTree,
     rawMenuTree: activeMenuTree,
     searchQuery: sidebar.searchQuery,
-    closeCommand: () => dispatch(closeCommand()),
-    closeMobileSidebar: () => dispatch(closeMobileSidebar()),
-    openCommand: () => dispatch(openCommand()),
-    openMobileSidebar: () => dispatch(openMobileSidebar()),
-    resetSearch: () => dispatch(resetSidebarSearch()),
-    setSearchQuery: (query) => dispatch(setSidebarSearchQuery(query)),
-    toggleCollapsed: () => dispatch(toggleSidebar()),
-    toggleGroup: (groupId) => dispatch(toggleSidebarGroup(groupId)),
+    closeCommand: closeCommandHandler,
+    closeMobileSidebar: closeMobileSidebarHandler,
+    openCommand: openCommandHandler,
+    openMobileSidebar: openMobileSidebarHandler,
+    resetSearch: resetSearchHandler,
+    setSearchQuery: setSearchQueryHandler,
+    toggleCollapsed: toggleCollapsedHandler,
+    toggleGroup: toggleGroupHandler,
   };
 };

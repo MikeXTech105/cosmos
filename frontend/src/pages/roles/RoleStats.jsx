@@ -1,4 +1,5 @@
 import { ShieldCheck, ShieldOff, ShieldPlus } from "lucide-react";
+import { memo } from "react";
 
 const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   return (
@@ -45,4 +46,4 @@ const RoleStats = ({ active, inactive, total }) => {
   );
 };
 
-export default RoleStats;
+export default memo(RoleStats);

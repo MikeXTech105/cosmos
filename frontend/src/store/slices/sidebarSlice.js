@@ -19,14 +19,26 @@ const sidebarSlice = createSlice({
     },
 
     setSidebarCollapsed: (state, action) => {
+      if (state.isCollapsed === action.payload) {
+        return;
+      }
+
       state.isCollapsed = action.payload;
     },
 
     openMobileSidebar: (state) => {
+      if (state.isMobileOpen) {
+        return;
+      }
+
       state.isMobileOpen = true;
     },
 
     closeMobileSidebar: (state) => {
+      if (!state.isMobileOpen) {
+        return;
+      }
+
       state.isMobileOpen = false;
     },
 
@@ -38,23 +50,41 @@ const sidebarSlice = createSlice({
 
     expandSidebarGroups: (state, action) => {
       action.payload.forEach((groupId) => {
-        state.expandedGroupIds[groupId] = true;
+        if (!state.expandedGroupIds[groupId]) {
+          state.expandedGroupIds[groupId] = true;
+        }
       });
     },
 
     setSidebarSearchQuery: (state, action) => {
+      if (state.searchQuery === action.payload) {
+        return;
+      }
+
       state.searchQuery = action.payload;
     },
 
     resetSidebarSearch: (state) => {
+      if (!state.searchQuery) {
+        return;
+      }
+
       state.searchQuery = "";
     },
 
     openCommand: (state) => {
+      if (state.commandOpen) {
+        return;
+      }
+
       state.commandOpen = true;
     },
 
     closeCommand: (state) => {
+      if (!state.commandOpen) {
+        return;
+      }
+
       state.commandOpen = false;
     },
   },

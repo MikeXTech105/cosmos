@@ -414,15 +414,11 @@ const Pages = () => {
   }, [filters, page, pageSize]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(loadParentPages, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadParentPages);
   }, [loadParentPages]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(loadPages, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadPages);
   }, [loadPages]);
 
   useEffect(() => {
@@ -458,20 +454,20 @@ const Pages = () => {
     [pages, totalItems],
   );
 
-  const refreshPages = async () => {
+  const refreshPages = useCallback(async () => {
     await Promise.all([loadPages(), loadParentPages()]);
-  };
+  }, [loadPages, loadParentPages]);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalState((current) => ({ ...current, isLoading: false, isOpen: false }));
-  };
+  }, []);
 
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(() => {
     loadParentPages();
     setModalState({ isLoading: false, isOpen: true, mode: "create", page: null });
-  };
+  }, [loadParentPages]);
 
-  const openPageModal = async (mode, pageItem) => {
+  const openPageModal = useCallback(async (mode, pageItem) => {
     loadParentPages();
     setModalState({ isLoading: true, isOpen: true, mode, page: pageItem });
 
@@ -487,9 +483,9 @@ const Pages = () => {
       toast.error(getErrorMessage(error, "Unable to load the latest page details."));
       setModalState((current) => ({ ...current, isLoading: false }));
     }
-  };
+  }, [loadParentPages]);
 
-  const submitPage = async (payload) => {
+  const submitPage = useCallback(async (payload) => {
     try {
       if (modalState.mode === "edit") {
         await pageService.updatePage(modalState.page.id, payload);
@@ -511,17 +507,17 @@ const Pages = () => {
         ),
       );
     }
-  };
+  }, [closeModal, modalState.mode, modalState.page, refreshPages]);
 
-  const openConfirmation = (type, pageItem) => {
+  const openConfirmation = useCallback((type, pageItem) => {
     setConfirmation({ isOpen: true, isSubmitting: false, page: pageItem, type });
-  };
+  }, []);
 
-  const closeConfirmation = () => {
+  const closeConfirmation = useCallback(() => {
     setConfirmation({ isOpen: false, isSubmitting: false, page: null, type: null });
-  };
+  }, []);
 
-  const confirmAction = async () => {
+  const confirmAction = useCallback(async () => {
     if (!confirmation.page) {
       return;
     }
@@ -551,9 +547,9 @@ const Pages = () => {
       toast.error(getErrorMessage(error, "Unable to complete this action."));
       setConfirmation((current) => ({ ...current, isSubmitting: false }));
     }
-  };
+  }, [closeConfirmation, confirmation.page, confirmation.type, refreshPages]);
 
-  const handleFilterChange = (patch) => {
+  const handleFilterChange = useCallback((patch) => {
     if (Object.hasOwn(patch, "search")) {
       setSearchInput(patch.search);
     }
@@ -565,17 +561,46 @@ const Pages = () => {
       setFilters((current) => ({ ...current, ...filterPatch }));
       setPage(1);
     }
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchInput("");
     setFilters(DEFAULT_FILTERS);
     setPage(1);
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handlePageSizeChange = useCallback((event) => {
+    setPageSize(Number(event.target.value));
+    setPage(1);
+  }, []);
+
+  const handleExport = useCallback(() => {
     toast.info("Export is available as a UI action and will connect to reporting.");
-  };
+  }, []);
+
+  const tableActions = useMemo(
+    () => ({
+      canActivate: capabilities.canActivate,
+      canDeactivate: capabilities.canDeactivate,
+      canDelete: capabilities.canDelete,
+      canEdit: capabilities.canUpdate,
+      canView: capabilities.canView,
+      onActivate: (item) => openConfirmation("activate", item),
+      onDeactivate: (item) => openConfirmation("deactivate", item),
+      onDelete: (item) => openConfirmation("delete", item),
+      onEdit: (item) => openPageModal("edit", item),
+      onView: (item) => openPageModal("view", item),
+    }),
+    [
+      capabilities.canActivate,
+      capabilities.canDeactivate,
+      capabilities.canDelete,
+      capabilities.canUpdate,
+      capabilities.canView,
+      openConfirmation,
+      openPageModal,
+    ],
+  );
 
   return (
     <section className="min-w-0 space-y-5">
@@ -643,18 +668,7 @@ const Pages = () => {
         onClear={clearFilters}
       />
       <PageTable
-        actions={{
-          canActivate: capabilities.canActivate,
-          canDeactivate: capabilities.canDeactivate,
-          canDelete: capabilities.canDelete,
-          canEdit: capabilities.canUpdate,
-          canView: capabilities.canView,
-          onActivate: (item) => openConfirmation("activate", item),
-          onDeactivate: (item) => openConfirmation("deactivate", item),
-          onDelete: (item) => openConfirmation("delete", item),
-          onEdit: (item) => openPageModal("edit", item),
-          onView: (item) => openPageModal("view", item),
-        }}
+        actions={tableActions}
         currentPage={page}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
@@ -677,10 +691,7 @@ const Pages = () => {
             Rows
             <select
               value={pageSize}
-              onChange={(event) => {
-                setPageSize(Number(event.target.value));
-                setPage(1);
-              }}
+              onChange={handlePageSizeChange}
               className="h-9 rounded-xl border border-slate-200 bg-white/80 px-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
               aria-label="Rows per page"
             >

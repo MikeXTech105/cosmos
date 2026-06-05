@@ -1,4 +1,5 @@
 import { Plus, RefreshCw, UsersRound } from "lucide-react";
+import { memo } from "react";
 
 import UserActions from "./UserActions";
 
@@ -293,4 +294,4 @@ const UserTable = ({
   );
 };
 
-export default UserTable;
+export default memo(UserTable);

@@ -510,19 +510,11 @@ const Users = () => {
   }, [filters, page, pageSize]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadRoles();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadRoles);
   }, [loadRoles]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      loadUsers();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadUsers);
   }, [loadUsers]);
 
   useEffect(() => {
@@ -561,15 +553,15 @@ const Users = () => {
     };
   }, [totalItems, users]);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalState((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  };
+  }, []);
 
-  const openCreateModal = () => {
+  const openCreateModal = useCallback(() => {
     loadRoles();
     setModalState({
       isLoading: false,
@@ -577,9 +569,9 @@ const Users = () => {
       mode: "create",
       user: null,
     });
-  };
+  }, [loadRoles]);
 
-  const openEditModal = async (user) => {
+  const openEditModal = useCallback(async (user) => {
     const rolesPromise = loadRoles();
 
     setModalState({
@@ -610,9 +602,9 @@ const Users = () => {
         isLoading: false,
       }));
     }
-  };
+  }, [loadRoles, roleOptions]);
 
-  const submitUser = async (payload) => {
+  const submitUser = useCallback(async (payload) => {
     const { roleId, ...userPayload } = payload;
 
     try {
@@ -662,27 +654,27 @@ const Users = () => {
         ),
       );
     }
-  };
+  }, [closeModal, loadRoles, loadUsers, modalState.mode, modalState.user]);
 
-  const openConfirmation = (type, user) => {
+  const openConfirmation = useCallback((type, user) => {
     setConfirmation({
       isOpen: true,
       isSubmitting: false,
       type,
       user,
     });
-  };
+  }, []);
 
-  const closeConfirmation = () => {
+  const closeConfirmation = useCallback(() => {
     setConfirmation({
       isOpen: false,
       isSubmitting: false,
       type: null,
       user: null,
     });
-  };
+  }, []);
 
-  const confirmAction = async () => {
+  const confirmAction = useCallback(async () => {
     if (!confirmation.user) {
       return;
     }
@@ -717,9 +709,9 @@ const Users = () => {
         isSubmitting: false,
       }));
     }
-  };
+  }, [closeConfirmation, confirmation.type, confirmation.user, loadUsers]);
 
-  const handleFilterChange = (patch) => {
+  const handleFilterChange = useCallback((patch) => {
     if (Object.hasOwn(patch, "search")) {
       setSearchInput(patch.search);
     }
@@ -734,22 +726,44 @@ const Users = () => {
       }));
       setPage(1);
     }
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchInput(DEFAULT_FILTERS.search);
     setFilters(DEFAULT_FILTERS);
     setPage(1);
-  };
+  }, []);
 
-  const handlePageSizeChange = (event) => {
+  const handlePageSizeChange = useCallback((event) => {
     setPageSize(Number(event.target.value));
     setPage(1);
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     toast.info("Export is available as a UI action and will connect to reporting.");
-  };
+  }, []);
+
+  const tableActions = useMemo(
+    () => ({
+      canActivate: capabilities.canActivate,
+      canDeactivate: capabilities.canDeactivate,
+      canDelete: capabilities.canDelete,
+      canEdit: capabilities.canUpdate && capabilities.canAssignRole,
+      onActivate: (user) => openConfirmation("activate", user),
+      onDeactivate: (user) => openConfirmation("deactivate", user),
+      onDelete: (user) => openConfirmation("delete", user),
+      onEdit: openEditModal,
+    }),
+    [
+      capabilities.canActivate,
+      capabilities.canAssignRole,
+      capabilities.canDeactivate,
+      capabilities.canDelete,
+      capabilities.canUpdate,
+      openConfirmation,
+      openEditModal,
+    ],
+  );
 
   return (
     <section className="min-w-0 space-y-5">
@@ -825,16 +839,7 @@ const Users = () => {
       />
 
       <UserTable
-        actions={{
-          canActivate: capabilities.canActivate,
-          canDeactivate: capabilities.canDeactivate,
-          canDelete: capabilities.canDelete,
-          canEdit: capabilities.canUpdate && capabilities.canAssignRole,
-          onActivate: (user) => openConfirmation("activate", user),
-          onDeactivate: (user) => openConfirmation("deactivate", user),
-          onDelete: (user) => openConfirmation("delete", user),
-          onEdit: openEditModal,
-        }}
+        actions={tableActions}
         currentPage={page}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}

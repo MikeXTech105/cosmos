@@ -1,4 +1,5 @@
 import { Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { memo } from "react";
 
 import RoleActions from "./RoleActions";
 
@@ -237,4 +238,4 @@ const RoleTable = ({
   );
 };
 
-export default RoleTable;
+export default memo(RoleTable);

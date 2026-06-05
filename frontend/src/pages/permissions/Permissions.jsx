@@ -198,8 +198,11 @@ const normalizePermission = (permission) => {
   const pageId =
     permission?.pageId ??
     permission?.pageID ??
-    permission?.id ??
-    permission?.page?.id;
+    permission?.page?.id ??
+    permission?.page?.pageId ??
+    permission?.page?.pageID ??
+    permission?.page?._id ??
+    permission?.id;
 
   if (pageId === null || pageId === undefined) {
     return null;
@@ -328,15 +331,11 @@ const Permissions = () => {
   }, [pages, selectedRoleId]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(loadRoles, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadRoles);
   }, [loadRoles]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(loadPages, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadPages);
   }, [loadPages]);
 
   useEffect(() => {
@@ -344,34 +343,35 @@ const Permissions = () => {
       return undefined;
     }
 
-    const timeoutId = window.setTimeout(loadRolePermissions, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    void Promise.resolve().then(loadRolePermissions);
   }, [loadRolePermissions, selectedRoleId]);
 
-  const selectRole = (roleId) => {
+  const selectRole = useCallback((roleId) => {
     permissionRequestId.current += 1;
     setSelectedRoleId(roleId);
     setMatrix(roleId ? buildPermissionMatrix(pages, []) : {});
     setPermissionsError(null);
     setIsPermissionsLoading(Boolean(roleId && pages.length > 0));
     setIsDirty(false);
-  };
+  }, [pages]);
 
-  const isColumnSelected = (columnKey) => {
+  const isColumnSelected = useCallback((columnKey) => {
     return (
       pages.length > 0 &&
       pages.every((page) => Boolean(matrix[String(page.id)]?.[columnKey]))
     );
-  };
+  }, [matrix, pages]);
 
-  const isAllSelected =
-    pages.length > 0 &&
-    pages.every((page) =>
-      permissionColumns.every((column) => {
-        return Boolean(matrix[String(page.id)]?.[column.key]);
-      }),
+  const isAllSelected = useMemo(() => {
+    return (
+      pages.length > 0 &&
+      pages.every((page) =>
+        permissionColumns.every((column) => {
+          return Boolean(matrix[String(page.id)]?.[column.key]);
+        }),
+      )
     );
+  }, [matrix, pages]);
 
   const enabledCount = useMemo(() => {
     return pages.reduce((count, page) => {
@@ -386,12 +386,12 @@ const Permissions = () => {
 
   const totalCount = pages.length * permissionColumns.length;
 
-  const updateMatrix = (updater) => {
+  const updateMatrix = useCallback((updater) => {
     setMatrix((current) => updater(current));
     setIsDirty(true);
-  };
+  }, []);
 
-  const toggleCell = (pageId, columnKey, checked) => {
+  const toggleCell = useCallback((pageId, columnKey, checked) => {
     updateMatrix((current) => ({
       ...current,
       [String(pageId)]: {
@@ -400,9 +400,9 @@ const Permissions = () => {
         [columnKey]: checked,
       },
     }));
-  };
+  }, [updateMatrix]);
 
-  const toggleColumn = (columnKey) => {
+  const toggleColumn = useCallback((columnKey) => {
     const nextValue = !isColumnSelected(columnKey);
 
     updateMatrix((current) => {
@@ -417,9 +417,9 @@ const Permissions = () => {
         ]),
       );
     });
-  };
+  }, [isColumnSelected, pages, updateMatrix]);
 
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
     const nextValue = !isAllSelected;
 
     updateMatrix((current) => {
@@ -440,9 +440,9 @@ const Permissions = () => {
         }),
       );
     });
-  };
+  }, [isAllSelected, pages, updateMatrix]);
 
-  const savePermissions = async () => {
+  const savePermissions = useCallback(async () => {
     if (!selectedRoleId) {
       return;
     }
@@ -473,7 +473,7 @@ const Permissions = () => {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [matrix, pages, selectedRoleId]);
 
   const matrixError = pagesError ?? permissionsError;
   const matrixLoading =

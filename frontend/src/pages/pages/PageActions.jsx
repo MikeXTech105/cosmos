@@ -1,4 +1,5 @@
 import { CheckCircle2, Eye, Pencil, Trash2, XCircle } from "lucide-react";
+import { memo } from "react";
 
 import AppTooltip from "../../components/common/AppTooltip";
 
@@ -80,4 +81,4 @@ const PageActions = ({
   );
 };
 
-export default PageActions;
+export default memo(PageActions);

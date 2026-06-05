@@ -1,4 +1,5 @@
 import { FileCheck2, Files, FileX2 } from "lucide-react";
+import { memo } from "react";
 
 const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   return (
@@ -45,4 +46,4 @@ const PageStats = ({ active, inactive, total }) => {
   );
 };
 
-export default PageStats;
+export default memo(PageStats);

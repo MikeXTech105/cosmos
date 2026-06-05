@@ -5,6 +5,7 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
+import { memo } from "react";
 
 import AppTooltip from "../../components/common/AppTooltip";
 
@@ -91,4 +92,4 @@ const RoleActions = ({
   );
 };
 
-export default RoleActions;
+export default memo(RoleActions);

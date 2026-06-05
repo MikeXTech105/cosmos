@@ -9,7 +9,7 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { createElement } from "react";
+import { createElement, memo } from "react";
 
 import { getIconComponent } from "../../config/iconMap";
 import { permissionColumns } from "./permissionsColumns";
@@ -23,7 +23,7 @@ const bulkIcons = {
   canView: Eye,
 };
 
-const PermissionCheckbox = ({ checked, disabled, label, onChange }) => {
+const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
   return (
     <label
       className={[
@@ -43,9 +43,11 @@ const PermissionCheckbox = ({ checked, disabled, label, onChange }) => {
       />
     </label>
   );
-};
+});
 
-const BulkButton = ({ active, disabled, icon, label, onClick }) => {
+PermissionCheckbox.displayName = "PermissionCheckbox";
+
+const BulkButton = memo(({ active, disabled, icon, label, onClick }) => {
   return (
     <button
       type="button"
@@ -63,7 +65,9 @@ const BulkButton = ({ active, disabled, icon, label, onClick }) => {
       {label}
     </button>
   );
-};
+});
+
+BulkButton.displayName = "BulkButton";
 
 const TableSkeleton = () => {
   return Array.from({ length: 7 }, (_, index) => (
@@ -109,6 +113,48 @@ const StatePanel = ({ errorMessage, hasError, onRetry, selectedRoleId }) => {
     </div>
   );
 };
+
+const PermissionRow = memo(({ isDisabled, onToggleCell, page, row }) => {
+  return (
+    <tr className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20">
+      <td className="sticky left-0 z-10 border-b border-r border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm group-hover:bg-indigo-50/95">
+        <div
+          className="flex min-w-0 items-center gap-3"
+          style={{ paddingLeft: `${page.depth * 18}px` }}
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
+            {createElement(getIconComponent(page.icon), {
+              className: "h-4 w-4",
+            })}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-slate-950">
+              {page.displayName}
+            </span>
+            <span className="block truncate text-xs text-slate-500">
+              {page.hierarchyPath || page.route || page.name}
+            </span>
+          </span>
+        </div>
+      </td>
+      {permissionColumns.map((column) => (
+        <td
+          key={column.key}
+          className="border-b border-slate-100 px-3 py-2 text-center"
+        >
+          <PermissionCheckbox
+            checked={Boolean(row?.[column.key])}
+            disabled={isDisabled}
+            label={`${column.label} permission for ${page.displayName}`}
+            onChange={(checked) => onToggleCell(page.id, column.key, checked)}
+          />
+        </td>
+      ))}
+    </tr>
+  );
+});
+
+PermissionRow.displayName = "PermissionRow";
 
 const PermissionsTable = ({
   enabledCount,
@@ -198,46 +244,13 @@ const PermissionsTable = ({
               <TableSkeleton />
             ) : (
               pages.map((page) => (
-                <tr
+                <PermissionRow
                   key={page.id}
-                  className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20"
-                >
-                  <td className="sticky left-0 z-10 border-b border-r border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm group-hover:bg-indigo-50/95">
-                    <div
-                      className="flex min-w-0 items-center gap-3"
-                      style={{ paddingLeft: `${page.depth * 18}px` }}
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
-                        {createElement(getIconComponent(page.icon), {
-                          className: "h-4 w-4",
-                        })}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-slate-950">
-                          {page.displayName}
-                        </span>
-                        <span className="block truncate text-xs text-slate-500">
-                          {page.hierarchyPath || page.route || page.name}
-                        </span>
-                      </span>
-                    </div>
-                  </td>
-                  {permissionColumns.map((column) => (
-                    <td
-                      key={column.key}
-                      className="border-b border-slate-100 px-3 py-2 text-center"
-                    >
-                      <PermissionCheckbox
-                        checked={Boolean(matrix[String(page.id)]?.[column.key])}
-                        disabled={isDisabled}
-                        label={`${column.label} permission for ${page.displayName}`}
-                        onChange={(checked) =>
-                          onToggleCell(page.id, column.key, checked)
-                        }
-                      />
-                    </td>
-                  ))}
-                </tr>
+                  isDisabled={isDisabled}
+                  onToggleCell={onToggleCell}
+                  page={page}
+                  row={matrix[String(page.id)]}
+                />
               ))
             )}
           </tbody>
@@ -247,4 +260,4 @@ const PermissionsTable = ({
   );
 };
 
-export default PermissionsTable;
+export default memo(PermissionsTable);

@@ -1,4 +1,5 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
+import { memo } from "react";
 
 const UserFilters = ({
   filters,
@@ -76,4 +77,4 @@ const UserFilters = ({
   );
 };
 
-export default UserFilters;
+export default memo(UserFilters);

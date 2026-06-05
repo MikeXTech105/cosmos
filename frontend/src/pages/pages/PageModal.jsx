@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { FolderTree, Route, X } from "lucide-react";
-import { createElement, useEffect } from "react";
+import { createElement, memo, useEffect, useMemo } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -129,10 +129,13 @@ const PageModal = ({
   }, [isOpen, page, reset]);
 
   const selectedIcon = useWatch({ control, name: "icon" });
-  const blockedParentIds = getBlockedParentIds(parentOptions, page?.id);
-  const availableParents = parentOptions.filter((parent) => {
-    return !blockedParentIds.has(String(parent.id));
-  });
+  const availableParents = useMemo(() => {
+    const blockedParentIds = getBlockedParentIds(parentOptions, page?.id);
+
+    return parentOptions.filter((parent) => {
+      return !blockedParentIds.has(String(parent.id));
+    });
+  }, [page?.id, parentOptions]);
 
   const submitForm = (values) => {
     return onSubmit({
@@ -385,4 +388,4 @@ const PageModal = ({
   );
 };
 
-export default PageModal;
+export default memo(PageModal);

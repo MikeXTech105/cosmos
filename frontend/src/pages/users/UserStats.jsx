@@ -1,4 +1,5 @@
 import { UserCheck, UsersRound, UserX } from "lucide-react";
+import { memo } from "react";
 
 const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   return (
@@ -28,4 +29,4 @@ const UserStats = ({ active, inactive, total }) => {
   );
 };
 
-export default UserStats;
+export default memo(UserStats);
