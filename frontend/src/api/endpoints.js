@@ -30,4 +30,12 @@ export const ENDPOINTS = {
   USER_DEACTIVATE: (id) => `/api/users/${id}/deactivate`,
 
   USER_ROLES: (id) => `/api/users/${id}/roles`,
+
+  PARTIES: "/api/v1/parties",
+
+  PARTY_BY_ID: (id) => `/api/v1/parties/${id}`,
+
+  PARTY_STATUS: (id) => `/api/v1/parties/${id}/status`,
+
+  PARTY_SETTINGS: "/api/v1/settings/party",
 };

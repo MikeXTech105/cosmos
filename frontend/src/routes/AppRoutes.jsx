@@ -14,6 +14,7 @@ const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const Pages = lazy(() => import("../pages/pages/index.js"));
 const Permissions = lazy(() => import("../pages/permissions/index.js"));
+const Party = lazy(() => import("../pages/party/index.js"));
 const Roles = lazy(() => import("../pages/roles/index.js"));
 const Users = lazy(() => import("../pages/users/index.js"));
 
@@ -80,6 +81,14 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/permissions" pageName="Permissions">
                 <Permissions />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/party"
+            element={
+              <PermissionGuard route="/party" pageName="Party Master">
+                <Party />
               </PermissionGuard>
             }
           />

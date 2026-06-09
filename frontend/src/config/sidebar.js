@@ -2,8 +2,8 @@ export const enabledModules = [
   "dashboard",
   "users",
   "roles",
-  "pages",
   "permissions",
+  "party",
 ];
 
 export const sidebarCategories = [
@@ -12,12 +12,6 @@ export const sidebarCategories = [
     label: "RBAC",
     icon: "shieldcheck",
     sortOrder: 20,
-  },
-  {
-    id: "master-data",
-    label: "Master Data",
-    icon: "folderkanban",
-    sortOrder: 30,
   },
   {
     id: "inventory",
@@ -73,12 +67,18 @@ export const sidebarModules = {
     categoryId: "rbac",
     sortOrder: 40,
   },
+  party: {
+    id: "party",
+    label: "Party Master",
+    route: "/party",
+    icon: "customers",
+    sortOrder: 50,
+  },
   customers: {
     id: "customers",
     label: "Customers",
     route: "/customers",
     icon: "customers",
-    categoryId: "master-data",
     sortOrder: 10,
   },
   suppliers: {
@@ -86,7 +86,6 @@ export const sidebarModules = {
     label: "Suppliers",
     route: "/suppliers",
     icon: "business",
-    categoryId: "master-data",
     sortOrder: 20,
   },
   categories: {
@@ -94,7 +93,6 @@ export const sidebarModules = {
     label: "Categories",
     route: "/categories",
     icon: "categories",
-    categoryId: "master-data",
     sortOrder: 30,
   },
   products: {
