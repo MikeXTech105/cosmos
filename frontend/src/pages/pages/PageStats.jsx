@@ -3,7 +3,7 @@ import { memo } from "react";
 
 const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   return (
-    <div className="glass-card rounded-2xl px-4 py-3">
+    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
       <div className="flex items-center gap-3">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
@@ -14,7 +14,7 @@ const StatCard = ({ colorClass, icon: Icon, label, value }) => {
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
             {label}
           </p>
-          <p className="mt-0.5 text-lg font-bold text-slate-950">{value}</p>
+          <p className="mt-0.5 text-xl font-bold text-slate-900">{value}</p>
         </div>
       </div>
     </div>

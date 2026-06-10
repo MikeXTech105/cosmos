@@ -21,8 +21,32 @@ import {
 } from "./partyHelpers";
 
 const statusStyles = {
-  active: "bg-emerald-50/70 text-emerald-700 ring-emerald-200/70",
-  inactive: "bg-red-50/70 text-red-700 ring-red-200/70",
+  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  inactive: "bg-red-50 text-red-700 ring-red-200",
+};
+
+const getInitials = (party) => {
+  return getPartyDisplayName(party)
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+};
+
+const getPartyIdentityStyles = (party) => {
+  const type = getPartyTypeLabel(party).toLowerCase();
+
+  if (type.includes("customer")) {
+    return "bg-blue-50 text-blue-700";
+  }
+
+  if (type.includes("supplier")) {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-brand-light text-brand";
 };
 
 const PartyStatusBadge = ({ isActive }) => {
@@ -175,7 +199,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
 
 const MobilePartyCard = ({ actions, party, serialNumber }) => {
   return (
-    <article className="glass-card rounded-2xl p-4">
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -220,7 +244,7 @@ const PartyTable = ({
 }) => {
   if (!isLoading && (hasError || parties.length === 0)) {
     return (
-      <div className="overflow-hidden rounded-3xl glass-card shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <EmptyState
           errorMessage={errorMessage}
           hasError={hasError}
@@ -251,7 +275,7 @@ const PartyTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl glass-card lg:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] table-fixed border-separate border-spacing-0 text-left">
             <colgroup>
@@ -266,7 +290,7 @@ const PartyTable = ({
               <col className="w-[112px]" />
               <col className="w-[148px]" />
             </colgroup>
-            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <thead className="sticky top-0 z-10 bg-slate-50">
               <tr>
                 {[
                   "SR No",
@@ -283,7 +307,7 @@ const PartyTable = ({
                   <th
                     key={heading}
                     className={[
-                      "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400",
+                      "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
                       heading === "SR No" ? "text-center" : "",
                       heading === "Actions" ? "text-right" : "",
                     ].join(" ")}
@@ -300,21 +324,35 @@ const PartyTable = ({
                 parties.map((party, index) => (
                   <tr
                     key={party.id}
-                    className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20"
+                    className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                   >
                     <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5">
-                      <p className="truncate text-sm font-semibold text-slate-950">
-                        {getPartyDisplayName(party)}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-slate-400">
-                        {party.partyCode || party.email || "-"}
-                      </p>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span
+                          className={[
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+                            getPartyIdentityStyles(party),
+                          ].join(" ")}
+                        >
+                          {getInitials(party) || "P"}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium text-slate-900">
+                            {getPartyDisplayName(party)}
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-slate-400">
+                            {[party.partyCode, getPartyTypeLabel(party)]
+                              .filter(Boolean)
+                              .join(" / ") || "-"}
+                          </span>
+                        </span>
+                      </div>
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5">
-                      <p className="truncate text-sm text-slate-600">
+                      <p className="truncate font-mono text-xs text-slate-600">
                         {party.mobileNo || "-"}
                       </p>
                     </td>
@@ -332,7 +370,7 @@ const PartyTable = ({
                     <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700">
                       {getPartyTypeLabel(party)}
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-semibold tabular-nums text-slate-700">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-right text-sm font-medium tabular-nums text-slate-700">
                       {formatBalance(party)}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5">

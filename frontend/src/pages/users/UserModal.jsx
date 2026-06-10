@@ -2,11 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { LockKeyhole, Mail, RotateCcw, ShieldCheck, User, X } from "lucide-react";
 import { memo, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
+import AppSelect from "../../components/common/AppSelect";
+
 const inputClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const userSchema = (mode) =>
   z.object({
@@ -114,6 +116,7 @@ const UserModal = ({
   );
 
   const {
+    control,
     handleSubmit,
     register,
     reset,
@@ -170,14 +173,14 @@ const UserModal = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="user-modal-title"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)] sm:max-h-[calc(100dvh-3rem)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between border-b border-slate-100/60 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
                   <ShieldCheck className="h-5 w-5" />
@@ -243,28 +246,29 @@ const UserModal = ({
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="roleId"
-                      className="mb-1.5 block text-xs font-semibold text-slate-700"
-                    >
-                      Role *
-                    </label>
-                    <select
-                      id="roleId"
-                      disabled={isRolesLoading || Boolean(rolesError)}
-                      className={inputClassName}
-                      {...register("roleId")}
-                    >
-                      <option value="">
-                        {isRolesLoading ? "Loading roles..." : "Select role"}
-                      </option>
-                      {roleOptions.map((role) => (
-                        <option key={role.id} value={String(role.id)}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </select>
-                    <FieldError error={errors.roleId?.message} />
+                    <Controller
+                      name="roleId"
+                      control={control}
+                      render={({ field }) => (
+                        <AppSelect
+                          id="roleId"
+                          label="Role"
+                          required
+                          disabled={isRolesLoading || Boolean(rolesError)}
+                          error={errors.roleId?.message}
+                          value={field.value}
+                          onBlur={field.onBlur}
+                          onChange={field.onChange}
+                          placeholder={
+                            isRolesLoading ? "Loading roles..." : "Select role"
+                          }
+                          options={roleOptions.map((role) => ({
+                            value: String(role.id),
+                            label: role.name,
+                          }))}
+                        />
+                      )}
+                    />
                     {rolesError && (
                       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-inset ring-red-100">
                         <span>{rolesError}</span>
@@ -338,7 +342,7 @@ const UserModal = ({
                     </div>
                   )}
 
-                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-2xl border border-slate-100/60 glass-card px-4 py-3">
+                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <span>
                       <span className="block text-sm font-semibold text-slate-900">
                         Active account
@@ -349,17 +353,17 @@ const UserModal = ({
                     </span>
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-[#4F46E5]"
+                      className="h-4 w-4 accent-brand"
                       {...register("isActive")}
                     />
                   </label>
                 </div>
 
-                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100/60 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
                   >
                     Cancel
                   </button>

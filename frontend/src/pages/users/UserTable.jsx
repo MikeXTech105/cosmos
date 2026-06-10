@@ -4,8 +4,8 @@ import { memo } from "react";
 import UserActions from "./UserActions";
 
 const statusStyles = {
-  active: "bg-emerald-50/70 text-emerald-700 ring-emerald-200/70",
-  inactive: "bg-red-50/70 text-red-700 ring-red-200/70",
+  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  inactive: "bg-red-50 text-red-700 ring-red-200",
 };
 
 const UserStatusBadge = ({ isActive }) => {
@@ -44,7 +44,11 @@ const formatDate = (value) => {
 
 const RolePills = ({ roles }) => {
   if (!roles?.length) {
-    return <span className="text-sm text-slate-400">No role</span>;
+    return (
+      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+        No role
+      </span>
+    );
   }
 
   return (
@@ -120,7 +124,7 @@ const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
 
 const MobileUserCard = ({ actions, serialNumber, user }) => {
   return (
-    <article className="glass-card rounded-2xl p-4">
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -176,7 +180,7 @@ const UserTable = ({
 }) => {
   if (!isLoading && (hasError || users.length === 0)) {
     return (
-      <div className="overflow-hidden rounded-3xl glass-card shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <EmptyState
           hasError={hasError}
           errorMessage={errorMessage}
@@ -207,7 +211,7 @@ const UserTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl glass-card lg:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[56px]" />
@@ -219,7 +223,7 @@ const UserTable = ({
             <col className="w-[15%]" />
             <col className="w-[112px]" />
           </colgroup>
-          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+          <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
               {[
                 "#",
@@ -234,7 +238,7 @@ const UserTable = ({
                 <th
                   key={heading}
                   className={[
-                    "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400",
+                    "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
                     heading === "#" ? "text-center" : "",
                     heading === "Actions" ? "text-right" : "",
                   ].join(" ")}
@@ -252,7 +256,7 @@ const UserTable = ({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                  className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20"
+                  className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                 >
                   <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}

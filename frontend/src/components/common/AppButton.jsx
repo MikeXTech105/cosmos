@@ -6,7 +6,7 @@ const variants = {
   danger:
     "bg-red-500 text-white hover:bg-red-600 shadow-sm active:scale-[0.98]",
   ghost:
-    "text-slate-600 hover:bg-white/70 hover:text-slate-900",
+    "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]",
 };
 
 const AppButton = ({

@@ -3,6 +3,8 @@ import { ChevronDown } from "lucide-react";
 
 import SidebarItem from "./SidebarItem";
 
+const depthPadding = ["pl-3", "pl-7", "pl-10", "pl-12"];
+
 const SidebarGroup = ({
   item,
   collapsed = false,
@@ -25,25 +27,22 @@ const SidebarGroup = ({
         aria-expanded={Boolean(open)}
         onClick={() => onToggle(item.id)}
         className={[
-          "group relative flex h-10 w-full items-center gap-3 rounded-xl text-[13px] font-medium outline-none transition-colors",
-          collapsed ? "justify-center px-0" : "px-3",
+          "group relative flex h-10 w-full items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
+          collapsed
+            ? "justify-center px-0"
+            : `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
           active
-            ? "bg-brand-light text-brand"
-            : "text-slate-600 hover:bg-white/70 hover:text-gray-900",
-          "focus-visible:ring-2 focus-visible:ring-brand/20",
+            ? "bg-brand text-white"
+            : "text-slate-400 hover:bg-slate-800 hover:text-white",
+          "focus-visible:ring-2 focus-visible:ring-brand/40",
         ].join(" ")}
-        style={{ paddingLeft: collapsed ? undefined : `${12 + depth * 14}px` }}
       >
-        {active && (
-          <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand" />
-        )}
-
         <span
           className={[
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors",
             active
-              ? "text-brand"
-              : "text-slate-400 group-hover:text-slate-700",
+              ? "text-white"
+              : "text-slate-500 group-hover:text-white",
           ].join(" ")}
         >
           <Icon className="h-4 w-4" />
@@ -54,7 +53,7 @@ const SidebarGroup = ({
             <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
             <ChevronDown
               className={[
-                "h-4 w-4 text-slate-400 transition-transform duration-200",
+                "h-4 w-4 text-current transition-transform duration-200",
                 open ? "rotate-180" : "",
               ].join(" ")}
             />

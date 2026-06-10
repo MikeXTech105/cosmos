@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
+import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
 import {
   findPermissionPage,
@@ -89,7 +90,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-confirm-dialog-title"
-            className="w-full max-w-md overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)]"
+            className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -112,12 +113,12 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               </p>
             </div>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-slate-100/60 px-6 py-4 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-200 px-6 py-4 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={onCancel}
                 disabled={confirmation.isSubmitting}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -558,8 +559,8 @@ const PartyPage = () => {
     setPage(1);
   }, []);
 
-  const handlePageSizeChange = useCallback((event) => {
-    setPageSize(Number(event.target.value));
+  const handlePageSizeChange = useCallback((value) => {
+    setPageSize(Number(value));
     setPage(1);
   }, []);
 
@@ -616,7 +617,7 @@ const PartyPage = () => {
               onClick={loadParties}
               disabled={isLoading}
               aria-label="Refresh Parties"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
@@ -630,7 +631,7 @@ const PartyPage = () => {
               onClick={openSettingsModal}
               disabled={!capabilities.canSettings}
               aria-label="Party Settings"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
               <Settings className="h-4 w-4" />
               Settings
@@ -642,7 +643,7 @@ const PartyPage = () => {
               onClick={handleExport}
               disabled={!capabilities.canExport}
               aria-label="Export Parties"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
               <Download className="h-4 w-4" />
               Export
@@ -696,7 +697,7 @@ const PartyPage = () => {
         parties={displayParties}
       />
 
-      <div className="glass-card flex flex-col gap-3 rounded-2xl px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <p>
           <span className="font-semibold text-slate-900">
             {displayParties.length}
@@ -706,28 +707,23 @@ const PartyPage = () => {
         </p>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
-            Rows
-            <select
+          <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            <span>Rows</span>
+            <AppSelect
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="h-9 rounded-xl border border-slate-200 bg-white/80 px-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+              options={PAGE_SIZE_OPTIONS}
+              className="w-20"
               aria-label="Rows per page"
-            >
-              {PAGE_SIZE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
+            />
+          </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={isLoading || page <= 1}
-              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
@@ -740,7 +736,7 @@ const PartyPage = () => {
                 setPage((current) => Math.min(totalPages, current + 1))
               }
               disabled={isLoading || page >= totalPages}
-              className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
             </button>

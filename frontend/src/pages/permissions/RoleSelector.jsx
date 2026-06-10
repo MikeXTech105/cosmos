@@ -1,5 +1,7 @@
 import { RefreshCw, ShieldCheck } from "lucide-react";
 
+import AppSelect from "../../components/common/AppSelect";
+
 const RoleSelector = ({
   error,
   isDisabled,
@@ -14,7 +16,7 @@ const RoleSelector = ({
   });
 
   return (
-    <section className="glass-card rounded-2xl p-4">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
@@ -36,22 +38,19 @@ const RoleSelector = ({
             Role
           </label>
           <div className="flex gap-2">
-            <select
+            <AppSelect
               id="permissionRole"
               value={selectedRoleId}
-              onChange={(event) => onChange(event.target.value)}
+              onChange={onChange}
               disabled={isDisabled || isLoading || Boolean(error)}
-              className="h-10 min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <option value="">
-                {isLoading ? "Loading roles..." : "Select Role"}
-              </option>
-              {roles.map((role) => (
-                <option key={role.id} value={String(role.id)}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
+              placeholder={isLoading ? "Loading roles..." : "Select Role"}
+              options={roles.map((role) => ({
+                value: String(role.id),
+                label: role.name,
+              }))}
+              className="min-w-0 flex-1"
+              aria-label="Role"
+            />
             {error && (
               <button
                 type="button"

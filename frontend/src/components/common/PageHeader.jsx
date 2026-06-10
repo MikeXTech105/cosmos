@@ -9,7 +9,7 @@ const PageHeader = ({ actions, badge, description, title }) => {
         )}
         <h1
           className={[
-            "text-2xl font-bold tracking-tight text-slate-950",
+            "text-2xl font-semibold text-slate-900",
             badge ? "mt-3" : "",
           ].join(" ")}
         >

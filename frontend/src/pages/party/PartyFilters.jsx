@@ -1,6 +1,26 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
 import { memo } from "react";
 
+import AppSelect from "../../components/common/AppSelect";
+
+const STATUS_OPTIONS = [
+  { value: "all", label: "All status" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
+
+const CREDIT_OPTIONS = [
+  { value: "all", label: "All credit" },
+  { value: "with-limit", label: "With credit limit" },
+  { value: "without-limit", label: "No credit limit" },
+];
+
+const GST_OPTIONS = [
+  { value: "all", label: "All GST" },
+  { value: "with-gstin", label: "With GSTIN" },
+  { value: "without-gstin", label: "Without GSTIN" },
+];
+
 const PartyFilters = ({ filters, onChange, onClear, resultCount }) => {
   const hasActiveFilters =
     filters.Search ||
@@ -9,7 +29,7 @@ const PartyFilters = ({ filters, onChange, onClear, resultCount }) => {
     filters.gst !== "all";
 
   return (
-    <div className="glass-card rounded-2xl p-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_170px_180px_170px_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -17,48 +37,36 @@ const PartyFilters = ({ filters, onChange, onClear, resultCount }) => {
             value={filters.Search}
             onChange={(event) => onChange({ Search: event.target.value })}
             placeholder="Quick search by name, mobile, GSTIN..."
-            className="h-10 w-full rounded-xl border border-slate-200 bg-white/70 pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
 
-        <select
+        <AppSelect
           value={filters.IsActive}
-          onChange={(event) => onChange({ IsActive: event.target.value })}
-          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+          onChange={(value) => onChange({ IsActive: value })}
+          options={STATUS_OPTIONS}
           aria-label="Filter parties by status"
-        >
-          <option value="all">All status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
+        />
 
-        <select
+        <AppSelect
           value={filters.creditLimit}
-          onChange={(event) => onChange({ creditLimit: event.target.value })}
-          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+          onChange={(value) => onChange({ creditLimit: value })}
+          options={CREDIT_OPTIONS}
           aria-label="Filter parties by credit limit"
-        >
-          <option value="all">All credit</option>
-          <option value="with-limit">With credit limit</option>
-          <option value="without-limit">No credit limit</option>
-        </select>
+        />
 
-        <select
+        <AppSelect
           value={filters.gst}
-          onChange={(event) => onChange({ gst: event.target.value })}
-          className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand/30 focus:ring-4 focus:ring-brand/10"
+          onChange={(value) => onChange({ gst: value })}
+          options={GST_OPTIONS}
           aria-label="Filter parties by GST"
-        >
-          <option value="all">All GST</option>
-          <option value="with-gstin">With GSTIN</option>
-          <option value="without-gstin">Without GSTIN</option>
-        </select>
+        />
 
         <button
           type="button"
           onClick={onClear}
           disabled={!hasActiveFilters}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 glass px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
         >
           <RotateCcw className="h-4 w-4" />
           Clear

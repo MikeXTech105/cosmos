@@ -25,7 +25,7 @@ const DetailItem = ({ name, value }) => {
   const displayValue = isDateField ? formatDate(value) : formatValue(value);
 
   return (
-    <div className="rounded-2xl border border-slate-100/60 bg-white/65 px-4 py-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
       <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
         {getFieldLabel(name)}
       </p>
@@ -99,14 +99,14 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-details-title"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)] sm:max-h-[calc(100dvh-3rem)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between border-b border-slate-100/60 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
                   <Contact className="h-5 w-5" />
@@ -159,11 +159,11 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
               </div>
             )}
 
-            <div className="flex shrink-0 justify-end border-t border-slate-100/60 px-5 py-4 sm:px-6">
+            <div className="flex shrink-0 justify-end border-t border-slate-200 px-5 py-4 sm:px-6">
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white"
+                className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
               >
                 Close
               </button>

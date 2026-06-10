@@ -6,7 +6,7 @@ const AppModal = ({ children, isOpen, maxWidth = "max-w-lg", onClose, title }) =
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -16,7 +16,7 @@ const AppModal = ({ children, isOpen, maxWidth = "max-w-lg", onClose, title }) =
             role="dialog"
             aria-modal="true"
             className={[
-              "w-full overflow-hidden rounded-2xl glass-strong p-6 shadow-xl",
+              "w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-xl",
               maxWidth,
             ].join(" ")}
             initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -28,7 +28,7 @@ const AppModal = ({ children, isOpen, maxWidth = "max-w-lg", onClose, title }) =
             {(title || onClose) && (
               <div className="mb-5 flex items-start justify-between gap-4">
                 {title && (
-                  <h2 className="text-base font-semibold text-slate-800">
+                  <h2 className="text-base font-semibold text-slate-900">
                     {title}
                   </h2>
                 )}

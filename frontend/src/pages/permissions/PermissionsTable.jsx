@@ -23,6 +23,15 @@ const bulkIcons = {
   canView: Eye,
 };
 
+const depthPadding = [
+  "pl-0",
+  "pl-4",
+  "pl-8",
+  "pl-12",
+  "pl-16",
+  "pl-20",
+];
+
 const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
   return (
     <label
@@ -30,7 +39,7 @@ const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
         "group inline-flex h-9 w-9 items-center justify-center rounded-xl transition-colors focus-within:ring-2 focus-within:ring-brand/20",
         disabled
           ? "cursor-not-allowed opacity-50"
-          : "cursor-pointer hover:bg-brand-light/60",
+          : "cursor-pointer hover:bg-slate-100",
       ].join(" ")}
     >
       <input
@@ -39,7 +48,7 @@ const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
         aria-label={label}
-        className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-[#4F46E5]"
+        className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-brand"
       />
     </label>
   );
@@ -55,10 +64,10 @@ const BulkButton = memo(({ active, disabled, icon, label, onClick }) => {
       aria-pressed={active}
       disabled={disabled}
       className={[
-        "inline-flex h-9 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex h-9 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50",
         active
           ? "border-brand/15 bg-brand-light text-brand"
-          : "border-slate-200 glass text-slate-600 hover:bg-white hover:text-slate-900",
+          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
       ].join(" ")}
     >
       {createElement(icon, { className: "h-3.5 w-3.5" })}
@@ -116,11 +125,13 @@ const StatePanel = ({ errorMessage, hasError, onRetry, selectedRoleId }) => {
 
 const PermissionRow = memo(({ isDisabled, onToggleCell, page, row }) => {
   return (
-    <tr className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20">
-      <td className="sticky left-0 z-10 border-b border-r border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-sm group-hover:bg-indigo-50/95">
+    <tr className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50">
+      <td className="sticky left-0 z-10 border-b border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50">
         <div
-          className="flex min-w-0 items-center gap-3"
-          style={{ paddingLeft: `${page.depth * 18}px` }}
+          className={[
+            "flex min-w-0 items-center gap-3",
+            depthPadding[Math.min(page.depth, depthPadding.length - 1)],
+          ].join(" ")}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
             {createElement(getIconComponent(page.icon), {
@@ -176,7 +187,7 @@ const PermissionsTable = ({
 
   if (!isLoading && (hasError || !selectedRoleId || pages.length === 0)) {
     return (
-      <section className="overflow-hidden rounded-2xl glass-card">
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <StatePanel
           errorMessage={errorMessage}
           hasError={hasError}
@@ -188,8 +199,8 @@ const PermissionsTable = ({
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl glass-card">
-      <div className="border-b border-slate-100/70 px-4 py-4">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-4 py-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-950">
@@ -224,15 +235,15 @@ const PermissionsTable = ({
 
       <div className="max-h-[calc(100dvh-360px)] min-h-72 overflow-auto">
         <table className="min-w-[900px] w-full border-separate border-spacing-0 text-left">
-          <thead className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-sm">
+          <thead className="sticky top-0 z-20 bg-slate-50">
             <tr>
-              <th className="sticky left-0 z-30 min-w-[280px] border-b border-r border-slate-200 bg-slate-50/95 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
+              <th className="sticky left-0 z-30 min-w-[280px] border-b border-r border-slate-200 bg-slate-50 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
                 Page
               </th>
               {permissionColumns.map((column) => (
                 <th
                   key={column.key}
-                  className="w-[104px] whitespace-nowrap border-b border-slate-200 px-3 py-3.5 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400"
+                  className="w-[104px] whitespace-nowrap border-b border-slate-200 px-3 py-3.5 text-center text-xs font-medium uppercase tracking-wide text-slate-500"
                 >
                   {column.label}
                 </th>

@@ -59,7 +59,7 @@ const UserMenu = () => {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex h-11 items-center gap-3 rounded-2xl px-1.5 transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 sm:px-2.5"
+        className="flex h-11 items-center gap-3 rounded-xl px-1.5 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 sm:px-2.5"
         aria-expanded={open}
         aria-haspopup="menu"
       >
@@ -92,7 +92,7 @@ const UserMenu = () => {
 
             <motion.div
               role="menu"
-              className="absolute right-0 top-12 z-40 w-[min(16rem,calc(100vw-1rem))] overflow-hidden rounded-2xl glass-strong shadow-[0_24px_70px_rgba(79,70,229,0.14)]"
+              className="absolute right-0 top-12 z-40 w-[min(16rem,calc(100vw-1rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
               initial={{ opacity: 0, y: -8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.98 }}
@@ -112,7 +112,7 @@ const UserMenu = () => {
                   to="/profile"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white/70 hover:text-slate-900"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
                   <User className="h-4 w-4 text-slate-400" />
                   My Profile
@@ -121,7 +121,7 @@ const UserMenu = () => {
                   to="/preferences"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white/70 hover:text-slate-900"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
                   <Settings className="h-4 w-4 text-slate-400" />
                   Preferences
@@ -130,7 +130,7 @@ const UserMenu = () => {
                   to="/change-password"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white/70 hover:text-slate-900"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
                   <KeyRound className="h-4 w-4 text-slate-400" />
                   Change Password

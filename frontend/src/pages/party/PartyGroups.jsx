@@ -9,8 +9,8 @@ const GROUPS = [
 
 const PartyGroups = ({ activeGroup, counts, onChange }) => {
   return (
-    <div className="glass-card rounded-2xl p-2">
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white px-2">
+      <div className="flex min-w-max gap-1">
         {GROUPS.map((group) => {
           const isActive = activeGroup === group.id;
 
@@ -20,17 +20,19 @@ const PartyGroups = ({ activeGroup, counts, onChange }) => {
               type="button"
               onClick={() => onChange(group.id)}
               className={[
-                "flex h-11 items-center justify-between rounded-xl px-3 text-sm font-semibold transition-all",
+                "flex h-12 items-center gap-2 border-b-2 px-4 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-brand text-white shadow-sm"
-                  : "text-slate-600 hover:bg-white hover:text-slate-950",
+                  ? "border-brand text-brand"
+                  : "border-transparent text-slate-500 hover:text-slate-800",
               ].join(" ")}
             >
               <span>{group.label}</span>
               <span
                 className={[
-                  "rounded-full px-2 py-0.5 text-xs",
-                  isActive ? "bg-white/18 text-white" : "bg-slate-100 text-slate-500",
+                  "rounded-full px-2 py-0.5 text-[11px]",
+                  isActive
+                    ? "bg-brand-light font-medium text-brand"
+                    : "bg-slate-100 text-slate-500",
                 ].join(" ")}
               >
                 {counts[group.id] ?? 0}

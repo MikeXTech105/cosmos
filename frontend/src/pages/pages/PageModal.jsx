@@ -2,13 +2,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { FolderTree, Route, X } from "lucide-react";
 import { createElement, memo, useEffect, useMemo } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import AppSelect from "../../components/common/AppSelect";
 import { getIconComponent } from "../../config/iconMap";
 
 const inputClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const ICON_OPTIONS = [
   "LayoutDashboard",
@@ -170,14 +171,14 @@ const PageModal = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="page-modal-title"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)] sm:max-h-[calc(100dvh-3rem)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between border-b border-slate-100/60 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
                   <FolderTree className="h-5 w-5" />
@@ -259,25 +260,24 @@ const PageModal = ({
                     </div>
                     <FieldError error={errors.route?.message} />
                   </div>
-                  <div>
-                    <label htmlFor="pageIcon" className="mb-1.5 block text-xs font-semibold text-slate-700">
-                      Icon *
-                    </label>
-                    <select
-                      id="pageIcon"
-                      disabled={isView}
-                      className={inputClassName}
-                      {...register("icon")}
-                    >
-                      {ICON_OPTIONS.map((iconName) => (
-                        <option key={iconName} value={iconName}>
-                          {iconName}
-                        </option>
-                      ))}
-                    </select>
-                    <FieldError error={errors.icon?.message} />
-                  </div>
-                  <div className="flex min-h-16 items-center gap-3 rounded-2xl border border-slate-100/60 glass-card px-4 py-3">
+                  <Controller
+                    name="icon"
+                    control={control}
+                    render={({ field }) => (
+                      <AppSelect
+                        id="pageIcon"
+                        label="Icon"
+                        required
+                        disabled={isView}
+                        error={errors.icon?.message}
+                        value={field.value}
+                        onBlur={field.onBlur}
+                        onChange={field.onChange}
+                        options={ICON_OPTIONS}
+                      />
+                    )}
+                  />
+                  <div className="flex min-h-16 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
                       {createElement(getIconComponent(selectedIcon), {
                         className: "h-5 w-5",
@@ -293,24 +293,39 @@ const PageModal = ({
                     </span>
                   </div>
                   <div>
-                    <label htmlFor="parentPageId" className="mb-1.5 block text-xs font-semibold text-slate-700">
-                      Parent Page
-                    </label>
-                    <select
-                      id="parentPageId"
-                      disabled={isView || isParentsLoading || Boolean(parentsError)}
-                      className={inputClassName}
-                      {...register("parentPageId")}
-                    >
-                      <option value="">
-                        {isParentsLoading ? "Loading pages..." : "No Parent"}
-                      </option>
-                      {availableParents.map((parent) => (
-                        <option key={parent.id} value={String(parent.id)}>
-                          {parent.displayName}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      name="parentPageId"
+                      control={control}
+                      render={({ field }) => (
+                        <AppSelect
+                          id="parentPageId"
+                          label="Parent Page"
+                          disabled={
+                            isView ||
+                            isParentsLoading ||
+                            Boolean(parentsError)
+                          }
+                          value={field.value}
+                          onBlur={field.onBlur}
+                          onChange={field.onChange}
+                          placeholder={
+                            isParentsLoading ? "Loading pages..." : "No Parent"
+                          }
+                          options={[
+                            {
+                              value: "",
+                              label: isParentsLoading
+                                ? "Loading pages..."
+                                : "No Parent",
+                            },
+                            ...availableParents.map((parent) => ({
+                              value: String(parent.id),
+                              label: parent.displayName,
+                            })),
+                          ]}
+                        />
+                      )}
+                    />
                     {parentsError && (
                       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-inset ring-red-100">
                         <span>{parentsError}</span>
@@ -336,7 +351,7 @@ const PageModal = ({
                   </div>
                   <label
                     className={[
-                      "sm:col-span-2 flex items-center justify-between rounded-2xl border border-slate-100/60 glass-card px-4 py-3",
+                      "sm:col-span-2 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3",
                       isView ? "cursor-default" : "cursor-pointer",
                     ].join(" ")}
                   >
@@ -351,17 +366,17 @@ const PageModal = ({
                     <input
                       type="checkbox"
                       disabled={isView}
-                      className="h-4 w-4 accent-[#4F46E5]"
+                      className="h-4 w-4 accent-brand"
                       {...register("isActive")}
                     />
                   </label>
                 </div>
 
-                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100/60 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white"
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
                   >
                     {isView ? "Close" : "Cancel"}
                   </button>

@@ -4,8 +4,8 @@ import { memo } from "react";
 import RoleActions from "./RoleActions";
 
 const statusStyles = {
-  active: "bg-emerald-50/70 text-emerald-700 ring-emerald-200/70",
-  inactive: "bg-red-50/70 text-red-700 ring-red-200/70",
+  active: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  inactive: "bg-red-50 text-red-700 ring-red-200",
 };
 
 const RoleStatusBadge = ({ isActive }) => {
@@ -93,7 +93,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
 
 const MobileRoleCard = ({ actions, role, serialNumber }) => {
   return (
-    <article className="glass-card rounded-2xl p-4">
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
@@ -133,7 +133,7 @@ const RoleTable = ({
 }) => {
   if (!isLoading && (hasError || roles.length === 0)) {
     return (
-      <div className="overflow-hidden rounded-3xl glass-card shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <EmptyState
           errorMessage={errorMessage}
           hasError={hasError}
@@ -164,7 +164,7 @@ const RoleTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl glass-card lg:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
         <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[56px]" />
@@ -174,7 +174,7 @@ const RoleTable = ({
             <col className="w-[16%]" />
             <col className="w-[148px]" />
           </colgroup>
-          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+          <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
               {[
                 "#",
@@ -187,7 +187,7 @@ const RoleTable = ({
                 <th
                   key={heading}
                   className={[
-                    "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400",
+                    "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
                     heading === "#" ? "text-center" : "",
                     heading === "Actions" ? "text-right" : "",
                   ].join(" ")}
@@ -204,7 +204,7 @@ const RoleTable = ({
               roles.map((role, index) => (
                 <tr
                   key={role.id}
-                  className="group transition-colors hover:bg-indigo-50/30 focus-within:bg-brand-light/20"
+                  className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                 >
                   <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}

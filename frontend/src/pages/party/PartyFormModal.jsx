@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Contact, Settings, X } from "lucide-react";
+import { ArrowRight, Check, Contact, Settings, X } from "lucide-react";
 import { memo, useEffect, useMemo, useState } from "react";
 
+import AppInput from "../../components/common/AppInput";
 import {
   PARTY_COMMAND_FIELDS,
   PARTY_FIELD_SECTIONS,
@@ -9,7 +10,7 @@ import {
 import { buildApiPayload, buildFormValues, getFieldLabel } from "./partyHelpers";
 
 const inputClassName =
-  "h-10 w-full rounded-xl border border-slate-200 bg-white/80 px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand/30 focus:bg-white focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const isTextareaField = (name) => {
   return /address|message/i.test(name);
@@ -22,7 +23,7 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
     return (
       <label
         className={[
-          "flex items-center justify-between rounded-2xl border border-slate-100/60 glass-card px-4 py-3 sm:col-span-2",
+          "flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2",
           disabled ? "cursor-default" : "cursor-pointer",
         ].join(" ")}
       >
@@ -34,7 +35,7 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
           checked={Boolean(value)}
           disabled={disabled}
           onChange={(event) => onChange(field.name, event.target.checked)}
-          className="h-4 w-4 accent-[#4F46E5]"
+          className="h-4 w-4 accent-brand"
         />
       </label>
     );
@@ -48,29 +49,32 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
     onChange: (event) => onChange(field.name, event.target.value),
   };
 
-  return (
-    <div className={isTextareaField(field.name) ? "sm:col-span-2" : ""}>
-      <label
-        htmlFor={field.name}
-        className="mb-1.5 block text-xs font-semibold text-slate-700"
-      >
-        {label}
-      </label>
-      {isTextareaField(field.name) ? (
+  if (isTextareaField(field.name)) {
+    return (
+      <div className="sm:col-span-2">
+        <label
+          htmlFor={field.name}
+          className="mb-1.5 block text-xs font-semibold text-slate-700"
+        >
+          {label}
+        </label>
         <textarea
           {...commonProps}
           rows={3}
           className={`${inputClassName} h-auto min-h-24 resize-y py-3`}
         />
-      ) : (
-        <input
-          {...commonProps}
-          type={isNumber ? "number" : "text"}
-          step={field.type === "integer" ? "1" : "any"}
-          className={inputClassName}
-        />
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <AppInput
+      {...commonProps}
+      label={label}
+      type={isNumber ? "number" : "text"}
+      step={field.type === "integer" ? "1" : "any"}
+      className="h-10"
+    />
   );
 };
 
@@ -100,6 +104,11 @@ const PartyFormContent = ({
   const activeSection =
     groupedFields.find((section) => section.id === activeSectionId) ??
     groupedFields[0];
+  const activeSectionIndex = Math.max(
+    0,
+    groupedFields.findIndex((section) => section.id === activeSection?.id),
+  );
+  const isLastSection = activeSectionIndex === groupedFields.length - 1;
 
   const handleFieldChange = (fieldName, value) => {
     setValues((current) => ({
@@ -127,10 +136,11 @@ const PartyFormContent = ({
   return (
     <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-        <div className="sticky top-0 z-10 -mx-5 mb-5 border-b border-slate-100/70 bg-white/80 px-5 pb-3 backdrop-blur sm:-mx-6 sm:px-6">
-          <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="sticky top-0 z-10 -mx-5 mb-5 border-b border-slate-200 bg-white px-5 pb-0 sm:-mx-6 sm:px-6">
+          <div className="flex overflow-x-auto">
             {groupedFields.map((section, index) => {
               const isActive = section.id === activeSection?.id;
+              const isComplete = index < activeSectionIndex;
 
               return (
                 <button
@@ -138,13 +148,28 @@ const PartyFormContent = ({
                   type="button"
                   onClick={() => setActiveSectionId(section.id)}
                   className={[
-                    "h-9 shrink-0 rounded-xl px-3 text-xs font-bold transition-all",
+                    "relative flex h-12 shrink-0 items-center gap-2 px-3 text-xs font-semibold transition-colors",
                     isActive
-                      ? "bg-brand text-white shadow-sm"
-                      : "bg-slate-50 text-slate-500 hover:bg-white hover:text-slate-900",
+                      ? "text-brand"
+                      : "text-slate-500 hover:text-slate-900",
                   ].join(" ")}
                 >
-                  {index + 1}. {section.title}
+                  <span
+                    className={[
+                      "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold",
+                      isActive
+                        ? "bg-brand text-white"
+                        : isComplete
+                          ? "bg-emerald-500 text-white"
+                          : "bg-slate-100 text-slate-500",
+                    ].join(" ")}
+                  >
+                    {isComplete ? <Check className="h-3.5 w-3.5" /> : index + 1}
+                  </span>
+                  <span>{section.title}</span>
+                  {isActive && (
+                    <span className="absolute inset-x-3 bottom-0 h-0.5 bg-brand" />
+                  )}
                 </button>
               );
             })}
@@ -171,23 +196,45 @@ const PartyFormContent = ({
         )}
       </div>
 
-      <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-100/60 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex h-10 items-center justify-center rounded-xl border border-slate-200 glass px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-white"
-        >
-          {isView ? "Close" : "Cancel"}
-        </button>
-        {!isView && (
+      <div className="flex shrink-0 flex-col gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <p className="text-xs font-medium text-slate-400">
+          Step {activeSectionIndex + 1} of {groupedFields.length}
+        </p>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row">
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
           >
-            {isSubmitting ? "Saving..." : submitLabel ?? "Save"}
+            {isView ? "Close" : "Cancel"}
           </button>
-        )}
+          {!isView && (
+            <button
+              type={isLastSection ? "submit" : "button"}
+              onClick={
+                isLastSection
+                  ? undefined
+                  : () =>
+                      setActiveSectionId(
+                        groupedFields[activeSectionIndex + 1]?.id,
+                      )
+              }
+              disabled={isSubmitting}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isSubmitting
+                ? "Saving..."
+                : isLastSection
+                  ? submitLabel ?? "Save"
+                  : "Next"}
+              {isLastSection ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </form>
   );
@@ -262,14 +309,14 @@ const PartyFormModal = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-modal-title"
-            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl glass-strong shadow-[0_30px_100px_rgba(79,70,229,0.18)] sm:max-h-[calc(100dvh-3rem)]"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex shrink-0 items-start justify-between border-b border-slate-100/60 px-5 py-4 sm:px-6 sm:py-5">
+            <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
                   <Icon className="h-5 w-5" />
