@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IItemService, ItemService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IUnitService, UnitService>();
+        services.AddScoped<IHrService, HrService>();
         return services;
     }
 }
