@@ -170,8 +170,16 @@ public sealed class HrRepository : IHrRepository
         parameters.Add("FirstName", (string)value.FirstName);
         parameters.Add("LastName", (string?)value.LastName);
         parameters.Add("Gender", (int)value.Gender);
-        parameters.Add("DateOfBirth", (DateTime?)value.DateOfBirth);
-        parameters.Add("JoiningDate", (DateTime)value.JoiningDate);
+        parameters.Add(
+            "DateOfBirth",
+            value.DateOfBirth is null
+                ? null
+                : ((DateOnly)value.DateOfBirth).ToDateTime(TimeOnly.MinValue)
+        );
+        parameters.Add(
+            "JoiningDate",
+            ((DateOnly)value.JoiningDate).ToDateTime(TimeOnly.MinValue)
+        );
         parameters.Add("Mobile", (string?)value.Mobile);
         parameters.Add("Email", (string?)value.Email);
         parameters.Add("DepartmentId", (long)value.DepartmentId);
