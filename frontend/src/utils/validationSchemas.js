@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  HR_EMPLOYEE_STATUS,
+  HR_EMPLOYMENT_TYPE,
+  HR_ATTENDANCE_STATUS,
+  HR_GENDER,
+} from "./hrEnums";
 import { ITEM_TYPE } from "./itemTypes";
 
 export const loginSchema = z.object({
@@ -66,6 +72,186 @@ export const unitSchema = z.object({
 const nonNegativeNumber = (label) => {
   return z.coerce.number().min(0, `${label} cannot be negative`);
 };
+
+const optionalPositiveId = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+
+  return Number(value);
+}, z.number().int().positive().nullable());
+
+export const hrDepartmentSchema = z.object({
+  departmentCode: z
+    .string()
+    .trim()
+    .min(1, "Department code is required")
+    .max(50, "Department code is too long"),
+  departmentName: z
+    .string()
+    .trim()
+    .min(2, "Department name is required")
+    .max(100, "Department name is too long"),
+  description: z
+    .string()
+    .trim()
+    .max(500, "Description is too long")
+    .optional(),
+  isActive: z.boolean(),
+});
+
+export const hrDesignationSchema = z.object({
+  designationCode: z
+    .string()
+    .trim()
+    .min(1, "Designation code is required")
+    .max(50, "Designation code is too long"),
+  designationName: z
+    .string()
+    .trim()
+    .min(2, "Designation name is required")
+    .max(100, "Designation name is too long"),
+  departmentId: z.coerce.number().int().positive("Department is required"),
+  description: z
+    .string()
+    .trim()
+    .max(500, "Description is too long")
+    .optional(),
+  isActive: z.boolean(),
+});
+
+export const hrShiftSchema = z.object({
+  shiftCode: z
+    .string()
+    .trim()
+    .min(1, "Shift code is required")
+    .max(50, "Shift code is too long"),
+  shiftName: z
+    .string()
+    .trim()
+    .min(2, "Shift name is required")
+    .max(100, "Shift name is too long"),
+  startTime: z.string().trim().min(1, "Start time is required"),
+  endTime: z.string().trim().min(1, "End time is required"),
+  graceMinutes: z.coerce
+    .number()
+    .int("Grace minutes must be a whole number")
+    .min(0, "Grace minutes cannot be negative"),
+  isNightShift: z.boolean(),
+  weeklyHours: nonNegativeNumber("Weekly hours"),
+  isActive: z.boolean(),
+});
+
+export const hrEmployeeSchema = z.object({
+  employeeCode: z
+    .string()
+    .trim()
+    .min(1, "Employee code is required")
+    .max(50, "Employee code is too long"),
+  firstName: z
+    .string()
+    .trim()
+    .min(2, "First name is required")
+    .max(100, "First name is too long"),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name is required")
+    .max(100, "Last name is too long"),
+  gender: z.coerce.number().int().min(HR_GENDER.MALE),
+  dateOfBirth: z.string().trim().min(1, "Date of birth is required"),
+  joiningDate: z.string().trim().min(1, "Joining date is required"),
+  mobile: z
+    .string()
+    .trim()
+    .min(7, "Mobile number is required")
+    .max(20, "Mobile number is too long"),
+  email: z.string().trim().email("Enter a valid email address"),
+  departmentId: z.coerce.number().int().positive("Department is required"),
+  designationId: z.coerce.number().int().positive("Designation is required"),
+  reportingManagerId: optionalPositiveId,
+  shiftId: z.coerce.number().int().positive("Shift is required"),
+  employmentType: z.coerce.number().int().min(HR_EMPLOYMENT_TYPE.FULL_TIME),
+  status: z.coerce.number().int().min(HR_EMPLOYEE_STATUS.ACTIVE),
+  profilePhotoUrl: z.string().trim().optional(),
+  addressType: z.string().trim().optional(),
+  addressLine1: z.string().trim().optional(),
+  addressLine2: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  state: z.string().trim().optional(),
+  country: z.string().trim().optional(),
+  pincode: z.string().trim().optional(),
+  bankName: z.string().trim().optional(),
+  accountNumber: z.string().trim().optional(),
+  ifscCode: z.string().trim().optional(),
+  branchName: z.string().trim().optional(),
+  upiId: z.string().trim().optional(),
+});
+
+export const hrBankDetailsSchema = z.object({
+  bankName: z.string().trim().min(2, "Bank name is required"),
+  accountNumber: z.string().trim().min(4, "Account number is required"),
+  ifscCode: z.string().trim().min(4, "IFSC code is required"),
+  branchName: z.string().trim().optional(),
+  upiId: z.string().trim().optional(),
+});
+
+export const hrDocumentSchema = z.object({
+  documentType: z.string().trim().min(1, "Document type is required"),
+  fileName: z.string().trim().min(1, "File name is required"),
+  filePath: z.string().trim().min(1, "Upload or enter a file path"),
+  expiryDate: z.string().trim().optional(),
+});
+
+export const hrAttendanceQuickActionSchema = z.object({
+  employeeId: z.coerce.number().int().positive("Employee is required"),
+  actionTime: z.string().trim().min(1, "Time is required"),
+});
+
+export const hrAttendanceManualSchema = z.object({
+  employeeId: z.coerce.number().int().positive("Employee is required"),
+  attendanceDate: z.string().trim().min(1, "Attendance date is required"),
+  checkInTime: z.string().trim().optional(),
+  checkOutTime: z.string().trim().optional(),
+  attendanceStatus: z.coerce.number().int().min(HR_ATTENDANCE_STATUS.PRESENT),
+});
+
+export const hrAttendanceAdjustmentSchema = z.object({
+  employeeId: z.coerce.number().int().positive("Employee is required"),
+  attendanceId: z.coerce.number().int().positive("Attendance id is required"),
+  reason: z.string().trim().min(1, "Reason is required"),
+});
+
+export const hrAttendanceDecisionSchema = z.object({
+  adjustmentId: z.coerce.number().int().positive("Adjustment id is required"),
+  remarks: z.string().trim().optional(),
+});
+
+export const hrLeaveApplySchema = z.object({
+  employeeId: z.coerce.number().int().positive("Employee is required"),
+  leaveTypeId: z.coerce.number().int().positive("Leave type is required"),
+  startDate: z.string().trim().min(1, "Start date is required"),
+  endDate: z.string().trim().min(1, "End date is required"),
+  reason: z.string().trim().optional(),
+});
+
+export const hrLeaveActionSchema = z.object({
+  leaveApplicationId: z.coerce
+    .number()
+    .int()
+    .positive("Leave application id is required"),
+  employeeId: optionalPositiveId,
+  remarks: z.string().trim().optional(),
+});
+
+export const hrPayrollProcessSchema = z.object({
+  payrollMonth: z.coerce.number().int().min(1).max(12),
+  payrollYear: z.coerce.number().int().min(2000).max(2100),
+});
+
+export const hrPayrollApproveSchema = z.object({
+  payrollRunId: z.coerce.number().int().positive("Payroll run id is required"),
+});
 
 const lookupId = z.union([
   z.literal(""),

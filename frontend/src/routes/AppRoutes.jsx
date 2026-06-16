@@ -20,6 +20,14 @@ const Users = lazy(() => import("../pages/users/index.js"));
 const Items = lazy(() => import("../pages/items/index.js"));
 const Categories = lazy(() => import("../pages/categories/index.js"));
 const Units = lazy(() => import("../pages/units/index.js"));
+const HrDashboard = lazy(() => import("../pages/hr/dashboard/index.js"));
+const HrEmployees = lazy(() => import("../pages/hr/employees/index.js"));
+const HrDepartments = lazy(() => import("../pages/hr/departments/index.js"));
+const HrDesignations = lazy(() => import("../pages/hr/designations/index.js"));
+const HrAttendance = lazy(() => import("../pages/hr/attendance/index.js"));
+const HrLeaves = lazy(() => import("../pages/hr/leaves/index.js"));
+const HrShifts = lazy(() => import("../pages/hr/shifts/index.js"));
+const HrPayroll = lazy(() => import("../pages/hr/payroll/index.js"));
 
 const RouteFallback = () => {
   return (
@@ -116,6 +124,73 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/units" pageName="Units">
                 <Units />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/dashboard"
+            element={
+              <PermissionGuard route="/hr/dashboard" pageName="HR Dashboard">
+                <HrDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/employees"
+            element={
+              <PermissionGuard route="/hr/employees" pageName="Employees">
+                <HrEmployees />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/departments"
+            element={
+              <PermissionGuard route="/hr/departments" pageName="Departments">
+                <HrDepartments />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/designations"
+            element={
+              <PermissionGuard
+                route="/hr/designations"
+                pageName="Designations"
+              >
+                <HrDesignations />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/attendance"
+            element={
+              <PermissionGuard route="/hr/attendance" pageName="Attendance">
+                <HrAttendance />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/leaves"
+            element={
+              <PermissionGuard route="/hr/leaves" pageName="Leaves">
+                <HrLeaves />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/shifts"
+            element={
+              <PermissionGuard route="/hr/shifts" pageName="Shifts">
+                <HrShifts />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/payroll"
+            element={
+              <PermissionGuard route="/hr/payroll" pageName="Payroll">
+                <HrPayroll />
               </PermissionGuard>
             }
           />
