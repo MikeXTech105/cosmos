@@ -48,13 +48,13 @@ public sealed class ItemsController : ApiControllerBase
     public async Task<IActionResult> GetById(long id, CancellationToken cancellationToken) =>
         FromResponse(await _service.GetByIdAsync(new GetItemByIdQuery(id), cancellationToken));
 
-    /// <summary>Creates an item.</summary>
-    [HttpPost]
-    [RequirePermission("Items", PermissionAction.Create)]
-    [Consumes("application/json")]
-    [ProducesResponseType(typeof(ApiResponse<ItemDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> Create([FromBody] CreateItemCommand command, CancellationToken cancellationToken) =>
-        FromResponse(await _service.CreateAsync(command, cancellationToken), StatusCodes.Status201Created);
+    ///// <summary>Creates an item.</summary>
+    //[HttpPost]
+    //[RequirePermission("Items", PermissionAction.Create)]
+    //[Consumes("application/json")]
+    //[ProducesResponseType(typeof(ApiResponse<ItemDto>), StatusCodes.Status201Created)]
+    //public async Task<IActionResult> Create([FromBody] CreateItemCommand command, CancellationToken cancellationToken) =>
+    //    FromResponse(await _service.CreateAsync(command, cancellationToken), StatusCodes.Status201Created);
 
     /// <summary>Creates an item with an uploaded image file.</summary>
     [HttpPost]
