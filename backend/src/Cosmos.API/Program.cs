@@ -101,6 +101,7 @@ app.UseSwaggerUI(options =>
 });
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
