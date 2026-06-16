@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { hrLeaveService } from "../../../services/hr/leaveService";
-import { getThunkError } from "../inventorySliceHelpers";
+import { getThunkError } from "../inventory/inventorySliceHelpers";
 import {
   createHrInitialState,
   setHrListFulfilled,

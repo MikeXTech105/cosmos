@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { hrDepartmentService } from "../../../services/hr/departmentService";
-import { getThunkError } from "../inventorySliceHelpers";
+import { getThunkError } from "../inventory/inventorySliceHelpers";
 import {
   createHrInitialState,
   setHrDeletedEntity,

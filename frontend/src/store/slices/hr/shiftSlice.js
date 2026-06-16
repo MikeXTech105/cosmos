@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { hrShiftService } from "../../../services/hr/shiftService";
-import { getThunkError } from "../inventorySliceHelpers";
+import { getThunkError } from "../inventory/inventorySliceHelpers";
 import {
   createHrInitialState,
   setHrDeletedEntity,

@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { hrPayrollService } from "../../../services/hr/payrollService";
-import { getThunkError } from "../inventorySliceHelpers";
+import { getThunkError } from "../inventory/inventorySliceHelpers";
 
 const initialState = {
   loading: false,

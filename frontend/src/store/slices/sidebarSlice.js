@@ -1,8 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  isCollapsed: false,
-  isMobileOpen: false,
   searchQuery: "",
   expandedGroupIds: {
     "category-rbac": true,
@@ -14,34 +12,6 @@ const sidebarSlice = createSlice({
   name: "sidebar",
   initialState,
   reducers: {
-    toggleSidebar: (state) => {
-      state.isCollapsed = !state.isCollapsed;
-    },
-
-    setSidebarCollapsed: (state, action) => {
-      if (state.isCollapsed === action.payload) {
-        return;
-      }
-
-      state.isCollapsed = action.payload;
-    },
-
-    openMobileSidebar: (state) => {
-      if (state.isMobileOpen) {
-        return;
-      }
-
-      state.isMobileOpen = true;
-    },
-
-    closeMobileSidebar: (state) => {
-      if (!state.isMobileOpen) {
-        return;
-      }
-
-      state.isMobileOpen = false;
-    },
-
     toggleSidebarGroup: (state, action) => {
       const groupId = action.payload;
 
@@ -91,10 +61,6 @@ const sidebarSlice = createSlice({
 });
 
 export const {
-  toggleSidebar,
-  setSidebarCollapsed,
-  openMobileSidebar,
-  closeMobileSidebar,
   toggleSidebarGroup,
   expandSidebarGroups,
   setSidebarSearchQuery,

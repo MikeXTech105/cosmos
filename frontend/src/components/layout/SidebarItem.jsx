@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const depthPadding = ["pl-3", "pl-7", "pl-10", "pl-12"];
 
-const SidebarItem = ({ item, collapsed = false, depth = 0, onNavigate }) => {
+const SidebarItem = ({ item, depth = 0, onNavigate }) => {
   const Icon = item.Icon;
 
   if (!item.route) {
@@ -14,14 +14,11 @@ const SidebarItem = ({ item, collapsed = false, depth = 0, onNavigate }) => {
     <NavLink
       to={item.route}
       aria-label={item.label}
-      title={collapsed ? item.label : undefined}
       onClick={onNavigate}
       className={({ isActive }) =>
         [
           "group relative flex h-10 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
-          collapsed
-            ? "justify-center px-0"
-            : `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
+          `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
           isActive || item.isActive
             ? "text-white"
             : "text-slate-400 hover:bg-slate-800 hover:text-white",
@@ -53,17 +50,9 @@ const SidebarItem = ({ item, collapsed = false, depth = 0, onNavigate }) => {
               <Icon className="h-4 w-4" />
             </span>
 
-            {!collapsed && (
-              <span className="relative z-10 min-w-0 flex-1 truncate">
-                {item.label}
-              </span>
-            )}
-
-            {collapsed && (
-              <span className="pointer-events-none absolute left-[calc(100%+10px)] z-30 rounded-lg bg-slate-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                {item.label}
-              </span>
-            )}
+            <span className="relative z-10 min-w-0 flex-1 truncate">
+              {item.label}
+            </span>
           </>
         );
       }}

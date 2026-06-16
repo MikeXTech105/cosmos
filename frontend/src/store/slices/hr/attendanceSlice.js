@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { hrAttendanceService } from "../../../services/hr/attendanceService";
-import { getThunkError } from "../inventorySliceHelpers";
+import { getThunkError } from "../inventory/inventorySliceHelpers";
 import {
   createHrInitialState,
   setHrListFulfilled,

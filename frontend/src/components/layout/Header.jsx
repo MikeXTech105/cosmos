@@ -20,7 +20,7 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 px-3 sm:gap-3 sm:px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
-          <div className="min-w-0 pl-12 md:pl-0">
+          <div className="min-w-0">
             <Breadcrumbs />
           </div>
 

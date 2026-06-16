@@ -14,13 +14,10 @@ import {
 } from "./usePermission";
 import {
   closeCommand,
-  closeMobileSidebar,
   expandSidebarGroups,
   openCommand,
-  openMobileSidebar,
   resetSidebarSearch,
   setSidebarSearchQuery,
-  toggleSidebar,
   toggleSidebarGroup,
 } from "../store/slices/sidebarSlice";
 
@@ -270,36 +267,24 @@ export const useSidebar = () => {
       .map((item) => item.id);
 
     if (groupIds.length > 0) {
-      const collapsedGroupIds = groupIds.filter(
+      const closedGroupIds = groupIds.filter(
         (groupId) => !sidebar.expandedGroupIds[groupId],
       );
 
-      if (collapsedGroupIds.length > 0) {
-        dispatch(expandSidebarGroups(collapsedGroupIds));
+      if (closedGroupIds.length > 0) {
+        dispatch(expandSidebarGroups(closedGroupIds));
       }
     }
   }, [activeTrail, dispatch, sidebar.expandedGroupIds]);
 
   const closeCommandHandler = useCallback(() => dispatch(closeCommand()), [dispatch]);
-  const closeMobileSidebarHandler = useCallback(
-    () => dispatch(closeMobileSidebar()),
-    [dispatch],
-  );
   const openCommandHandler = useCallback(() => dispatch(openCommand()), [dispatch]);
-  const openMobileSidebarHandler = useCallback(
-    () => dispatch(openMobileSidebar()),
-    [dispatch],
-  );
   const resetSearchHandler = useCallback(
     () => dispatch(resetSidebarSearch()),
     [dispatch],
   );
   const setSearchQueryHandler = useCallback(
     (query) => dispatch(setSidebarSearchQuery(query)),
-    [dispatch],
-  );
-  const toggleCollapsedHandler = useCallback(
-    () => dispatch(toggleSidebar()),
     [dispatch],
   );
   const toggleGroupHandler = useCallback(
@@ -313,18 +298,13 @@ export const useSidebar = () => {
     expandedGroupIds: sidebar.expandedGroupIds,
     flatMenuItems,
     hasPages: activeMenuTree.length > 0,
-    isCollapsed: sidebar.isCollapsed,
-    isMobileOpen: sidebar.isMobileOpen,
     menuTree: filteredMenuTree,
     rawMenuTree: activeMenuTree,
     searchQuery: sidebar.searchQuery,
     closeCommand: closeCommandHandler,
-    closeMobileSidebar: closeMobileSidebarHandler,
     openCommand: openCommandHandler,
-    openMobileSidebar: openMobileSidebarHandler,
     resetSearch: resetSearchHandler,
     setSearchQuery: setSearchQueryHandler,
-    toggleCollapsed: toggleCollapsedHandler,
     toggleGroup: toggleGroupHandler,
   };
 };

@@ -5,7 +5,7 @@ import {
 import {
   extractEntity,
   normalizePagedPayload,
-} from "../inventorySliceHelpers";
+} from "../inventory/inventorySliceHelpers";
 
 export const createHrInitialState = (filters = {}) => ({
   list: [],
