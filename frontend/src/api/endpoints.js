@@ -38,4 +38,20 @@ export const ENDPOINTS = {
   PARTY_STATUS: (id) => `/api/v1/parties/${id}/status`,
 
   PARTY_SETTINGS: "/api/v1/settings/party",
+
+  CATEGORIES: "/api/categories",
+
+  CATEGORY_BY_ID: (id) => `/api/categories/${id}`,
+
+  UNITS: "/api/units",
+
+  UNIT_BY_ID: (id) => `/api/units/${id}`,
+
+  ITEMS: "/api/items",
+
+  ITEM_BY_ID: (id) => `/api/items/${id}`,
+
+  // Swagger currently exposes no multipart image-upload endpoint.
+  // Set this to the backend upload path when available.
+  UPLOAD_IMAGE: null,
 };

@@ -17,6 +17,9 @@ const Permissions = lazy(() => import("../pages/permissions/index.js"));
 const Party = lazy(() => import("../pages/party/index.js"));
 const Roles = lazy(() => import("../pages/roles/index.js"));
 const Users = lazy(() => import("../pages/users/index.js"));
+const Items = lazy(() => import("../pages/items/index.js"));
+const Categories = lazy(() => import("../pages/categories/index.js"));
+const Units = lazy(() => import("../pages/units/index.js"));
 
 const RouteFallback = () => {
   return (
@@ -89,6 +92,30 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/party" pageName="Party Master">
                 <Party />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/items"
+            element={
+              <PermissionGuard route="/items" pageName="Items">
+                <Items />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/categories"
+            element={
+              <PermissionGuard route="/categories" pageName="Categories">
+                <Categories />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/units"
+            element={
+              <PermissionGuard route="/units" pageName="Units">
+                <Units />
               </PermissionGuard>
             }
           />

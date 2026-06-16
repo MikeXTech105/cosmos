@@ -4,6 +4,9 @@ export const enabledModules = [
   "roles",
   "permissions",
   "party",
+  "items",
+  "categories",
+  "units",
 ];
 
 export const sidebarCategories = [
@@ -93,6 +96,23 @@ export const sidebarModules = {
     label: "Categories",
     route: "/categories",
     icon: "categories",
+    categoryId: "inventory",
+    sortOrder: 20,
+  },
+  items: {
+    id: "items",
+    label: "Items",
+    route: "/items",
+    icon: "products",
+    categoryId: "inventory",
+    sortOrder: 10,
+  },
+  units: {
+    id: "units",
+    label: "Units",
+    route: "/units",
+    icon: "units",
+    categoryId: "inventory",
     sortOrder: 30,
   },
   products: {

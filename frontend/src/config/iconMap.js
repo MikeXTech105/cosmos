@@ -94,6 +94,7 @@ export const iconMap = {
   tags: Tag,
   tasks: ListChecks,
   users: Users,
+  units: Scale,
   usercog: UserCog,
   warehouse: Warehouse,
   warehouses: Warehouse,
