@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers.HR;
 
 [Authorize]
+[ApiExplorerSettings(GroupName = "hr")]
 [Route("api/hr/shifts")]
 public sealed class ShiftsController : ApiControllerBase
 {
