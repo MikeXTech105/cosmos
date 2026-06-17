@@ -15,6 +15,7 @@ export const enabledModules = [
   "leaves",
   "shifts",
   "payroll",
+  "settings",
 ];
 
 export const sidebarCategories = [
@@ -216,6 +217,14 @@ export const sidebarModules = {
     icon: "warehouses",
     categoryId: "inventory",
     sortOrder: 30,
+  },
+  settings: {
+    id: "settings",
+    label: "Settings",
+    route: "/settings",
+    icon: "settings",
+    categoryId: "system",
+    sortOrder: 10,
   },
 };
 

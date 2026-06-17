@@ -28,6 +28,7 @@ const HrAttendance = lazy(() => import("../pages/hr/attendance/index.js"));
 const HrLeaves = lazy(() => import("../pages/hr/leaves/index.js"));
 const HrShifts = lazy(() => import("../pages/hr/shifts/index.js"));
 const HrPayroll = lazy(() => import("../pages/hr/payroll/index.js"));
+const Settings = lazy(() => import("../pages/settings/index.js"));
 
 const RouteFallback = () => {
   return (
@@ -191,6 +192,14 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/hr/payroll" pageName="Payroll">
                 <HrPayroll />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PermissionGuard route="/settings" pageName="Settings">
+                <Settings />
               </PermissionGuard>
             }
           />

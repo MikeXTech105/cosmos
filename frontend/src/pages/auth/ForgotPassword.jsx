@@ -4,13 +4,14 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
+import { getAuthFormClasses } from "../../components/auth/authThemeClasses";
+import useAuthTheme from "../../hooks/useAuthTheme";
 import { forgotPassword } from "../../services/authService";
 import { forgotPasswordSchema } from "../../utils/validationSchemas";
 
-const inputClassName =
-  "w-full rounded-lg border border-white/10 bg-white/[0.03] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 outline-none transition-all focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/15";
-
 const ForgotPassword = () => {
+  const { authTheme } = useAuthTheme();
+  const classes = getAuthFormClasses(authTheme);
   const {
     register,
     handleSubmit,
@@ -39,10 +40,15 @@ const ForgotPassword = () => {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight text-white">
+        <h2
+          className={[
+            "text-2xl font-bold tracking-tight",
+            classes.title,
+          ].join(" ")}
+        >
           Forgot password
         </h2>
-        <p className="mt-1.5 text-sm text-slate-400">
+        <p className={["mt-1.5 text-sm", classes.subtext].join(" ")}>
           Enter your email address and we will send reset instructions.
         </p>
       </div>
@@ -51,41 +57,54 @@ const ForgotPassword = () => {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-xs font-medium text-slate-300"
+            className={[
+              "mb-1.5 block text-xs font-medium",
+              classes.label,
+            ].join(" ")}
           >
             Email
           </label>
 
           <div className="relative flex items-center">
-            <Mail className="absolute left-3 h-4 w-4 text-slate-500" />
+            <Mail className={["absolute left-3 h-4 w-4", classes.icon].join(" ")} />
 
             <input
               id="email"
               type="email"
               autoComplete="email"
               placeholder="you@company.com"
-              className={`${inputClassName} ${
-                errors.email ? "border-red-500/50" : ""
-              }`}
+              className={[
+                "w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:ring-2",
+                classes.input,
+                errors.email ? classes.inputError : "",
+              ].join(" ")}
               {...register("email")}
             />
           </div>
 
           {errors.email && (
-            <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>
+            <p className={["mt-1 text-xs", classes.error].join(" ")}>
+              {errors.email.message}
+            </p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className={[
+            "w-full rounded-lg py-2.5 text-sm font-medium transition-colors",
+            classes.button,
+          ].join(" ")}
         >
           {isSubmitting ? "Sending..." : "Send Instructions"}
         </button>
 
         <Link
-          className="block text-center text-sm font-medium text-blue-400 hover:text-blue-300"
+          className={[
+            "block text-center text-sm font-medium transition-colors",
+            classes.link,
+          ].join(" ")}
           to="/login"
         >
           Back to sign in
