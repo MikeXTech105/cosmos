@@ -47,7 +47,7 @@ public sealed class HrRepository : IHrRepository
     public Task<IReadOnlyCollection<EmployeeDropdownDto>> GetEmployeeDropdownAsync(string? search, CancellationToken ct) => QueryAsync<EmployeeDropdownDto>("sp_HR_Employee_GetDropdown", new { Search = search }, ct);
     public Task<IReadOnlyCollection<EmployeeDropdownDto>> GetReportingManagersAsync(long? departmentId, long? excludingEmployeeId, CancellationToken ct) => QueryAsync<EmployeeDropdownDto>("sp_HR_Employee_GetReportingManagers", new { DepartmentId = departmentId, ExcludingEmployeeId = excludingEmployeeId }, ct);
     public Task<IReadOnlyCollection<EmployeeDocumentDto>> GetEmployeeDocumentsAsync(long employeeId, CancellationToken ct) => QueryAsync<EmployeeDocumentDto>("sp_HR_EmployeeDocument_GetList", new { EmployeeId = employeeId }, ct);
-    public Task<EmployeeDocumentDto> AddEmployeeDocumentAsync(long employeeId, AddEmployeeDocumentCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<EmployeeDocumentDto>("sp_HR_EmployeeDocument_Create", new { EmployeeId = employeeId, command.DocumentType, command.FileName, command.FilePath, command.ExpiryDate, UserId = userId }, ct);
+    public Task<EmployeeDocumentDto> AddEmployeeDocumentAsync(long employeeId, AddEmployeeDocumentCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<EmployeeDocumentDto>("sp_HR_EmployeeDocument_Create", new { EmployeeId = employeeId, command.DocumentType, command.FileName, command.FilePath, ExpiryDate = ToDateTime(command.ExpiryDate), UserId = userId }, ct);
     public Task<OperationResult> DeleteEmployeeDocumentAsync(long documentId, long? userId, CancellationToken ct) => ExecuteStatusAsync("sp_HR_EmployeeDocument_Delete", new { Id = documentId, UserId = userId }, ct);
     public Task<IReadOnlyCollection<EmployeeBankAccountDto>> GetEmployeeBankDetailsAsync(long employeeId, CancellationToken ct) => QueryAsync<EmployeeBankAccountDto>("sp_HR_EmployeeBank_GetList", new { EmployeeId = employeeId }, ct);
     public Task<EmployeeBankAccountDto> AddEmployeeBankDetailsAsync(long employeeId, AddEmployeeBankDetailsCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<EmployeeBankAccountDto>("sp_HR_EmployeeBank_Create", new { EmployeeId = employeeId, command.BankName, command.AccountNumber, command.IFSCCode, command.BranchName, command.UPIId, UserId = userId }, ct);
@@ -56,17 +56,17 @@ public sealed class HrRepository : IHrRepository
 
     public Task<AttendanceDto> CheckInAsync(AttendanceCheckInCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceDto>("sp_HR_Attendance_CheckIn", new { command.EmployeeId, command.CheckInTime, UserId = userId }, ct);
     public Task<AttendanceDto> CheckOutAsync(AttendanceCheckOutCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceDto>("sp_HR_Attendance_CheckOut", new { command.EmployeeId, command.CheckOutTime, UserId = userId }, ct);
-    public Task<AttendanceDto> ManualAttendanceAsync(AttendanceManualEntryCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceDto>("sp_HR_Attendance_ManualEntry", new { command.EmployeeId, command.AttendanceDate, command.CheckInTime, command.CheckOutTime, command.AttendanceStatus, UserId = userId }, ct);
-    public Task<PagedResult<AttendanceDto>> GetAttendanceAsync(GetAttendanceQuery query, CancellationToken ct) => QueryPagedAsync<AttendanceDto>("sp_HR_Attendance_GetList", query, query.PageNumber, query.PageSize, ct);
-    public Task<IReadOnlyCollection<AttendanceDto>> GetEmployeeAttendanceAsync(long employeeId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct) => QueryAsync<AttendanceDto>("sp_HR_Attendance_GetByEmployee", new { EmployeeId = employeeId, FromDate = fromDate, ToDate = toDate }, ct);
+    public Task<AttendanceDto> ManualAttendanceAsync(AttendanceManualEntryCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceDto>("sp_HR_Attendance_ManualEntry", new { command.EmployeeId, AttendanceDate = ToDateTime(command.AttendanceDate), command.CheckInTime, command.CheckOutTime, command.AttendanceStatus, UserId = userId }, ct);
+    public Task<PagedResult<AttendanceDto>> GetAttendanceAsync(GetAttendanceQuery query, CancellationToken ct) => QueryPagedAsync<AttendanceDto>("sp_HR_Attendance_GetList", AttendanceParameters(query), query.PageNumber, query.PageSize, ct);
+    public Task<IReadOnlyCollection<AttendanceDto>> GetEmployeeAttendanceAsync(long employeeId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct) => QueryAsync<AttendanceDto>("sp_HR_Attendance_GetByEmployee", new { EmployeeId = employeeId, FromDate = ToDateTime(fromDate), ToDate = ToDateTime(toDate) }, ct);
     public Task<AttendanceAdjustmentDto> RequestAttendanceAdjustmentAsync(AttendanceAdjustmentRequestCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceAdjustmentDto>("sp_HR_AttendanceAdjustment_Create", new { command.EmployeeId, command.AttendanceId, command.Reason, UserId = userId }, ct);
     public Task<AttendanceAdjustmentDto> DecideAttendanceAdjustmentAsync(long adjustmentId, bool approve, string? remarks, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceAdjustmentDto>("sp_HR_AttendanceAdjustment_Decide", new { AdjustmentId = adjustmentId, Approve = approve, Remarks = remarks, UserId = userId }, ct);
     public Task<IReadOnlyCollection<AttendanceMonthlyReportDto>> GetMonthlyAttendanceReportAsync(AttendanceMonthlyReportQuery query, CancellationToken ct) => QueryAsync<AttendanceMonthlyReportDto>("sp_HR_Attendance_MonthlyReport", new { query.EmployeeId, query.Month, query.Year }, ct);
-    public Task<IReadOnlyCollection<AttendanceDepartmentReportDto>> GetDepartmentAttendanceReportAsync(AttendanceDepartmentReportQuery query, CancellationToken ct) => QueryAsync<AttendanceDepartmentReportDto>("sp_HR_Attendance_DepartmentReport", query, ct);
+    public Task<IReadOnlyCollection<AttendanceDepartmentReportDto>> GetDepartmentAttendanceReportAsync(AttendanceDepartmentReportQuery query, CancellationToken ct) => QueryAsync<AttendanceDepartmentReportDto>("sp_HR_Attendance_DepartmentReport", new { query.DepartmentId, AttendanceDate = ToDateTime(query.AttendanceDate) }, ct);
 
-    public Task<LeaveApplicationDto> ApplyLeaveAsync(ApplyLeaveCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<LeaveApplicationDto>("sp_HR_Leave_Apply", new { command.EmployeeId, command.LeaveTypeId, command.StartDate, command.EndDate, command.Reason, UserId = userId }, ct);
+    public Task<LeaveApplicationDto> ApplyLeaveAsync(ApplyLeaveCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<LeaveApplicationDto>("sp_HR_Leave_Apply", new { command.EmployeeId, command.LeaveTypeId, StartDate = ToDateTime(command.StartDate), EndDate = ToDateTime(command.EndDate), command.Reason, UserId = userId }, ct);
     public Task<LeaveApplicationDto> ActOnLeaveAsync(long leaveApplicationId, string action, long? employeeId, string? remarks, long? userId, CancellationToken ct) => QueryWithStatusAsync<LeaveApplicationDto>("sp_HR_Leave_Action", new { LeaveApplicationId = leaveApplicationId, Action = action, EmployeeId = employeeId, Remarks = remarks, UserId = userId }, ct);
-    public Task<PagedResult<LeaveApplicationDto>> GetLeavesAsync(GetLeavesQuery query, CancellationToken ct) => QueryPagedAsync<LeaveApplicationDto>("sp_HR_Leave_GetList", query, query.PageNumber, query.PageSize, ct);
+    public Task<PagedResult<LeaveApplicationDto>> GetLeavesAsync(GetLeavesQuery query, CancellationToken ct) => QueryPagedAsync<LeaveApplicationDto>("sp_HR_Leave_GetList", LeaveParameters(query), query.PageNumber, query.PageSize, ct);
     public Task<IReadOnlyCollection<LeaveBalanceDto>> GetLeaveBalanceAsync(long employeeId, CancellationToken ct) => QueryAsync<LeaveBalanceDto>("sp_HR_Leave_GetBalance", new { EmployeeId = employeeId }, ct);
     public Task<PagedResult<LeaveApplicationDto>> GetPendingLeaveApprovalsAsync(GetPendingLeaveApprovalsQuery query, CancellationToken ct) => QueryPagedAsync<LeaveApplicationDto>("sp_HR_Leave_GetPendingApprovals", query, query.PageNumber, query.PageSize, ct);
 
@@ -144,6 +144,28 @@ public sealed class HrRepository : IHrRepository
         query.SortDirection
     };
 
+    private static object AttendanceParameters(GetAttendanceQuery query) => new
+    {
+        query.EmployeeId,
+        query.DepartmentId,
+        FromDate = ToDateTime(query.FromDate),
+        ToDate = ToDateTime(query.ToDate),
+        query.Status,
+        query.PageNumber,
+        query.PageSize
+    };
+
+    private static object LeaveParameters(GetLeavesQuery query) => new
+    {
+        query.EmployeeId,
+        query.LeaveTypeId,
+        query.Status,
+        FromDate = ToDateTime(query.FromDate),
+        ToDate = ToDateTime(query.ToDate),
+        query.PageNumber,
+        query.PageSize
+    };
+
     private static DynamicParameters ShiftParameters(long? id, object command, long? userId)
     {
         dynamic value = command;
@@ -172,13 +194,11 @@ public sealed class HrRepository : IHrRepository
         parameters.Add("Gender", (int)value.Gender);
         parameters.Add(
             "DateOfBirth",
-            value.DateOfBirth is null
-                ? null
-                : ((DateOnly)value.DateOfBirth).ToDateTime(TimeOnly.MinValue)
+            ToDateTime((DateOnly?)value.DateOfBirth)
         );
         parameters.Add(
             "JoiningDate",
-            ((DateOnly)value.JoiningDate).ToDateTime(TimeOnly.MinValue)
+            ToDateTime((DateOnly)value.JoiningDate)
         );
         parameters.Add("Mobile", (string?)value.Mobile);
         parameters.Add("Email", (string?)value.Email);
@@ -197,6 +217,10 @@ public sealed class HrRepository : IHrRepository
 
     private static PayrollRunDto MapPayrollRun(PayrollRunRow row) =>
         new(row.Id, row.PayrollMonth, row.PayrollYear, row.Status, row.CreatedOn, row.UpdatedOn);
+
+    private static DateTime ToDateTime(DateOnly value) => value.ToDateTime(TimeOnly.MinValue);
+
+    private static DateTime? ToDateTime(DateOnly? value) => value?.ToDateTime(TimeOnly.MinValue);
 
     private sealed record PayrollRunRow(long Id, int PayrollMonth, int PayrollYear, int Status, DateTime CreatedOn, DateTime? UpdatedOn);
 }
