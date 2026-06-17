@@ -7,6 +7,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Cosmos.API.Controllers;
 
+[Tags("Settings")]
+[ApiExplorerSettings(GroupName = "settings")]
 [Route("api/auth")]
 public sealed class AuthController : ApiControllerBase
 {

@@ -22,6 +22,21 @@ var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>();
 
+var swaggerModules = new[]
+{
+    new SwaggerModule("dashboard", "Cosmos ERP - Dashboard API", "Dashboard API"),
+    new SwaggerModule("masters", "Cosmos ERP - Masters API", "Masters API"),
+    new SwaggerModule("items", "Cosmos ERP - Items API", "Items API"),
+    new SwaggerModule("parties", "Cosmos ERP - Parties API", "Parties API"),
+    new SwaggerModule("sales", "Cosmos ERP - Sales API", "Sales API"),
+    new SwaggerModule("purchase", "Cosmos ERP - Purchase API", "Purchase API"),
+    new SwaggerModule("expenses", "Cosmos ERP - Expenses API", "Expenses API"),
+    new SwaggerModule("hr", "Cosmos ERP - HR API", "HR API"),
+    new SwaggerModule("reports", "Cosmos ERP - Reports API", "Reports API"),
+    new SwaggerModule("settings", "Cosmos ERP - Settings API", "Settings API"),
+    new SwaggerModule("general", "Cosmos ERP - General API", "General API")
+};
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
@@ -52,11 +67,25 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSwaggerGen(options =>
 {
     options.EnableAnnotations();
-    options.SwaggerDoc("v1", new OpenApiInfo
+
+    // Module-wise Swagger documents keep ERP areas navigable without changing API routes.
+    foreach (var module in swaggerModules)
     {
-        Title = "Cosmos ERP Security API",
-        Version = "v1",
-        Description = "Authentication, authorization, users, roles, pages, and permissions for Cosmos ERP. Authorization is JWT-authenticated and permission decisions are loaded from SQL Server stored procedures."
+        options.SwaggerDoc(module.GroupName, new OpenApiInfo
+        {
+            Title = module.Title,
+            Version = "v1",
+            Description = "Cosmos ERP API endpoints grouped by functional module."
+        });
+    }
+
+    options.DocInclusionPredicate((documentName, apiDescription) =>
+    {
+        var groupName = string.IsNullOrWhiteSpace(apiDescription.GroupName)
+            ? "general"
+            : apiDescription.GroupName;
+
+        return string.Equals(groupName, documentName, StringComparison.OrdinalIgnoreCase);
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -96,8 +125,11 @@ if (!app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.DocumentTitle = "Cosmos ERP Security API";
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Cosmos ERP Security API v1");
+    options.DocumentTitle = "Cosmos ERP API";
+    foreach (var module in swaggerModules)
+    {
+        options.SwaggerEndpoint($"/swagger/{module.GroupName}/swagger.json", module.DisplayName);
+    }
 });
 
 app.UseHttpsRedirection();
@@ -117,3 +149,5 @@ app.MapHealthChecks("/health");
 app.Run();
 
 public partial class Program;
+
+internal sealed record SwaggerModule(string GroupName, string Title, string DisplayName);
