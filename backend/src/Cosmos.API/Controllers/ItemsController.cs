@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
+[Tags("Items")]
+[ApiExplorerSettings(GroupName = "items")]
 [Route("api/items")]
 public sealed class ItemsController : ApiControllerBase
 {

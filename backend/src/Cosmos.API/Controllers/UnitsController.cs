@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
+[Tags("Masters")]
+[ApiExplorerSettings(GroupName = "masters")]
 [Route("api/units")]
 public sealed class UnitsController : ApiControllerBase
 {
