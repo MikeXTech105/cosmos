@@ -1,7 +1,9 @@
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Persistence.Connection;
+using Cosmos.Persistence.Dapper;
 using Cosmos.Persistence.Repositories;
 using Cosmos.Persistence.UnitOfWork;
+using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cosmos.Persistence;
@@ -10,6 +12,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
+        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new TimeOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new NullableTimeOnlyTypeHandler());
+
         services.AddScoped<ISqlConnectionFactory, SqlConnectionFactory>();
         services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
         services.AddScoped<IAuthRepository, AuthRepository>();

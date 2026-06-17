@@ -13,11 +13,26 @@ public sealed record EmployeeDto(
     long DesignationId, string DesignationName, long? ReportingManagerId, string? ReportingManagerName,
     long ShiftId, string ShiftName, int EmploymentType, int Status, string? ProfilePhotoUrl,
     bool IsActive, DateTime CreatedOn, DateTime? UpdatedOn);
-public sealed record EmployeeListItemDto(
-    long Id, string EmployeeCode, string FirstName, string? LastName, string? Mobile, string? Email,
-    long DepartmentId, string DepartmentName, long DesignationId, string DesignationName,
-    long? ReportingManagerId, string? ReportingManagerName, int EmploymentType, int Status,
-    DateOnly JoiningDate, bool IsActive, int TotalCount);
+public sealed class EmployeeListItemDto
+{
+    public long Id { get; set; }
+    public string EmployeeCode { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string? LastName { get; set; }
+    public string? Mobile { get; set; }
+    public string? Email { get; set; }
+    public long DepartmentId { get; set; }
+    public string DepartmentName { get; set; } = string.Empty;
+    public long DesignationId { get; set; }
+    public string DesignationName { get; set; } = string.Empty;
+    public long? ReportingManagerId { get; set; }
+    public string? ReportingManagerName { get; set; }
+    public int EmploymentType { get; set; }
+    public int Status { get; set; }
+    public DateOnly JoiningDate { get; set; }
+    public bool IsActive { get; set; }
+    public int TotalCount { get; set; }
+}
 public sealed record EmployeeDropdownDto(long Id, string EmployeeCode, string EmployeeName);
 
 public sealed record AttendanceDto(
