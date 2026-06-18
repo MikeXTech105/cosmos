@@ -4,6 +4,7 @@ export const enabledModules = [
   "roles",
   "permissions",
   "party",
+  "saleInvoices",
   "items",
   "categories",
   "units",
@@ -30,6 +31,12 @@ export const sidebarCategories = [
     label: "Inventory",
     icon: "inventory",
     sortOrder: 40,
+  },
+  {
+    id: "sale",
+    label: "Sale",
+    icon: "sale",
+    sortOrder: 50,
   },
   {
     id: "hr",
@@ -105,6 +112,14 @@ export const sidebarModules = {
     route: "/suppliers",
     icon: "business",
     sortOrder: 20,
+  },
+  saleInvoices: {
+    id: "saleInvoices",
+    label: "Sale Invoices",
+    route: "/sales/invoices",
+    icon: "invoice",
+    categoryId: "sale",
+    sortOrder: 10,
   },
   categories: {
     id: "categories",

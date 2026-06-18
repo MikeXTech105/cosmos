@@ -28,6 +28,10 @@ const HrAttendance = lazy(() => import("../pages/hr/attendance/index.js"));
 const HrLeaves = lazy(() => import("../pages/hr/leaves/index.js"));
 const HrShifts = lazy(() => import("../pages/hr/shifts/index.js"));
 const HrPayroll = lazy(() => import("../pages/hr/payroll/index.js"));
+const SalesInvoices = lazy(() => import("../pages/sales/invoices/index.js"));
+const SalesInvoiceDetail = lazy(
+  () => import("../pages/sales/invoices/InvoiceDetailPage.jsx"),
+);
 const Settings = lazy(() => import("../pages/settings/index.js"));
 
 const RouteFallback = () => {
@@ -192,6 +196,28 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/hr/payroll" pageName="Payroll">
                 <HrPayroll />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/sales/invoices"
+            element={
+              <PermissionGuard
+                route="/sales/invoices"
+                pageName="Sale Invoices"
+              >
+                <SalesInvoices />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/sales/invoices/:id"
+            element={
+              <PermissionGuard
+                route="/sales/invoices"
+                pageName="Sale Invoices"
+              >
+                <SalesInvoiceDetail />
               </PermissionGuard>
             }
           />

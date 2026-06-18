@@ -39,6 +39,16 @@ export const ENDPOINTS = {
 
   PARTY_SETTINGS: "/api/v1/settings/party",
 
+  SALES_INVOICES: "/api/v1/sales/invoices",
+
+  SALES_INVOICE_BY_ID: (id) => `/api/v1/sales/invoices/${id}`,
+
+  SALES_INVOICE_CONFIRM: (id) => `/api/v1/sales/invoices/${id}/confirm`,
+
+  SALES_INVOICE_CANCEL: (id) => `/api/v1/sales/invoices/${id}/cancel`,
+
+  SALES_INVOICE_PAYMENTS: (id) => `/api/v1/sales/invoices/${id}/payments`,
+
   CATEGORIES: "/api/categories",
 
   CATEGORY_BY_ID: (id) => `/api/categories/${id}`,

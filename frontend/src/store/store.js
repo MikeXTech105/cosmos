@@ -9,6 +9,7 @@ import hrLeaveReducer from "./slices/hr/leaveSlice";
 import hrPayrollReducer from "./slices/hr/payrollSlice";
 import hrShiftReducer from "./slices/hr/shiftSlice";
 import itemReducer from "./slices/inventory/itemSlice";
+import salesInvoiceReducer from "./slices/sales/invoiceSlice";
 import sidebarReducer from "./slices/sidebarSlice";
 import unitReducer from "./slices/inventory/unitSlice";
 
@@ -24,6 +25,7 @@ export const store = configureStore({
     hrPayroll: hrPayrollReducer,
     hrShifts: hrShiftReducer,
     items: itemReducer,
+    salesInvoices: salesInvoiceReducer,
     sidebar: sidebarReducer,
     units: unitReducer,
   },

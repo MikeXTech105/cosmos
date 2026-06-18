@@ -60,3 +60,40 @@ body {
     justify-content: center;
   }
 }
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible;
+  }
+
+  .invoice-print-area {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    overflow: visible !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .invoice-template {
+    width: 210mm;
+    min-height: 297mm;
+    max-width: none;
+    box-shadow: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

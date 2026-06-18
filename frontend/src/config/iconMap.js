@@ -97,6 +97,7 @@ export const iconMap = {
   quotations: FileCheck2,
   reports: ChartNoAxesCombined,
   roles: UserCog,
+  sale: Store,
   sales: Store,
   settings: Settings,
   stock: ArrowLeftRight,
