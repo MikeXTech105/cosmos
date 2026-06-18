@@ -274,7 +274,7 @@ const HrDashboardPage = () => {
           icon={Wallet}
           label="Payroll MTD"
           value={metrics.payrollMtd}
-          colorClass="bg-blue-50 text-blue-600"
+          colorClass="bg-brand-light text-brand"
         />
       </div>
 

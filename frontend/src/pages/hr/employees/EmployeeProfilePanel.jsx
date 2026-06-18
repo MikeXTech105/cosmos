@@ -92,7 +92,7 @@ const AttendanceStatusPill = ({ status }) => {
       : value === 3
         ? "bg-amber-50 text-amber-700 ring-amber-200"
         : value === 4
-          ? "bg-blue-50 text-blue-700 ring-blue-200"
+          ? "bg-brand-light text-brand ring-brand/20"
           : "bg-red-50 text-red-700 ring-red-200";
 
   return (

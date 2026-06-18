@@ -12,6 +12,7 @@ const SidebarGroup = ({
   forceOpen = false,
   onNavigate,
   onToggle,
+  themeClasses,
 }) => {
   const Icon = item.Icon;
   const active = item.isActive || item.hasActiveChild;
@@ -27,18 +28,14 @@ const SidebarGroup = ({
         className={[
           "group relative flex h-10 w-full items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
           `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
-          active
-            ? "bg-brand text-white"
-            : "text-slate-400 hover:bg-slate-800 hover:text-white",
+          active ? themeClasses.navGroupActive : themeClasses.navInactive,
           "focus-visible:ring-2 focus-visible:ring-brand/40",
         ].join(" ")}
       >
         <span
           className={[
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors",
-            active
-              ? "text-white"
-              : "text-slate-500 group-hover:text-white",
+            active ? themeClasses.iconActive : themeClasses.iconInactive,
           ].join(" ")}
         >
           <Icon className="h-4 w-4" />
@@ -73,6 +70,7 @@ const SidebarGroup = ({
                     forceOpen={forceOpen}
                     onNavigate={onNavigate}
                     onToggle={onToggle}
+                    themeClasses={themeClasses}
                   />
                 ) : (
                   <SidebarItem
@@ -80,6 +78,7 @@ const SidebarGroup = ({
                     item={child}
                     depth={depth + 1}
                     onNavigate={onNavigate}
+                    themeClasses={themeClasses}
                   />
                 ),
               )}

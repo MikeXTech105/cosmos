@@ -31,7 +31,7 @@ const ShiftCard = ({ actions, shift }) => {
             className={[
               "flex h-10 w-10 items-center justify-center rounded-xl",
               isNightShift
-                ? "bg-indigo-50 text-indigo-600"
+                ? "bg-brand-light text-brand"
                 : "bg-amber-50 text-amber-600",
             ].join(" ")}
           >
@@ -95,7 +95,7 @@ const ShiftCard = ({ actions, shift }) => {
           className={[
             "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset",
             isNightShift
-              ? "bg-indigo-50 text-indigo-700 ring-indigo-200"
+              ? "bg-brand-light text-brand ring-brand/20"
               : "bg-amber-50 text-amber-700 ring-amber-200",
           ].join(" ")}
         >

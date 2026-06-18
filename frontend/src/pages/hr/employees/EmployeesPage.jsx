@@ -44,6 +44,7 @@ import EmployeeFormModal from "./EmployeeFormModal";
 import EmployeeList from "./EmployeeList";
 import EmployeeProfilePanel from "./EmployeeProfilePanel";
 import EmployeeStats from "./EmployeeStats";
+import { extractEmployeeBankDetails } from "./employeeFormMappers";
 
 const extractList = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -100,6 +101,7 @@ const EmployeesPage = () => {
   const [designationOptions, setDesignationOptions] = useState([]);
   const [shiftOptions, setShiftOptions] = useState([]);
   const [reportingManagerOptions, setReportingManagerOptions] = useState([]);
+  const [lookupsLoaded, setLookupsLoaded] = useState(false);
   const [modal, setModal] = useState({
     entity: null,
     isLoading: false,
@@ -190,10 +192,15 @@ const EmployeesPage = () => {
           )
           .filter(Boolean),
       );
+      setLookupsLoaded(true);
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load HR lookup data."));
     }
   }, []);
+
+  const loadLookupsIfNeeded = useCallback(() => {
+    return lookupsLoaded ? Promise.resolve() : loadLookups();
+  }, [loadLookups, lookupsLoaded]);
 
   useEffect(() => {
     void Promise.resolve().then(loadEmployees);
@@ -285,13 +292,14 @@ const EmployeesPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    void loadLookupsIfNeeded();
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [loadLookupsIfNeeded]);
 
   const openEdit = useCallback(
     async (employee) => {
@@ -304,34 +312,71 @@ const EmployeesPage = () => {
 
       setModal({ entity: employee, isLoading: true, isOpen: true, mode: "edit" });
 
-      try {
-        const response = await dispatch(fetchHrEmployeeById(id)).unwrap();
+      const [detailResult, bankResult] = await Promise.allSettled([
+        dispatch(fetchHrEmployeeById(id)).unwrap(),
+        dispatch(fetchHrEmployeeBankDetails(id)).unwrap(),
+        loadLookupsIfNeeded(),
+      ]);
+
+      if (detailResult.status === "fulfilled") {
+        const employeeDetail = extractHrEntity(
+          detailResult.value.data,
+          "employee",
+        );
+        const bankDetails =
+          bankResult.status === "fulfilled"
+            ? extractEmployeeBankDetails(bankResult.value.data)
+            : extractEmployeeBankDetails(employeeDetail);
+
         setModal({
-          entity: extractHrEntity(response.data, "employee"),
+          entity: {
+            ...employeeDetail,
+            bankDetails,
+          },
           isLoading: false,
           isOpen: true,
           mode: "edit",
         });
-      } catch (error) {
-        toast.error(getHrActionError(error, "Unable to load employee details."));
-        setModal((current) => ({ ...current, isLoading: false }));
+        return;
       }
+
+      toast.error(
+        getHrActionError(
+          detailResult.reason,
+          "Unable to load employee details.",
+        ),
+      );
+      setModal((current) => ({ ...current, isLoading: false }));
     },
-    [dispatch],
+    [dispatch, loadLookupsIfNeeded],
   );
 
   const submitEmployee = useCallback(
-    async (payload) => {
+    async (payload, options = {}) => {
       try {
+        const employeeId = getHrRecordId(modal.entity, "employee");
         const response =
           modal.mode === "edit"
             ? await dispatch(
                 updateHrEmployee({
-                  id: getHrRecordId(modal.entity, "employee"),
+                  id: employeeId,
                   payload,
                 }),
               ).unwrap()
             : await dispatch(createHrEmployee(payload)).unwrap();
+
+        if (
+          modal.mode === "edit" &&
+          employeeId &&
+          options.shouldSaveBankDetails
+        ) {
+          await dispatch(
+            saveHrEmployeeBankDetails({
+              id: employeeId,
+              payload: options.bankDetails,
+            }),
+          ).unwrap();
+        }
 
         toast.success(
           getHrSuccessMessage(

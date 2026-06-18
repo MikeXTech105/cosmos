@@ -39,7 +39,7 @@ const getPartyIdentityStyles = (party) => {
   const type = getPartyTypeLabel(party).toLowerCase();
 
   if (type.includes("customer")) {
-    return "bg-blue-50 text-blue-700";
+    return "bg-brand-light text-brand";
   }
 
   if (type.includes("supplier")) {
@@ -112,7 +112,7 @@ const PartyActions = ({
           icon={Pencil}
           label="Edit Party"
           onClick={() => onEdit(party)}
-          className="hover:text-blue-700"
+          className="hover:text-brand"
         />
       )}
 

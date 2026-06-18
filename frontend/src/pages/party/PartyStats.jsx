@@ -44,7 +44,7 @@ const PartyStats = ({
         icon={Store}
         label="Customers"
         value={customerCount}
-        colorClass="bg-blue-50 text-blue-600"
+        colorClass="bg-brand-light text-brand"
       />
       <StatCard
         icon={Truck}

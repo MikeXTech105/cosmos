@@ -33,7 +33,7 @@ const Settings = lazy(() => import("../pages/settings/index.js"));
 const RouteFallback = () => {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-slate-50">
-      <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+      <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-brand" />
     </div>
   );
 };

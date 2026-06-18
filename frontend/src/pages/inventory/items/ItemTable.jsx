@@ -137,7 +137,7 @@ const ItemTable = ({
                             "inline-flex rounded-full px-2 py-1 text-[11px] font-semibold",
                             itemType === "Service"
                               ? "bg-emerald-50 text-emerald-700"
-                              : "bg-blue-50 text-blue-700",
+                              : "bg-brand-light text-brand",
                           ].join(" ")}
                         >
                           {itemType}

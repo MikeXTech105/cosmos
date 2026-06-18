@@ -423,7 +423,7 @@ const PayrollPage = () => {
           icon={UsersRound}
           label="Employees"
           value={stats.employees}
-          colorClass="bg-blue-50 text-blue-600"
+          colorClass="bg-brand-light text-brand"
         />
       </div>
 
