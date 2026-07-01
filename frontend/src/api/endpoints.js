@@ -49,6 +49,57 @@ export const ENDPOINTS = {
 
   SALES_INVOICE_PAYMENTS: (id) => `/api/v1/sales/invoices/${id}/payments`,
 
+  EXPENSE_CATEGORIES: "/api/expense-categories",
+
+  EXPENSE_CATEGORY_BY_ID: (id) => `/api/expense-categories/${id}`,
+
+  EXPENSES: "/api/expenses",
+
+  EXPENSE_BY_ID: (id) => `/api/expenses/${id}`,
+
+  PURCHASE_BILLS: "/api/purchase-bills",
+
+  PURCHASE_BILL_BY_ID: (id) => `/api/purchase-bills/${id}`,
+
+  PURCHASE_BILL_BY_SUPPLIER: (supplierId) =>
+    `/api/purchase-bills/supplier/${supplierId}`,
+
+  PURCHASE_BILL_CONFIRM: (id) => `/api/purchase-bills/${id}/confirm`,
+
+  PURCHASE_BILL_CANCEL: (id) => `/api/purchase-bills/${id}/cancel`,
+
+  PURCHASE_ORDERS: "/api/purchase-orders",
+
+  PURCHASE_ORDER_BY_ID: (id) => `/api/purchase-orders/${id}`,
+
+  PURCHASE_ORDER_CANCEL: (id) => `/api/purchase-orders/${id}/cancel`,
+
+  PURCHASE_ORDER_CONVERT_TO_BILL: (id) =>
+    `/api/purchase-orders/${id}/convert-to-purchase-bill`,
+
+  PURCHASE_RETURNS: "/api/purchase-returns",
+
+  PURCHASE_RETURN_BY_ID: (id) => `/api/purchase-returns/${id}`,
+
+  SUPPLIER_PAYMENTS: "/api/supplier-payments",
+
+  SUPPLIER_PAYMENT_BY_ID: (id) => `/api/supplier-payments/${id}`,
+
+  PURCHASE_REPORT_PURCHASE_SUMMARY:
+    "/api/purchase-expense/reports/purchase-summary",
+
+  PURCHASE_REPORT_SUPPLIER_OUTSTANDING:
+    "/api/purchase-expense/reports/supplier-outstanding",
+
+  PURCHASE_REPORT_EXPENSE_SUMMARY:
+    "/api/purchase-expense/reports/expense-summary",
+
+  PURCHASE_REPORT_CATEGORY_WISE_EXPENSE:
+    "/api/purchase-expense/reports/category-wise-expense",
+
+  PURCHASE_REPORT_ITEM_PURCHASE_HISTORY:
+    "/api/purchase-expense/reports/item-purchase-history",
+
   CATEGORIES: "/api/categories",
 
   CATEGORY_BY_ID: (id) => `/api/categories/${id}`,

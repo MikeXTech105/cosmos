@@ -32,6 +32,26 @@ const SalesInvoices = lazy(() => import("../pages/sales/invoices/index.js"));
 const SalesInvoiceDetail = lazy(
   () => import("../pages/sales/invoices/InvoiceDetailPage.jsx"),
 );
+const PurchaseBills = lazy(() => import("../pages/purchase/bills/index.js"));
+const PurchaseBillDetail = lazy(
+  () => import("../pages/purchase/bills/PurchaseBillDetailPage.jsx"),
+);
+const PurchaseOrders = lazy(() => import("../pages/purchase/orders/index.js"));
+const PurchaseOrderDetail = lazy(
+  () => import("../pages/purchase/orders/PurchaseOrderDetailPage.jsx"),
+);
+const PurchaseReturns = lazy(() => import("../pages/purchase/returns/index.js"));
+const PurchaseReturnDetail = lazy(
+  () => import("../pages/purchase/returns/PurchaseReturnDetailPage.jsx"),
+);
+const SupplierPayments = lazy(
+  () => import("../pages/purchase/supplierPayments/index.js"),
+);
+const Expenses = lazy(() => import("../pages/purchase/expenses/index.js"));
+const ExpenseCategories = lazy(
+  () => import("../pages/purchase/expenseCategories/index.js"),
+);
+const PurchaseReports = lazy(() => import("../pages/purchase/reports/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
 
 const RouteFallback = () => {
@@ -218,6 +238,113 @@ const AppRoutes = () => {
                 pageName="Sale Invoices"
               >
                 <SalesInvoiceDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/bills"
+            element={
+              <PermissionGuard
+                route="/purchase/bills"
+                pageName="Purchase Bills"
+              >
+                <PurchaseBills />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/bills/:id"
+            element={
+              <PermissionGuard
+                route="/purchase/bills"
+                pageName="Purchase Bills"
+              >
+                <PurchaseBillDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/orders"
+            element={
+              <PermissionGuard
+                route="/purchase/orders"
+                pageName="Purchase Orders"
+              >
+                <PurchaseOrders />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/orders/:id"
+            element={
+              <PermissionGuard
+                route="/purchase/orders"
+                pageName="Purchase Orders"
+              >
+                <PurchaseOrderDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/returns"
+            element={
+              <PermissionGuard
+                route="/purchase/returns"
+                pageName="Purchase Returns"
+              >
+                <PurchaseReturns />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/returns/:id"
+            element={
+              <PermissionGuard
+                route="/purchase/returns"
+                pageName="Purchase Returns"
+              >
+                <PurchaseReturnDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/supplier-payments"
+            element={
+              <PermissionGuard
+                route="/purchase/supplier-payments"
+                pageName="Supplier Payments"
+              >
+                <SupplierPayments />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/expenses"
+            element={
+              <PermissionGuard route="/purchase/expenses" pageName="Expenses">
+                <Expenses />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/expense-categories"
+            element={
+              <PermissionGuard
+                route="/purchase/expense-categories"
+                pageName="Expense Categories"
+              >
+                <ExpenseCategories />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/reports"
+            element={
+              <PermissionGuard
+                route="/purchase/reports"
+                pageName="Purchase Reports"
+              >
+                <PurchaseReports />
               </PermissionGuard>
             }
           />
