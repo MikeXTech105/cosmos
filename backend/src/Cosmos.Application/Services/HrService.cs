@@ -119,8 +119,11 @@ public sealed class HrService : IHrService
     public async Task<ApiResponse<EmployeeDto>> GetEmployeeAsync(long id, CancellationToken ct) =>
         ApiResponse<EmployeeDto>.Success(await _repository.GetEmployeeAsync(id, ct) ?? throw NotFound("Employee"));
 
-    public async Task<ApiResponse<PagedResult<EmployeeListItemDto>>> GetEmployeesAsync(GetEmployeesQuery query, CancellationToken ct) =>
-        ApiResponse<PagedResult<EmployeeListItemDto>>.Success(await _repository.GetEmployeesAsync(query, ct));
+    public async Task<ApiResponse<PagedResult<EmployeeListItemDto>>> GetEmployeesAsync(GetEmployeesQuery query, CancellationToken ct)
+    {
+        await ValidateAsync(query, ct);
+        return ApiResponse<PagedResult<EmployeeListItemDto>>.Success(await _repository.GetEmployeesAsync(query, ct));
+    }
 
     public async Task<ApiResponse<EmployeeDto>> CreateEmployeeAsync(CreateEmployeeCommand command, CancellationToken ct)
     {
@@ -139,11 +142,29 @@ public sealed class HrService : IHrService
         return ApiResponse<EmployeeDto>.Success(result, "Employee updated.");
     }
 
+    public async Task<ApiResponse<EmployeeDto>> ResignEmployeeAsync(long id, ResignEmployeeCommand command, CancellationToken ct)
+    {
+        await ValidateAsync(command, ct, id);
+        var old = await _repository.GetEmployeeAsync(id, ct) ?? throw NotFound("Employee");
+        var result = await _repository.ResignEmployeeAsync(id, command, UserId, ct);
+        await AuditAsync("HR.Employees", id, "Resign", old, result, ct);
+        return ApiResponse<EmployeeDto>.Success(result, "Employee resigned.");
+    }
+
+    public async Task<ApiResponse<EmployeeDto>> RejoinEmployeeAsync(long id, RejoinEmployeeCommand command, CancellationToken ct)
+    {
+        await ValidateAsync(command, ct, id);
+        var old = await _repository.GetEmployeeAsync(id, ct) ?? throw NotFound("Employee");
+        var result = await _repository.RejoinEmployeeAsync(id, command, UserId, ct);
+        await AuditAsync("HR.Employees", id, "Rejoin", old, result, ct);
+        return ApiResponse<EmployeeDto>.Success(result, "Employee rejoined.");
+    }
+
     public async Task<ApiResponse> DeleteEmployeeAsync(long id, CancellationToken ct) =>
         await DeleteAsync("HR.Employees", "Employee", id, () => _repository.GetEmployeeAsync(id, ct), () => _repository.DeleteEmployeeAsync(id, UserId, ct), ct);
 
-    public async Task<ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>> GetEmployeeDropdownAsync(string? search, CancellationToken ct) =>
-        ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>.Success(await _repository.GetEmployeeDropdownAsync(search, ct));
+    public async Task<ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>> GetEmployeeDropdownAsync(string? search, bool includeResigned, CancellationToken ct) =>
+        ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>.Success(await _repository.GetEmployeeDropdownAsync(search, includeResigned, ct));
 
     public async Task<ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>> GetReportingManagersAsync(long? departmentId, long? excludingEmployeeId, CancellationToken ct) =>
         ApiResponse<IReadOnlyCollection<EmployeeDropdownDto>>.Success(await _repository.GetReportingManagersAsync(departmentId, excludingEmployeeId, ct));

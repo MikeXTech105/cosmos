@@ -12,7 +12,8 @@ public sealed record EmployeeDto(
     DateOnly JoiningDate, string? Mobile, string? Email, long DepartmentId, string DepartmentName,
     long DesignationId, string DesignationName, long? ReportingManagerId, string? ReportingManagerName,
     long ShiftId, string ShiftName, int EmploymentType, int Status, string? ProfilePhotoUrl,
-    bool IsActive, DateTime CreatedOn, DateTime? UpdatedOn);
+    string StatusName, bool IsActive, bool IsDeleted, DateTime? ResignedDate, DateOnly? LastWorkingDate,
+    string? ResignationReason, DateTime? RejoinedDate, string? RejoinRemarks, DateTime CreatedOn, DateTime? UpdatedOn);
 public sealed class EmployeeListItemDto
 {
     public long Id { get; set; }
@@ -29,8 +30,15 @@ public sealed class EmployeeListItemDto
     public string? ReportingManagerName { get; set; }
     public int EmploymentType { get; set; }
     public int Status { get; set; }
+    public string StatusName { get; set; } = string.Empty;
     public DateOnly JoiningDate { get; set; }
     public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
+    public DateTime? ResignedDate { get; set; }
+    public DateOnly? LastWorkingDate { get; set; }
+    public string? ResignationReason { get; set; }
+    public DateTime? RejoinedDate { get; set; }
+    public string? RejoinRemarks { get; set; }
     public int TotalCount { get; set; }
 }
 public sealed record EmployeeDropdownDto(long Id, string EmployeeCode, string EmployeeName);

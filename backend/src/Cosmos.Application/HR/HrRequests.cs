@@ -23,7 +23,9 @@ public sealed record UpdateEmployeeCommand(
     DateOnly JoiningDate, string? Mobile, string? Email, long DepartmentId, long DesignationId,
     long? ReportingManagerId, long ShiftId, int EmploymentType, int Status, string? ProfilePhotoUrl,
     IReadOnlyCollection<EmployeeAddressRequest>? Addresses = null);
-public sealed record GetEmployeesQuery(string? Search = null, long? DepartmentId = null, long? DesignationId = null, int? Status = null, bool? IsActive = null, int PageNumber = 1, int PageSize = 20, string? SortBy = "EmployeeCode", string? SortDirection = "ASC");
+public sealed record ResignEmployeeCommand(DateOnly LastWorkingDate, string? ResignationReason);
+public sealed record RejoinEmployeeCommand(DateOnly? RejoinedDate = null, string? Remarks = null);
+public sealed record GetEmployeesQuery(string? Search = null, long? DepartmentId = null, long? DesignationId = null, string? Status = null, bool? IsActive = null, bool IncludeResigned = true, int PageNumber = 1, int PageSize = 20, string? SortBy = "EmployeeCode", string? SortDirection = "ASC");
 public sealed record AddEmployeeDocumentCommand(string DocumentType, string FileName, string FilePath, DateOnly? ExpiryDate);
 public sealed record AddEmployeeBankDetailsCommand(string BankName, string AccountNumber, string IFSCCode, string? BranchName, string? UPIId);
 

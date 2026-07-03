@@ -59,6 +59,8 @@ IF OBJECT_ID(N'dbo.sp_HR_Employee_GetById', N'P') IS NOT NULL DROP PROCEDURE dbo
 IF OBJECT_ID(N'dbo.sp_HR_Employee_GetDropdown', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_GetDropdown;
 IF OBJECT_ID(N'dbo.sp_HR_Employee_GetList', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_GetList;
 IF OBJECT_ID(N'dbo.sp_HR_Employee_GetReportingManagers', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_GetReportingManagers;
+IF OBJECT_ID(N'dbo.sp_HR_Employee_Rejoin', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_Rejoin;
+IF OBJECT_ID(N'dbo.sp_HR_Employee_Resign', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_Resign;
 IF OBJECT_ID(N'dbo.sp_HR_Employee_Update', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_Update;
 IF OBJECT_ID(N'dbo.sp_HR_Employee_ValueExists', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_Employee_ValueExists;
 IF OBJECT_ID(N'dbo.sp_HR_EmployeeBank_Create', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_HR_EmployeeBank_Create;
