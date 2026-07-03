@@ -1,0 +1,507 @@
+using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Cosmos.Application.Abstractions.Services;
+using Cosmos.Application.Gst;
+using Cosmos.Contracts.Gst;
+using Cosmos.Shared.Exceptions;
+using Cosmos.Shared.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace Cosmos.Infrastructure.Gst;
+
+public sealed class GstZenProviderService : IGstZenProviderService
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly HttpClient _httpClient;
+    private readonly GstZenOptions _options;
+    private readonly IGstApiLogService _apiLogService;
+    private readonly ILogger<GstZenProviderService> _logger;
+
+    public GstZenProviderService(HttpClient httpClient, IOptions<GstZenOptions> options, IGstApiLogService apiLogService, ILogger<GstZenProviderService> logger)
+    {
+        _httpClient = httpClient;
+        _options = options.Value;
+        _apiLogService = apiLogService;
+        _logger = logger;
+    }
+
+    public GstConfigurationStatusResponse GetConfigurationStatus()
+    {
+        var configured = new List<string>();
+        var missing = new List<string>();
+
+        AddSetting(nameof(_options.Environment), _options.Environment, configured, missing);
+        AddSetting(nameof(_options.SandboxBaseUrl), _options.SandboxBaseUrl, configured, missing);
+        AddSetting(nameof(_options.ProductionBaseUrl), _options.ProductionBaseUrl, configured, missing);
+        AddSecretStatus(nameof(_options.SandboxToken), _options.SandboxToken, configured, missing);
+        AddSecretStatus(nameof(_options.ProductionToken), _options.ProductionToken, configured, missing);
+        AddSetting(nameof(_options.TokenHeaderName), _options.TokenHeaderName, configured, missing);
+
+        var features = new List<string>();
+        if (!string.IsNullOrWhiteSpace(_options.GstinVerificationPath)) features.Add("GSTIN Verification");
+        if (!string.IsNullOrWhiteSpace(_options.EWayBillGeneratePath)) features.Add("E-Way Bill");
+        if (!string.IsNullOrWhiteSpace(_options.EInvoiceGeneratePath)) features.Add("E-Invoice");
+        if (!string.IsNullOrWhiteSpace(_options.GstnGenerateOtpPath)) features.Add("GST Session/OTP");
+        if (!string.IsNullOrWhiteSpace(_options.Gstr1Path) || !string.IsNullOrWhiteSpace(_options.Gstr3BPath)) features.Add("GST Returns");
+
+        return new GstConfigurationStatusResponse(_options.Environment, _options.CurrentBaseUrl, configured, missing, features);
+    }
+
+    public async Task<GstinVerificationResponse> VerifyGstinAsync(VerifyGstinRequest request, long? companyGstRegistrationId, CancellationToken cancellationToken)
+    {
+        var response = await SendAsync("GSTIN Verification", companyGstRegistrationId, HttpMethod.Post, _options.GstinVerificationPath, new { request.Gstin }, cancellationToken);
+        return new GstinVerificationResponse
+        {
+            Gstin = GetString(response.Json, "gstin") ?? request.Gstin,
+            LegalName = GetString(response.Json, "legal_name", "legalName", "lgnm"),
+            TradeName = GetString(response.Json, "trade_name", "tradeName", "tradeNam"),
+            Status = GetString(response.Json, "status", "sts"),
+            TaxpayerType = GetString(response.Json, "taxpayer_type", "taxpayerType", "dty"),
+            StateCode = GetString(response.Json, "state_code", "stateCode"),
+            RegistrationDate = GetDate(response.Json, "registration_date", "registrationDate", "rgdt"),
+            AddressJson = GetRaw(response.Json, "address", "pradr"),
+            NatureOfBusinessJson = GetRaw(response.Json, "nature_of_business", "natureOfBusiness", "nba"),
+            RawResponseJson = response.RawJson,
+            VerifiedAt = DateTime.UtcNow,
+            CacheExpiresAt = DateTime.UtcNow.AddDays(1)
+        };
+    }
+
+    public async Task<EWayBillResponse> GenerateEWayBillAsync(GenerateEWayBillRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var payload = JsonPayloadOrObject(request.RequestJson, request);
+        var response = await SendAsync("E-Way Bill Generate", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillGeneratePath, payload, cancellationToken);
+        return new EWayBillResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            SalesInvoiceId = request.SalesInvoiceId,
+            PurchaseInvoiceId = request.PurchaseInvoiceId,
+            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo"),
+            Status = GetString(response.Json, "status") ?? "Generated",
+            ValidUpTo = GetDate(response.Json, "validUpTo", "valid_upto"),
+            GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EWayBillResponse> CancelEWayBillAsync(CancelEWayBillRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var response = await SendAsync("E-Way Bill Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillCancelPath, request, cancellationToken);
+        return new EWayBillResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            EWayBillNumber = request.EWayBillNumber,
+            Status = GetString(response.Json, "status") ?? "Cancelled",
+            CancelledAt = DateTime.UtcNow,
+            CancelReasonCode = request.CancelReasonCode,
+            CancelReason = request.CancelRemark,
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EWayBillResponse> UpdateEWayBillVehicleAsync(UpdateEWayBillVehicleRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var payload = JsonPayloadOrObject(request.RequestJson, request);
+        var response = await SendAsync("E-Way Bill Update Vehicle", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillUpdateVehiclePath, payload, cancellationToken);
+        return new EWayBillResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            EWayBillNumber = request.EWayBillNumber,
+            Status = GetString(response.Json, "status") ?? "VehicleUpdated",
+            VehicleNumber = request.VehicleNumber,
+            GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EWayBillResponse> ExtendEWayBillAsync(ExtendEWayBillRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var payload = JsonPayloadOrObject(request.RequestJson, request);
+        var response = await SendAsync("E-Way Bill Extend", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillExtendPath, payload, cancellationToken);
+        return new EWayBillResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            EWayBillNumber = request.EWayBillNumber,
+            Status = GetString(response.Json, "status") ?? "Extended",
+            ValidUpTo = GetDate(response.Json, "validUpTo", "valid_upto"),
+            GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EWayBillResponse> GetEWayBillAsync(long companyGstRegistrationId, string ewayBillNumber, CancellationToken cancellationToken)
+    {
+        var response = await SendAsync("E-Way Bill Details", companyGstRegistrationId, HttpMethod.Get, AppendQuery(_options.EWayBillGetDetailsPath, "ewayBillNumber", ewayBillNumber), null, cancellationToken);
+        return new EWayBillResponse
+        {
+            CompanyGstRegistrationId = companyGstRegistrationId,
+            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo") ?? ewayBillNumber,
+            Status = GetString(response.Json, "status") ?? "Generated",
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EInvoiceResponse> GenerateEInvoiceAsync(GenerateEInvoiceRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var payload = JsonPayloadOrObject(request.RequestJson, request);
+        var response = await SendAsync("E-Invoice Generate", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EInvoiceGeneratePath, payload, cancellationToken);
+        return new EInvoiceResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            SalesInvoiceId = request.SalesInvoiceId,
+            Irn = GetString(response.Json, "irn", "Irn"),
+            AckNumber = GetString(response.Json, "ackNo", "ackNumber", "AckNo"),
+            AckDate = GetDate(response.Json, "ackDate", "AckDt"),
+            SignedQrCode = GetString(response.Json, "signedQRCode", "signedQrCode", "SignedQRCode"),
+            SignedInvoice = GetString(response.Json, "signedInvoice", "SignedInvoice"),
+            Status = GetString(response.Json, "status") ?? "Generated",
+            GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EInvoiceResponse> CancelEInvoiceAsync(CancelEInvoiceRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var response = await SendAsync("E-Invoice Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EInvoiceCancelPath, request, cancellationToken);
+        return new EInvoiceResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            Irn = request.Irn,
+            Status = GetString(response.Json, "status") ?? "Cancelled",
+            CancelledAt = DateTime.UtcNow,
+            CancelReasonCode = request.CancelReasonCode,
+            CancelReason = request.CancelRemark,
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<EInvoiceResponse> GetEInvoiceAsync(long companyGstRegistrationId, string irn, CancellationToken cancellationToken)
+    {
+        var response = await SendAsync("E-Invoice Details", companyGstRegistrationId, HttpMethod.Get, AppendQuery(_options.EInvoiceGetDetailsPath, "irn", irn), null, cancellationToken);
+        return new EInvoiceResponse
+        {
+            CompanyGstRegistrationId = companyGstRegistrationId,
+            Irn = GetString(response.Json, "irn", "Irn") ?? irn,
+            Status = GetString(response.Json, "status") ?? "Generated",
+            GeneratedResponseJson = response.RawJson
+        };
+    }
+
+    public async Task<GstSessionResponse> GenerateOtpAsync(GenerateGstOtpRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var response = await SendAsync("GSTN Generate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnGenerateOtpPath, request, cancellationToken);
+        return new GstSessionResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            SessionType = "OTP",
+            Status = GetString(response.Json, "status") ?? "OtpGenerated",
+            LastErrorMessage = GetString(response.Json, "error", "message")
+        };
+    }
+
+    public async Task<GstSessionResponse> AuthenticateOtpAsync(AuthenticateGstOtpRequest request, CancellationToken cancellationToken)
+    {
+        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
+        var payload = JsonPayloadOrObject(request.RequestJson, request);
+        var response = await SendAsync("GSTN Authenticate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnAuthenticateOtpPath, payload, cancellationToken);
+        return new GstSessionResponse
+        {
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            SessionType = request.SessionType ?? "OTP",
+            TokenExpiresAt = GetDate(response.Json, "tokenExpiresAt", "expires_at"),
+            OtpVerifiedAt = DateTime.UtcNow,
+            Status = GetString(response.Json, "status") ?? "Active",
+            LastErrorMessage = GetString(response.Json, "error", "message")
+        };
+    }
+
+    private async Task<ProviderResponse> SendAsync(string apiType, long? companyGstRegistrationId, HttpMethod method, string? path, object? payload, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_options.CurrentBaseUrl))
+        {
+            throw new CosmosException("GSTZen base URL is not configured.", 500);
+        }
+
+        if (string.IsNullOrWhiteSpace(_options.CurrentToken))
+        {
+            throw new CosmosException("GSTZen token is not configured.", 500);
+        }
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new CosmosException($"GSTZen endpoint path for {apiType} is not configured.", 500);
+        }
+
+        ConfigureHeaders();
+        var requestUri = new Uri(new Uri(_options.CurrentBaseUrl.TrimEnd('/') + "/"), path.TrimStart('/'));
+        using var request = new HttpRequestMessage(method, requestUri);
+        var requestJson = payload is null ? null : JsonSerializer.Serialize(payload, JsonOptions);
+        if (requestJson is not null && method != HttpMethod.Get)
+        {
+            request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+        string? responseBody = null;
+        int? statusCode = null;
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            statusCode = (int)response.StatusCode;
+            responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            stopwatch.Stop();
+            await AddLogAsync(apiType, companyGstRegistrationId, requestUri, method, requestJson, responseBody, statusCode, response.IsSuccessStatusCode, null, stopwatch.ElapsedMilliseconds, cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CosmosException($"GSTZen {apiType} failed with status code {statusCode}.", 502);
+            }
+
+            return new ProviderResponse(ParseJson(responseBody), string.IsNullOrWhiteSpace(responseBody) ? "{}" : responseBody);
+        }
+        catch (CosmosException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(ex, "GSTZen {ApiType} request failed.", apiType);
+            await AddLogAsync(apiType, companyGstRegistrationId, requestUri, method, requestJson, responseBody, statusCode, false, ex.Message, stopwatch.ElapsedMilliseconds, cancellationToken);
+            throw new CosmosException($"GSTZen {apiType} request failed.", 502);
+        }
+    }
+
+    private void ConfigureHeaders()
+    {
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.Timeout = TimeSpan.FromSeconds(Math.Max(_options.TimeoutSeconds, 1));
+
+        var tokenHeaderName = string.IsNullOrWhiteSpace(_options.TokenHeaderName) ? "Token" : _options.TokenHeaderName;
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(tokenHeaderName, _options.CurrentToken);
+    }
+
+    private async Task AddLogAsync(string apiType, long? companyGstRegistrationId, Uri endpoint, HttpMethod method, string? requestPayload, string? responsePayload, int? statusCode, bool isSuccess, string? errorMessage, long durationMs, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _apiLogService.AddAsync(
+                new AddGstApiLogRequest(
+                    companyGstRegistrationId,
+                    "GSTZen",
+                    apiType,
+                    endpoint.ToString(),
+                    method.Method,
+                    Mask(requestPayload),
+                    Mask(responsePayload),
+                    statusCode,
+                    isSuccess,
+                    Mask(errorMessage),
+                    checked((int)Math.Min(durationMs, int.MaxValue)),
+                    null,
+                    null),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to save GST API log for {ApiType}.", apiType);
+        }
+    }
+
+    private string? Mask(string? value)
+    {
+        if (!_options.MaskSensitiveLogs || string.IsNullOrWhiteSpace(value))
+        {
+            return value;
+        }
+
+        var masked = value;
+        foreach (var secret in new[] { _options.SandboxToken, _options.ProductionToken, _options.CurrentToken })
+        {
+            if (!string.IsNullOrWhiteSpace(secret))
+            {
+                masked = masked.Replace(secret, "***", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        foreach (var key in new[] { "token", "sandboxToken", "productionToken", "otp" })
+        {
+            masked = MaskJsonProperty(masked, key);
+        }
+
+        return masked;
+    }
+
+    private static string MaskJsonProperty(string value, string propertyName)
+    {
+        try
+        {
+            var node = JsonNode.Parse(value);
+            MaskJsonNode(node, propertyName);
+            return node?.ToJsonString(JsonOptions) ?? value;
+        }
+        catch (JsonException)
+        {
+            return value;
+        }
+    }
+
+    private static void MaskJsonNode(JsonNode? node, string propertyName)
+    {
+        if (node is JsonObject obj)
+        {
+            foreach (var key in obj.Select(x => x.Key).ToArray())
+            {
+                if (string.Equals(key, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    obj[key] = "***";
+                }
+                else
+                {
+                    MaskJsonNode(obj[key], propertyName);
+                }
+            }
+        }
+        else if (node is JsonArray array)
+        {
+            foreach (var child in array)
+            {
+                MaskJsonNode(child, propertyName);
+            }
+        }
+    }
+
+    private static object JsonPayloadOrObject(string? json, object fallback)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return fallback;
+        }
+
+        return JsonNode.Parse(json) ?? fallback;
+    }
+
+    private static JsonNode? ParseJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new JsonObject();
+        }
+
+        try
+        {
+            return JsonNode.Parse(json);
+        }
+        catch (JsonException)
+        {
+            return new JsonObject { ["raw"] = json };
+        }
+    }
+
+    private static string? GetString(JsonNode? node, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var found = Find(node, name);
+            if (found is null)
+            {
+                continue;
+            }
+
+            var value = found.GetValueKind() == JsonValueKind.String ? found.GetValue<string>() : found.ToJsonString(JsonOptions).Trim('"');
+            if (!string.IsNullOrWhiteSpace(value) && value != "null")
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static DateTime? GetDate(JsonNode? node, params string[] names)
+    {
+        var value = GetString(node, names);
+        return DateTime.TryParse(value, out var date) ? date : null;
+    }
+
+    private static string? GetRaw(JsonNode? node, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var found = Find(node, name);
+            if (found is not null)
+            {
+                return found.ToJsonString(JsonOptions);
+            }
+        }
+
+        return null;
+    }
+
+    private static JsonNode? Find(JsonNode? node, string name)
+    {
+        if (node is JsonObject obj)
+        {
+            foreach (var item in obj)
+            {
+                if (string.Equals(item.Key, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return item.Value;
+                }
+
+                var child = Find(item.Value, name);
+                if (child is not null)
+                {
+                    return child;
+                }
+            }
+        }
+        else if (node is JsonArray array)
+        {
+            foreach (var child in array)
+            {
+                var found = Find(child, name);
+                if (found is not null)
+                {
+                    return found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string AppendQuery(string? path, string key, string value)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return string.Empty;
+        }
+
+        var separator = path.Contains('?') ? "&" : "?";
+        return $"{path}{separator}{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}";
+    }
+
+    private static void AddSetting(string name, string? value, ICollection<string> configured, ICollection<string> missing)
+    {
+        if (string.IsNullOrWhiteSpace(value)) missing.Add(name);
+        else configured.Add(name);
+    }
+
+    private static void AddSecretStatus(string name, string? value, ICollection<string> configured, ICollection<string> missing)
+    {
+        if (string.IsNullOrWhiteSpace(value)) missing.Add(name);
+        else configured.Add($"{name}: configured");
+    }
+
+    private sealed record ProviderResponse(JsonNode? Json, string RawJson);
+}

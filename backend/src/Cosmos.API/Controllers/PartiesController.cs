@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[Tags("Parties")]
+//[Tags("Parties")]
 [ApiExplorerSettings(GroupName = "parties")]
 [Route("api/v1/parties")]
 public sealed class PartiesController : ApiControllerBase

@@ -1,5 +1,7 @@
 using System.Text;
 using Cosmos.Application.Abstractions.Security;
+using Cosmos.Application.Abstractions.Services;
+using Cosmos.Infrastructure.Gst;
 using Cosmos.Infrastructure.Security;
 using Cosmos.Shared.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,10 +17,12 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.Configure<GstZenOptions>(configuration.GetSection(GstZenOptions.SectionName));
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddHttpClient<IGstZenProviderService, GstZenProviderService>();
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

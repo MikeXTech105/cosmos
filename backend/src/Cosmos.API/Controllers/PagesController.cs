@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[Tags("Settings")]
+//[Tags("Settings")]
 [ApiExplorerSettings(GroupName = "settings")]
 [Route("api/pages")]
 public sealed class PagesController : ApiControllerBase

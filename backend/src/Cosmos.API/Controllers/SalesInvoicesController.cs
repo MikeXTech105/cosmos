@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[Tags("Sales")]
+//[Tags("Sales")]
 [ApiExplorerSettings(GroupName = "sales")]
 [Route("api/v1/sales/invoices")]
 public sealed class SalesInvoicesController : ApiControllerBase
