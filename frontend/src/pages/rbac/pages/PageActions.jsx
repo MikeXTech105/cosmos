@@ -49,7 +49,7 @@ const PageActions = ({
           icon={Pencil}
           label="Edit Page"
           onClick={() => onEdit(page)}
-          className="hover:text-blue-700"
+          className="hover:text-brand"
         />
       )}
       {page.isActive

@@ -494,7 +494,7 @@ const LeavesPage = () => {
         <HrStatCard icon={Clock3} label="Pending" value={stats.pending} colorClass="bg-amber-50 text-amber-600" />
         <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} colorClass="bg-emerald-50 text-emerald-600" />
         <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} colorClass="bg-blue-50 text-blue-600" />
+        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">

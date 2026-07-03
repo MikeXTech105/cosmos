@@ -11,7 +11,7 @@ const ActionButton = ({ className, icon: Icon, label, onClick }) => {
         onClick={onClick}
         aria-label={label}
         className={[
-          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30",
+          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30",
           className,
         ].join(" ")}
       >
@@ -39,7 +39,7 @@ const UserActions = ({
           icon={Pencil}
           label="Edit User"
           onClick={() => onEdit(user)}
-          className="hover:text-blue-700"
+          className="hover:text-brand"
         />
       )}
 

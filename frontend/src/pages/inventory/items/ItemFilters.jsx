@@ -5,8 +5,10 @@ import AppSelect from "../../../components/common/AppSelect";
 import { STATUS_OPTIONS } from "../inventoryHelpers";
 
 const ItemFilters = ({
+  canCreateCategory = false,
   categoryOptions,
   filters,
+  onCreateCategory,
   onChange,
   onClear,
   resultCount,
@@ -37,6 +39,9 @@ const ItemFilters = ({
             ...categoryOptions,
           ]}
           aria-label="Filter items by category"
+          creatable={canCreateCategory}
+          createLabel="Create new category"
+          onCreateClick={onCreateCategory}
         />
 
         <AppSelect

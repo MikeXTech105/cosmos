@@ -97,7 +97,7 @@ const AttendanceStatusPill = ({ status }) => {
       : value === HR_ATTENDANCE_STATUS.LATE
         ? "bg-amber-50 text-amber-700 ring-amber-200"
         : value === HR_ATTENDANCE_STATUS.ON_LEAVE
-          ? "bg-blue-50 text-blue-700 ring-blue-200"
+          ? "bg-brand-light text-brand ring-brand/20"
           : "bg-red-50 text-red-700 ring-red-200";
 
   return (
@@ -692,7 +692,7 @@ const AttendancePage = () => {
         <HrStatCard icon={UserCheck} label="Present" value={stats.present} colorClass="bg-emerald-50 text-emerald-600" />
         <HrStatCard icon={UserX} label="Absent" value={stats.absent} colorClass="bg-red-50 text-red-600" />
         <HrStatCard icon={Clock} label="Late" value={stats.late} colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CalendarCheck} label="On Leave" value={stats.leave} colorClass="bg-blue-50 text-blue-600" />
+        <HrStatCard icon={CalendarCheck} label="On Leave" value={stats.leave} colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">

@@ -6,13 +6,12 @@ import { useDispatch } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+import { getAuthFormClasses } from "../../components/auth/authThemeClasses";
+import useAuthTheme from "../../hooks/useAuthTheme";
 import { loginUser } from "../../services/authService";
 import { setCredentials } from "../../store/slices/authSlice";
 import { saveAuthData } from "../../utils/authStorage";
 import { loginSchema } from "../../utils/validationSchemas";
-
-const inputBase =
-  "w-full rounded-lg border border-white/10 bg-white/[0.03] py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition-all focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/15";
 
 const getRememberMeDefault = () => {
   const storedValue = window.localStorage.getItem("cosmos_remember_me");
@@ -24,8 +23,10 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(null);
   const dispatch = useDispatch();
+  const { authTheme } = useAuthTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const classes = getAuthFormClasses(authTheme);
 
   const {
     register,
@@ -77,10 +78,10 @@ const Login = () => {
   return (
     <div className="w-full">
       <div className="mb-7">
-        <h2 className="text-2xl font-bold tracking-tight text-white">
+        <h2 className={["text-2xl font-bold tracking-tight", classes.title].join(" ")}>
           Welcome back
         </h2>
-        <p className="mt-1.5 text-sm text-slate-400">
+        <p className={["mt-1.5 text-sm", classes.subtext].join(" ")}>
           Sign in to your COSMOS account.
         </p>
       </div>
@@ -89,7 +90,7 @@ const Login = () => {
         <div className="space-y-1.5">
           <label
             htmlFor="usernameOrEmail"
-            className="block text-xs font-medium text-slate-300"
+            className={["block text-xs font-medium", classes.label].join(" ")}
           >
             Username / Email
           </label>
@@ -97,7 +98,7 @@ const Login = () => {
           <div className="relative flex items-center">
             <Mail
               className={`absolute left-3 h-4 w-4 transition-colors ${
-                focused === "email" ? "text-blue-400" : "text-slate-500"
+                focused === "email" ? classes.iconFocus : classes.icon
               }`}
             />
 
@@ -106,9 +107,11 @@ const Login = () => {
               type="text"
               autoComplete="username"
               placeholder="you@company.com"
-              className={`${inputBase} pl-10 pr-4 ${
-                errors.usernameOrEmail ? "border-red-500/50" : ""
-              }`}
+              className={[
+                "w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:ring-2",
+                classes.input,
+                errors.usernameOrEmail ? classes.inputError : "",
+              ].join(" ")}
               onFocus={() => setFocused("email")}
               {...register("usernameOrEmail", {
                 onBlur: () => setFocused(null),
@@ -117,7 +120,7 @@ const Login = () => {
           </div>
 
           {errors.usernameOrEmail && (
-            <p className="text-xs text-red-400">
+            <p className={["text-xs", classes.error].join(" ")}>
               {errors.usernameOrEmail.message}
             </p>
           )}
@@ -125,13 +128,16 @@ const Login = () => {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-xs font-medium text-slate-300">
+            <label
+              htmlFor="password"
+              className={["text-xs font-medium", classes.label].join(" ")}
+            >
               Password
             </label>
 
             <Link
               to="/forgot-password"
-              className="text-xs font-medium text-blue-400 transition-colors hover:text-blue-300"
+              className={["text-xs font-medium transition-colors", classes.link].join(" ")}
             >
               Forgot password?
             </Link>
@@ -140,7 +146,7 @@ const Login = () => {
           <div className="relative flex items-center">
             <Lock
               className={`absolute left-3 h-4 w-4 transition-colors ${
-                focused === "password" ? "text-blue-400" : "text-slate-500"
+                focused === "password" ? classes.iconFocus : classes.icon
               }`}
             />
 
@@ -149,9 +155,11 @@ const Login = () => {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               placeholder="Enter your password"
-              className={`${inputBase} pl-10 pr-11 ${
-                errors.password ? "border-red-500/50" : ""
-              }`}
+              className={[
+                "w-full rounded-lg border py-2.5 pl-10 pr-11 text-sm outline-none transition-all focus:ring-2",
+                classes.input,
+                errors.password ? classes.inputError : "",
+              ].join(" ")}
               onFocus={() => setFocused("password")}
               {...register("password", {
                 onBlur: () => setFocused(null),
@@ -160,7 +168,10 @@ const Login = () => {
 
             <button
               type="button"
-              className="absolute right-3 text-slate-500 transition-colors hover:text-slate-300"
+              className={[
+                "absolute right-3 transition-colors",
+                classes.iconButton,
+              ].join(" ")}
               onClick={() => setShowPassword((value) => !value)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -173,7 +184,9 @@ const Login = () => {
           </div>
 
           {errors.password && (
-            <p className="text-xs text-red-400">{errors.password.message}</p>
+            <p className={["text-xs", classes.error].join(" ")}>
+              {errors.password.message}
+            </p>
           )}
         </div>
 
@@ -181,13 +194,13 @@ const Login = () => {
           <input
             id="rememberMe"
             type="checkbox"
-            className="h-3.5 w-3.5 cursor-pointer rounded border-white/20 accent-blue-500"
+            className={["h-3.5 w-3.5 cursor-pointer rounded", classes.checkbox].join(" ")}
             {...register("rememberMe")}
           />
 
           <label
             htmlFor="rememberMe"
-            className="cursor-pointer select-none text-xs text-slate-400"
+            className={["cursor-pointer select-none text-xs", classes.subtext].join(" ")}
           >
             Keep me signed in
           </label>
@@ -196,7 +209,10 @@ const Login = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className={[
+            "mt-2 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors",
+            classes.button,
+          ].join(" ")}
         >
           {isSubmitting ? (
             <>

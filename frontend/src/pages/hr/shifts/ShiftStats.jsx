@@ -16,7 +16,7 @@ const ShiftStats = ({ day, night, total }) => {
         icon={Moon}
         label="Night Shifts"
         value={night}
-        colorClass="bg-indigo-50 text-indigo-600"
+        colorClass="bg-brand-light text-brand"
       />
     </div>
   );

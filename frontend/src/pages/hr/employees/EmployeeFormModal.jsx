@@ -9,50 +9,18 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import {
-  HR_EMPLOYEE_STATUS,
   HR_EMPLOYEE_STATUS_OPTIONS,
-  HR_EMPLOYMENT_TYPE,
   HR_EMPLOYMENT_TYPE_OPTIONS,
-  HR_GENDER,
   HR_GENDER_OPTIONS,
 } from "../../../utils/hrEnums";
 import { hrEmployeeSchema } from "../../../utils/validationSchemas";
 import { getHrRecordId } from "../hrHelpers";
-
-const getDefaultValues = (employee) => {
-  const address = employee?.addresses?.[0] ?? {};
-  const bank = employee?.bankDetails ?? {};
-
-  return {
-    employeeCode: employee?.employeeCode ?? "",
-    firstName: employee?.firstName ?? "",
-    lastName: employee?.lastName ?? "",
-    gender: employee?.gender ?? HR_GENDER.MALE,
-    dateOfBirth: employee?.dateOfBirth?.slice(0, 10) ?? "",
-    joiningDate: employee?.joiningDate?.slice(0, 10) ?? "",
-    mobile: employee?.mobile ?? "",
-    email: employee?.email ?? "",
-    departmentId: employee?.departmentId ?? "",
-    designationId: employee?.designationId ?? "",
-    reportingManagerId: employee?.reportingManagerId ?? "",
-    shiftId: employee?.shiftId ?? "",
-    employmentType: employee?.employmentType ?? HR_EMPLOYMENT_TYPE.FULL_TIME,
-    status: employee?.status ?? HR_EMPLOYEE_STATUS.ACTIVE,
-    profilePhotoUrl: employee?.profilePhotoUrl ?? "",
-    addressType: address.addressType ?? "Primary",
-    addressLine1: address.addressLine1 ?? "",
-    addressLine2: address.addressLine2 ?? "",
-    city: address.city ?? "",
-    state: address.state ?? "",
-    country: address.country ?? "India",
-    pincode: address.pincode ?? "",
-    bankName: bank.bankName ?? "",
-    accountNumber: bank.accountNumber ?? "",
-    ifscCode: bank.ifscCode ?? "",
-    branchName: bank.branchName ?? "",
-    upiId: bank.upiId ?? "",
-  };
-};
+import {
+  hasBankDetails,
+  mapEmployeeToForm,
+  mapFormToBankDetails,
+  mapFormToPayload,
+} from "./employeeFormMappers";
 
 const Section = ({ children, title }) => {
   return (
@@ -65,28 +33,11 @@ const Section = ({ children, title }) => {
   );
 };
 
-const hasAddress = (values) => {
-  return [
-    values.addressLine1,
-    values.addressLine2,
-    values.city,
-    values.state,
-    values.country,
-    values.pincode,
-  ].some((value) => String(value ?? "").trim());
-};
-
-const buildAddress = (values) => ({
-  addressType: values.addressType?.trim() || "Primary",
-  addressLine1: values.addressLine1?.trim() ?? "",
-  addressLine2: values.addressLine2?.trim() ?? "",
-  city: values.city?.trim() ?? "",
-  state: values.state?.trim() ?? "",
-  country: values.country?.trim() ?? "",
-  pincode: values.pincode?.trim() ?? "",
-});
-
 const EmployeeFormModal = ({
+  canCreateDepartment = false,
+  canCreateDesignation = false,
+  canCreateReportingManager = false,
+  canCreateShift = false,
   departmentOptions,
   designationOptions,
   employee,
@@ -94,6 +45,10 @@ const EmployeeFormModal = ({
   isOpen,
   mode,
   onClose,
+  onCreateDepartment,
+  onCreateDesignation,
+  onCreateReportingManager,
+  onCreateShift,
   onSubmit,
   reportingManagerOptions,
   shiftOptions,
@@ -108,48 +63,25 @@ const EmployeeFormModal = ({
     reset,
   } = useForm({
     resolver: zodResolver(hrEmployeeSchema),
-    defaultValues: getDefaultValues(employee),
+    defaultValues: mapEmployeeToForm(employee),
   });
 
   useEffect(() => {
     if (isOpen) {
-      reset(getDefaultValues(employee));
+      reset(mapEmployeeToForm(employee));
     }
   }, [employee, isOpen, reset]);
 
   const submitForm = async (values) => {
-    const payload = {
-      employeeCode: values.employeeCode.trim(),
-      firstName: values.firstName.trim(),
-      lastName: values.lastName.trim(),
-      gender: Number(values.gender),
-      dateOfBirth: values.dateOfBirth,
-      joiningDate: values.joiningDate,
-      mobile: values.mobile.trim(),
-      email: values.email.trim(),
-      departmentId: Number(values.departmentId),
-      designationId: Number(values.designationId),
-      reportingManagerId: values.reportingManagerId
-        ? Number(values.reportingManagerId)
-        : null,
-      shiftId: Number(values.shiftId),
-      employmentType: Number(values.employmentType),
-      status: Number(values.status),
-      profilePhotoUrl: values.profilePhotoUrl?.trim() ?? "",
-      addresses: hasAddress(values) ? [buildAddress(values)] : [],
-    };
-
-    if (!isEdit) {
-      payload.bankDetails = {
-        bankName: values.bankName?.trim() ?? "",
-        accountNumber: values.accountNumber?.trim() ?? "",
-        ifscCode: values.ifscCode?.trim() ?? "",
-        branchName: values.branchName?.trim() ?? "",
-        upiId: values.upiId?.trim() ?? "",
-      };
-    }
-
-    await onSubmit(payload);
+    await onSubmit(
+      mapFormToPayload(values, { includeBankDetails: !isEdit }),
+      {
+        bankDetails: mapFormToBankDetails(values),
+        shouldSaveBankDetails:
+          isEdit &&
+          (hasBankDetails(values) || hasBankDetails(employee?.bankDetails)),
+      },
+    );
   };
 
   const title = isView
@@ -307,6 +239,9 @@ const EmployeeFormModal = ({
                       placeholder="Select department"
                       disabled={isView}
                       error={errors.departmentId?.message}
+                      creatable={canCreateDepartment}
+                      createLabel="Create new department"
+                      onCreateClick={onCreateDepartment}
                     />
                   )}
                 />
@@ -323,6 +258,9 @@ const EmployeeFormModal = ({
                       placeholder="Select designation"
                       disabled={isView}
                       error={errors.designationId?.message}
+                      creatable={canCreateDesignation}
+                      createLabel="Create new designation"
+                      onCreateClick={onCreateDesignation}
                     />
                   )}
                 />
@@ -345,6 +283,9 @@ const EmployeeFormModal = ({
                       ]}
                       disabled={isView}
                       error={errors.reportingManagerId?.message}
+                      creatable={canCreateReportingManager}
+                      createLabel="Create new employee"
+                      onCreateClick={onCreateReportingManager}
                     />
                   )}
                 />
@@ -361,6 +302,9 @@ const EmployeeFormModal = ({
                       placeholder="Select shift"
                       disabled={isView}
                       error={errors.shiftId?.message}
+                      creatable={canCreateShift}
+                      createLabel="Create new shift"
+                      onCreateClick={onCreateShift}
                     />
                   )}
                 />
@@ -449,7 +393,7 @@ const EmployeeFormModal = ({
               </div>
             </Section>
 
-            {!isEdit && !isView && (
+            {!isView && (
               <Section title="Bank Details">
                 <div className="grid gap-4 md:grid-cols-2">
                   <AppInput

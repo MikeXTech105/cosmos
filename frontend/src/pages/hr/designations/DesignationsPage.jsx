@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import {
   createHrDesignation,
@@ -30,6 +31,7 @@ import DesignationFilters from "./DesignationFilters";
 import DesignationFormModal from "./DesignationFormModal";
 import DesignationStats from "./DesignationStats";
 import DesignationTable from "./DesignationTable";
+import DepartmentFormModal from "../departments/DepartmentFormModal";
 
 const extractDepartmentList = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -51,6 +53,11 @@ const DesignationsPage = () => {
     resource: "designations",
     route: "/hr/designations",
   });
+  const canCreateDepartment = useCreatePermission({
+    label: "Departments",
+    resource: "departments",
+    route: "/hr/departments",
+  });
   const [searchInput, setSearchInput] = useState(
     designationsState.filters.Search,
   );
@@ -62,6 +69,7 @@ const DesignationsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const [departmentCreateOpen, setDepartmentCreateOpen] = useState(false);
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -221,6 +229,21 @@ const DesignationsPage = () => {
     [closeModal, dispatch, loadDesignations, modal.entity, modal.mode],
   );
 
+  const submitDepartment = useCallback(
+    async (payload) => {
+      try {
+        await hrDepartmentService.createDepartment(payload);
+        toast.success("Department created successfully");
+        setDepartmentCreateOpen(false);
+        await loadDepartments();
+      } catch (error) {
+        toast.error(getHrActionError(error, "Unable to create department."));
+        throw error;
+      }
+    },
+    [loadDepartments],
+  );
+
   const confirmDelete = useCallback(async () => {
     if (!confirmation.entity) {
       return;
@@ -338,6 +361,7 @@ const DesignationsPage = () => {
       />
 
       <DesignationFormModal
+        canCreateDepartment={canCreateDepartment}
         departmentOptions={departmentOptions}
         departmentsLoading={departmentsLoading}
         designation={modal.entity}
@@ -345,7 +369,17 @@ const DesignationsPage = () => {
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={closeModal}
+        onCreateDepartment={() => setDepartmentCreateOpen(true)}
         onSubmit={submitDesignation}
+      />
+
+      <DepartmentFormModal
+        department={null}
+        isLoading={false}
+        isOpen={departmentCreateOpen}
+        mode="create"
+        onClose={() => setDepartmentCreateOpen(false)}
+        onSubmit={submitDepartment}
       />
 
       <HrConfirmDialog

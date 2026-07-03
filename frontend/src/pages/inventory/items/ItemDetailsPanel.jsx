@@ -85,7 +85,7 @@ const ItemDetailsPanel = ({ canEdit, item, isLoading, onEdit }) => {
             <InventoryStatusPill isActive={item.isActive} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand">
               <Tag className="h-3 w-3" />
               {itemType}
             </span>

@@ -56,7 +56,7 @@ const RoleActions = ({
           icon={Pencil}
           label="Edit Role"
           onClick={() => onEdit(role)}
-          className="hover:text-blue-700"
+          className="hover:text-brand"
         />
       )}
 

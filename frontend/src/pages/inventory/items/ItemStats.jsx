@@ -15,7 +15,7 @@ const ItemStats = ({ lowStock, products, services, total }) => {
         icon={Package}
         label="Products"
         value={products}
-        colorClass="bg-blue-50 text-blue-600"
+        colorClass="bg-brand-light text-brand"
       />
       <InventoryStatCard
         icon={Wrench}

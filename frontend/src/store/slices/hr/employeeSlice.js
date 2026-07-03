@@ -34,6 +34,20 @@ const initialState = {
   relatedLoading: false,
 };
 
+const extractEmployeeBankDetails = (payload) => {
+  const data = payload?.data ?? payload;
+
+  return (
+    data?.bankDetails ??
+    data?.employeeBankDetails ??
+    data?.bankAccount ??
+    data?.bank ??
+    data?.accountDetails ??
+    data ??
+    null
+  );
+};
+
 export const fetchHrEmployees = createAsyncThunk(
   "hrEmployees/fetchList",
   async (params, { rejectWithValue }) => {
@@ -248,7 +262,7 @@ const employeeSlice = createSlice({
         state.detailError = action.payload ?? action.error.message;
       })
       .addCase(fetchHrEmployeeBankDetails.fulfilled, (state, action) => {
-        state.bankDetails = action.payload.data;
+        state.bankDetails = extractEmployeeBankDetails(action.payload.data);
       })
       .addCase(addHrEmployeeDocument.fulfilled, (state, action) => {
         const document =
@@ -268,7 +282,7 @@ const employeeSlice = createSlice({
         });
       })
       .addCase(saveHrEmployeeBankDetails.fulfilled, (state, action) => {
-        state.bankDetails = action.payload.data;
+        state.bankDetails = extractEmployeeBankDetails(action.payload.data);
       });
   },
 });

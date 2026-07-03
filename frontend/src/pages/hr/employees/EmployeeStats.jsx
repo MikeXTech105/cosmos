@@ -33,7 +33,7 @@ const EmployeeStats = ({ employees, total }) => {
         icon={Building2}
         label="Departments"
         value={departmentCount}
-        colorClass="bg-blue-50 text-blue-600"
+        colorClass="bg-brand-light text-brand"
       />
     </div>
   );

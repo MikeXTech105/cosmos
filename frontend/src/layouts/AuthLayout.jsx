@@ -3,33 +3,71 @@ import { Outlet } from "react-router-dom";
 
 import FloatingIcons from "../components/auth/FloatingIcons";
 import { AUTH_FEATURES, AUTH_STATS } from "../constants/authConstants";
+import useAuthTheme from "../hooks/useAuthTheme";
+import { AUTH_THEME } from "../utils/authTheme";
+
+const getAuthLayoutClasses = (authTheme) => {
+  const isDark = authTheme === AUTH_THEME.DARK;
+
+  return {
+    brandPanel: isDark
+      ? "border-r border-white/[0.06] bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900"
+      : "border-r border-white/10 bg-gradient-to-br from-brand via-indigo-700 to-brand-dark",
+    brandTile: isDark
+      ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+      : "bg-white/15 text-white shadow-lg shadow-indigo-950/20 ring-1 ring-white/20",
+    card: isDark
+      ? "border border-white/[0.07] bg-slate-950/90 shadow-2xl shadow-black/60 backdrop-blur-2xl"
+      : "border border-slate-200 bg-white shadow-2xl shadow-indigo-950/10",
+    featureIcon: isDark
+      ? "border-blue-500/25 bg-blue-600/20 text-blue-400"
+      : "border-white/20 bg-white/15 text-white",
+    featureText: isDark ? "text-slate-400" : "text-indigo-50",
+    footer: isDark ? "text-slate-700" : "text-slate-400",
+    grid: isDark
+      ? "opacity-[0.04] bg-[linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)]"
+      : "opacity-40 bg-[linear-gradient(rgba(79,70,229,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(79,70,229,0.14)_1px,transparent_1px)]",
+    halo: isDark
+      ? "bg-[radial-gradient(circle,rgba(59,130,246,0.15)_0%,transparent_65%)]"
+      : "bg-[radial-gradient(circle,rgba(79,70,229,0.18)_0%,transparent_65%)]",
+    panelGlow: isDark
+      ? "bg-[radial-gradient(ellipse_at_30%_20%,rgba(59,130,246,0.08)_0%,transparent_60%)]"
+      : "bg-[radial-gradient(ellipse_at_30%_20%,rgba(255,255,255,0.18)_0%,transparent_60%)]",
+    root: isDark
+      ? "bg-slate-950"
+      : "bg-gradient-to-br from-indigo-50 via-slate-50 to-violet-100",
+    stat: isDark
+      ? "border border-white/[0.07] bg-white/[0.02]"
+      : "border border-white/15 bg-white/10",
+    statLabel: isDark ? "text-slate-500" : "text-indigo-100/75",
+    subtitle: isDark ? "text-slate-500" : "text-indigo-100/80",
+    titleAccent: isDark ? "text-slate-400" : "text-indigo-100",
+  };
+};
 
 const AuthLayout = () => {
+  const { authTheme } = useAuthTheme();
+  const classes = getAuthLayoutClasses(authTheme);
+
   return (
     <div
-      className="relative flex min-h-dvh w-full items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-14 sm:py-10"
-      style={{ backgroundColor: "#08090d" }}
+      className={[
+        "relative flex min-h-dvh w-full items-center justify-center overflow-x-hidden overflow-y-auto px-4 py-14 sm:py-10",
+        classes.root,
+      ].join(" ")}
     >
       <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-          maskImage:
-            "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-        }}
+        className={[
+          "absolute inset-0 [background-size:60px_60px] [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]",
+          classes.grid,
+        ].join(" ")}
       />
 
       <motion.div
-        className="absolute top-[-250px] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 65%)",
-          filter: "blur(60px)",
-        }}
+        className={[
+          "pointer-events-none absolute left-1/2 top-[-250px] h-[900px] w-[900px] -translate-x-1/2 rounded-full blur-[60px]",
+          classes.halo,
+        ].join(" ")}
         animate={{
           scale: [1, 1.08, 1],
           opacity: [0.6, 1, 0.6],
@@ -41,7 +79,7 @@ const AuthLayout = () => {
         }}
       />
 
-      <FloatingIcons />
+      <FloatingIcons theme={authTheme} />
 
       <motion.div
         initial={{
@@ -58,29 +96,22 @@ const AuthLayout = () => {
           duration: 0.8,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className="relative z-10 w-full max-w-5xl grid overflow-hidden rounded-2xl lg:grid-cols-[1.1fr_1fr]"
-        style={{
-          background: "rgba(13,14,20,0.9)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "0 40px 100px rgba(0,0,0,0.6)",
-        }}
+        className={[
+          "relative z-10 grid w-full max-w-5xl overflow-hidden rounded-2xl lg:grid-cols-[1.1fr_1fr]",
+          classes.card,
+        ].join(" ")}
       >
         <div
-          className="relative hidden overflow-hidden p-10 lg:flex lg:flex-col lg:justify-between"
-          style={{
-            background:
-              "linear-gradient(160deg,#0f172a 0%,#0d1322 60%,#0a0f1e 100%)",
-            borderRight: "1px solid rgba(255,255,255,0.06)",
-          }}
+          className={[
+            "relative hidden overflow-hidden p-10 lg:flex lg:flex-col lg:justify-between",
+            classes.brandPanel,
+          ].join(" ")}
         >
           <div
-            className="pointer-events-none absolute left-0 top-0 h-full w-full"
-            style={{
-              background:
-                "radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.08) 0%, transparent 60%)",
-            }}
+            className={[
+              "pointer-events-none absolute left-0 top-0 h-full w-full",
+              classes.panelGlow,
+            ].join(" ")}
           />
 
           <div className="relative z-10 space-y-8">
@@ -91,10 +122,10 @@ const AuthLayout = () => {
               className="flex items-center gap-3"
             >
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600"
-                style={{
-                  boxShadow: "0 0 24px rgba(59,130,246,0.4)",
-                }}
+                className={[
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+                  classes.brandTile,
+                ].join(" ")}
               >
                 <span className="text-lg font-bold text-white">C</span>
               </div>
@@ -104,7 +135,12 @@ const AuthLayout = () => {
                   COSMOS ERP
                 </p>
 
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                <p
+                  className={[
+                    "mt-0.5 text-[10px] uppercase tracking-[0.2em]",
+                    classes.subtitle,
+                  ].join(" ")}
+                >
                   Enterprise Suite
                 </p>
               </div>
@@ -122,12 +158,17 @@ const AuthLayout = () => {
               <h1 className="text-3xl font-bold leading-[1.2] tracking-tight text-white">
                 Manage your platform
                 <br />
-                <span className="font-semibold text-slate-400">
+                <span className={["font-semibold", classes.titleAccent].join(" ")}>
                   with confidence.
                 </span>
               </h1>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-400">
+              <p
+                className={[
+                  "mt-4 text-sm leading-relaxed",
+                  classes.featureText,
+                ].join(" ")}
+              >
                 A single, focused console for operations, analytics, approvals,
                 and team access.
               </p>
@@ -147,11 +188,18 @@ const AuthLayout = () => {
                   transition={{ duration: 0.4, delay: 0.3 + index * 0.07 }}
                   className="flex items-center gap-2.5"
                 >
-                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-blue-500/25 bg-blue-600/20">
-                    <Icon className="h-3 w-3 text-blue-400" />
+                  <div
+                    className={[
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border",
+                      classes.featureIcon,
+                    ].join(" ")}
+                  >
+                    <Icon className="h-3 w-3" />
                   </div>
 
-                  <span className="text-sm text-slate-400">{text}</span>
+                  <span className={["text-sm", classes.featureText].join(" ")}>
+                    {text}
+                  </span>
                 </motion.div>
               ))}
             </motion.div>
@@ -164,17 +212,15 @@ const AuthLayout = () => {
             className="relative z-10 mt-10 grid grid-cols-3 gap-2.5"
           >
             {AUTH_STATS.map(({ value, label }) => (
-              <div
-                key={label}
-                className="rounded-xl p-3.5"
-                style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                }}
-              >
+              <div key={label} className={["rounded-xl p-3.5", classes.stat].join(" ")}>
                 <p className="text-xl font-bold text-white">{value}</p>
 
-                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-slate-500">
+                <p
+                  className={[
+                    "mt-0.5 text-[10px] uppercase tracking-wider",
+                    classes.statLabel,
+                  ].join(" ")}
+                >
                   {label}
                 </p>
               </div>
@@ -187,7 +233,12 @@ const AuthLayout = () => {
         </div>
       </motion.div>
 
-      <p className="absolute bottom-4 left-0 right-0 z-10 text-center text-[10px] tracking-wider text-slate-700">
+      <p
+        className={[
+          "absolute bottom-4 left-0 right-0 z-10 text-center text-[10px] tracking-wider",
+          classes.footer,
+        ].join(" ")}
+      >
         (c) 2026 COSMOS ERP / Privacy / Terms
       </p>
     </div>

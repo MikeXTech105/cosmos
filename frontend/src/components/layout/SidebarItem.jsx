@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const depthPadding = ["pl-3", "pl-7", "pl-10", "pl-12"];
 
-const SidebarItem = ({ item, depth = 0, onNavigate }) => {
+const SidebarItem = ({ item, depth = 0, onNavigate, themeClasses }) => {
   const Icon = item.Icon;
 
   if (!item.route) {
@@ -20,8 +20,8 @@ const SidebarItem = ({ item, depth = 0, onNavigate }) => {
           "group relative flex h-10 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
           `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
           isActive || item.isActive
-            ? "text-white"
-            : "text-slate-400 hover:bg-slate-800 hover:text-white",
+            ? themeClasses.navActive
+            : themeClasses.navInactive,
           "focus-visible:ring-2 focus-visible:ring-brand/40",
         ].join(" ")
       }
@@ -34,7 +34,10 @@ const SidebarItem = ({ item, depth = 0, onNavigate }) => {
             {active && (
               <motion.span
                 layoutId="sidebar-active"
-                className="absolute inset-0 rounded-lg bg-brand"
+                className={[
+                  "absolute inset-0 rounded-lg",
+                  themeClasses.activePill,
+                ].join(" ")}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
               />
             )}
@@ -43,8 +46,8 @@ const SidebarItem = ({ item, depth = 0, onNavigate }) => {
               className={[
                 "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors",
                 active
-                  ? "text-white"
-                  : "text-slate-500 group-hover:text-white",
+                  ? themeClasses.iconActive
+                  : themeClasses.iconInactive,
               ].join(" ")}
             >
               <Icon className="h-4 w-4" />

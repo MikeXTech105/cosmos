@@ -2,10 +2,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #4f46e5;
-  --color-brand-light: #eef2ff;
-  --color-brand-mid: #818cf8;
-  --color-brand-dark: #3730a3;
+  --color-brand: var(--app-accent);
+  --color-brand-light: var(--app-accent-light);
+  --color-brand-mid: var(--app-accent-mid);
+  --color-brand-dark: var(--app-accent-dark);
   --color-surface: #ffffff;
   --color-surface-muted: #f8fafc;
   --color-border: #e2e8f0;
@@ -31,7 +31,7 @@ body {
 
 ::selection {
   color: #0f172a;
-  background: rgba(79, 70, 229, 0.14);
+  background: var(--app-accent-light);
 }
 
 * {
@@ -58,5 +58,42 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .invoice-print-area,
+  .invoice-print-area * {
+    visibility: visible;
+  }
+
+  .invoice-print-area {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    overflow: visible !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .invoice-template {
+    width: 210mm;
+    min-height: 297mm;
+    max-width: none;
+    box-shadow: none !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 }
