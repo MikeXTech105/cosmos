@@ -1,17 +1,19 @@
-import { CheckCircle2, Eye, Pencil, Trash2, XCircle } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { memo } from "react";
 
 import AppTooltip from "../../../components/common/AppTooltip";
 
-const ActionButton = ({ className, icon: Icon, label, onClick }) => {
+const ActionButton = ({ className, disabled, icon: Icon, label, onClick }) => {
   return (
     <AppTooltip label={label}>
       <button
         type="button"
         onClick={onClick}
         aria-label={label}
+        disabled={disabled}
         className={[
           "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30",
+          disabled ? "cursor-not-allowed opacity-40" : "",
           className,
         ].join(" ")}
       >
@@ -22,21 +24,23 @@ const ActionButton = ({ className, icon: Icon, label, onClick }) => {
 };
 
 const PageActions = ({
-  canActivate = true,
-  canDeactivate = true,
+  canAddChild = true,
   canDelete = true,
   canEdit = true,
   canView = true,
-  onActivate,
-  onDeactivate,
+  onAddChild,
   onDelete,
   onEdit,
   onView,
   page,
 }) => {
+  if (page?.isSynthetic) {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-end gap-0.5">
-      {canView && (
+      {canView && onView && (
         <ActionButton
           icon={Eye}
           label="View Page"
@@ -44,7 +48,15 @@ const PageActions = ({
           className="hover:text-brand"
         />
       )}
-      {canEdit && (
+      {canAddChild && onAddChild && (
+        <ActionButton
+          icon={Plus}
+          label="Add Child Page"
+          onClick={() => onAddChild(page)}
+          className="hover:text-brand"
+        />
+      )}
+      {canEdit && onEdit && (
         <ActionButton
           icon={Pencil}
           label="Edit Page"
@@ -52,24 +64,7 @@ const PageActions = ({
           className="hover:text-brand"
         />
       )}
-      {page.isActive
-        ? canDeactivate && (
-            <ActionButton
-              icon={XCircle}
-              label="Deactivate Page"
-              onClick={() => onDeactivate(page)}
-              className="hover:bg-amber-50 hover:text-amber-700"
-            />
-          )
-        : canActivate && (
-            <ActionButton
-              icon={CheckCircle2}
-              label="Activate Page"
-              onClick={() => onActivate(page)}
-              className="hover:bg-emerald-50 hover:text-emerald-700"
-            />
-          )}
-      {canDelete && (
+      {canDelete && onDelete && (
         <ActionButton
           icon={Trash2}
           label="Delete Page"

@@ -115,13 +115,14 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/pages"
+            path="/rbac/pages"
             element={
-              <PermissionGuard route="/pages" pageName="Pages">
+              <PermissionGuard route="/rbac/pages" pageName="Pages">
                 <Pages />
               </PermissionGuard>
             }
           />
+          <Route path="/pages" element={<Navigate to="/rbac/pages" replace />} />
           <Route
             path="/permissions"
             element={

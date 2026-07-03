@@ -3,6 +3,7 @@ export const enabledModules = [
   "users",
   "roles",
   "permissions",
+  "pages",
   "party",
   "saleInvoices",
   "purchaseBills",
@@ -104,10 +105,10 @@ export const sidebarModules = {
   pages: {
     id: "pages",
     label: "Pages",
-    route: "/pages",
+    route: "/rbac/pages",
     icon: "pages",
     categoryId: "rbac",
-    sortOrder: 30,
+    sortOrder: 40,
   },
   permissions: {
     id: "permissions",
@@ -115,7 +116,7 @@ export const sidebarModules = {
     route: "/permissions",
     icon: "permissions",
     categoryId: "rbac",
-    sortOrder: 40,
+    sortOrder: 30,
   },
   party: {
     id: "party",

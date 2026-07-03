@@ -1,29 +1,26 @@
-import { Filter, RotateCcw, Search } from "lucide-react";
+import { Filter, ListTree, RotateCcw, Search } from "lucide-react";
 import { memo } from "react";
 
 import AppSelect from "../../../components/common/AppSelect";
-
-const STATUS_OPTIONS = [
-  { value: "all", label: "All status" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-];
+import { PAGE_STATUS_OPTIONS, PAGE_VIEW_OPTIONS } from "./pageHelpers";
 
 const PageFilters = ({
   filters,
   isParentsLoading,
   onChange,
   onClear,
+  onViewModeChange,
   parentOptions,
   parentsError,
   resultCount,
+  viewMode,
 }) => {
   const hasActiveFilters =
     filters.search || filters.status !== "all" || filters.parentPageId !== "all";
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_220px_auto]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_180px_220px_250px_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -37,7 +34,7 @@ const PageFilters = ({
         <AppSelect
           value={filters.status}
           onChange={(value) => onChange({ status: value })}
-          options={STATUS_OPTIONS}
+          options={PAGE_STATUS_OPTIONS}
           aria-label="Filter by status"
         />
 
@@ -62,6 +59,27 @@ const PageFilters = ({
           ]}
           aria-label="Filter by parent page"
         />
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-1">
+          <div className="grid grid-cols-2 gap-1">
+            {PAGE_VIEW_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onViewModeChange(option.value)}
+                className={[
+                  "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold transition-colors",
+                  viewMode === option.value
+                    ? "bg-brand text-white shadow-sm"
+                    : "text-slate-500 hover:bg-white hover:text-slate-900",
+                ].join(" ")}
+              >
+                <ListTree className="h-3.5 w-3.5" />
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <button
           type="button"
