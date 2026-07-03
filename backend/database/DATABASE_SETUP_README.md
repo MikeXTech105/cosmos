@@ -1,0 +1,75 @@
+﻿# Cosmos ERP Database Setup
+
+This folder contains the clean SQL Server deployment package for the current Dapper-based Cosmos ERP API.
+
+## Files
+
+1. `000_Reset_Database.sql` - drops Cosmos ERP objects from the selected database. It does not drop the database.
+2. `001_Full_Database_Setup.sql` - creates the full schema, indexes, constraints, table types, view, stored procedures, and required seed data.
+3. `002_Verify_Database_Setup.sql` - checks required objects, important columns, foreign keys, stored procedures, table types, and seed data.
+
+## SSMS Run Order
+
+Open SSMS and connect to the SQL Server instance. Select the target database in the database dropdown, then run scripts in this order:
+
+1. `000_Reset_Database.sql`
+2. `001_Full_Database_Setup.sql`
+3. `002_Verify_Database_Setup.sql`
+
+For a new blank database, running the reset script first is safe and gives you the same repeatable flow.
+
+## Staging
+
+Select `CosmosERP_Staging` in SSMS, then run the three scripts in order. After setup, update the API connection string to use `Database=CosmosERP_Staging`.
+
+Example:
+
+```json
+"ConnectionStrings": {
+  "CosmosDb": "Server=<server>,1433;Database=CosmosERP_Staging;User Id=<user>;Password=<password>;TrustServerCertificate=True;Encrypt=True;"
+}
+```
+
+## Production
+
+Select `CosmosERP_Production` in SSMS, then run the three scripts in order for the initial setup. After setup, update the production API connection string to use `Database=CosmosERP_Production`.
+
+Do not run `000_Reset_Database.sql` on production after live data exists unless you intentionally want to remove all ERP data.
+
+## Current Appsettings Note
+
+The current `backend/src/Cosmos.API/appsettings.json` connection string points to `Database=cosmos`. Change it to `CosmosERP_Staging` or `CosmosERP_Production` for the target environment.
+
+## Execution Order Used
+
+The full setup script was composed in this dependency order:
+
+1. Security/authentication core (`Users`, `Roles`, `Pages`, permissions, audit, auth/user/role/page procedures)
+2. Party module
+3. Item module
+4. HR module
+5. Sales module
+6. Purchase & Expense module
+
+Purchase & Expense depends on Party, Items, and the Sales shared objects `NumberSequences`, `PaymentModes`, and `StockMovements`.
+
+## Conflicts And Choices
+
+- `backend/database/migrations/20260618_purchase_expense_module.sql` contained `USE [cosmos];`. The deployment setup removes that line so the script runs against whichever database is selected in SSMS.
+- Audit/date column names differ by module (`CreatedOn`, `CreatedAt`, `CreatedAtUtc`, `ModifiedOn`, `ModifiedAt`, `UpdatedAtUtc`). These names were preserved because the current Dapper stored procedures and DTOs expect them.
+- No Entity Framework migrations were used because this project uses Dapper stored procedures.
+- No SQL functions are required by the current repository scan.
+
+## Object Summary
+
+- Tables: 48
+- Views: 1
+- Stored procedures: 162
+- Functions: 0
+- User-defined table types: 5
+- Foreign keys: 59
+- Seed/master rows inserted by setup: at least 42 (`SuperAdmin`, `admin`, 31 page rows, 6 payment modes, 3 HR leave types, and 1 PartySettings row). `RolePermissions` are seeded for SuperAdmin across all pages.
+
+## Manual Action Needed
+
+Update environment-specific connection strings before starting the API. Keep secrets out of committed appsettings for production; use environment variables, user secrets, or your deployment secret store.
