@@ -4,6 +4,7 @@ using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.HR;
 using Cosmos.Contracts.Common;
 using Cosmos.Contracts.HR;
+using Cosmos.Domain.HR;
 using Cosmos.Persistence.Connection;
 using Cosmos.Persistence.Dapper;
 using Dapper;
@@ -38,13 +39,17 @@ public sealed class HrRepository : IHrRepository
 
     public Task<EmployeeDto?> GetEmployeeAsync(long id, CancellationToken ct) => QuerySingleAsync<EmployeeDto>("sp_HR_Employee_GetById", new { Id = id }, ct);
     public Task<PagedResult<EmployeeListItemDto>> GetEmployeesAsync(GetEmployeesQuery query, CancellationToken ct) =>
-        QueryPagedAsync<EmployeeListItemDto>("sp_HR_Employee_GetList", query, query.PageNumber, query.PageSize, ct);
+        QueryPagedAsync<EmployeeListItemDto>("sp_HR_Employee_GetList", EmployeeListParameters(query), query.PageNumber, query.PageSize, ct);
     public Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeCommand command, long? userId, CancellationToken ct) =>
         QueryWithStatusAsync<EmployeeDto>("sp_HR_Employee_Create", EmployeeParameters(null, command, userId, command.BankDetails), ct);
     public Task<EmployeeDto> UpdateEmployeeAsync(long id, UpdateEmployeeCommand command, long? userId, CancellationToken ct) =>
         QueryWithStatusAsync<EmployeeDto>("sp_HR_Employee_Update", EmployeeParameters(id, command, userId, null), ct);
+    public Task<EmployeeDto> ResignEmployeeAsync(long id, ResignEmployeeCommand command, long? userId, CancellationToken ct) =>
+        QueryWithStatusAsync<EmployeeDto>("sp_HR_Employee_Resign", new { Id = id, LastWorkingDate = ToDateTime(command.LastWorkingDate), command.ResignationReason, UserId = userId }, ct);
+    public Task<EmployeeDto> RejoinEmployeeAsync(long id, RejoinEmployeeCommand command, long? userId, CancellationToken ct) =>
+        QueryWithStatusAsync<EmployeeDto>("sp_HR_Employee_Rejoin", new { Id = id, RejoinedDate = ToDateTime(command.RejoinedDate), RejoinRemarks = command.Remarks, UserId = userId }, ct);
     public Task<OperationResult> DeleteEmployeeAsync(long id, long? userId, CancellationToken ct) => ExecuteStatusAsync("sp_HR_Employee_Delete", new { Id = id, UserId = userId }, ct);
-    public Task<IReadOnlyCollection<EmployeeDropdownDto>> GetEmployeeDropdownAsync(string? search, CancellationToken ct) => QueryAsync<EmployeeDropdownDto>("sp_HR_Employee_GetDropdown", new { Search = search }, ct);
+    public Task<IReadOnlyCollection<EmployeeDropdownDto>> GetEmployeeDropdownAsync(string? search, bool includeResigned, CancellationToken ct) => QueryAsync<EmployeeDropdownDto>("sp_HR_Employee_GetDropdown", new { Search = search, IncludeResigned = includeResigned }, ct);
     public Task<IReadOnlyCollection<EmployeeDropdownDto>> GetReportingManagersAsync(long? departmentId, long? excludingEmployeeId, CancellationToken ct) => QueryAsync<EmployeeDropdownDto>("sp_HR_Employee_GetReportingManagers", new { DepartmentId = departmentId, ExcludingEmployeeId = excludingEmployeeId }, ct);
     public Task<IReadOnlyCollection<EmployeeDocumentDto>> GetEmployeeDocumentsAsync(long employeeId, CancellationToken ct) => QueryAsync<EmployeeDocumentDto>("sp_HR_EmployeeDocument_GetList", new { EmployeeId = employeeId }, ct);
     public Task<EmployeeDocumentDto> AddEmployeeDocumentAsync(long employeeId, AddEmployeeDocumentCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<EmployeeDocumentDto>("sp_HR_EmployeeDocument_Create", new { EmployeeId = employeeId, command.DocumentType, command.FileName, command.FilePath, ExpiryDate = ToDateTime(command.ExpiryDate), UserId = userId }, ct);
@@ -165,6 +170,27 @@ public sealed class HrRepository : IHrRepository
         query.PageNumber,
         query.PageSize
     };
+
+    private static object EmployeeListParameters(GetEmployeesQuery query) => new
+    {
+        query.Search,
+        query.DepartmentId,
+        query.DesignationId,
+        Status = ParseEmployeeStatus(query.Status),
+        query.IsActive,
+        query.IncludeResigned,
+        query.PageNumber,
+        query.PageSize,
+        query.SortBy,
+        query.SortDirection
+    };
+
+    private static int? ParseEmployeeStatus(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        if (int.TryParse(value, out var numeric)) return numeric;
+        return Enum.TryParse<EmployeeStatus>(value, ignoreCase: true, out var status) ? (int)status : null;
+    }
 
     private static DynamicParameters ShiftParameters(long? id, object command, long? userId)
     {

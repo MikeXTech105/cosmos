@@ -145,6 +145,47 @@ public sealed class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCo
         context.RootContextData.TryGetValue("Id", out var value) ? value as long? : null;
 }
 
+public sealed class ResignEmployeeValidator : AbstractValidator<ResignEmployeeCommand>
+{
+    public ResignEmployeeValidator()
+    {
+        RuleFor(x => x.LastWorkingDate).NotEmpty();
+        RuleFor(x => x.ResignationReason).MaximumLength(500);
+    }
+}
+
+public sealed class RejoinEmployeeValidator : AbstractValidator<RejoinEmployeeCommand>
+{
+    public RejoinEmployeeValidator()
+    {
+        RuleFor(x => x.Remarks).MaximumLength(500);
+    }
+}
+
+public sealed class GetEmployeesQueryValidator : AbstractValidator<GetEmployeesQuery>
+{
+    public GetEmployeesQueryValidator()
+    {
+        RuleFor(x => x.PageNumber).GreaterThan(0);
+        RuleFor(x => x.PageSize).InclusiveBetween(1, 200);
+        RuleFor(x => x.SortDirection).Must(IsSortDirection).WithMessage("SortDirection must be ASC or DESC.");
+        RuleFor(x => x.Status)
+            .Must(IsEmployeeStatus)
+            .WithMessage("Status must be active, inactive, resigned, terminated, or a valid employee status number.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Status));
+    }
+
+    private static bool IsSortDirection(string? value) =>
+        string.IsNullOrWhiteSpace(value) || value.Equals("ASC", StringComparison.OrdinalIgnoreCase) || value.Equals("DESC", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsEmployeeStatus(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        if (int.TryParse(value, out var numeric)) return Enum.IsDefined(typeof(EmployeeStatus), numeric);
+        return Enum.TryParse<EmployeeStatus>(value, ignoreCase: true, out _);
+    }
+}
+
 public sealed class EmployeeAddressRequestValidator : AbstractValidator<EmployeeAddressRequest>
 {
     public EmployeeAddressRequestValidator()

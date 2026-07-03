@@ -58,6 +58,11 @@ public sealed class Employee : HrAuditableEntity
     public EmploymentType EmploymentType { get; set; }
     public EmployeeStatus Status { get; set; }
     public string? ProfilePhotoUrl { get; set; }
+    public DateTime? ResignedDate { get; set; }
+    public DateOnly? LastWorkingDate { get; set; }
+    public string? ResignationReason { get; set; }
+    public DateTime? RejoinedDate { get; set; }
+    public string? RejoinRemarks { get; set; }
 }
 
 public sealed class EmployeeAddress : HrAuditableEntity

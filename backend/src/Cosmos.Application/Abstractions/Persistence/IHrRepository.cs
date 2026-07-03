@@ -29,8 +29,10 @@ public interface IHrRepository
     Task<PagedResult<EmployeeListItemDto>> GetEmployeesAsync(GetEmployeesQuery query, CancellationToken cancellationToken);
     Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeCommand command, long? userId, CancellationToken cancellationToken);
     Task<EmployeeDto> UpdateEmployeeAsync(long id, UpdateEmployeeCommand command, long? userId, CancellationToken cancellationToken);
+    Task<EmployeeDto> ResignEmployeeAsync(long id, ResignEmployeeCommand command, long? userId, CancellationToken cancellationToken);
+    Task<EmployeeDto> RejoinEmployeeAsync(long id, RejoinEmployeeCommand command, long? userId, CancellationToken cancellationToken);
     Task<OperationResult> DeleteEmployeeAsync(long id, long? userId, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<EmployeeDropdownDto>> GetEmployeeDropdownAsync(string? search, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<EmployeeDropdownDto>> GetEmployeeDropdownAsync(string? search, bool includeResigned, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<EmployeeDropdownDto>> GetReportingManagersAsync(long? departmentId, long? excludingEmployeeId, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<EmployeeDocumentDto>> GetEmployeeDocumentsAsync(long employeeId, CancellationToken cancellationToken);
     Task<EmployeeDocumentDto> AddEmployeeDocumentAsync(long employeeId, AddEmployeeDocumentCommand command, long? userId, CancellationToken cancellationToken);
