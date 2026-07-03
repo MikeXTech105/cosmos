@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[Tags("Reports")]
+//[Tags("Reports")]
 [ApiExplorerSettings(GroupName = "reports")]
 [Route("api/v1/sales/reports")]
 public sealed class SalesReportsController : ApiControllerBase
