@@ -7,9 +7,13 @@ import { HR_EMPLOYEE_STATUS_OPTIONS } from "../../../utils/hrEnums";
 const withAll = (label, options) => [{ value: "all", label }, ...options];
 
 const EmployeeFilters = ({
+  canCreateDepartment = false,
+  canCreateDesignation = false,
   departmentOptions,
   designationOptions,
   filters,
+  onCreateDepartment,
+  onCreateDesignation,
   onChange,
   onClear,
   resultCount,
@@ -38,6 +42,9 @@ const EmployeeFilters = ({
           onChange={(value) => onChange({ DepartmentId: value })}
           options={withAll("All departments", departmentOptions)}
           aria-label="Filter employees by department"
+          creatable={canCreateDepartment}
+          createLabel="Create new department"
+          onCreateClick={onCreateDepartment}
         />
 
         <AppSelect
@@ -45,6 +52,9 @@ const EmployeeFilters = ({
           onChange={(value) => onChange({ DesignationId: value })}
           options={withAll("All designations", designationOptions)}
           aria-label="Filter employees by designation"
+          creatable={canCreateDesignation}
+          createLabel="Create new designation"
+          onCreateClick={onCreateDesignation}
         />
 
         <AppSelect

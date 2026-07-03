@@ -19,6 +19,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
 import {
   createExpense,
@@ -52,6 +53,8 @@ import {
   PurchasePagination,
   PurchaseStatCard,
 } from "../PurchaseShared";
+import { PartyFormModal } from "../../party";
+import { CategoryModal } from "../expenseCategories/ExpenseCategoriesPage";
 
 const expenseSchema = z.object({
   expenseDate: z.string().min(1, "Expense date is required"),
@@ -92,11 +95,15 @@ const getResponseRecord = (response) => {
 };
 
 const ExpenseModal = ({
+  canCreateCategory = false,
+  canCreateParty = false,
   categoryOptions,
   expense,
   isOpen,
   mode,
   onClose,
+  onCreateCategory,
+  onCreateParty,
   onSubmit,
   partyOptions,
 }) => {
@@ -165,6 +172,9 @@ const ExpenseModal = ({
                 options={categoryOptions}
                 placeholder="Select category"
                 error={errors.categoryId?.message}
+                creatable={canCreateCategory}
+                createLabel="Create new expense category"
+                onCreateClick={onCreateCategory}
               />
             )}
           />
@@ -180,6 +190,9 @@ const ExpenseModal = ({
                 options={[{ value: "", label: "No party" }, ...partyOptions]}
                 placeholder="Select party"
                 error={errors.paidToPartyId?.message}
+                creatable={canCreateParty}
+                createLabel="Create new party"
+                onCreateClick={onCreateParty}
               />
             )}
           />
@@ -278,6 +291,16 @@ const ExpenseModal = ({
 const ExpensesPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.expenses);
+  const canCreateCategory = useCreatePermission({
+    label: "Expense Categories",
+    resource: "expenseCategories",
+    route: "/purchase/expense-categories",
+  });
+  const canCreateParty = useCreatePermission({
+    label: "Party Master",
+    resource: "party",
+    route: "/party",
+  });
   const [searchInput, setSearchInput] = useState(state.filters.Search);
   const [lookups, setLookups] = useState({
     categories: [],
@@ -294,6 +317,10 @@ const ExpensesPage = () => {
     isLoading: false,
     isOpen: false,
     mode: "create",
+  });
+  const [lookupCreateModal, setLookupCreateModal] = useState({
+    category: false,
+    party: false,
   });
   const [confirmation, setConfirmation] = useState({
     expense: null,
@@ -317,10 +344,10 @@ const ExpensesPage = () => {
     [dispatch, params],
   );
 
-  const loadLookup = useCallback((type) => {
+  const loadLookup = useCallback((type, { force = false } = {}) => {
     const cache = lookupCacheRef.current[type];
 
-    if (cache.loaded) {
+    if (cache.loaded && !force) {
       return Promise.resolve();
     }
 
@@ -439,6 +466,38 @@ const ExpensesPage = () => {
       total: formatCurrency(total),
     };
   }, [state.list, state.totalCount]);
+
+  const openLookupCreate = useCallback((type) => {
+    setLookupCreateModal((current) => ({ ...current, [type]: true }));
+  }, []);
+
+  const closeLookupCreate = useCallback((type) => {
+    setLookupCreateModal((current) => ({ ...current, [type]: false }));
+  }, []);
+
+  const submitLookupCreate = useCallback(
+    async (type, payload) => {
+      try {
+        if (type === "category") {
+          await expenseCategoryService.createExpenseCategory(payload);
+          toast.success("Expense category created successfully");
+          lookupCacheRef.current.categories.loaded = false;
+          await loadLookup("categories", { force: true });
+        } else {
+          await partyService.createParty(payload);
+          toast.success("Party created successfully");
+          lookupCacheRef.current.parties.loaded = false;
+          await loadLookup("parties", { force: true });
+        }
+
+        closeLookupCreate(type);
+      } catch (error) {
+        toast.error(getActionError(error, "Unable to create record."));
+        throw error;
+      }
+    },
+    [closeLookupCreate, loadLookup],
+  );
 
   const openEdit = async (expense) => {
     setModal({
@@ -590,6 +649,9 @@ const ExpensesPage = () => {
             }}
             options={[{ value: "all", label: "All categories" }, ...categoryOptions]}
             aria-label="Filter by category"
+            creatable={canCreateCategory}
+            createLabel="Create new expense category"
+            onCreateClick={() => openLookupCreate("category")}
           />
           <AppInput
             type="date"
@@ -750,13 +812,35 @@ const ExpensesPage = () => {
       </div>
 
       <ExpenseModal
+        canCreateCategory={canCreateCategory}
+        canCreateParty={canCreateParty}
         categoryOptions={categoryOptions}
         expense={modal.expense}
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
+        onCreateCategory={() => openLookupCreate("category")}
+        onCreateParty={() => openLookupCreate("party")}
         onSubmit={submitExpense}
         partyOptions={partyOptions}
+      />
+
+      <CategoryModal
+        category={null}
+        isOpen={lookupCreateModal.category}
+        mode="create"
+        onClose={() => closeLookupCreate("category")}
+        onSubmit={(payload) => submitLookupCreate("category", payload)}
+      />
+
+      <PartyFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.party}
+        mode="create"
+        onClose={() => closeLookupCreate("party")}
+        onSubmit={(payload) => submitLookupCreate("party", payload)}
+        submitLabel="Create Party"
+        title="Add Party"
       />
 
       <PurchaseConfirmDialog

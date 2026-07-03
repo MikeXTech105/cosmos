@@ -19,6 +19,7 @@ const getDefaultValues = (designation) => ({
 });
 
 const DesignationFormModal = ({
+  canCreateDepartment = false,
   departmentOptions,
   departmentsLoading,
   designation,
@@ -26,6 +27,7 @@ const DesignationFormModal = ({
   isOpen,
   mode,
   onClose,
+  onCreateDepartment,
   onSubmit,
 }) => {
   const isView = mode === "view";
@@ -134,6 +136,9 @@ const DesignationFormModal = ({
                 emptyMessage="No active departments found"
                 disabled={isView || departmentsLoading}
                 error={errors.departmentId?.message}
+                creatable={canCreateDepartment}
+                createLabel="Create new department"
+                onCreateClick={onCreateDepartment}
               />
             )}
           />

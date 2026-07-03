@@ -18,6 +18,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
   createSupplierPayment,
@@ -34,6 +35,7 @@ import {
   getPartyType,
 } from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
+import { PartyFormModal } from "../../party";
 import { PurchaseNumberInput } from "../PurchaseLineItems";
 import {
   buildListParams,
@@ -114,9 +116,11 @@ const getDefaultValues = (payment) => ({
 
 const PaymentModal = ({
   billOptions,
+  canCreateSupplier = false,
   isOpen,
   mode,
   onClose,
+  onCreateSupplier,
   onLoadBills,
   onSubmit,
   payment,
@@ -198,6 +202,9 @@ const PaymentModal = ({
                 options={supplierOptions}
                 placeholder="Select supplier"
                 error={errors.supplierId?.message}
+                creatable={canCreateSupplier}
+                createLabel="Create new supplier"
+                onCreateClick={onCreateSupplier}
               />
             )}
           />
@@ -383,6 +390,11 @@ const PaymentModal = ({
 const SupplierPaymentsPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.supplierPayments);
+  const canCreateSupplier = useCreatePermission({
+    label: "Party Master",
+    resource: "party",
+    route: "/party",
+  });
   const [searchInput, setSearchInput] = useState(state.filters.Search);
   const [suppliers, setSuppliers] = useState([]);
   const [supplierBills, setSupplierBills] = useState([]);
@@ -393,6 +405,7 @@ const SupplierPaymentsPage = () => {
     mode: "create",
     payment: null,
   });
+  const [supplierCreateOpen, setSupplierCreateOpen] = useState(false);
   const [confirmation, setConfirmation] = useState({
     isLoading: false,
     isOpen: false,
@@ -415,8 +428,8 @@ const SupplierPaymentsPage = () => {
     [dispatch, params],
   );
 
-  const loadSuppliers = useCallback(() => {
-    if (supplierCacheRef.current.loaded) {
+  const loadSuppliers = useCallback(({ force = false } = {}) => {
+    if (supplierCacheRef.current.loaded && !force) {
       return Promise.resolve();
     }
 
@@ -507,6 +520,22 @@ const SupplierPaymentsPage = () => {
       totalPaid: formatCurrency(totalPaid),
     };
   }, [state.list, state.totalCount]);
+
+  const submitSupplier = useCallback(
+    async (payload) => {
+      try {
+        await partyService.createParty(payload);
+        toast.success("Supplier created successfully");
+        supplierCacheRef.current.loaded = false;
+        await loadSuppliers({ force: true });
+        setSupplierCreateOpen(false);
+      } catch (error) {
+        toast.error(getActionError(error, "Unable to create supplier."));
+        throw error;
+      }
+    },
+    [loadSuppliers],
+  );
 
   const openEdit = async (payment) => {
     setModal({
@@ -653,6 +682,9 @@ const SupplierPaymentsPage = () => {
             }}
             options={[{ value: "all", label: "All suppliers" }, ...supplierOptions]}
             aria-label="Filter by supplier"
+            creatable={canCreateSupplier}
+            createLabel="Create new supplier"
+            onCreateClick={() => setSupplierCreateOpen(true)}
           />
           <AppInput
             type="date"
@@ -816,13 +848,25 @@ const SupplierPaymentsPage = () => {
 
       <PaymentModal
         billOptions={billOptions}
+        canCreateSupplier={canCreateSupplier}
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
+        onCreateSupplier={() => setSupplierCreateOpen(true)}
         onLoadBills={loadSupplierBills}
         onSubmit={submitPayment}
         payment={modal.payment}
         supplierOptions={supplierOptions}
+      />
+
+      <PartyFormModal
+        isLoading={false}
+        isOpen={supplierCreateOpen}
+        mode="create"
+        onClose={() => setSupplierCreateOpen(false)}
+        onSubmit={submitSupplier}
+        submitLabel="Create Supplier"
+        title="Add Supplier"
       />
 
       <PurchaseConfirmDialog

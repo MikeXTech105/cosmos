@@ -112,6 +112,8 @@ const getResponseItem = (response) => {
 };
 
 const InvoiceFormModal = ({
+  canCreateCustomer = false,
+  canCreateItem = false,
   customerEmptyMessage,
   customerLoading,
   customerOptions,
@@ -124,6 +126,8 @@ const InvoiceFormModal = ({
   itemsById,
   mode,
   onClose,
+  onCreateCustomer,
+  onCreateItem,
   onSubmit,
 }) => {
   const isEdit = mode === "edit";
@@ -247,6 +251,9 @@ const InvoiceFormModal = ({
                       }
                       disabled={customerLoading}
                       error={errors.customerPartyId?.message}
+                      creatable={canCreateCustomer}
+                      createLabel="Create new customer"
+                      onCreateClick={onCreateCustomer}
                     />
                   )}
                 />
@@ -355,6 +362,9 @@ const InvoiceFormModal = ({
                                   }
                                   disabled={itemLoading}
                                   error={errors.items?.[index]?.itemId?.message}
+                                  creatable={canCreateItem}
+                                  createLabel="Create new item"
+                                  onCreateClick={onCreateItem}
                                 />
                               )}
                             />

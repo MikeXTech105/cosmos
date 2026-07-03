@@ -126,6 +126,8 @@ const buildPayload = (values, config) => {
 
 const PurchaseDocumentFormModal = ({
   billOptions,
+  canCreateItem = false,
+  canCreateSupplier = false,
   config,
   isLoading,
   isOpen,
@@ -135,6 +137,8 @@ const PurchaseDocumentFormModal = ({
   itemsById,
   mode,
   onClose,
+  onCreateItem,
+  onCreateSupplier,
   onSubmit,
   record,
   supplierOptions,
@@ -210,6 +214,9 @@ const PurchaseDocumentFormModal = ({
                       options={supplierOptions}
                       placeholder="Select supplier"
                       error={errors.supplierId?.message}
+                      creatable={canCreateSupplier}
+                      createLabel="Create new supplier"
+                      onCreateClick={onCreateSupplier}
                     />
                   )}
                 />
@@ -301,6 +308,8 @@ const PurchaseDocumentFormModal = ({
               itemLoading={itemLoading}
               itemOptions={itemOptions}
               itemsById={itemsById}
+              canCreateItem={canCreateItem}
+              onCreateItem={onCreateItem}
               setValue={setValue}
             />
 

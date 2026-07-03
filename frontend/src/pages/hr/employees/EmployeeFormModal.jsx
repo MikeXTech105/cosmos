@@ -34,6 +34,10 @@ const Section = ({ children, title }) => {
 };
 
 const EmployeeFormModal = ({
+  canCreateDepartment = false,
+  canCreateDesignation = false,
+  canCreateReportingManager = false,
+  canCreateShift = false,
   departmentOptions,
   designationOptions,
   employee,
@@ -41,6 +45,10 @@ const EmployeeFormModal = ({
   isOpen,
   mode,
   onClose,
+  onCreateDepartment,
+  onCreateDesignation,
+  onCreateReportingManager,
+  onCreateShift,
   onSubmit,
   reportingManagerOptions,
   shiftOptions,
@@ -231,6 +239,9 @@ const EmployeeFormModal = ({
                       placeholder="Select department"
                       disabled={isView}
                       error={errors.departmentId?.message}
+                      creatable={canCreateDepartment}
+                      createLabel="Create new department"
+                      onCreateClick={onCreateDepartment}
                     />
                   )}
                 />
@@ -247,6 +258,9 @@ const EmployeeFormModal = ({
                       placeholder="Select designation"
                       disabled={isView}
                       error={errors.designationId?.message}
+                      creatable={canCreateDesignation}
+                      createLabel="Create new designation"
+                      onCreateClick={onCreateDesignation}
                     />
                   )}
                 />
@@ -269,6 +283,9 @@ const EmployeeFormModal = ({
                       ]}
                       disabled={isView}
                       error={errors.reportingManagerId?.message}
+                      creatable={canCreateReportingManager}
+                      createLabel="Create new employee"
+                      onCreateClick={onCreateReportingManager}
                     />
                   )}
                 />
@@ -285,6 +302,9 @@ const EmployeeFormModal = ({
                       placeholder="Select shift"
                       disabled={isView}
                       error={errors.shiftId?.message}
+                      creatable={canCreateShift}
+                      createLabel="Create new shift"
+                      onCreateClick={onCreateShift}
                     />
                   )}
                 />

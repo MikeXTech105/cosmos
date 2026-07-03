@@ -9,8 +9,10 @@ import {
 } from "./invoiceHelpers";
 
 const InvoiceFilters = ({
+  canCreateCustomer = false,
   customerOptions,
   filters,
+  onCreateCustomer,
   onChange,
   onClear,
   resultCount,
@@ -44,6 +46,9 @@ const InvoiceFilters = ({
             ...customerOptions,
           ]}
           aria-label="Filter invoices by customer"
+          creatable={canCreateCustomer}
+          createLabel="Create new customer"
+          onCreateClick={onCreateCustomer}
         />
 
         <AppSelect

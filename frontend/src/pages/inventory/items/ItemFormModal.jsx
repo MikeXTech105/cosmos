@@ -149,6 +149,8 @@ const ItemNumberInput = ({
 };
 
 const ItemFormModal = ({
+  canCreateCategory = false,
+  canCreateUnit = false,
   categoryEmptyMessage,
   categoryLoading,
   categoryOptions,
@@ -157,6 +159,8 @@ const ItemFormModal = ({
   item,
   mode,
   onClose,
+  onCreateCategory,
+  onCreateUnit,
   onSubmit,
   unitEmptyMessage,
   unitLoading,
@@ -334,6 +338,9 @@ const ItemFormModal = ({
                       }
                       disabled={categoryLoading}
                       error={errors.categoryId?.message}
+                      creatable={canCreateCategory}
+                      createLabel="Create new category"
+                      onCreateClick={onCreateCategory}
                     />
                   )}
                 />
@@ -356,6 +363,9 @@ const ItemFormModal = ({
                         }
                         disabled={unitLoading}
                         error={errors.unitId?.message}
+                        creatable={canCreateUnit}
+                        createLabel="Create new unit"
+                        onCreateClick={onCreateUnit}
                       />
                     )}
                   />

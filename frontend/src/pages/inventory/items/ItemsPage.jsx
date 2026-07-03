@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
 import {
@@ -32,6 +33,8 @@ import {
   serializeId,
 } from "../inventoryHelpers";
 import useInventoryCapabilities from "../useInventoryCapabilities";
+import CategoryFormModal from "../categories/CategoryFormModal";
+import UnitFormModal from "../units/UnitFormModal";
 import ItemDetailsPanel from "./ItemDetailsPanel";
 import ItemFilters from "./ItemFilters";
 import ItemFormModal from "./ItemFormModal";
@@ -63,6 +66,16 @@ const ItemsPage = () => {
     resource: "items",
     route: "/items",
   });
+  const canCreateCategory = useCreatePermission({
+    label: "Categories",
+    resource: "categories",
+    route: "/categories",
+  });
+  const canCreateUnit = useCreatePermission({
+    label: "Units",
+    resource: "units",
+    route: "/units",
+  });
   const [searchInput, setSearchInput] = useState(itemsState.filters.Search);
   const [lookups, setLookups] = useState({
     categories: [],
@@ -81,6 +94,10 @@ const ItemsPage = () => {
     isLoading: false,
     isOpen: false,
     mode: "create",
+  });
+  const [lookupCreateModal, setLookupCreateModal] = useState({
+    isOpen: false,
+    type: null,
   });
   const [confirmation, setConfirmation] = useState({
     entity: null,
@@ -110,10 +127,10 @@ const ItemsPage = () => {
     return dispatch(fetchItems(queryParams));
   }, [dispatch, queryParams]);
 
-  const loadLookup = useCallback((type) => {
+  const loadLookup = useCallback((type, { force = false } = {}) => {
     const cache = lookupCacheRef.current[type];
 
-    if (cache.loaded) {
+    if (cache.loaded && !force) {
       return Promise.resolve(null);
     }
 
@@ -263,6 +280,52 @@ const ItemsPage = () => {
       mode: "create",
     });
   }, [loadLookups]);
+
+  const openLookupCreate = useCallback((type) => {
+    setLookupCreateModal({ isOpen: true, type });
+  }, []);
+
+  const closeLookupCreate = useCallback(() => {
+    setLookupCreateModal({ isOpen: false, type: null });
+  }, []);
+
+  const submitLookupCreate = useCallback(
+    async (payload, saveAndNew = false) => {
+      const type = lookupCreateModal.type;
+
+      if (!type) {
+        return;
+      }
+
+      try {
+        if (type === "categories") {
+          await categoryService.createCategory(payload);
+          toast.success("Category created successfully");
+        } else {
+          await unitService.createUnit(payload);
+          toast.success("Unit created successfully");
+        }
+
+        lookupCacheRef.current[type].loaded = false;
+        await loadLookup(type, { force: true });
+
+        if (!saveAndNew) {
+          closeLookupCreate();
+        }
+      } catch (error) {
+        toast.error(
+          getActionError(
+            error,
+            type === "categories"
+              ? "Unable to create category."
+              : "Unable to create unit.",
+          ),
+        );
+        throw error;
+      }
+    },
+    [closeLookupCreate, loadLookup, lookupCreateModal.type],
+  );
 
   const selectItem = useCallback(
     async (item) => {
@@ -425,9 +488,11 @@ const ItemsPage = () => {
 
       <ItemStats {...stats} />
       <ItemFilters
+        canCreateCategory={canCreateCategory}
         categoryOptions={categoryOptions}
         filters={filterControls}
         resultCount={itemsState.list.length}
+        onCreateCategory={() => openLookupCreate("categories")}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -492,6 +557,8 @@ const ItemsPage = () => {
 
       <ItemFormModal
         key={`${modal.isOpen}-${modal.mode}-${modal.entity?.id ?? "new"}`}
+        canCreateCategory={canCreateCategory}
+        canCreateUnit={canCreateUnit}
         categoryOptions={categoryOptions}
         categoryEmptyMessage={
           lookups.categoriesError
@@ -504,6 +571,8 @@ const ItemsPage = () => {
         item={modal.entity}
         mode={modal.mode}
         onClose={closeModal}
+        onCreateCategory={() => openLookupCreate("categories")}
+        onCreateUnit={() => openLookupCreate("units")}
         onSubmit={submitItem}
         unitOptions={unitOptions}
         unitEmptyMessage={
@@ -512,6 +581,24 @@ const ItemsPage = () => {
             : "No units yet - add one in Units."
         }
         unitLoading={lookups.unitsLoading}
+      />
+
+      <CategoryFormModal
+        category={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.isOpen && lookupCreateModal.type === "categories"}
+        mode="create"
+        onClose={closeLookupCreate}
+        onSubmit={submitLookupCreate}
+      />
+
+      <UnitFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.isOpen && lookupCreateModal.type === "units"}
+        mode="create"
+        onClose={closeLookupCreate}
+        onSubmit={submitLookupCreate}
+        unit={null}
       />
 
       <InventoryConfirmDialog

@@ -12,7 +12,10 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
+import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
+import { unitService } from "../../../services/inventory/unitService";
 import {
   cancelInvoice,
   confirmInvoice,
@@ -29,6 +32,10 @@ import {
   getPartyType,
 } from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
+import { PartyFormModal } from "../../party";
+import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
+import ItemFormModal from "../../inventory/items/ItemFormModal";
+import UnitFormModal from "../../inventory/units/UnitFormModal";
 import { exportInvoicePdf } from "../invoiceTemplates/exportInvoicePdf";
 import { getStoredInvoiceTemplate } from "../invoiceTemplates/templateStorage";
 import InvoiceFilters from "./InvoiceFilters";
@@ -62,6 +69,26 @@ const SalesInvoicesPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const invoiceState = useSelector((state) => state.salesInvoices);
+  const canCreateCustomer = useCreatePermission({
+    label: "Party Master",
+    resource: "party",
+    route: "/party",
+  });
+  const canCreateItem = useCreatePermission({
+    label: "Items",
+    resource: "items",
+    route: "/items",
+  });
+  const canCreateCategory = useCreatePermission({
+    label: "Categories",
+    resource: "categories",
+    route: "/categories",
+  });
+  const canCreateUnit = useCreatePermission({
+    label: "Units",
+    resource: "units",
+    route: "/units",
+  });
   const [searchInput, setSearchInput] = useState(
     invoiceState.filters.Search,
   );
@@ -82,6 +109,18 @@ const SalesInvoicesPage = () => {
     isLoading: false,
     isOpen: false,
     mode: "create",
+  });
+  const [lookupCreateModal, setLookupCreateModal] = useState({
+    category: false,
+    customer: false,
+    item: false,
+    unit: false,
+  });
+  const [itemCreateLookups, setItemCreateLookups] = useState({
+    categories: [],
+    categoriesLoading: false,
+    units: [],
+    unitsLoading: false,
   });
   const [confirmation, setConfirmation] = useState({
     action: "confirm",
@@ -109,10 +148,10 @@ const SalesInvoicesPage = () => {
     return dispatch(fetchInvoices(queryParams));
   }, [dispatch, queryParams]);
 
-  const loadLookup = useCallback((type) => {
+  const loadLookup = useCallback((type, { force = false } = {}) => {
     const cache = lookupCacheRef.current[type];
 
-    if (cache.loaded) {
+    if (cache.loaded && !force) {
       return Promise.resolve(null);
     }
 
@@ -274,6 +313,119 @@ const SalesInvoicesPage = () => {
       mode: "create",
     });
   }, [loadLookups]);
+
+  const loadItemCreateLookups = useCallback(async () => {
+    setItemCreateLookups((current) => ({
+      ...current,
+      categoriesLoading: true,
+      unitsLoading: true,
+    }));
+
+    try {
+      const [categories, units] = await Promise.all([
+        categoryService.getCategories({
+          IsActive: true,
+          PageNumber: 1,
+          PageSize: 200,
+        }),
+        unitService.getUnits({
+          IsActive: true,
+          PageNumber: 1,
+          PageSize: 200,
+        }),
+      ]);
+
+      setItemCreateLookups({
+        categories: getLookupList(categories),
+        categoriesLoading: false,
+        units: getLookupList(units),
+        unitsLoading: false,
+      });
+    } catch (error) {
+      toast.error(
+        getActionError(error, "Unable to load item form lookups."),
+      );
+      setItemCreateLookups((current) => ({
+        ...current,
+        categoriesLoading: false,
+        unitsLoading: false,
+      }));
+    }
+  }, []);
+
+  const openLookupCreate = useCallback(
+    (type) => {
+      if (type === "item") {
+        void loadItemCreateLookups();
+      }
+
+      setLookupCreateModal((current) => ({ ...current, [type]: true }));
+    },
+    [loadItemCreateLookups],
+  );
+
+  const closeLookupCreate = useCallback((type) => {
+    setLookupCreateModal((current) => ({ ...current, [type]: false }));
+  }, []);
+
+  const refreshItemCreateLookup = useCallback(async (type) => {
+    if (type === "category") {
+      const response = await categoryService.getCategories({
+        IsActive: true,
+        PageNumber: 1,
+        PageSize: 200,
+      });
+      setItemCreateLookups((current) => ({
+        ...current,
+        categories: getLookupList(response),
+      }));
+      return;
+    }
+
+    const response = await unitService.getUnits({
+      IsActive: true,
+      PageNumber: 1,
+      PageSize: 200,
+    });
+    setItemCreateLookups((current) => ({
+      ...current,
+      units: getLookupList(response),
+    }));
+  }, []);
+
+  const submitLookupCreate = useCallback(
+    async (type, payload, saveAndNew = false) => {
+      try {
+        if (type === "customer") {
+          await partyService.createParty(payload);
+          toast.success("Customer created successfully");
+          lookupCacheRef.current.customers.loaded = false;
+          await loadLookup("customers", { force: true });
+        } else if (type === "item") {
+          await itemService.createItem(payload);
+          toast.success("Item created successfully");
+          lookupCacheRef.current.items.loaded = false;
+          await loadLookup("items", { force: true });
+        } else if (type === "category") {
+          await categoryService.createCategory(payload);
+          toast.success("Category created successfully");
+          await refreshItemCreateLookup("category");
+        } else {
+          await unitService.createUnit(payload);
+          toast.success("Unit created successfully");
+          await refreshItemCreateLookup("unit");
+        }
+
+        if (!saveAndNew) {
+          closeLookupCreate(type);
+        }
+      } catch (error) {
+        toast.error(getActionError(error, "Unable to create record."));
+        throw error;
+      }
+    },
+    [closeLookupCreate, loadLookup, refreshItemCreateLookup],
+  );
 
   const openEdit = useCallback(
     async (invoice) => {
@@ -448,9 +600,11 @@ const SalesInvoicesPage = () => {
       <InvoiceStats {...stats} />
 
       <InvoiceFilters
+        canCreateCustomer={canCreateCustomer}
         customerOptions={customerOptions}
         filters={filterControls}
         resultCount={invoiceState.list.length}
+        onCreateCustomer={() => openLookupCreate("customer")}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -503,6 +657,8 @@ const SalesInvoicesPage = () => {
       </div>
 
       <InvoiceFormModal
+        canCreateCustomer={canCreateCustomer}
+        canCreateItem={canCreateItem}
         key={`${modal.isOpen}-${modal.mode}-${modal.entity?.id ?? "new"}`}
         customerEmptyMessage={
           lookups.customersError
@@ -524,7 +680,66 @@ const SalesInvoicesPage = () => {
         itemsById={itemsById}
         mode={modal.mode}
         onClose={closeModal}
+        onCreateCustomer={() => openLookupCreate("customer")}
+        onCreateItem={() => openLookupCreate("item")}
         onSubmit={submitInvoice}
+      />
+
+      <PartyFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.customer}
+        mode="create"
+        onClose={() => closeLookupCreate("customer")}
+        onSubmit={(payload) => submitLookupCreate("customer", payload)}
+        submitLabel="Create Customer"
+        title="Add Customer"
+      />
+
+      <ItemFormModal
+        canCreateCategory={canCreateCategory}
+        canCreateUnit={canCreateUnit}
+        categoryOptions={itemCreateLookups.categories.map((category) => ({
+          value: Number(category.id),
+          label: category.name,
+        }))}
+        categoryEmptyMessage="No categories yet - add one in Categories."
+        categoryLoading={itemCreateLookups.categoriesLoading}
+        isLoading={false}
+        isOpen={lookupCreateModal.item}
+        item={null}
+        mode="create"
+        onClose={() => closeLookupCreate("item")}
+        onCreateCategory={() => openLookupCreate("category")}
+        onCreateUnit={() => openLookupCreate("unit")}
+        onSubmit={(payload, saveAndNew) =>
+          submitLookupCreate("item", payload, saveAndNew)
+        }
+        unitOptions={itemCreateLookups.units.map((unit) => ({
+          value: Number(unit.id),
+          label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name,
+        }))}
+        unitEmptyMessage="No units yet - add one in Units."
+        unitLoading={itemCreateLookups.unitsLoading}
+      />
+
+      <CategoryFormModal
+        category={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.category}
+        mode="create"
+        onClose={() => closeLookupCreate("category")}
+        onSubmit={(payload) => submitLookupCreate("category", payload)}
+      />
+
+      <UnitFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.unit}
+        mode="create"
+        onClose={() => closeLookupCreate("unit")}
+        onSubmit={(payload, saveAndNew) =>
+          submitLookupCreate("unit", payload, saveAndNew)
+        }
+        unit={null}
       />
 
       <InvoiceConfirmDialog

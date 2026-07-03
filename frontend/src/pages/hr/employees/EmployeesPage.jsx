@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { hrAttendanceService } from "../../../services/hr/attendanceService";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import { hrDesignationService } from "../../../services/hr/designationService";
@@ -45,6 +46,9 @@ import EmployeeList from "./EmployeeList";
 import EmployeeProfilePanel from "./EmployeeProfilePanel";
 import EmployeeStats from "./EmployeeStats";
 import { extractEmployeeBankDetails } from "./employeeFormMappers";
+import DepartmentFormModal from "../departments/DepartmentFormModal";
+import DesignationFormModal from "../designations/DesignationFormModal";
+import ShiftFormModal from "../shifts/ShiftFormModal";
 
 const extractList = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -94,6 +98,21 @@ const EmployeesPage = () => {
     resource: "employees",
     route: "/hr/employees",
   });
+  const canCreateDepartment = useCreatePermission({
+    label: "Departments",
+    resource: "departments",
+    route: "/hr/departments",
+  });
+  const canCreateDesignation = useCreatePermission({
+    label: "Designations",
+    resource: "designations",
+    route: "/hr/designations",
+  });
+  const canCreateShift = useCreatePermission({
+    label: "Shifts",
+    resource: "shifts",
+    route: "/hr/shifts",
+  });
   const [searchInput, setSearchInput] = useState(
     employeesState.filters.Search,
   );
@@ -107,6 +126,12 @@ const EmployeesPage = () => {
     isLoading: false,
     isOpen: false,
     mode: "create",
+  });
+  const [lookupCreateModal, setLookupCreateModal] = useState({
+    department: false,
+    designation: false,
+    employee: false,
+    shift: false,
   });
   const [bankModal, setBankModal] = useState(false);
   const [documentModal, setDocumentModal] = useState(false);
@@ -290,6 +315,41 @@ const EmployeesPage = () => {
   const closeModal = useCallback(() => {
     setModal((current) => ({ ...current, isOpen: false }));
   }, []);
+
+  const openLookupCreate = useCallback((type) => {
+    setLookupCreateModal((current) => ({ ...current, [type]: true }));
+  }, []);
+
+  const closeLookupCreate = useCallback((type) => {
+    setLookupCreateModal((current) => ({ ...current, [type]: false }));
+  }, []);
+
+  const submitLookupCreate = useCallback(
+    async (type, payload) => {
+      try {
+        if (type === "department") {
+          await hrDepartmentService.createDepartment(payload);
+          toast.success("Department created successfully");
+        } else if (type === "designation") {
+          await hrDesignationService.createDesignation(payload);
+          toast.success("Designation created successfully");
+        } else if (type === "shift") {
+          await hrShiftService.createShift(payload);
+          toast.success("Shift created successfully");
+        } else {
+          await dispatch(createHrEmployee(payload)).unwrap();
+          toast.success("Employee created successfully");
+        }
+
+        await loadLookups();
+        closeLookupCreate(type);
+      } catch (error) {
+        toast.error(getHrActionError(error, "Unable to create record."));
+        throw error;
+      }
+    },
+    [closeLookupCreate, dispatch, loadLookups],
+  );
 
   const openCreate = useCallback(() => {
     void loadLookupsIfNeeded();
@@ -528,10 +588,14 @@ const EmployeesPage = () => {
       />
 
       <EmployeeFilters
+        canCreateDepartment={canCreateDepartment}
+        canCreateDesignation={canCreateDesignation}
         departmentOptions={departmentOptions}
         designationOptions={designationOptions}
         filters={filterControls}
         resultCount={employeesState.list.length}
+        onCreateDepartment={() => openLookupCreate("department")}
+        onCreateDesignation={() => openLookupCreate("designation")}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -610,6 +674,10 @@ const EmployeesPage = () => {
       </div>
 
       <EmployeeFormModal
+        canCreateDepartment={canCreateDepartment}
+        canCreateDesignation={canCreateDesignation}
+        canCreateReportingManager={capabilities.canCreate}
+        canCreateShift={canCreateShift}
         departmentOptions={departmentOptions}
         designationOptions={designationOptions}
         employee={modal.entity}
@@ -617,7 +685,62 @@ const EmployeesPage = () => {
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={closeModal}
+        onCreateDepartment={() => openLookupCreate("department")}
+        onCreateDesignation={() => openLookupCreate("designation")}
+        onCreateReportingManager={() => openLookupCreate("employee")}
+        onCreateShift={() => openLookupCreate("shift")}
         onSubmit={submitEmployee}
+        reportingManagerOptions={reportingManagerOptions}
+        shiftOptions={shiftOptions}
+      />
+
+      <DepartmentFormModal
+        department={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.department}
+        mode="create"
+        onClose={() => closeLookupCreate("department")}
+        onSubmit={(payload) => submitLookupCreate("department", payload)}
+      />
+
+      <DesignationFormModal
+        canCreateDepartment={canCreateDepartment}
+        departmentOptions={departmentOptions}
+        departmentsLoading={false}
+        designation={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.designation}
+        mode="create"
+        onClose={() => closeLookupCreate("designation")}
+        onCreateDepartment={() => openLookupCreate("department")}
+        onSubmit={(payload) => submitLookupCreate("designation", payload)}
+      />
+
+      <ShiftFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.shift}
+        mode="create"
+        onClose={() => closeLookupCreate("shift")}
+        onSubmit={(payload) => submitLookupCreate("shift", payload)}
+        shift={null}
+      />
+
+      <EmployeeFormModal
+        canCreateDepartment={canCreateDepartment}
+        canCreateDesignation={canCreateDesignation}
+        canCreateReportingManager={false}
+        canCreateShift={canCreateShift}
+        departmentOptions={departmentOptions}
+        designationOptions={designationOptions}
+        employee={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.employee}
+        mode="create"
+        onClose={() => closeLookupCreate("employee")}
+        onCreateDepartment={() => openLookupCreate("department")}
+        onCreateDesignation={() => openLookupCreate("designation")}
+        onCreateShift={() => openLookupCreate("shift")}
+        onSubmit={(payload) => submitLookupCreate("employee", payload)}
         reportingManagerOptions={reportingManagerOptions}
         shiftOptions={shiftOptions}
       />

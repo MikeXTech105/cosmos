@@ -46,7 +46,7 @@ const getCategoryDefaultValues = (category) => ({
   isActive: category?.isActive ?? true,
 });
 
-const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => {
+export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => {
   const {
     handleSubmit,
     register,

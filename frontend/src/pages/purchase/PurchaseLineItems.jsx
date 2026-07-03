@@ -64,6 +64,7 @@ export const PurchaseNumberInput = ({
 };
 
 const PurchaseLineItems = ({
+  canCreateItem = false,
   control,
   errors,
   itemEmptyMessage,
@@ -71,6 +72,7 @@ const PurchaseLineItems = ({
   itemOptions,
   itemsById,
   name = "items",
+  onCreateItem,
   setValue,
 }) => {
   const { append, fields, remove } = useFieldArray({ control, name });
@@ -178,6 +180,9 @@ const PurchaseLineItems = ({
                           }
                           disabled={itemLoading}
                           error={errors?.[index]?.itemId?.message}
+                          creatable={canCreateItem}
+                          createLabel="Create new item"
+                          onCreateClick={onCreateItem}
                         />
                       )}
                     />
