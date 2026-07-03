@@ -17,6 +17,7 @@ import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { roleService } from "../../../services/rbac/roleService";
 import { userService } from "../../../services/rbac/userService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import UserFilters from "./UserFilters";
 import UserModal from "./UserModal";
 import UserStats from "./UserStats";
@@ -43,12 +44,7 @@ const USER_PERMISSIONS = {
 const LIST_KEYS = ["items", "users", "roles", "records", "results", "content"];
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload, responseMeta) => {

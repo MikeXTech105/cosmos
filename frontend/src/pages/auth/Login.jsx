@@ -11,6 +11,7 @@ import useAuthTheme from "../../hooks/useAuthTheme";
 import { loginUser } from "../../services/authService";
 import { setCredentials } from "../../store/slices/authSlice";
 import { saveAuthData } from "../../utils/authStorage";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { loginSchema } from "../../utils/validationSchemas";
 
 const getRememberMeDefault = () => {
@@ -68,9 +69,10 @@ const Login = () => {
       });
     } catch (error) {
       toast.error(
-        error.response?.data?.message ??
-          error.message ??
+        getApiErrorMessage(
+          error,
           "Unable to sign in. Please check your credentials.",
+        ),
       );
     }
   };

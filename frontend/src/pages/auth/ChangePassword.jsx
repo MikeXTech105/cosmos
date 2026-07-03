@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { changePassword } from "../../services/authService";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { changePasswordSchema } from "../../utils/validationSchemas";
 
 const inputClassName =
@@ -88,7 +89,7 @@ const ChangePassword = () => {
       reset();
       toast.success(data.message ?? "Password changed successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message ?? "Unable to change password.");
+      toast.error(getApiErrorMessage(error, "Unable to change password."));
     }
   };
 

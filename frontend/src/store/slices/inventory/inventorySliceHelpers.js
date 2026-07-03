@@ -2,20 +2,10 @@ import {
   clampInventoryPageSize,
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../../utils/inventoryQuery";
+import { getApiErrorMessage } from "../../../utils/apiError";
 
 export const getThunkError = (error, fallback) => {
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 export const normalizePagedPayload = (payload) => {

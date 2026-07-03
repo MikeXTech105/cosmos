@@ -1,3 +1,5 @@
+import { getApiErrorMessage } from "../../utils/apiError";
+
 export const PURCHASE_STATUS = {
   DRAFT: 0,
   CONFIRMED: 1,
@@ -201,22 +203,7 @@ export const formatNumber = (value) => {
 };
 
 export const getActionError = (error, fallback) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 export const getSuccessMessage = (response, fallback) => {

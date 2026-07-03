@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { pageService } from "../../../services/rbac/pageService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import PageFilters from "./PageFilters";
 import PageModal from "./PageModal";
 import PageStats from "./PageStats";
@@ -39,12 +40,7 @@ const PAGE_PERMISSIONS = {
 };
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload, responseMeta) => {

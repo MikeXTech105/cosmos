@@ -52,6 +52,16 @@ const ExpenseCategories = lazy(
   () => import("../pages/purchase/expenseCategories/index.js"),
 );
 const PurchaseReports = lazy(() => import("../pages/purchase/reports/index.js"));
+const OeeDashboard = lazy(() => import("../pages/oee/dashboard/index.js"));
+const OeeProductionEntries = lazy(
+  () => import("../pages/oee/productionEntries/index.js"),
+);
+const OeeMachines = lazy(() => import("../pages/oee/machines/index.js"));
+const OeeMoulds = lazy(() => import("../pages/oee/moulds/index.js"));
+const OeeDowntimeReasons = lazy(
+  () => import("../pages/oee/downtimeReasons/index.js"),
+);
+const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
 
 const RouteFallback = () => {
@@ -345,6 +355,60 @@ const AppRoutes = () => {
                 pageName="Purchase Reports"
               >
                 <PurchaseReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/dashboard"
+            element={
+              <PermissionGuard route="/oee/dashboard" pageName="OEE Dashboard">
+                <OeeDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/production-entries"
+            element={
+              <PermissionGuard
+                route="/oee/production-entries"
+                pageName="OEE Production Entries"
+              >
+                <OeeProductionEntries />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/machines"
+            element={
+              <PermissionGuard route="/oee/machines" pageName="OEE Machines">
+                <OeeMachines />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/moulds"
+            element={
+              <PermissionGuard route="/oee/moulds" pageName="OEE Moulds">
+                <OeeMoulds />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/downtime-reasons"
+            element={
+              <PermissionGuard
+                route="/oee/downtime-reasons"
+                pageName="OEE Downtime Reasons"
+              >
+                <OeeDowntimeReasons />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/reports"
+            element={
+              <PermissionGuard route="/oee/reports" pageName="OEE Reports">
+                <OeeReports />
               </PermissionGuard>
             }
           />

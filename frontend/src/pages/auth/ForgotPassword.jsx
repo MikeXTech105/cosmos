@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getAuthFormClasses } from "../../components/auth/authThemeClasses";
 import useAuthTheme from "../../hooks/useAuthTheme";
 import { forgotPassword } from "../../services/authService";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { forgotPasswordSchema } from "../../utils/validationSchemas";
 
 const ForgotPassword = () => {
@@ -32,7 +33,7 @@ const ForgotPassword = () => {
       );
     } catch (error) {
       toast.error(
-        error.response?.data?.message ?? "Unable to send reset instructions.",
+        getApiErrorMessage(error, "Unable to send reset instructions."),
       );
     }
   };

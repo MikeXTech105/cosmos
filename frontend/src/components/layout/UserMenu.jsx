@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { logoutUser } from "../../services/authService";
 import { clearCredentials } from "../../store/slices/authSlice";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { clearAuthData } from "../../utils/authStorage";
 
 const getDisplayName = (user) => {
@@ -44,8 +45,7 @@ const UserMenu = () => {
       toast.success("Signed out successfully");
     } catch (error) {
       toast.error(
-        error.response?.data?.message ??
-          "Signed out locally. Server logout failed.",
+        getApiErrorMessage(error, "Signed out locally. Server logout failed."),
       );
     } finally {
       clearAuthData();

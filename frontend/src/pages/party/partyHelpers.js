@@ -1,3 +1,5 @@
+import { getApiErrorMessage } from "../../utils/apiError";
+
 const ACRONYMS = new Map([
   ["gst", "GST"],
   ["gstin", "GSTIN"],
@@ -20,18 +22,7 @@ export const getFieldLabel = (name) => {
 };
 
 export const getErrorMessage = (error, fallback) => {
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const getEmptyValue = (field) => {

@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { roleService } from "../../../services/rbac/roleService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import RoleFilters from "./RoleFilters";
 import RoleModal from "./RoleModal";
 import RoleStats from "./RoleStats";
@@ -39,12 +40,7 @@ const ROLE_PERMISSIONS = {
 const LIST_KEYS = ["items", "roles", "records", "results", "content"];
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload, responseMeta) => {

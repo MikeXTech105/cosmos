@@ -1,8 +1,19 @@
 import axiosInstance from "../api/axios";
 import { ENDPOINTS } from "../api/endpoints";
+import { createApiError } from "../utils/apiError";
 
 const unwrapResponse = (response) => {
   const responseData = response.data;
+
+  if (
+    responseData?.succeeded === false ||
+    responseData?.data?.succeeded === false
+  ) {
+    throw createApiError(
+      responseData?.succeeded === false ? responseData : responseData.data,
+      response,
+    );
+  }
 
   if (
     responseData?.data &&

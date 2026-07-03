@@ -9,6 +9,12 @@ import hrLeaveReducer from "./slices/hr/leaveSlice";
 import hrPayrollReducer from "./slices/hr/payrollSlice";
 import hrShiftReducer from "./slices/hr/shiftSlice";
 import itemReducer from "./slices/inventory/itemSlice";
+import oeeDashboardReducer from "./slices/oee/oeeDashboardSlice";
+import oeeDowntimeReasonReducer from "./slices/oee/oeeDowntimeReasonSlice";
+import oeeMachineReducer from "./slices/oee/oeeMachineSlice";
+import oeeMouldReducer from "./slices/oee/oeeMouldSlice";
+import oeeProductionEntryReducer from "./slices/oee/oeeProductionEntrySlice";
+import oeeReportReducer from "./slices/oee/oeeReportSlice";
 import expenseCategoryReducer from "./slices/purchase/expenseCategorySlice";
 import expenseReducer from "./slices/purchase/expenseSlice";
 import purchaseBillReducer from "./slices/purchase/purchaseBillSlice";
@@ -34,6 +40,12 @@ export const store = configureStore({
     hrPayroll: hrPayrollReducer,
     hrShifts: hrShiftReducer,
     items: itemReducer,
+    oeeDashboard: oeeDashboardReducer,
+    oeeDowntimeReasons: oeeDowntimeReasonReducer,
+    oeeMachines: oeeMachineReducer,
+    oeeMoulds: oeeMouldReducer,
+    oeeProductionEntries: oeeProductionEntryReducer,
+    oeeReports: oeeReportReducer,
     purchaseBills: purchaseBillReducer,
     purchaseOrders: purchaseOrderReducer,
     purchaseReports: purchaseReportReducer,
