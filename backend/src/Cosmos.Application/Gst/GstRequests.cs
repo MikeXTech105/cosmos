@@ -82,7 +82,12 @@ public sealed record CancelEWayBillRequest(
     long CompanyGstRegistrationId,
     string EWayBillNumber,
     string CancelReasonCode,
-    string CancelRemark);
+    string CancelRemark,
+    string? RequestJson = null);
+
+public sealed record GetEWayBillDetailsRequest(
+    long CompanyGstRegistrationId,
+    string EWayBillNumber);
 
 public sealed record UpdateEWayBillVehicleRequest(
     long CompanyGstRegistrationId,
@@ -115,7 +120,14 @@ public sealed record CancelEInvoiceRequest(
     long CompanyGstRegistrationId,
     string Irn,
     string CancelReasonCode,
-    string CancelRemark);
+    string CancelRemark,
+    string? RequestJson = null);
+
+public sealed record GetEInvoiceDetailsRequest(
+    long CompanyGstRegistrationId,
+    string Irn,
+    string? SellerGstin = null,
+    string? Irp = null);
 
 public sealed record GenerateGstOtpRequest(long CompanyGstRegistrationId, string? GstPortalUsername = null);
 

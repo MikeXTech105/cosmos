@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Cosmos.Infrastructure;
@@ -17,12 +18,20 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-        services.Configure<GstZenOptions>(configuration.GetSection(GstZenOptions.SectionName));
+        services
+            .AddOptions<GstZenOptions>()
+            .Bind(configuration.GetSection(GstZenOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<GstZenOptions>, GstZenOptionsValidator>();
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();
-        services.AddHttpClient<IGstZenProviderService, GstZenProviderService>();
+        services.AddHttpClient<IGstZenProviderService, GstZenProviderService>((provider, client) =>
+        {
+            var gstZenOptions = provider.GetRequiredService<IOptions<GstZenOptions>>().Value;
+            client.Timeout = TimeSpan.FromSeconds(Math.Max(gstZenOptions.TimeoutSeconds, 1));
+        });
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
