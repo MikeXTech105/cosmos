@@ -1,0 +1,28 @@
+namespace Cosmos.Application.Parties.Commands;
+
+public sealed record CreatePartyCommand(
+    string PartyCode,
+    string PartyName,
+    string? MobileNo,
+    string? Email,
+    int GSTTreatment,
+    string? GSTIN,
+    string? LegalName,
+    string? TradeName,
+    string? BillingAddressLine1,
+    string? BillingAddressLine2,
+    string? BillingCity,
+    string? BillingState,
+    string? BillingCountry,
+    string? BillingPincode,
+    string? ShippingAddressLine1,
+    string? ShippingAddressLine2,
+    string? ShippingCity,
+    string? ShippingState,
+    string? ShippingCountry,
+    string? ShippingPincode,
+    decimal OpeningBalance,
+    int OpeningBalanceType,
+    decimal CreditLimit,
+    int CreditPeriodDays,
+    bool IsActive);
