@@ -19,6 +19,48 @@ export const OEE_HORIZON_OPTIONS = [
   { value: 90, label: "Last 90 days" },
 ];
 
+export const OEE_RATING_BANDS = [
+  {
+    label: "Critical",
+    min: 0,
+    max: 40,
+    tone: "red",
+    color: "#ef4444",
+    bgClass: "bg-red-50 text-red-700 ring-red-200",
+  },
+  {
+    label: "Needs Attention",
+    min: 40,
+    max: 65,
+    tone: "amber",
+    color: "#f59e0b",
+    bgClass: "bg-amber-50 text-amber-700 ring-amber-200",
+  },
+  {
+    label: "Good",
+    min: 65,
+    max: 85,
+    tone: "yellow",
+    color: "#eab308",
+    bgClass: "bg-yellow-50 text-yellow-700 ring-yellow-200",
+  },
+  {
+    label: "World-Class",
+    min: 85,
+    max: 100,
+    tone: "emerald",
+    color: "#22c55e",
+    bgClass: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
+];
+
+export const OEE_RATING_FILTER_OPTIONS = [
+  { value: "all", label: "All ratings" },
+  ...OEE_RATING_BANDS.slice()
+    .reverse()
+    .map((band) => ({ value: band.label, label: band.label })),
+];
+
 export const buildOeeListQueryParams = ({
   filters,
   pageNumber,
@@ -214,38 +256,10 @@ export const normalizeOeeNumberBlurValue = (
 
 export const getOeeRating = (value) => {
   const percentage = Number(value);
+  const safePercentage = Number.isFinite(percentage) ? percentage : 0;
+  const matchedBand = OEE_RATING_BANDS.slice()
+    .reverse()
+    .find((band) => safePercentage >= band.min);
 
-  if (percentage >= 85) {
-    return {
-      label: "World-Class",
-      tone: "emerald",
-      color: "#059669",
-      bgClass: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    };
-  }
-
-  if (percentage >= 65) {
-    return {
-      label: "Good",
-      tone: "brand",
-      color: "var(--app-accent)",
-      bgClass: "bg-brand-light text-brand ring-brand/20",
-    };
-  }
-
-  if (percentage >= 40) {
-    return {
-      label: "Needs Attention",
-      tone: "amber",
-      color: "#d97706",
-      bgClass: "bg-amber-50 text-amber-700 ring-amber-200",
-    };
-  }
-
-  return {
-    label: "Critical",
-    tone: "red",
-    color: "#dc2626",
-    bgClass: "bg-red-50 text-red-700 ring-red-200",
-  };
+  return matchedBand ?? OEE_RATING_BANDS[0];
 };

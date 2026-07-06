@@ -32,8 +32,10 @@ import {
   getOeeRating,
   getOeeRecordId,
   OEE_HORIZON_OPTIONS,
+  OEE_RATING_FILTER_OPTIONS,
 } from "../oeeHelpers";
 import { OeeRatingPill, OeeStatCard } from "../OeeShared";
+import OeeSpeedometer from "../OeeSpeedometer";
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -71,56 +73,12 @@ const EmptyPanel = ({ label }) => {
   );
 };
 
-const GaugeRing = ({ value }) => {
-  const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
-  const rating = getOeeRating(safeValue);
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (safeValue / 100) * circumference;
-
-  return (
-    <div className="relative mx-auto h-40 w-40">
-      <svg className="h-full w-full -rotate-90" viewBox="0 0 140 140">
-        <circle
-          cx="70"
-          cy="70"
-          r={radius}
-          fill="none"
-          stroke="#e2e8f0"
-          strokeWidth="13"
-        />
-        <circle
-          cx="70"
-          cy="70"
-          r={radius}
-          fill="none"
-          stroke={rating.color}
-          strokeLinecap="round"
-          strokeWidth="13"
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
-        />
-        <circle
-          cx="70"
-          cy="70"
-          r="38"
-          fill="white"
-          stroke="#f1f5f9"
-          strokeWidth="1"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-slate-900">
-          {safeValue.toFixed(1)}
-        </span>
-        <span className="text-xs font-semibold text-slate-400">OEE %</span>
-      </div>
-    </div>
-  );
-};
-
 const MachineGaugeCard = ({ machine, meta }) => {
-  const rating = getOeeRating(machine.averageOeePercentage);
+  const oeeValue = Number(machine.averageOeePercentage) || 0;
+  const rating = getOeeRating(oeeValue);
+  const totalShot = Number(machine.totalShot) || 0;
+  const totalTarget = Number(machine.totalTarget) || 0;
+  const hasNoProduction = totalShot <= 0 && totalTarget <= 0 && oeeValue <= 0;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
@@ -137,37 +95,37 @@ const MachineGaugeCard = ({ machine, meta }) => {
         <OeeRatingPill rating={rating} />
       </div>
 
-      <div className="mt-4">
-        <GaugeRing value={machine.averageOeePercentage} />
+      <div className={["mt-5", hasNoProduction ? "opacity-75" : ""].join(" ")}>
+        <OeeSpeedometer value={oeeValue} showTicks />
+      </div>
+
+      <div className="mt-1 text-center">
+        <p className="text-3xl font-bold tracking-tight text-slate-900">
+          {formatOeePercent(oeeValue)}
+        </p>
+        <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+          OEE %
+        </p>
+        {hasNoProduction && (
+          <p className="mt-1 text-xs font-medium text-slate-400">
+            No production
+          </p>
+        )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-slate-50 px-3 py-2">
+        <div className="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-inset ring-slate-100">
           <p className="text-xs font-semibold text-slate-400">Shots</p>
           <p className="mt-1 text-sm font-bold text-slate-900">
-            {formatOeeNumber(machine.totalShot, { maximumFractionDigits: 0 })}
+            {formatOeeNumber(totalShot, { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="rounded-xl bg-slate-50 px-3 py-2">
+        <div className="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-inset ring-slate-100">
           <p className="text-xs font-semibold text-slate-400">Target</p>
           <p className="mt-1 text-sm font-bold text-slate-900">
-            {formatOeeNumber(machine.totalTarget)}
+            {formatOeeNumber(totalTarget, { maximumFractionDigits: 0 })}
           </p>
         </div>
-      </div>
-
-      <div className="mt-4 flex h-2 overflow-hidden rounded-full bg-slate-100">
-        <span className="w-[40%] bg-red-400" />
-        <span className="w-[25%] bg-amber-400" />
-        <span className="w-[20%] bg-brand" />
-        <span className="w-[15%] bg-emerald-500" />
-      </div>
-      <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-400">
-        <span>0</span>
-        <span>40</span>
-        <span>65</span>
-        <span>85</span>
-        <span>100</span>
       </div>
     </div>
   );
@@ -642,13 +600,7 @@ const OeeDashboardPage = () => {
               <AppSelect
                 value={ratingFilter}
                 onChange={setRatingFilter}
-                options={[
-                  { value: "all", label: "All ratings" },
-                  { value: "World-Class", label: "World-Class" },
-                  { value: "Good", label: "Good" },
-                  { value: "Needs Attention", label: "Needs Attention" },
-                  { value: "Critical", label: "Critical" },
-                ]}
+                options={OEE_RATING_FILTER_OPTIONS}
                 aria-label="Rating filter"
               />
             </div>
