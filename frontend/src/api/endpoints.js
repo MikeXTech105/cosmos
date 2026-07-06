@@ -132,6 +132,10 @@ export const ENDPOINTS = {
 
   HR_EMPLOYEE_REPORTING_MANAGERS: "/api/hr/employees/reporting-managers",
 
+  HR_EMPLOYEE_RESIGN: (id) => `/api/hr/employees/${id}/resign`,
+
+  HR_EMPLOYEE_REJOIN: (id) => `/api/hr/employees/${id}/rejoin`,
+
   HR_EMPLOYEE_DOCUMENTS: (id) => `/api/hr/employees/${id}/documents`,
 
   HR_EMPLOYEE_DOCUMENT_BY_ID: (docId) =>

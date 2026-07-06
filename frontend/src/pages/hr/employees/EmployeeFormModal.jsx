@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserRound } from "lucide-react";
+import { Plus, Trash2, UserRound } from "lucide-react";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 import AppButton from "../../../components/common/AppButton";
 import AppImageUpload from "../../../components/common/AppImageUpload";
@@ -64,6 +64,14 @@ const EmployeeFormModal = ({
   } = useForm({
     resolver: zodResolver(hrEmployeeSchema),
     defaultValues: mapEmployeeToForm(employee),
+  });
+  const {
+    append: appendAddress,
+    fields: addressFields,
+    remove: removeAddress,
+  } = useFieldArray({
+    control,
+    name: "addresses",
   });
 
   useEffect(() => {
@@ -339,57 +347,107 @@ const EmployeeFormModal = ({
               </div>
             </Section>
 
-            <Section title="Address">
-              <div className="grid gap-4 md:grid-cols-2">
-                <AppInput
-                  id="addressType"
-                  label="Address Type"
-                  disabled={isView}
-                  error={errors.addressType?.message}
-                  {...register("addressType")}
-                />
-                <AppInput
-                  id="addressLine1"
-                  label="Address Line 1"
-                  disabled={isView}
-                  error={errors.addressLine1?.message}
-                  {...register("addressLine1")}
-                />
-                <AppInput
-                  id="addressLine2"
-                  label="Address Line 2"
-                  disabled={isView}
-                  error={errors.addressLine2?.message}
-                  {...register("addressLine2")}
-                />
-                <AppInput
-                  id="city"
-                  label="City"
-                  disabled={isView}
-                  error={errors.city?.message}
-                  {...register("city")}
-                />
-                <AppInput
-                  id="state"
-                  label="State"
-                  disabled={isView}
-                  error={errors.state?.message}
-                  {...register("state")}
-                />
-                <AppInput
-                  id="country"
-                  label="Country"
-                  disabled={isView}
-                  error={errors.country?.message}
-                  {...register("country")}
-                />
-                <AppInput
-                  id="pincode"
-                  label="Pincode"
-                  disabled={isView}
-                  error={errors.pincode?.message}
-                  {...register("pincode")}
-                />
+            <Section title="Addresses">
+              <div className="space-y-4">
+                {addressFields.map((addressField, index) => {
+                  const addressErrors = errors.addresses?.[index] ?? {};
+
+                  return (
+                    <div
+                      key={addressField.id}
+                      className="rounded-xl border border-slate-100 bg-slate-50 p-3"
+                    >
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                          Address {index + 1}
+                        </p>
+                        {!isView && addressFields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeAddress(index)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            aria-label={`Remove address ${index + 1}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <AppInput
+                          id={`addressType-${index}`}
+                          label="Address Type"
+                          disabled={isView}
+                          error={addressErrors.addressType?.message}
+                          {...register(`addresses.${index}.addressType`)}
+                        />
+                        <AppInput
+                          id={`addressLine1-${index}`}
+                          label="Address Line 1"
+                          disabled={isView}
+                          error={addressErrors.addressLine1?.message}
+                          {...register(`addresses.${index}.addressLine1`)}
+                        />
+                        <AppInput
+                          id={`addressLine2-${index}`}
+                          label="Address Line 2"
+                          disabled={isView}
+                          error={addressErrors.addressLine2?.message}
+                          {...register(`addresses.${index}.addressLine2`)}
+                        />
+                        <AppInput
+                          id={`city-${index}`}
+                          label="City"
+                          disabled={isView}
+                          error={addressErrors.city?.message}
+                          {...register(`addresses.${index}.city`)}
+                        />
+                        <AppInput
+                          id={`state-${index}`}
+                          label="State"
+                          disabled={isView}
+                          error={addressErrors.state?.message}
+                          {...register(`addresses.${index}.state`)}
+                        />
+                        <AppInput
+                          id={`country-${index}`}
+                          label="Country"
+                          disabled={isView}
+                          error={addressErrors.country?.message}
+                          {...register(`addresses.${index}.country`)}
+                        />
+                        <AppInput
+                          id={`pincode-${index}`}
+                          label="Pincode"
+                          disabled={isView}
+                          error={addressErrors.pincode?.message}
+                          {...register(`addresses.${index}.pincode`)}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {!isView && (
+                  <AppButton
+                    variant="secondary"
+                    className="h-10 rounded-lg px-3"
+                    onClick={() =>
+                      appendAddress({
+                        addressType: "Secondary",
+                        addressLine1: "",
+                        addressLine2: "",
+                        city: "",
+                        state: "",
+                        country: "India",
+                        pincode: "",
+                      })
+                    }
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Address
+                  </AppButton>
+                )}
               </div>
             </Section>
 

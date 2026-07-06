@@ -20,6 +20,7 @@ const initialState = {
     Search: "",
     DepartmentId: "all",
     DesignationId: "all",
+    IncludeResigned: false,
     Status: "all",
     IsActive: "all",
     SortBy: "",
@@ -110,6 +111,32 @@ export const deleteHrEmployee = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         getThunkError(error, "Unable to delete employee."),
+      );
+    }
+  },
+);
+
+export const resignHrEmployee = createAsyncThunk(
+  "hrEmployees/resign",
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      return await hrEmployeeService.resign(id, payload);
+    } catch (error) {
+      return rejectWithValue(
+        getThunkError(error, "Unable to resign employee."),
+      );
+    }
+  },
+);
+
+export const rejoinHrEmployee = createAsyncThunk(
+  "hrEmployees/rejoin",
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      return await hrEmployeeService.rejoin(id, payload);
+    } catch (error) {
+      return rejectWithValue(
+        getThunkError(error, "Unable to rejoin employee."),
       );
     }
   },
@@ -237,6 +264,8 @@ const employeeSlice = createSlice({
       .addCase(fetchHrEmployeeById.rejected, setHrDetailRejected)
       .addCase(createHrEmployee.fulfilled, setHrSavedEntity("employee"))
       .addCase(updateHrEmployee.fulfilled, setHrSavedEntity("employee"))
+      .addCase(resignHrEmployee.fulfilled, setHrSavedEntity("employee"))
+      .addCase(rejoinHrEmployee.fulfilled, setHrSavedEntity("employee"))
       .addCase(deleteHrEmployee.fulfilled, setHrDeletedEntity)
       .addCase(fetchHrEmployeeDropdown.fulfilled, (state, action) => {
         state.lookups.dropdown = Array.isArray(action.payload.data)

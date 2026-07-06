@@ -172,8 +172,25 @@ export const hrEmployeeSchema = z.object({
   reportingManagerId: optionalPositiveId,
   shiftId: z.coerce.number().int().positive("Shift is required"),
   employmentType: z.coerce.number().int().min(HR_EMPLOYMENT_TYPE.FULL_TIME),
-  status: z.coerce.number().int().min(HR_EMPLOYEE_STATUS.ACTIVE),
+  status: z.coerce
+    .number()
+    .int()
+    .min(HR_EMPLOYEE_STATUS.ACTIVE)
+    .max(HR_EMPLOYEE_STATUS.TERMINATED),
   profilePhotoUrl: z.string().trim().optional(),
+  addresses: z
+    .array(
+      z.object({
+        addressType: z.string().trim().optional(),
+        addressLine1: z.string().trim().optional(),
+        addressLine2: z.string().trim().optional(),
+        city: z.string().trim().optional(),
+        state: z.string().trim().optional(),
+        country: z.string().trim().optional(),
+        pincode: z.string().trim().optional(),
+      }),
+    )
+    .optional(),
   addressType: z.string().trim().optional(),
   addressLine1: z.string().trim().optional(),
   addressLine2: z.string().trim().optional(),
@@ -201,6 +218,16 @@ export const hrDocumentSchema = z.object({
   fileName: z.string().trim().min(1, "File name is required"),
   filePath: z.string().trim().min(1, "Upload or enter a file path"),
   expiryDate: z.string().trim().optional(),
+});
+
+export const hrEmployeeResignSchema = z.object({
+  lastWorkingDate: z.string().trim().min(1, "Last working date is required"),
+  resignationReason: z.string().trim().optional(),
+});
+
+export const hrEmployeeRejoinSchema = z.object({
+  rejoinedDate: z.string().trim().min(1, "Rejoined date is required"),
+  remarks: z.string().trim().optional(),
 });
 
 export const hrAttendanceQuickActionSchema = z.object({
