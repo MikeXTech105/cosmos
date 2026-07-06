@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[Tags("GSTZen")]
+//[Tags("GSTZen")]
 [ApiExplorerSettings(GroupName = "gst")]
 [Route("api/v1/gst/eway-bills")]
 public sealed class EWayBillsController : ApiControllerBase
