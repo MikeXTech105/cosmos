@@ -344,6 +344,7 @@ export const itemSchema = z
         (value) => !value || imageUrlPattern.test(value),
         "Enter a valid image URL",
       ),
+    imageFile: z.any().optional(),
     isActive: z.boolean(),
   })
   .superRefine((values, context) => {

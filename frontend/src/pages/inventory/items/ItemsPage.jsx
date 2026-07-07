@@ -381,9 +381,13 @@ const ItemsPage = () => {
           (["number", "string"].includes(typeof responseItem)
             ? responseItem
             : modal.entity?.id);
+        const displayPayload = { ...payload };
+
+        delete displayPayload.imageFile;
+
         const savedItem = {
           ...(modal.entity ?? {}),
-          ...payload,
+          ...displayPayload,
           ...(responseItem && typeof responseItem === "object"
             ? responseItem
             : {}),

@@ -37,6 +37,7 @@ import {
   formatOeeNumber,
   formatOeePercent,
   getOeeActionError,
+  getOeeRating,
   getOeeRecordId,
   getOeeSuccessMessage,
   getTodayInputValue,
@@ -95,36 +96,6 @@ const toOptions = (items, getLabel) => {
     value: getOeeRecordId(item),
     label: getLabel(item),
   }));
-};
-
-const getRatingForEntry = (entry) => {
-  const value = Number(entry.calculatedOeePercentage);
-
-  if (value >= 85) {
-    return {
-      label: "World-Class",
-      bgClass: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-    };
-  }
-
-  if (value >= 65) {
-    return {
-      label: "Good",
-      bgClass: "bg-brand-light text-brand ring-brand/20",
-    };
-  }
-
-  if (value >= 40) {
-    return {
-      label: "Needs Attention",
-      bgClass: "bg-amber-50 text-amber-700 ring-amber-200",
-    };
-  }
-
-  return {
-    label: "Critical",
-    bgClass: "bg-red-50 text-red-700 ring-red-200",
-  };
 };
 
 const QuickCreateModal = ({
@@ -494,7 +465,9 @@ const HistoryTable = ({
                     <span className="font-semibold text-slate-900">
                       {formatOeePercent(entry.calculatedOeePercentage)}
                     </span>
-                    <OeeRatingPill rating={getRatingForEntry(entry)} />
+                    <OeeRatingPill
+                      rating={getOeeRating(entry.calculatedOeePercentage)}
+                    />
                   </div>
                 </td>
                 <td className="px-4 py-3 text-slate-700">

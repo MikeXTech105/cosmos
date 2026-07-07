@@ -356,15 +356,18 @@ const PurchaseDocumentFormModal = ({
                       {formatCurrency(totals.subTotal)}
                     </dd>
                   </div>
-                  <PurchaseNumberInput
-                    control={control}
-                    id="purchaseDiscount"
-                    name="discountAmount"
-                    label="Document Discount"
-                    error={errors.discountAmount?.message}
-                  />
+                  {config.supportsDiscount && (
+                    <PurchaseNumberInput
+                      control={control}
+                      id="purchaseDiscount"
+                      name="discountAmount"
+                      label="Document Discount"
+                      error={errors.discountAmount?.message}
+                    />
+                  )}
                   {config.supportsRoundOff && (
                     <PurchaseNumberInput
+                      allowNegative
                       control={control}
                       id="purchaseRoundOff"
                       name="roundOff"

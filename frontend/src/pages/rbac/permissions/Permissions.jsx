@@ -257,7 +257,7 @@ const Permissions = () => {
     setRolesError(null);
 
     try {
-      const response = await roleService.getRoles({ pageSize: 500 });
+      const response = await roleService.getRoles();
       const roleMap = new Map();
 
       extractCollection(response.data)
@@ -279,7 +279,7 @@ const Permissions = () => {
     setPagesError(null);
 
     try {
-      const response = await pageService.getPages({ pageSize: 500 });
+      const response = await pageService.getPages();
       const normalizedPages = flattenPageRecords(extractCollection(response.data))
         .map(normalizePage)
         .filter(Boolean);

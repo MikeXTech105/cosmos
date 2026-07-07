@@ -46,6 +46,7 @@ export const getItemDefaultValues = (item) => ({
   reservedStock: getNumberDefaultValue(item?.reservedStock),
   minimumStock: getNumberDefaultValue(item?.minimumStock),
   description: item?.description ?? "",
+  imageFile: null,
   imageUrl: item?.imageUrl ?? "",
   isActive: item?.isActive ?? true,
 });
@@ -93,6 +94,7 @@ export const buildItemPayload = (values) => {
     reservedStock: tracksStock ? toNumber(values.reservedStock) : 0,
     minimumStock: tracksStock ? toNumber(values.minimumStock) : 0,
     description: cleanString(values.description),
+    imageFile: values.imageFile ?? null,
     imageUrl: cleanString(values.imageUrl),
     isActive: Boolean(values.isActive),
   };

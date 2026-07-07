@@ -11,6 +11,8 @@ import {
   getLineCalculations,
   normalizeNumberBlurValue,
   normalizeNumberInput,
+  normalizeSignedNumberBlurValue,
+  normalizeSignedNumberInput,
 } from "./purchaseHelpers";
 
 export const PurchaseNumberInput = ({
@@ -21,6 +23,7 @@ export const PurchaseNumberInput = ({
   id,
   label,
   name,
+  allowNegative = false,
   placeholder = "0",
 }) => {
   return (
@@ -45,15 +48,34 @@ export const PurchaseNumberInput = ({
             }
           }}
           onKeyDown={(event) => {
+            if (event.key === "-" && allowNegative) {
+              if (
+                String(field.value ?? "").startsWith("-") ||
+                event.currentTarget.selectionStart !== 0
+              ) {
+                event.preventDefault();
+              }
+
+              return;
+            }
+
             if (["e", "E", "+", "-"].includes(event.key)) {
               event.preventDefault();
             }
           }}
           onChange={(event) =>
-            field.onChange(normalizeNumberInput(event.target.value))
+            field.onChange(
+              allowNegative
+                ? normalizeSignedNumberInput(event.target.value)
+                : normalizeNumberInput(event.target.value),
+            )
           }
           onBlur={(event) => {
-            field.onChange(normalizeNumberBlurValue(event.target.value));
+            field.onChange(
+              allowNegative
+                ? normalizeSignedNumberBlurValue(event.target.value)
+                : normalizeNumberBlurValue(event.target.value),
+            );
             field.onBlur();
           }}
           ref={field.ref}

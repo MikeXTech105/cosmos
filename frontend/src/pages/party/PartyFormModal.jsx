@@ -16,6 +16,45 @@ const isTextareaField = (name) => {
   return /address|message/i.test(name);
 };
 
+const normalizeNumberInput = (rawValue, { integer = false } = {}) => {
+  const value = String(rawValue ?? "").replace(integer ? /\D/g : /[^\d.]/g, "");
+
+  if (!value) {
+    return "";
+  }
+
+  if (integer) {
+    return value.replace(/^0+(?=\d)/, "") || "0";
+  }
+
+  const decimalIndex = value.indexOf(".");
+
+  if (decimalIndex >= 0) {
+    const integerPart =
+      value.slice(0, decimalIndex).replace(/^0+(?=\d)/, "") || "0";
+    const decimalPart = value.slice(decimalIndex + 1).replace(/\./g, "");
+
+    return `${integerPart}.${decimalPart}`;
+  }
+
+  return value.replace(/^0+(?=\d)/, "") || "0";
+};
+
+const normalizeNumberBlurValue = (value, options) => {
+  const normalized = normalizeNumberInput(value, options);
+
+  if (!normalized) {
+    return "0";
+  }
+
+  const completedValue = normalized.endsWith(".")
+    ? normalized.slice(0, -1)
+    : normalized;
+  const numberValue = Number(completedValue);
+
+  return Number.isFinite(numberValue) ? String(numberValue) : "0";
+};
+
 const FieldInput = ({ disabled, field, onChange, value }) => {
   const label = getFieldLabel(field.name);
 
@@ -71,9 +110,43 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
     <AppInput
       {...commonProps}
       label={label}
-      type={isNumber ? "number" : "text"}
-      step={field.type === "integer" ? "1" : "any"}
+      type="text"
+      inputMode={
+        isNumber ? (field.type === "integer" ? "numeric" : "decimal") : undefined
+      }
       className="h-10"
+      onFocus={(event) => {
+        if (isNumber && String(value) === "0") {
+          event.target.select();
+        }
+      }}
+      onKeyDown={(event) => {
+        if (isNumber && ["e", "E", "+", "-"].includes(event.key)) {
+          event.preventDefault();
+        }
+      }}
+      onChange={
+        isNumber
+          ? (event) =>
+              onChange(
+                field.name,
+                normalizeNumberInput(event.target.value, {
+                  integer: field.type === "integer",
+                }),
+              )
+          : commonProps.onChange
+      }
+      onBlur={
+        isNumber
+          ? (event) =>
+              onChange(
+                field.name,
+                normalizeNumberBlurValue(event.target.value, {
+                  integer: field.type === "integer",
+                }),
+              )
+          : undefined
+      }
     />
   );
 };
