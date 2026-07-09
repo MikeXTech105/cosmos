@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IPurchaseExpenseService, PurchaseExpenseService>();
         services.AddScoped<IOeeService, OeeService>();
+        services.AddScoped<IReportsService, ReportsService>();
         services.AddScoped<IGstRegistrationService, GstRegistrationService>();
         services.AddScoped<IGstVerificationService, GstVerificationService>();
         services.AddScoped<IEWayBillService, EWayBillService>();
