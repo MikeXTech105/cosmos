@@ -21,6 +21,8 @@ import {
   fetchHrEmployeeById,
   fetchHrEmployeeDocuments,
   fetchHrEmployees,
+  rejoinHrEmployee,
+  resignHrEmployee,
   saveHrEmployeeBankDetails,
   setHrEmployeeFilters,
   setHrEmployeePage,
@@ -42,6 +44,7 @@ import EmployeeBankModal from "./EmployeeBankModal";
 import EmployeeDocumentModal from "./EmployeeDocumentModal";
 import EmployeeFilters from "./EmployeeFilters";
 import EmployeeFormModal from "./EmployeeFormModal";
+import EmployeeLifecycleModal from "./EmployeeLifecycleModal";
 import EmployeeList from "./EmployeeList";
 import EmployeeProfilePanel from "./EmployeeProfilePanel";
 import EmployeeStats from "./EmployeeStats";
@@ -85,7 +88,8 @@ const buildEmployeeQueryParams = ({ filters, pageNumber, pageSize }) => {
         filters.DesignationId === "all"
           ? undefined
           : Number(filters.DesignationId),
-      Status: filters.Status === "all" ? undefined : Number(filters.Status),
+      IncludeResigned: Boolean(filters.IncludeResigned),
+      Status: filters.Status === "all" ? undefined : filters.Status,
     },
   });
 };
@@ -135,6 +139,11 @@ const EmployeesPage = () => {
   });
   const [bankModal, setBankModal] = useState(false);
   const [documentModal, setDocumentModal] = useState(false);
+  const [lifecycleModal, setLifecycleModal] = useState({
+    employee: null,
+    isOpen: false,
+    mode: "resign",
+  });
   const [employeeRelated, setEmployeeRelated] = useState({
     attendance: [],
     leaveBalance: null,
@@ -541,6 +550,86 @@ const EmployeesPage = () => {
     [dispatch, employeesState.selected],
   );
 
+  const openLifecycleModal = useCallback((mode, employee) => {
+    setLifecycleModal({
+      employee,
+      isOpen: true,
+      mode,
+    });
+  }, []);
+
+  const closeLifecycleModal = useCallback(() => {
+    setLifecycleModal((current) => ({ ...current, isOpen: false }));
+  }, []);
+
+  const submitLifecycle = useCallback(
+    async (payload) => {
+      const employee = lifecycleModal.employee ?? employeesState.selected;
+      const id = getHrRecordId(employee, "employee");
+      const isRejoin = lifecycleModal.mode === "rejoin";
+
+      if (!id) {
+        toast.error("Select an employee first.");
+        return;
+      }
+
+      try {
+        const response = await dispatch(
+          isRejoin
+            ? rejoinHrEmployee({ id, payload })
+            : resignHrEmployee({ id, payload }),
+        ).unwrap();
+        const updatedEmployee = extractHrEntity(response.data, "employee");
+
+        if (updatedEmployee) {
+          dispatch(setSelectedHrEmployee(updatedEmployee));
+        }
+
+        if (!isRejoin) {
+          dispatch(setHrEmployeeFilters({ IncludeResigned: true }));
+          dispatch(setHrEmployeePage(1));
+        }
+
+        toast.success(
+          getHrSuccessMessage(
+            response,
+            isRejoin
+              ? "Employee rejoined successfully"
+              : "Employee resigned successfully",
+          ),
+        );
+        closeLifecycleModal();
+
+        await dispatch(fetchHrEmployeeById(id)).unwrap();
+        await dispatch(
+          fetchHrEmployees({
+            ...queryParams,
+            IncludeResigned: !isRejoin || queryParams.IncludeResigned,
+            PageNumber: !isRejoin ? 1 : queryParams.PageNumber,
+          }),
+        ).unwrap();
+      } catch (error) {
+        toast.error(
+          getHrActionError(
+            error,
+            isRejoin
+              ? "Unable to rejoin employee."
+              : "Unable to resign employee.",
+          ),
+        );
+        throw error;
+      }
+    },
+    [
+      closeLifecycleModal,
+      dispatch,
+      employeesState.selected,
+      lifecycleModal.employee,
+      lifecycleModal.mode,
+      queryParams,
+    ],
+  );
+
   const filterControls = {
     ...employeesState.filters,
     Search: searchInput,
@@ -610,6 +699,7 @@ const EmployeesPage = () => {
             setHrEmployeeFilters({
               DepartmentId: "all",
               DesignationId: "all",
+              IncludeResigned: false,
               Search: "",
               Status: "all",
             }),
@@ -668,7 +758,13 @@ const EmployeesPage = () => {
           }
           onEdit={openEdit}
           onEditBank={() => setBankModal(true)}
-          relatedLoading={employeesState.relatedLoading || employeeRelated.loading}
+          onRejoin={(employee) => openLifecycleModal("rejoin", employee)}
+          onResign={(employee) => openLifecycleModal("resign", employee)}
+          relatedLoading={
+            employeesState.detailLoading ||
+            employeesState.relatedLoading ||
+            employeeRelated.loading
+          }
           shiftOptions={shiftOptions}
         />
       </div>
@@ -756,6 +852,14 @@ const EmployeesPage = () => {
         isOpen={documentModal}
         onClose={() => setDocumentModal(false)}
         onSubmit={submitDocument}
+      />
+
+      <EmployeeLifecycleModal
+        employee={lifecycleModal.employee}
+        isOpen={lifecycleModal.isOpen}
+        mode={lifecycleModal.mode}
+        onClose={closeLifecycleModal}
+        onSubmit={submitLifecycle}
       />
 
       <HrConfirmDialog

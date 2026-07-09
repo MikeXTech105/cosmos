@@ -463,11 +463,10 @@ const AttendancePage = () => {
   const [modal, setModal] = useState(null);
   const [decisionMode, setDecisionMode] = useState("approve");
   const [reportFilters, setReportFilters] = useState({
+    attendanceDate: today(),
     departmentId: "",
     employeeId: "",
-    fromDate: today(),
     month: new Date().getMonth() + 1,
-    toDate: today(),
     year: new Date().getFullYear(),
   });
 
@@ -626,11 +625,11 @@ const AttendancePage = () => {
     try {
       const response = await dispatch(
         fetchHrAttendanceMonthlyReport({
-          employeeId: reportFilters.employeeId
+          EmployeeId: reportFilters.employeeId
             ? Number(reportFilters.employeeId)
             : undefined,
-          month: Number(reportFilters.month),
-          year: Number(reportFilters.year),
+          Month: Number(reportFilters.month),
+          Year: Number(reportFilters.year),
         }),
       ).unwrap();
       toast.success(getHrSuccessMessage(response, "Monthly report loaded"));
@@ -646,15 +645,14 @@ const AttendancePage = () => {
           DepartmentId: reportFilters.departmentId
             ? Number(reportFilters.departmentId)
             : undefined,
-          FromDate: reportFilters.fromDate || undefined,
-          ToDate: reportFilters.toDate || undefined,
+          AttendanceDate: reportFilters.attendanceDate || undefined,
         }),
       ).unwrap();
       toast.success(getHrSuccessMessage(response, "Department report loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load department report."));
     }
-  }, [dispatch, reportFilters.departmentId, reportFilters.fromDate, reportFilters.toDate]);
+  }, [dispatch, reportFilters.attendanceDate, reportFilters.departmentId]);
 
   return (
     <section className="min-w-0 space-y-5">
@@ -901,23 +899,17 @@ const AttendancePage = () => {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900">Department Report</h3>
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             <AppSelect
               value={reportFilters.departmentId}
               onChange={(value) => setReportFilters((current) => ({ ...current, departmentId: value }))}
               options={[{ value: "", label: "Select department" }, ...departmentOptions]}
             />
             <AppInput
-              id="departmentFrom"
+              id="departmentAttendanceDate"
               type="date"
-              value={reportFilters.fromDate}
-              onChange={(event) => setReportFilters((current) => ({ ...current, fromDate: event.target.value }))}
-            />
-            <AppInput
-              id="departmentTo"
-              type="date"
-              value={reportFilters.toDate}
-              onChange={(event) => setReportFilters((current) => ({ ...current, toDate: event.target.value }))}
+              value={reportFilters.attendanceDate}
+              onChange={(event) => setReportFilters((current) => ({ ...current, attendanceDate: event.target.value }))}
             />
           </div>
           <AppButton className="mt-4 h-10" onClick={loadDepartmentReport}>

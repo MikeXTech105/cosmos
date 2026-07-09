@@ -68,6 +68,24 @@ export const hrEmployeeService = {
     return unwrapResponse(response);
   },
 
+  resign: async (id, payload) => {
+    const response = await axiosInstance.put(
+      ENDPOINTS.HR_EMPLOYEE_RESIGN(id),
+      payload,
+    );
+
+    return unwrapResponse(response);
+  },
+
+  rejoin: async (id, payload) => {
+    const response = await axiosInstance.put(
+      ENDPOINTS.HR_EMPLOYEE_REJOIN(id),
+      payload,
+    );
+
+    return unwrapResponse(response);
+  },
+
   getDocuments: async (id) => {
     const response = await axiosInstance.get(
       ENDPOINTS.HR_EMPLOYEE_DOCUMENTS(id),

@@ -39,6 +39,7 @@ const AppImageUpload = ({
   error,
   label,
   onChange,
+  onFileChange,
   value,
 }) => {
   const inputRef = useRef(null);
@@ -79,6 +80,7 @@ const AppImageUpload = ({
       });
 
       onChange?.(imageUrl);
+      onFileChange?.(file);
       setProgress(100);
     } catch (uploadErrorResponse) {
       setUploadError(
@@ -126,6 +128,7 @@ const AppImageUpload = ({
     setUploadError("");
     setFailedPreviewUrl("");
     onChange?.("");
+    onFileChange?.(null);
   };
 
   return (

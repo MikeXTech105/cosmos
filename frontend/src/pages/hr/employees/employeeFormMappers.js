@@ -131,7 +131,7 @@ export const hasBankDetails = (values = {}) => {
   return BANK_FIELDS.some((field) => String(values?.[field] ?? "").trim());
 };
 
-const hasAddress = (values) => {
+const hasFlatAddress = (values) => {
   return [
     values.addressLine1,
     values.addressLine2,
@@ -139,6 +139,17 @@ const hasAddress = (values) => {
     values.state,
     values.country,
     values.pincode,
+  ].some((value) => String(value ?? "").trim());
+};
+
+const hasAddress = (address = {}) => {
+  return [
+    address.addressLine1,
+    address.addressLine2,
+    address.city,
+    address.state,
+    address.country,
+    address.pincode,
   ].some((value) => String(value ?? "").trim());
 };
 
@@ -174,7 +185,8 @@ const mapBankToForm = (bank = {}) => {
 
 export const mapEmployeeToForm = (employee) => {
   const nameParts = splitName(employee);
-  const address = mapAddressToForm(getAddresses(employee)[0]);
+  const addresses = getAddresses(employee).map(mapAddressToForm);
+  const primaryAddress = addresses[0] ?? mapAddressToForm();
   const bank = mapBankToForm(extractEmployeeBankDetails(employee));
 
   return {
@@ -230,7 +242,8 @@ export const mapEmployeeToForm = (employee) => {
       employee?.photoUrl,
       employee?.imageUrl,
     ),
-    ...address,
+    addresses: addresses.length > 0 ? addresses : [primaryAddress],
+    ...primaryAddress,
     ...bank,
   };
 };
@@ -259,6 +272,9 @@ export const mapFormToPayload = (
   values,
   { includeBankDetails = true } = {},
 ) => {
+  const addresses = Array.isArray(values.addresses)
+    ? values.addresses.filter(hasAddress).map(mapAddressToPayload)
+    : [];
   const payload = {
     employeeCode: trimValue(values.employeeCode),
     firstName: trimValue(values.firstName),
@@ -277,7 +293,12 @@ export const mapFormToPayload = (
     employmentType: Number(values.employmentType),
     status: Number(values.status),
     profilePhotoUrl: trimValue(values.profilePhotoUrl),
-    addresses: hasAddress(values) ? [mapAddressToPayload(values)] : [],
+    addresses:
+      addresses.length > 0
+        ? addresses
+        : hasFlatAddress(values)
+          ? [mapAddressToPayload(values)]
+          : [],
   };
 
   if (includeBankDetails) {

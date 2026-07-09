@@ -2,6 +2,10 @@ import axiosInstance from "../../api/axios";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
+const normalizeRoleIds = (roleIds = []) => {
+  return roleIds.map((roleId) => Number(roleId)).filter(Number.isFinite);
+};
+
 export const userService = {
   getUsers: async (params) => {
     const response = await axiosInstance.get(ENDPOINTS.USERS, {
@@ -49,7 +53,7 @@ export const userService = {
 
   assignRoles: async (id, roleIds) => {
     const response = await axiosInstance.post(ENDPOINTS.USER_ROLES(id), {
-      roleIds,
+      roleIds: normalizeRoleIds(roleIds),
     });
 
     return unwrapResponse(response);

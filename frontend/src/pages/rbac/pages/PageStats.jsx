@@ -1,4 +1,4 @@
-import { FileCheck2, Files, FileX2 } from "lucide-react";
+import { FileCheck2, Files, FileX2, FolderTree } from "lucide-react";
 import { memo } from "react";
 
 const StatCard = ({ colorClass, icon: Icon, label, value }) => {
@@ -21,9 +21,9 @@ const StatCard = ({ colorClass, icon: Icon, label, value }) => {
   );
 };
 
-const PageStats = ({ active, inactive, total }) => {
+const PageStats = ({ active, inactive, topLevel, total }) => {
   return (
-    <div className="grid gap-3 md:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
         icon={Files}
         label="Total Pages"
@@ -32,15 +32,21 @@ const PageStats = ({ active, inactive, total }) => {
       />
       <StatCard
         icon={FileCheck2}
-        label="Active On Page"
+        label="Active"
         value={active}
         colorClass="bg-green-50 text-green-600"
       />
       <StatCard
         icon={FileX2}
-        label="Inactive On Page"
+        label="Inactive"
         value={inactive}
         colorClass="bg-red-50 text-red-500"
+      />
+      <StatCard
+        icon={FolderTree}
+        label="Top-level"
+        value={topLevel}
+        colorClass="bg-amber-50 text-amber-600"
       />
     </div>
   );

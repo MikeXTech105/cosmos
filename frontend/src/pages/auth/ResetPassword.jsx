@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { getAuthFormClasses } from "../../components/auth/authThemeClasses";
 import useAuthTheme from "../../hooks/useAuthTheme";
 import { resetPassword } from "../../services/authService";
+import { getApiErrorMessage } from "../../utils/apiError";
 import { resetPasswordSchema } from "../../utils/validationSchemas";
 
 const ResetPassword = () => {
@@ -38,7 +39,7 @@ const ResetPassword = () => {
       toast.success(data.message ?? "Password reset successfully");
       navigate("/login", { replace: true });
     } catch (error) {
-      toast.error(error.response?.data?.message ?? "Unable to reset password.");
+      toast.error(getApiErrorMessage(error, "Unable to reset password."));
     }
   };
 

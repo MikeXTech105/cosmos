@@ -1,14 +1,21 @@
 import { Building2, UserCheck, UserRound, UserX } from "lucide-react";
 
-import { HR_EMPLOYEE_STATUS } from "../../../utils/hrEnums";
+import {
+  HR_EMPLOYEE_STATUS_KEY,
+  getEmployeeStatusKey,
+} from "../../../utils/hrEnums";
 import { HrStatCard } from "../HrShared";
 
 const EmployeeStats = ({ employees, total }) => {
   const active = employees.filter(
-    (employee) => Number(employee.status) === HR_EMPLOYEE_STATUS.ACTIVE,
+    (employee) =>
+      getEmployeeStatusKey(employee.status, employee.statusName) ===
+      HR_EMPLOYEE_STATUS_KEY.ACTIVE,
   ).length;
-  const onLeave = employees.filter(
-    (employee) => Number(employee.status) === HR_EMPLOYEE_STATUS.ON_LEAVE,
+  const resigned = employees.filter(
+    (employee) =>
+      getEmployeeStatusKey(employee.status, employee.statusName) ===
+      HR_EMPLOYEE_STATUS_KEY.RESIGNED,
   ).length;
   const departmentCount = new Set(
     employees.map((employee) => employee.departmentId).filter(Boolean),
@@ -25,8 +32,8 @@ const EmployeeStats = ({ employees, total }) => {
       />
       <HrStatCard
         icon={UserX}
-        label="On Leave"
-        value={onLeave}
+        label="Resigned"
+        value={resigned}
         colorClass="bg-amber-50 text-amber-600"
       />
       <HrStatCard

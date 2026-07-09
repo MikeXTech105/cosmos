@@ -5,6 +5,7 @@ import {
   getAuthData,
   updateAuthTokens,
 } from "../utils/authStorage";
+import { createApiError } from "../utils/apiError";
 import { store } from "../store/store";
 import { clearCredentials, setTokens } from "../store/slices/authSlice";
 
@@ -30,6 +31,16 @@ const axiosInstance = axios.create({
 
 const unwrapResponse = (response) => {
   const responseData = response.data;
+
+  if (
+    responseData?.succeeded === false ||
+    responseData?.data?.succeeded === false
+  ) {
+    throw createApiError(
+      responseData?.succeeded === false ? responseData : responseData.data,
+      response,
+    );
+  }
 
   if (
     responseData?.data &&
@@ -104,7 +115,21 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (
+      response.data?.succeeded === false ||
+      response.data?.data?.succeeded === false
+    ) {
+      return Promise.reject(
+        createApiError(
+          response.data?.succeeded === false ? response.data : response.data.data,
+          response,
+        ),
+      );
+    }
+
+    return response;
+  },
 
   async (error) => {
     const originalRequest = error.config;

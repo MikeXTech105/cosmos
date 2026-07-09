@@ -2,9 +2,9 @@ import { Plus, UserRound } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
 import {
-  HR_EMPLOYEE_STATUS,
-  HR_EMPLOYEE_STATUS_OPTIONS,
-  getHrOptionLabel,
+  HR_EMPLOYEE_STATUS_KEY,
+  getEmployeeStatusKey,
+  getEmployeeStatusLabel,
 } from "../../../utils/hrEnums";
 import {
   getEmployeeInitials,
@@ -14,22 +14,63 @@ import {
 } from "../hrHelpers";
 import { HrEmptyState, HrPagination } from "../HrShared";
 
-export const EmployeeStatusPill = ({ status }) => {
-  const numericStatus = Number(status);
-  const colorClass =
-    numericStatus === HR_EMPLOYEE_STATUS.ACTIVE
-      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-      : numericStatus === HR_EMPLOYEE_STATUS.ON_LEAVE
-        ? "bg-amber-50 text-amber-700 ring-amber-200"
-        : "bg-slate-100 text-slate-600 ring-slate-200";
+const getEmployeeStatusClass = (status, statusName) => {
+  const statusKey = getEmployeeStatusKey(status, statusName);
+
+  if (statusKey === HR_EMPLOYEE_STATUS_KEY.ACTIVE) {
+    return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+  }
+
+  if (statusKey === HR_EMPLOYEE_STATUS_KEY.RESIGNED) {
+    return "bg-amber-50 text-amber-700 ring-amber-200";
+  }
+
+  if (statusKey === HR_EMPLOYEE_STATUS_KEY.TERMINATED) {
+    return "bg-red-50 text-red-700 ring-red-200";
+  }
+
+  return "bg-slate-100 text-slate-600 ring-slate-200";
+};
+
+export const EmployeeStatusPill = ({ status, statusName }) => {
+  const colorClass = getEmployeeStatusClass(status, statusName);
 
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${colorClass}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-75" />
-      {getHrOptionLabel(HR_EMPLOYEE_STATUS_OPTIONS, status, "Unknown")}
+      {getEmployeeStatusLabel(status, statusName)}
     </span>
+  );
+};
+
+export const EmployeeAvatar = ({ employee, isSelected = false, size = "md" }) => {
+  const photoUrl =
+    employee?.profilePhotoUrl ?? employee?.photoUrl ?? employee?.imageUrl;
+  const sizeClass = size === "lg" ? "h-14 w-14 rounded-2xl" : "h-10 w-10 rounded-xl";
+
+  if (photoUrl) {
+    return (
+      <img
+        src={photoUrl}
+        alt=""
+        className={`${sizeClass} shrink-0 border border-slate-200 object-cover`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={[
+        "flex shrink-0 items-center justify-center font-bold",
+        sizeClass,
+        size === "lg" ? "text-base" : "text-sm",
+        isSelected ? "bg-brand text-white" : "bg-slate-100 text-slate-600",
+      ].join(" ")}
+    >
+      {getEmployeeInitials(employee)}
+    </div>
   );
 };
 
@@ -104,16 +145,7 @@ const EmployeeList = ({
                       : "border-transparent hover:bg-slate-50",
                   ].join(" ")}
                 >
-                  <div
-                    className={[
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
-                      isSelected
-                        ? "bg-brand text-white"
-                        : "bg-slate-100 text-slate-600",
-                    ].join(" ")}
-                  >
-                    {getEmployeeInitials(employee)}
-                  </div>
+                  <EmployeeAvatar employee={employee} isSelected={isSelected} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -124,7 +156,10 @@ const EmployeeList = ({
                           {employee.employeeCode ?? "-"}
                         </p>
                       </div>
-                      <EmployeeStatusPill status={employee.status} />
+                      <EmployeeStatusPill
+                        status={employee.status}
+                        statusName={employee.statusName}
+                      />
                     </div>
                     <p className="mt-2 truncate text-xs text-slate-500">
                       {getLookupLabel(
