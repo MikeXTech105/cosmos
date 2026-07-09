@@ -6,11 +6,12 @@ using Cosmos.Domain.Security;
 using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-//[Tags("GSTIN Verification")]
+[Tags("GSTZen")]
 [ApiExplorerSettings(GroupName = "gst")]
 [Route("api/v1/gst")]
 public sealed class GstVerificationController : ApiControllerBase
@@ -21,6 +22,7 @@ public sealed class GstVerificationController : ApiControllerBase
 
     [HttpPost("verify-gstin")]
     [RequirePermission(GstPermissions.Verification, PermissionAction.View)]
+    [SwaggerOperation(Summary = "Verify GSTIN", Description = "Calls GSTZen GSTIN Validator unless a valid cached verification exists. Returns legal name, trade name, address JSON, state code, taxpayer type, status, and registration date.")]
     [ProducesResponseType(typeof(ApiResponse<GstinVerificationResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Verify(VerifyGstinRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.VerifyAsync(request, cancellationToken));

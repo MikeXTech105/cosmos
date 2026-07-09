@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -52,17 +53,17 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<GstinVerificationResponse> VerifyGstinAsync(VerifyGstinRequest request, long? companyGstRegistrationId, CancellationToken cancellationToken)
     {
-        var response = await SendAsync("GSTIN Verification", companyGstRegistrationId, HttpMethod.Post, _options.GstinVerificationPath, new { request.Gstin }, cancellationToken);
+        var response = await SendAsync("GSTIN Verification", companyGstRegistrationId, HttpMethod.Post, _options.GstinVerificationPath, new { gstin = request.Gstin }, cancellationToken);
         return new GstinVerificationResponse
         {
             Gstin = GetString(response.Json, "gstin") ?? request.Gstin,
             LegalName = GetString(response.Json, "legal_name", "legalName", "lgnm"),
             TradeName = GetString(response.Json, "trade_name", "tradeName", "tradeNam"),
-            Status = GetString(response.Json, "status", "sts"),
-            TaxpayerType = GetString(response.Json, "taxpayer_type", "taxpayerType", "dty"),
-            StateCode = GetString(response.Json, "state_code", "stateCode"),
+            Status = GetString(response.Json, "company_status", "status", "sts"),
+            TaxpayerType = GetString(response.Json, "gst_type", "taxpayer_type", "taxpayerType", "dty"),
+            StateCode = GetString(response.Json, "code", "state_code", "stateCode"),
             RegistrationDate = GetDate(response.Json, "registration_date", "registrationDate", "rgdt"),
-            AddressJson = GetRaw(response.Json, "address", "pradr"),
+            AddressJson = GetRaw(response.Json, "pradr", "address"),
             NatureOfBusinessJson = GetRaw(response.Json, "nature_of_business", "natureOfBusiness", "nba"),
             RawResponseJson = response.RawJson,
             VerifiedAt = DateTime.UtcNow,
@@ -72,7 +73,6 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> GenerateEWayBillAsync(GenerateEWayBillRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
         var payload = JsonPayloadOrObject(request.RequestJson, request);
         var response = await SendAsync("E-Way Bill Generate", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillGeneratePath, payload, cancellationToken);
         return new EWayBillResponse
@@ -90,14 +90,21 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> CancelEWayBillAsync(CancelEWayBillRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
-        var response = await SendAsync("E-Way Bill Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillCancelPath, request, cancellationToken);
+        var payload = JsonPayloadOrObject(
+            request.RequestJson,
+            new
+            {
+                ewbNo = NumberOrString(request.EWayBillNumber),
+                cancelRsnCode = NumberOrString(request.CancelReasonCode),
+                cancelRmrk = request.CancelRemark
+            });
+        var response = await SendAsync("E-Way Bill Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillCancelPath, payload, cancellationToken);
         return new EWayBillResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
-            EWayBillNumber = request.EWayBillNumber,
-            Status = GetString(response.Json, "status") ?? "Cancelled",
-            CancelledAt = DateTime.UtcNow,
+            EWayBillNumber = GetString(response.Json, "ewayBillNo", "ewbNo") ?? request.EWayBillNumber,
+            Status = GetString(response.Json, "EwbStatus", "status") ?? "Cancelled",
+            CancelledAt = GetDate(response.Json, "cancelDate") ?? DateTime.UtcNow,
             CancelReasonCode = request.CancelReasonCode,
             CancelReason = request.CancelRemark,
             GeneratedResponseJson = response.RawJson
@@ -106,7 +113,6 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> UpdateEWayBillVehicleAsync(UpdateEWayBillVehicleRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
         var payload = JsonPayloadOrObject(request.RequestJson, request);
         var response = await SendAsync("E-Way Bill Update Vehicle", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillUpdateVehiclePath, payload, cancellationToken);
         return new EWayBillResponse
@@ -122,7 +128,6 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> ExtendEWayBillAsync(ExtendEWayBillRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
         var payload = JsonPayloadOrObject(request.RequestJson, request);
         var response = await SendAsync("E-Way Bill Extend", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillExtendPath, payload, cancellationToken);
         return new EWayBillResponse
@@ -136,14 +141,28 @@ public sealed class GstZenProviderService : IGstZenProviderService
         };
     }
 
-    public async Task<EWayBillResponse> GetEWayBillAsync(long companyGstRegistrationId, string ewayBillNumber, CancellationToken cancellationToken)
+    public async Task<EWayBillResponse> GetEWayBillAsync(GetEWayBillDetailsRequest request, CancellationToken cancellationToken)
     {
-        var response = await SendAsync("E-Way Bill Details", companyGstRegistrationId, HttpMethod.Get, AppendQuery(_options.EWayBillGetDetailsPath, "ewayBillNumber", ewayBillNumber), null, cancellationToken);
+        var response = await SendAsync("E-Way Bill Details", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillGetDetailsPath, new { ewbNo = NumberOrString(request.EWayBillNumber) }, cancellationToken);
         return new EWayBillResponse
         {
-            CompanyGstRegistrationId = companyGstRegistrationId,
-            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo") ?? ewayBillNumber,
-            Status = GetString(response.Json, "status") ?? "Generated",
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo") ?? request.EWayBillNumber,
+            Status = GetString(response.Json, "EwbStatus", "status") ?? "Fetched",
+            DocumentType = GetString(response.Json, "docType"),
+            DocumentNumber = GetString(response.Json, "docNo"),
+            DocumentDate = GetDate(response.Json, "docDate"),
+            SupplyType = GetString(response.Json, "supplyType"),
+            SubSupplyType = GetString(response.Json, "subSupplyType"),
+            FromGstin = GetString(response.Json, "fromGstin"),
+            ToGstin = GetString(response.Json, "toGstin"),
+            TransporterId = GetString(response.Json, "transporterId"),
+            TransporterName = GetString(response.Json, "transporterName"),
+            TransportMode = GetString(response.Json, "transMode"),
+            VehicleNumber = GetString(response.Json, "vehicleNo"),
+            VehicleType = GetString(response.Json, "vehicleType"),
+            Distance = GetDecimal(response.Json, "actualDist", "Distance"),
+            ValidUpTo = GetDate(response.Json, "validUpto", "validUpTo"),
             GeneratedResponseJson = response.RawJson
         };
     }
@@ -158,11 +177,11 @@ public sealed class GstZenProviderService : IGstZenProviderService
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
             SalesInvoiceId = request.SalesInvoiceId,
             Irn = GetString(response.Json, "irn", "Irn"),
-            AckNumber = GetString(response.Json, "ackNo", "ackNumber", "AckNo"),
+            AckNumber = GetString(response.Json, "AckNoStr", "ackNo", "ackNumber", "AckNo"),
             AckDate = GetDate(response.Json, "ackDate", "AckDt"),
             SignedQrCode = GetString(response.Json, "signedQRCode", "signedQrCode", "SignedQRCode"),
             SignedInvoice = GetString(response.Json, "signedInvoice", "SignedInvoice"),
-            Status = GetString(response.Json, "status") ?? "Generated",
+            Status = GetString(response.Json, "IrnStatus", "Status") ?? "Generated",
             GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
             GeneratedResponseJson = response.RawJson
         };
@@ -170,13 +189,24 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EInvoiceResponse> CancelEInvoiceAsync(CancelEInvoiceRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
-        var response = await SendAsync("E-Invoice Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EInvoiceCancelPath, request, cancellationToken);
+        var payload = JsonPayloadOrObject(
+            request.RequestJson,
+            new
+            {
+                Irn = request.Irn,
+                CnlRsn = NumberOrString(request.CancelReasonCode),
+                CnlRem = request.CancelRemark
+            });
+        var response = await SendAsync("E-Invoice Cancel", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EInvoiceCancelPath, payload, cancellationToken);
         return new EInvoiceResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
-            Irn = request.Irn,
-            Status = GetString(response.Json, "status") ?? "Cancelled",
+            Irn = GetString(response.Json, "irn", "Irn") ?? request.Irn,
+            AckNumber = GetString(response.Json, "AckNoStr", "ackNo", "AckNo"),
+            AckDate = GetDate(response.Json, "ackDate", "AckDt"),
+            SignedQrCode = GetString(response.Json, "signedQRCode", "SignedQRCode"),
+            SignedInvoice = GetString(response.Json, "signedInvoice", "SignedInvoice"),
+            Status = GetString(response.Json, "IrnStatus", "Status") ?? "Cancelled",
             CancelledAt = DateTime.UtcNow,
             CancelReasonCode = request.CancelReasonCode,
             CancelReason = request.CancelRemark,
@@ -184,14 +214,29 @@ public sealed class GstZenProviderService : IGstZenProviderService
         };
     }
 
-    public async Task<EInvoiceResponse> GetEInvoiceAsync(long companyGstRegistrationId, string irn, CancellationToken cancellationToken)
+    public async Task<EInvoiceResponse> GetEInvoiceAsync(GetEInvoiceDetailsRequest request, CancellationToken cancellationToken)
     {
-        var response = await SendAsync("E-Invoice Details", companyGstRegistrationId, HttpMethod.Get, AppendQuery(_options.EInvoiceGetDetailsPath, "irn", irn), null, cancellationToken);
+        var payload = new Dictionary<string, object?>
+        {
+            ["SellerDtls"] = new { Gstin = request.SellerGstin },
+            ["Irn"] = request.Irn
+        };
+
+        if (!string.IsNullOrWhiteSpace(request.Irp))
+        {
+            payload["irp"] = request.Irp;
+        }
+
+        var response = await SendAsync("E-Invoice Details", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EInvoiceGetDetailsPath, payload, cancellationToken);
         return new EInvoiceResponse
         {
-            CompanyGstRegistrationId = companyGstRegistrationId,
-            Irn = GetString(response.Json, "irn", "Irn") ?? irn,
-            Status = GetString(response.Json, "status") ?? "Generated",
+            CompanyGstRegistrationId = request.CompanyGstRegistrationId,
+            Irn = GetString(response.Json, "irn", "Irn") ?? request.Irn,
+            AckNumber = GetString(response.Json, "AckNoStr", "ackNo", "AckNo"),
+            AckDate = GetDate(response.Json, "ackDate", "AckDt"),
+            SignedQrCode = GetString(response.Json, "signedQRCode", "SignedQRCode"),
+            SignedInvoice = GetString(response.Json, "signedInvoice", "SignedInvoice"),
+            Status = GetString(response.Json, "IrnStatus", "Status") ?? "Fetched",
             GeneratedResponseJson = response.RawJson
         };
     }
@@ -242,9 +287,9 @@ public sealed class GstZenProviderService : IGstZenProviderService
             throw new CosmosException($"GSTZen endpoint path for {apiType} is not configured.", 500);
         }
 
-        ConfigureHeaders();
         var requestUri = new Uri(new Uri(_options.CurrentBaseUrl.TrimEnd('/') + "/"), path.TrimStart('/'));
         using var request = new HttpRequestMessage(method, requestUri);
+        ConfigureHeaders(request);
         var requestJson = payload is null ? null : JsonSerializer.Serialize(payload, JsonOptions);
         if (requestJson is not null && method != HttpMethod.Get)
         {
@@ -260,13 +305,21 @@ public sealed class GstZenProviderService : IGstZenProviderService
             statusCode = (int)response.StatusCode;
             responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
             stopwatch.Stop();
-            await AddLogAsync(apiType, companyGstRegistrationId, requestUri, method, requestJson, responseBody, statusCode, response.IsSuccessStatusCode, null, stopwatch.ElapsedMilliseconds, cancellationToken);
+            var parsed = ParseJson(responseBody);
+            var providerSucceeded = IsProviderSuccess(parsed);
+            await AddLogAsync(apiType, companyGstRegistrationId, requestUri, method, requestJson, responseBody, statusCode, response.IsSuccessStatusCode && providerSucceeded, null, stopwatch.ElapsedMilliseconds, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 throw new CosmosException($"GSTZen {apiType} failed with status code {statusCode}.", 502);
             }
 
-            return new ProviderResponse(ParseJson(responseBody), string.IsNullOrWhiteSpace(responseBody) ? "{}" : responseBody);
+            if (!providerSucceeded)
+            {
+                var message = Mask(GetString(parsed, "message", "error", "errors")) ?? "Provider returned an unsuccessful response.";
+                throw new CosmosException($"GSTZen {apiType} failed: {message}", 502);
+            }
+
+            return new ProviderResponse(parsed, string.IsNullOrWhiteSpace(responseBody) ? "{}" : responseBody);
         }
         catch (CosmosException)
         {
@@ -281,13 +334,10 @@ public sealed class GstZenProviderService : IGstZenProviderService
         }
     }
 
-    private void ConfigureHeaders()
+    private void ConfigureHeaders(HttpRequestMessage request)
     {
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.Timeout = TimeSpan.FromSeconds(Math.Max(_options.TimeoutSeconds, 1));
-
         var tokenHeaderName = string.IsNullOrWhiteSpace(_options.TokenHeaderName) ? "Token" : _options.TokenHeaderName;
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(tokenHeaderName, _options.CurrentToken);
+        request.Headers.TryAddWithoutValidation(tokenHeaderName, _options.CurrentToken);
     }
 
     private async Task AddLogAsync(string apiType, long? companyGstRegistrationId, Uri endpoint, HttpMethod method, string? requestPayload, string? responsePayload, int? statusCode, bool isSuccess, string? errorMessage, long durationMs, CancellationToken cancellationToken)
@@ -333,7 +383,7 @@ public sealed class GstZenProviderService : IGstZenProviderService
             }
         }
 
-        foreach (var key in new[] { "token", "sandboxToken", "productionToken", "otp" })
+        foreach (var key in new[] { "token", "sandboxToken", "productionToken", "otp", "password", "gstPortalUsername", "userName", "username", "AuthToken", "Sek" })
         {
             masked = MaskJsonProperty(masked, key);
         }
@@ -407,6 +457,36 @@ public sealed class GstZenProviderService : IGstZenProviderService
         }
     }
 
+    private static bool IsProviderSuccess(JsonNode? node)
+    {
+        var status = Find(node, "status");
+        if (status is null)
+        {
+            return true;
+        }
+
+        if (status.GetValueKind() == JsonValueKind.Number && status.GetValue<int>() == 0)
+        {
+            return false;
+        }
+
+        if (status.GetValueKind() == JsonValueKind.False)
+        {
+            return false;
+        }
+
+        if (status.GetValueKind() == JsonValueKind.String)
+        {
+            var value = status.GetValue<string>();
+            return !string.Equals(value, "0", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "failed", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(value, "error", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return true;
+    }
+
     private static string? GetString(JsonNode? node, params string[] names)
     {
         foreach (var name in names)
@@ -430,7 +510,23 @@ public sealed class GstZenProviderService : IGstZenProviderService
     private static DateTime? GetDate(JsonNode? node, params string[] names)
     {
         var value = GetString(node, names);
-        return DateTime.TryParse(value, out var date) ? date : null;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var formats = new[] { "dd/MM/yyyy hh:mm:ss tt", "dd/MM/yyyy HH:mm:ss", "dd/MM/yyyy", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd" };
+        return DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var exactDate)
+            ? exactDate
+            : DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date)
+                ? date
+                : null;
+    }
+
+    private static decimal? GetDecimal(JsonNode? node, params string[] names)
+    {
+        var value = GetString(node, names);
+        return decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number) ? number : null;
     }
 
     private static string? GetRaw(JsonNode? node, params string[] names)
@@ -480,15 +576,14 @@ public sealed class GstZenProviderService : IGstZenProviderService
         return null;
     }
 
-    private static string AppendQuery(string? path, string key, string value)
+    private static object NumberOrString(string value)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
         {
-            return string.Empty;
+            return number;
         }
 
-        var separator = path.Contains('?') ? "&" : "?";
-        return $"{path}{separator}{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}";
+        return value;
     }
 
     private static void AddSetting(string name, string? value, ICollection<string> configured, ICollection<string> missing)

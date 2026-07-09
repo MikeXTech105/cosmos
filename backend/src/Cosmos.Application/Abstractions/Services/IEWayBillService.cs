@@ -11,4 +11,5 @@ public interface IEWayBillService
     Task<ApiResponse<EWayBillResponse>> UpdateVehicleAsync(UpdateEWayBillVehicleRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<EWayBillResponse>> ExtendAsync(ExtendEWayBillRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<EWayBillResponse>> GetByNumberAsync(string ewayBillNumber, CancellationToken cancellationToken);
+    Task<ApiResponse<EWayBillResponse>> GetDetailsAsync(GetEWayBillDetailsRequest request, CancellationToken cancellationToken);
 }
