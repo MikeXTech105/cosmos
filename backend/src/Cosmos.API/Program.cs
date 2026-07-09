@@ -68,6 +68,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSwaggerGen(options =>
 {
     options.EnableAnnotations();
+    options.CustomSchemaIds(SwaggerSchemaIds.Create);
 
     // Module-wise Swagger documents keep ERP areas navigable without changing API routes.
     foreach (var module in swaggerModules)
@@ -152,3 +153,30 @@ app.Run();
 public partial class Program;
 
 internal sealed record SwaggerModule(string GroupName, string Title, string DisplayName);
+
+internal static class SwaggerSchemaIds
+{
+    public static string Create(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return CreateSimple(type);
+        }
+
+        var genericTypeName = type.Name[..type.Name.IndexOf('`')];
+        var genericArgumentNames = string.Join("And", type.GetGenericArguments().Select(Create));
+        return $"{genericArgumentNames}{genericTypeName}";
+    }
+
+    private static string CreateSimple(Type type)
+    {
+        var name = type.FullName ?? type.Name;
+        name = name
+            .Replace("Cosmos.Contracts.", string.Empty, StringComparison.Ordinal)
+            .Replace("Cosmos.Shared.Responses.", string.Empty, StringComparison.Ordinal)
+            .Replace("Cosmos.Contracts.Common.", string.Empty, StringComparison.Ordinal)
+            .Replace("+", ".", StringComparison.Ordinal);
+
+        return string.Concat(name.Split('.', StringSplitOptions.RemoveEmptyEntries));
+    }
+}
