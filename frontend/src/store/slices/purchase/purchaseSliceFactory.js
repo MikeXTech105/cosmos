@@ -1,0 +1,184 @@
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
+import {
+  extractEntity,
+  getThunkError,
+  normalizePagedPayload,
+} from "../inventory/inventorySliceHelpers";
+import {
+  clampPurchasePageSize,
+  PURCHASE_DEFAULT_PAGE_SIZE,
+} from "../../../services/purchase/purchaseServiceUtils";
+
+export const createPurchaseCrudSlice = ({
+  entityKey = "record",
+  initialFilters,
+  name,
+  service,
+  serviceMethods,
+}) => {
+  const initialState = {
+    list: [],
+    loading: false,
+    detailLoading: false,
+    detailError: null,
+    error: null,
+    pageNumber: 1,
+    pageSize: PURCHASE_DEFAULT_PAGE_SIZE,
+    totalCount: 0,
+    totalPages: 1,
+    filters: initialFilters,
+    selected: null,
+  };
+
+  const fetchList = createAsyncThunk(
+    `${name}/fetchList`,
+    async (params, { rejectWithValue }) => {
+      try {
+        return await service[serviceMethods.list](params);
+      } catch (error) {
+        return rejectWithValue(getThunkError(error, "Unable to load records."));
+      }
+    },
+  );
+
+  const fetchById = createAsyncThunk(
+    `${name}/fetchById`,
+    async (id, { rejectWithValue }) => {
+      try {
+        return await service[serviceMethods.detail](id);
+      } catch (error) {
+        return rejectWithValue(
+          getThunkError(error, "Unable to load record details."),
+        );
+      }
+    },
+  );
+
+  const createRecord = createAsyncThunk(
+    `${name}/create`,
+    async (payload, { rejectWithValue }) => {
+      try {
+        return await service[serviceMethods.create](payload);
+      } catch (error) {
+        return rejectWithValue(getThunkError(error, "Unable to create record."));
+      }
+    },
+  );
+
+  const updateRecord = createAsyncThunk(
+    `${name}/update`,
+    async ({ id, payload }, { rejectWithValue }) => {
+      try {
+        return await service[serviceMethods.update](id, payload);
+      } catch (error) {
+        return rejectWithValue(getThunkError(error, "Unable to update record."));
+      }
+    },
+  );
+
+  const deleteRecord = createAsyncThunk(
+    `${name}/delete`,
+    async (id, { rejectWithValue }) => {
+      try {
+        const response = await service[serviceMethods.delete](id);
+
+        return { id, response };
+      } catch (error) {
+        return rejectWithValue(getThunkError(error, "Unable to delete record."));
+      }
+    },
+  );
+
+  const slice = createSlice({
+    name,
+    initialState,
+    reducers: {
+      clearError: (state) => {
+        state.error = null;
+        state.detailError = null;
+      },
+      setFilters: (state, action) => {
+        state.filters = { ...state.filters, ...action.payload };
+      },
+      setPage: (state, action) => {
+        state.pageNumber = action.payload;
+      },
+      setPageSize: (state, action) => {
+        state.pageSize = clampPurchasePageSize(action.payload);
+        state.pageNumber = 1;
+      },
+      setSelected: (state, action) => {
+        state.selected = action.payload;
+      },
+    },
+    extraReducers: (builder) => {
+      builder
+        .addCase(fetchList.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+        })
+        .addCase(fetchList.fulfilled, (state, action) => {
+          const page = normalizePagedPayload(action.payload.data);
+
+          state.loading = false;
+          state.list = page.items;
+          state.pageNumber = page.pageNumber;
+          state.pageSize = page.pageSize;
+          state.totalCount = page.totalCount;
+          state.totalPages = page.totalPages;
+        })
+        .addCase(fetchList.rejected, (state, action) => {
+          state.loading = false;
+          state.list = [];
+          state.error = action.payload ?? action.error.message;
+        })
+        .addCase(fetchById.pending, (state) => {
+          state.detailLoading = true;
+          state.detailError = null;
+        })
+        .addCase(fetchById.fulfilled, (state, action) => {
+          state.detailLoading = false;
+          state.selected = extractEntity(action.payload.data, entityKey);
+        })
+        .addCase(fetchById.rejected, (state, action) => {
+          state.detailLoading = false;
+          state.detailError = action.payload ?? action.error.message;
+        })
+        .addCase(createRecord.fulfilled, (state, action) => {
+          state.selected = extractEntity(action.payload.data, entityKey);
+        })
+        .addCase(updateRecord.fulfilled, (state, action) => {
+          const record = extractEntity(action.payload.data, entityKey);
+
+          state.selected = record;
+          if (record?.id) {
+            state.list = state.list.map((item) =>
+              String(item.id) === String(record.id)
+                ? { ...item, ...record }
+                : item,
+            );
+          }
+        })
+        .addCase(deleteRecord.fulfilled, (state, action) => {
+          state.list = state.list.filter(
+            (item) => String(item.id) !== String(action.payload.id),
+          );
+          state.totalCount = Math.max(0, state.totalCount - 1);
+          if (String(state.selected?.id) === String(action.payload.id)) {
+            state.selected = null;
+          }
+        });
+    },
+  });
+
+  return {
+    actions: slice.actions,
+    createRecord,
+    deleteRecord,
+    fetchById,
+    fetchList,
+    reducer: slice.reducer,
+    updateRecord,
+  };
+};
