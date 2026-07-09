@@ -1,0 +1,97 @@
+@baseUrl = https://localhost:7001
+@bearerToken = paste-cosmos-jwt-here
+@companyGstRegistrationId = 1
+@irn = 6572600aa1108dc76a11c05f427451fec1de7437881aa4e90e6e580cf89cf3f6
+@ewayBillNumber = 141010282832
+
+### Verify GSTIN
+POST {{baseUrl}}/api/v1/gst/verify-gstin
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "gstin": "01AAFQQ9980MZQR",
+  "forceRefresh": true
+}
+
+### Generate E-Invoice
+POST {{baseUrl}}/api/v1/gst/e-invoices/generate
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "salesInvoiceId": 10,
+  "documentType": "INV",
+  "documentNumber": "23-24/DEM/54",
+  "documentDate": "2023-03-22",
+  "sellerGstin": "29AADCG4992P1ZP",
+  "buyerGstin": "06AAMCS8709B1ZA",
+  "requestJson": "{\"Version\":\"1.1\",\"TranDtls\":{\"TaxSch\":\"GST\",\"SupTyp\":\"B2B\",\"RegRev\":\"N\",\"IgstOnIntra\":\"N\"},\"DocDtls\":{\"Typ\":\"INV\",\"No\":\"23-24/DEM/54\",\"Dt\":\"22/03/2023\"},\"SellerDtls\":{\"Gstin\":\"29AADCG4992P1ZP\",\"LglNm\":\"GSTZEN DEMO PRIVATE LIMITED\",\"Addr1\":\"Manyata Tech Park\",\"Loc\":\"BANGALORE\",\"Pin\":560077,\"Stcd\":\"29\"},\"BuyerDtls\":{\"Gstin\":\"06AAMCS8709B1ZA\",\"LglNm\":\"Quality Products Private Limited\",\"Pos\":\"06\",\"Addr1\":\"133, Mahatma Gandhi Road\",\"Loc\":\"HARYANA\",\"Pin\":121009,\"Stcd\":\"06\"},\"ItemList\":[{\"SlNo\":\"1\",\"IsServc\":\"N\",\"HsnCd\":\"3205\",\"Qty\":25,\"Unit\":\"PCS\",\"AssAmt\":5000,\"GstRt\":18,\"IgstAmt\":900,\"TotItemVal\":5900}],\"ValDtls\":{\"AssVal\":5000,\"CgstVal\":0,\"SgstVal\":0,\"IgstVal\":900,\"TotInvVal\":5900}}"
+}
+
+### Cancel E-Invoice
+POST {{baseUrl}}/api/v1/gst/e-invoices/cancel
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "irn": "{{irn}}",
+  "cancelReasonCode": "3",
+  "cancelRemark": "Testing cancellation"
+}
+
+### Get E-Invoice Details From GSTZen
+POST {{baseUrl}}/api/v1/gst/e-invoices/get-details
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "irn": "{{irn}}"
+}
+
+### Generate E-Way Bill
+POST {{baseUrl}}/api/v1/gst/eway-bills/generate
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "salesInvoiceId": 10,
+  "documentType": "INV",
+  "documentNumber": "sum/1/23/79",
+  "documentDate": "2017-07-07",
+  "supplyType": "O",
+  "subSupplyType": "1",
+  "fromGstin": "29AAFCC9980M1ZR",
+  "toGstin": "29AEKPV7203E1Z9",
+  "transportMode": "1",
+  "vehicleNumber": "PVC1234",
+  "vehicleType": "R",
+  "distance": 100,
+  "requestJson": "{\"supplyType\":\"O\",\"subSupplyType\":\"1\",\"subSupplyDesc\":\"\",\"docType\":\"INV\",\"docNo\":\"sum/1/23/79\",\"docDate\":\"07/07/2017\",\"fromGstin\":\"29AAFCC9980M1ZR\",\"fromPincode\":560090,\"actFromStateCode\":29,\"fromStateCode\":29,\"toGstin\":\"29AEKPV7203E1Z9\",\"toPincode\":560090,\"actToStateCode\":29,\"toStateCode\":27,\"transactionType\":4,\"totalValue\":56099,\"cgstValue\":0,\"sgstValue\":0,\"igstValue\":300.67,\"cessValue\":400.56,\"cessNonAdvolValue\":400,\"totInvValue\":68358,\"transMode\":\"1\",\"transDistance\":\"100\",\"vehicleNo\":\"PVC1234\",\"vehicleType\":\"R\",\"itemList\":[{\"productName\":\"Wheat\",\"productDesc\":\"Wheat\",\"hsnCode\":1001,\"quantity\":4,\"qtyUnit\":\"BOX\",\"cgstRate\":0,\"sgstRate\":0,\"igstRate\":3,\"cessRate\":3,\"cessNonadvol\":0,\"taxableAmount\":5609889}]}"
+}
+
+### Cancel E-Way Bill
+POST {{baseUrl}}/api/v1/gst/eway-bills/cancel
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "eWayBillNumber": "{{ewayBillNumber}}",
+  "cancelReasonCode": "2",
+  "cancelRemark": "Cancelled the order"
+}
+
+### Get E-Way Bill Details From GSTZen
+POST {{baseUrl}}/api/v1/gst/eway-bills/get-details
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+{
+  "companyGstRegistrationId": {{companyGstRegistrationId}},
+  "eWayBillNumber": "{{ewayBillNumber}}"
+}

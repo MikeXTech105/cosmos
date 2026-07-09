@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Gst;
 using FluentValidation;
@@ -14,6 +16,57 @@ public static partial class GstValidationRules
 
     [GeneratedRegex(GstinPattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex GstinRegex();
+
+    public static bool HasJsonFields(string? json, params string[] requiredPaths)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return false;
+        }
+
+        try
+        {
+            var node = JsonNode.Parse(json);
+            return node is not null && requiredPaths.All(path => FindPath(node, path) is not null);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    public static bool HasJsonArrayItems(string? json, string arrayPath)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return false;
+        }
+
+        try
+        {
+            return FindPath(JsonNode.Parse(json), arrayPath) is JsonArray { Count: > 0 };
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static JsonNode? FindPath(JsonNode? node, string path)
+    {
+        foreach (var part in path.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (node is not JsonObject obj)
+            {
+                return null;
+            }
+
+            var match = obj.FirstOrDefault(x => string.Equals(x.Key, part, StringComparison.OrdinalIgnoreCase));
+            node = match.Value;
+        }
+
+        return node;
+    }
 }
 
 public sealed class CreateCompanyGstRegistrationValidator : AbstractValidator<CreateCompanyGstRegistrationRequest>
@@ -82,6 +135,30 @@ public sealed class GenerateEWayBillValidator : AbstractValidator<GenerateEWayBi
         RuleFor(x => x.DocumentNumber).MaximumLength(100);
         RuleFor(x => x.VehicleNumber).MaximumLength(50);
         RuleFor(x => x.Distance).GreaterThanOrEqualTo(0).When(x => x.Distance.HasValue);
+        RuleFor(x => x.RequestJson)
+            .NotEmpty()
+            .WithMessage("GSTZen E-Way Bill generation requires RequestJson with the official GSTZen payload.")
+            .Must(x => GstValidationRules.HasJsonFields(
+                x,
+                "supplyType",
+                "subSupplyType",
+                "docType",
+                "docNo",
+                "docDate",
+                "fromGstin",
+                "fromPincode",
+                "fromStateCode",
+                "toGstin",
+                "toPincode",
+                "toStateCode",
+                "transactionType",
+                "totalValue",
+                "totInvValue",
+                "transMode",
+                "transDistance"))
+            .WithMessage("GSTZen E-Way Bill RequestJson is missing one or more required fields.")
+            .Must(x => GstValidationRules.HasJsonArrayItems(x, "itemList"))
+            .WithMessage("GSTZen E-Way Bill RequestJson must contain at least one itemList entry.");
     }
 }
 
@@ -96,6 +173,15 @@ public sealed class CancelEWayBillValidator : AbstractValidator<CancelEWayBillRe
     }
 }
 
+public sealed class GetEWayBillDetailsValidator : AbstractValidator<GetEWayBillDetailsRequest>
+{
+    public GetEWayBillDetailsValidator()
+    {
+        RuleFor(x => x.CompanyGstRegistrationId).GreaterThan(0);
+        RuleFor(x => x.EWayBillNumber).NotEmpty().MaximumLength(100);
+    }
+}
+
 public sealed class UpdateEWayBillVehicleValidator : AbstractValidator<UpdateEWayBillVehicleRequest>
 {
     public UpdateEWayBillVehicleValidator()
@@ -103,6 +189,11 @@ public sealed class UpdateEWayBillVehicleValidator : AbstractValidator<UpdateEWa
         RuleFor(x => x.CompanyGstRegistrationId).GreaterThan(0);
         RuleFor(x => x.EWayBillNumber).NotEmpty().MaximumLength(100);
         RuleFor(x => x.VehicleNumber).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.RequestJson)
+            .NotEmpty()
+            .WithMessage("GSTZen E-Way Bill Update Part B requires RequestJson with the official GSTZen payload.")
+            .Must(x => GstValidationRules.HasJsonFields(x, "ewbNo", "FromPlace", "FromState", "ReasonCode", "ReasonRem", "TransMode", "VehicleNo"))
+            .WithMessage("GSTZen Update Part B RequestJson is missing one or more required fields.");
     }
 }
 
@@ -124,6 +215,35 @@ public sealed class GenerateEInvoiceValidator : AbstractValidator<GenerateEInvoi
         RuleFor(x => x.DocumentNumber).MaximumLength(100);
         RuleFor(x => x.SellerGstin!).ValidGstin().When(x => !string.IsNullOrWhiteSpace(x.SellerGstin));
         RuleFor(x => x.BuyerGstin!).ValidGstin().When(x => !string.IsNullOrWhiteSpace(x.BuyerGstin));
+        RuleFor(x => x.RequestJson)
+            .NotEmpty()
+            .WithMessage("GSTZen E-Invoice generation requires RequestJson with the official GSTZen/NIC payload.")
+            .Must(x => GstValidationRules.HasJsonFields(
+                x,
+                "Version",
+                "TranDtls.TaxSch",
+                "TranDtls.SupTyp",
+                "DocDtls.Typ",
+                "DocDtls.No",
+                "DocDtls.Dt",
+                "SellerDtls.Gstin",
+                "SellerDtls.LglNm",
+                "SellerDtls.Addr1",
+                "SellerDtls.Loc",
+                "SellerDtls.Pin",
+                "SellerDtls.Stcd",
+                "BuyerDtls.Gstin",
+                "BuyerDtls.LglNm",
+                "BuyerDtls.Pos",
+                "BuyerDtls.Addr1",
+                "BuyerDtls.Loc",
+                "BuyerDtls.Pin",
+                "BuyerDtls.Stcd",
+                "ValDtls.AssVal",
+                "ValDtls.TotInvVal"))
+            .WithMessage("GSTZen E-Invoice RequestJson is missing one or more required fields.")
+            .Must(x => GstValidationRules.HasJsonArrayItems(x, "ItemList"))
+            .WithMessage("GSTZen E-Invoice RequestJson must contain at least one ItemList entry.");
     }
 }
 
@@ -135,6 +255,17 @@ public sealed class CancelEInvoiceValidator : AbstractValidator<CancelEInvoiceRe
         RuleFor(x => x.Irn).NotEmpty().MaximumLength(500);
         RuleFor(x => x.CancelReasonCode).NotEmpty().MaximumLength(50);
         RuleFor(x => x.CancelRemark).NotEmpty().MaximumLength(500);
+    }
+}
+
+public sealed class GetEInvoiceDetailsValidator : AbstractValidator<GetEInvoiceDetailsRequest>
+{
+    public GetEInvoiceDetailsValidator()
+    {
+        RuleFor(x => x.CompanyGstRegistrationId).GreaterThan(0);
+        RuleFor(x => x.Irn).NotEmpty().Length(64).WithMessage("IRN must be the 64-character invoice reference number.");
+        RuleFor(x => x.SellerGstin!).ValidGstin().When(x => !string.IsNullOrWhiteSpace(x.SellerGstin));
+        RuleFor(x => x.Irp).MaximumLength(20);
     }
 }
 

@@ -5,11 +5,12 @@ using Cosmos.Domain.Security;
 using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-//[Tags("GST Configuration")]
+[Tags("GSTZen")]
 [ApiExplorerSettings(GroupName = "gst")]
 [Route("api/v1/gst/configuration")]
 public sealed class GstConfigurationController : ApiControllerBase

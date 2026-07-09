@@ -155,6 +155,7 @@ public sealed class EWayBillService : IEWayBillService
     private readonly IValidator<CancelEWayBillRequest> _cancelValidator;
     private readonly IValidator<UpdateEWayBillVehicleRequest> _vehicleValidator;
     private readonly IValidator<ExtendEWayBillRequest> _extendValidator;
+    private readonly IValidator<GetEWayBillDetailsRequest> _detailsValidator;
 
     public EWayBillService(
         IGstRepository repository,
@@ -163,7 +164,8 @@ public sealed class EWayBillService : IEWayBillService
         IValidator<GenerateEWayBillRequest> generateValidator,
         IValidator<CancelEWayBillRequest> cancelValidator,
         IValidator<UpdateEWayBillVehicleRequest> vehicleValidator,
-        IValidator<ExtendEWayBillRequest> extendValidator)
+        IValidator<ExtendEWayBillRequest> extendValidator,
+        IValidator<GetEWayBillDetailsRequest> detailsValidator)
     {
         _repository = repository;
         _provider = provider;
@@ -172,6 +174,7 @@ public sealed class EWayBillService : IEWayBillService
         _cancelValidator = cancelValidator;
         _vehicleValidator = vehicleValidator;
         _extendValidator = extendValidator;
+        _detailsValidator = detailsValidator;
     }
 
     public async Task<ApiResponse<EWayBillResponse>> GenerateAsync(GenerateEWayBillRequest request, CancellationToken cancellationToken)
@@ -187,6 +190,7 @@ public sealed class EWayBillService : IEWayBillService
     {
         await ValidationRunner.ValidateAsync(_cancelValidator, request, cancellationToken);
         await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
+        _ = await _repository.GetEWayBillByNumberAsync(request.EWayBillNumber, cancellationToken) ?? throw new NotFoundException("E-Way Bill was not found or has not been generated.");
         var providerResponse = await _provider.CancelEWayBillAsync(request, cancellationToken);
         var saved = await _repository.UpdateEWayBillStatusAsync(request, providerResponse, _currentUser.UserId, cancellationToken);
         return ApiResponse<EWayBillResponse>.Success(saved, "E-Way Bill cancelled.");
@@ -211,6 +215,13 @@ public sealed class EWayBillService : IEWayBillService
     public async Task<ApiResponse<EWayBillResponse>> GetByNumberAsync(string ewayBillNumber, CancellationToken cancellationToken) =>
         ApiResponse<EWayBillResponse>.Success(await _repository.GetEWayBillByNumberAsync(ewayBillNumber, cancellationToken) ?? throw new NotFoundException("E-Way Bill was not found."));
 
+    public async Task<ApiResponse<EWayBillResponse>> GetDetailsAsync(GetEWayBillDetailsRequest request, CancellationToken cancellationToken)
+    {
+        await ValidationRunner.ValidateAsync(_detailsValidator, request, cancellationToken);
+        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
+        return ApiResponse<EWayBillResponse>.Success(await _provider.GetEWayBillAsync(request, cancellationToken), "E-Way Bill details loaded from GSTZen.");
+    }
+
     private async Task EnsureRegistrationAsync(long id, Func<CompanyGstRegistrationResponse, bool> enabled, string disabledMessage, CancellationToken cancellationToken)
     {
         var registration = await _repository.GetRegistrationByIdAsync(id, cancellationToken) ?? throw new NotFoundException("GST registration was not found.");
@@ -228,14 +239,16 @@ public sealed class EInvoiceService : IEInvoiceService
     private readonly ICurrentUser _currentUser;
     private readonly IValidator<GenerateEInvoiceRequest> _generateValidator;
     private readonly IValidator<CancelEInvoiceRequest> _cancelValidator;
+    private readonly IValidator<GetEInvoiceDetailsRequest> _detailsValidator;
 
-    public EInvoiceService(IGstRepository repository, IGstZenProviderService provider, ICurrentUser currentUser, IValidator<GenerateEInvoiceRequest> generateValidator, IValidator<CancelEInvoiceRequest> cancelValidator)
+    public EInvoiceService(IGstRepository repository, IGstZenProviderService provider, ICurrentUser currentUser, IValidator<GenerateEInvoiceRequest> generateValidator, IValidator<CancelEInvoiceRequest> cancelValidator, IValidator<GetEInvoiceDetailsRequest> detailsValidator)
     {
         _repository = repository;
         _provider = provider;
         _currentUser = currentUser;
         _generateValidator = generateValidator;
         _cancelValidator = cancelValidator;
+        _detailsValidator = detailsValidator;
     }
 
     public async Task<ApiResponse<EInvoiceResponse>> GenerateAsync(GenerateEInvoiceRequest request, CancellationToken cancellationToken)
@@ -251,6 +264,7 @@ public sealed class EInvoiceService : IEInvoiceService
     {
         await ValidationRunner.ValidateAsync(_cancelValidator, request, cancellationToken);
         await EnsureEInvoiceEnabledAsync(request.CompanyGstRegistrationId, cancellationToken);
+        _ = await _repository.GetEInvoiceByIrnAsync(request.Irn, cancellationToken) ?? throw new NotFoundException("E-Invoice was not found or does not have an IRN.");
         var providerResponse = await _provider.CancelEInvoiceAsync(request, cancellationToken);
         var saved = await _repository.UpdateEInvoiceStatusAsync(request, providerResponse, _currentUser.UserId, cancellationToken);
         return ApiResponse<EInvoiceResponse>.Success(saved, "E-Invoice cancelled.");
@@ -259,13 +273,23 @@ public sealed class EInvoiceService : IEInvoiceService
     public async Task<ApiResponse<EInvoiceResponse>> GetByIrnAsync(string irn, CancellationToken cancellationToken) =>
         ApiResponse<EInvoiceResponse>.Success(await _repository.GetEInvoiceByIrnAsync(irn, cancellationToken) ?? throw new NotFoundException("E-Invoice was not found."));
 
-    private async Task EnsureEInvoiceEnabledAsync(long id, CancellationToken cancellationToken)
+    public async Task<ApiResponse<EInvoiceResponse>> GetDetailsAsync(GetEInvoiceDetailsRequest request, CancellationToken cancellationToken)
+    {
+        await ValidationRunner.ValidateAsync(_detailsValidator, request, cancellationToken);
+        var registration = await EnsureEInvoiceEnabledAsync(request.CompanyGstRegistrationId, cancellationToken);
+        var providerRequest = request.SellerGstin is null ? request with { SellerGstin = registration.Gstin } : request;
+        return ApiResponse<EInvoiceResponse>.Success(await _provider.GetEInvoiceAsync(providerRequest, cancellationToken), "E-Invoice details loaded from GSTZen.");
+    }
+
+    private async Task<CompanyGstRegistrationResponse> EnsureEInvoiceEnabledAsync(long id, CancellationToken cancellationToken)
     {
         var registration = await _repository.GetRegistrationByIdAsync(id, cancellationToken) ?? throw new NotFoundException("GST registration was not found.");
         if (!registration.IsEInvoiceEnabled)
         {
             throw new CosmosException("E-Invoice is not enabled for the selected GST registration.", 409);
         }
+
+        return registration;
     }
 }
 

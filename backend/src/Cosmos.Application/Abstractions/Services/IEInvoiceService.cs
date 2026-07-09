@@ -9,4 +9,5 @@ public interface IEInvoiceService
     Task<ApiResponse<EInvoiceResponse>> GenerateAsync(GenerateEInvoiceRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<EInvoiceResponse>> CancelAsync(CancelEInvoiceRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<EInvoiceResponse>> GetByIrnAsync(string irn, CancellationToken cancellationToken);
+    Task<ApiResponse<EInvoiceResponse>> GetDetailsAsync(GetEInvoiceDetailsRequest request, CancellationToken cancellationToken);
 }
