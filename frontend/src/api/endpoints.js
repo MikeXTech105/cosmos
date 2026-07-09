@@ -132,6 +132,10 @@ export const ENDPOINTS = {
 
   HR_EMPLOYEE_REPORTING_MANAGERS: "/api/hr/employees/reporting-managers",
 
+  HR_EMPLOYEE_RESIGN: (id) => `/api/hr/employees/${id}/resign`,
+
+  HR_EMPLOYEE_REJOIN: (id) => `/api/hr/employees/${id}/rejoin`,
+
   HR_EMPLOYEE_DOCUMENTS: (id) => `/api/hr/employees/${id}/documents`,
 
   HR_EMPLOYEE_DOCUMENT_BY_ID: (docId) =>
@@ -196,4 +200,48 @@ export const ENDPOINTS = {
 
   HR_PAYROLL_PAYSLIP: (employeeId) =>
     `/api/hr/payroll/payslip/${employeeId}`,
+
+  OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
+
+  OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",
+
+  OEE_DASHBOARD_MOULD_WISE: "/api/v1/oee/dashboard/mould-wise",
+
+  OEE_DASHBOARD_TOP_DOWNTIME:
+    "/api/v1/oee/dashboard/top-downtime-reasons",
+
+  OEE_DASHBOARD_DAILY_TREND: "/api/v1/oee/dashboard/daily-trend",
+
+  OEE_MACHINES: "/api/v1/oee/machines",
+
+  OEE_MACHINE_BY_ID: (id) => `/api/v1/oee/machines/${id}`,
+
+  OEE_MOULDS: "/api/v1/oee/moulds",
+
+  OEE_MOULD_BY_ID: (id) => `/api/v1/oee/moulds/${id}`,
+
+  OEE_DOWNTIME_REASONS: "/api/v1/oee/downtime-reasons",
+
+  OEE_DOWNTIME_REASON_BY_ID: (id) =>
+    `/api/v1/oee/downtime-reasons/${id}`,
+
+  OEE_PRODUCTION_ENTRIES: "/api/v1/oee/production-entries",
+
+  OEE_PRODUCTION_ENTRIES_BULK:
+    "/api/v1/oee/production-entries/bulk",
+
+  OEE_PRODUCTION_ENTRY_BY_ID: (id) =>
+    `/api/v1/oee/production-entries/${id}`,
+
+  OEE_REPORT_DAILY: "/api/v1/oee/reports/daily",
+
+  OEE_REPORT_MACHINE_PERFORMANCE:
+    "/api/v1/oee/reports/machine-performance",
+
+  OEE_REPORT_MOULD_PERFORMANCE:
+    "/api/v1/oee/reports/mould-performance",
+
+  OEE_REPORT_DOWNTIME: "/api/v1/oee/reports/downtime",
+
+  OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
 };

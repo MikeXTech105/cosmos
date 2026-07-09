@@ -6,6 +6,7 @@ import AppTooltip from "../../../components/common/AppTooltip";
 import { pageService } from "../../../services/rbac/pageService";
 import { permissionService } from "../../../services/rbac/permissionService";
 import { roleService } from "../../../services/rbac/roleService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import { permissionColumns } from "./permissionsColumns";
 import PermissionsTable from "./PermissionsTable";
 import RoleSelector from "./RoleSelector";
@@ -22,12 +23,7 @@ const LIST_KEYS = [
 ];
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload) => {
@@ -261,7 +257,7 @@ const Permissions = () => {
     setRolesError(null);
 
     try {
-      const response = await roleService.getRoles({ pageSize: 500 });
+      const response = await roleService.getRoles();
       const roleMap = new Map();
 
       extractCollection(response.data)
@@ -283,7 +279,7 @@ const Permissions = () => {
     setPagesError(null);
 
     try {
-      const response = await pageService.getPages({ pageSize: 500 });
+      const response = await pageService.getPages();
       const normalizedPages = flattenPageRecords(extractCollection(response.data))
         .map(normalizePage)
         .filter(Boolean);

@@ -1,3 +1,5 @@
+import { getApiErrorMessage } from "../../../utils/apiError";
+
 export const SALES_INVOICE_STATUS = {
   DRAFT: 0,
   CONFIRMED: 1,
@@ -336,6 +338,13 @@ export const getInvoiceDefaultValues = (invoice) => {
     termsAndConditions:
       invoice?.termsAndConditions ??
       "Payment due as per invoice terms. Goods once sold will not be taken back.",
+    initialPayment: {
+      paymentDate: today,
+      amount: "",
+      paymentMode: SALES_PAYMENT_MODE.CASH,
+      referenceNumber: "",
+      notes: "",
+    },
     items:
       Array.isArray(invoice?.items) && invoice.items.length > 0
         ? invoice.items.map((item) => ({
@@ -355,7 +364,7 @@ export const getInvoiceDefaultValues = (invoice) => {
 };
 
 export const buildInvoicePayload = (values) => {
-  return {
+  const payload = {
     customerPartyId: values.customerPartyId,
     invoiceDate: values.invoiceDate,
     dueDate: values.dueDate || null,
@@ -372,25 +381,29 @@ export const buildInvoicePayload = (values) => {
     notes: cleanNullableString(values.notes),
     termsAndConditions: cleanNullableString(values.termsAndConditions),
   };
+
+  const initialPaymentAmount = toNumber(values.initialPayment?.amount);
+
+  if (initialPaymentAmount > 0) {
+    payload.initialPayment = {
+      paymentDate:
+        values.initialPayment?.paymentDate ||
+        values.invoiceDate ||
+        getTodayInputValue(),
+      amount: initialPaymentAmount,
+      paymentMode: Math.trunc(toNumber(values.initialPayment?.paymentMode)),
+      referenceNumber: cleanNullableString(
+        values.initialPayment?.referenceNumber,
+      ),
+      notes: cleanNullableString(values.initialPayment?.notes),
+    };
+  }
+
+  return payload;
 };
 
 export const getActionError = (error, fallback) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 export const getSuccessMessage = (response, fallback) => {

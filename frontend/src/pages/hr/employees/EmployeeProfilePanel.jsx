@@ -2,10 +2,13 @@ import {
   Banknote,
   CalendarCheck,
   CalendarOff,
+  Download,
   FileText,
+  LogOut,
   Pencil,
   Plus,
   Trash2,
+  UserPlus,
   UserRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -14,23 +17,24 @@ import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
 import {
   HR_ATTENDANCE_STATUS_OPTIONS,
-  HR_EMPLOYEE_STATUS_OPTIONS,
+  HR_EMPLOYEE_STATUS_KEY,
   HR_EMPLOYMENT_TYPE_OPTIONS,
   HR_GENDER_OPTIONS,
   HR_LEAVE_STATUS_OPTIONS,
   HR_LEAVE_TYPE_OPTIONS,
+  getEmployeeStatusKey,
+  getEmployeeStatusLabel,
   getHrOptionLabel,
 } from "../../../utils/hrEnums";
 import {
   formatHrDate,
   formatHrDateTime,
   formatHrTime,
-  getEmployeeInitials,
   getEmployeeName,
   getHrRecordId,
   getLookupLabel,
 } from "../hrHelpers";
-import { EmployeeStatusPill } from "./EmployeeList";
+import { EmployeeAvatar, EmployeeStatusPill } from "./EmployeeList";
 
 const tabs = [
   { id: "overview", icon: UserRound, label: "Overview" },
@@ -130,6 +134,49 @@ const formatRelatedTime = (value) => {
   return String(value).includes("T") ? formatHrDateTime(value) : formatHrTime(value);
 };
 
+const hasBankInfo = (bankDetails) => {
+  return ["bankName", "accountNumber", "ifscCode", "branchName", "upiId"].some(
+    (field) => String(bankDetails?.[field] ?? "").trim(),
+  );
+};
+
+const getDocumentExpiryState = (expiryDate) => {
+  if (!expiryDate) {
+    return null;
+  }
+
+  const expiry = new Date(expiryDate);
+
+  if (Number.isNaN(expiry.getTime())) {
+    return null;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  expiry.setHours(0, 0, 0, 0);
+
+  const daysUntilExpiry = Math.ceil((expiry - today) / 86400000);
+
+  if (daysUntilExpiry < 0) {
+    return {
+      className: "bg-red-50 text-red-700 ring-red-200",
+      label: "Expired",
+    };
+  }
+
+  if (daysUntilExpiry <= 30) {
+    return {
+      className: "bg-amber-50 text-amber-700 ring-amber-200",
+      label: `${daysUntilExpiry} days left`,
+    };
+  }
+
+  return {
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    label: "Valid",
+  };
+};
+
 const humanizeKey = (key) =>
   String(key)
     .replace(/([A-Z])/g, " $1")
@@ -189,11 +236,17 @@ const EmployeeProfilePanel = ({
   onDeleteDocument,
   onEdit,
   onEditBank,
+  onRejoin,
+  onResign,
   relatedLoading,
   shiftOptions,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
-  const address = employee?.addresses?.[0] ?? employee?.address ?? {};
+  const addresses = Array.isArray(employee?.addresses)
+    ? employee.addresses
+    : employee?.address
+      ? [employee.address]
+      : [];
   const employeeId = getHrRecordId(employee, "employee");
   const currentBankDetails = bankDetails ?? employee?.bankDetails;
   const documentList = useMemo(
@@ -204,6 +257,11 @@ const EmployeeProfilePanel = ({
     () => getLeaveBalanceRows(leaveBalance),
     [leaveBalance],
   );
+  const statusKey = getEmployeeStatusKey(employee?.status, employee?.statusName);
+  const isActiveEmployee = statusKey === HR_EMPLOYEE_STATUS_KEY.ACTIVE;
+  const isResignedEmployee = statusKey === HR_EMPLOYEE_STATUS_KEY.RESIGNED;
+  const canEditCurrentEmployee = canEdit && !isResignedEmployee;
+  const canDeleteCurrentEmployee = canDelete && !isResignedEmployee;
 
   if (!employee) {
     return (
@@ -219,23 +277,16 @@ const EmployeeProfilePanel = ({
       <div className="border-b border-slate-200 p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-center gap-4">
-            {employee.profilePhotoUrl ? (
-              <img
-                src={employee.profilePhotoUrl}
-                alt=""
-                className="h-14 w-14 shrink-0 rounded-2xl border border-slate-200 object-cover"
-              />
-            ) : (
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand text-base font-bold text-white">
-                {getEmployeeInitials(employee)}
-              </div>
-            )}
+            <EmployeeAvatar employee={employee} isSelected size="lg" />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="truncate text-lg font-semibold text-slate-900">
                   {getEmployeeName(employee)}
                 </h2>
-                <EmployeeStatusPill status={employee.status} />
+                <EmployeeStatusPill
+                  status={employee.status}
+                  statusName={employee.statusName}
+                />
               </div>
               <p className="mt-1 text-sm text-slate-500">
                 {employee.employeeCode ?? "-"} -{" "}
@@ -245,32 +296,60 @@ const EmployeeProfilePanel = ({
                   employee.designationName ?? "-",
                 )}
               </p>
+              {isResignedEmployee && (
+                <p className="mt-2 text-xs font-medium text-amber-700">
+                  Resigned {formatHrDate(employee.resignedDate)} - Last working{" "}
+                  day {formatHrDate(employee.lastWorkingDate)}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <AppTooltip label="Edit employee">
-              <button
-                type="button"
-                onClick={() => onEdit(employee)}
+          <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+            {isResignedEmployee ? (
+              <AppButton
+                className="h-9 rounded-lg px-3"
                 disabled={!canEdit}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-brand"
-                aria-label="Edit employee"
+                onClick={() => onRejoin?.(employee)}
               >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </AppTooltip>
-            <AppTooltip label="Delete employee">
-              <button
-                type="button"
-                onClick={() => onDelete(employee)}
-                disabled={!canDelete}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
-                aria-label="Delete employee"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </AppTooltip>
+                <UserPlus className="h-4 w-4" />
+                Rejoin
+              </AppButton>
+            ) : (
+              <>
+                <AppButton
+                  variant="secondary"
+                  className="h-9 rounded-lg px-3"
+                  disabled={!canEditCurrentEmployee}
+                  onClick={() => onEdit(employee)}
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </AppButton>
+                {isActiveEmployee && (
+                  <AppButton
+                    variant="secondary"
+                    className="h-9 rounded-lg px-3 text-amber-700 hover:bg-amber-50"
+                    disabled={!canEdit}
+                    onClick={() => onResign?.(employee)}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Resign
+                  </AppButton>
+                )}
+                <AppTooltip label="Delete employee">
+                  <button
+                    type="button"
+                    onClick={() => onDelete(employee)}
+                    disabled={!canDeleteCurrentEmployee}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Delete employee"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </AppTooltip>
+              </>
+            )}
           </div>
         </div>
 
@@ -364,25 +443,78 @@ const EmployeeProfilePanel = ({
                 />
                 <DetailRow
                   label="Status"
-                  value={getHrOptionLabel(
-                    HR_EMPLOYEE_STATUS_OPTIONS,
+                  value={getEmployeeStatusLabel(
                     employee.status,
+                    employee.statusName,
                   )}
                 />
+                <DetailRow
+                  label="Reporting Manager"
+                  value={employee.reportingManagerName}
+                />
+                {isResignedEmployee && (
+                  <>
+                    <DetailRow
+                      label="Resigned Date"
+                      value={formatHrDate(employee.resignedDate)}
+                    />
+                    <DetailRow
+                      label="Last Working Date"
+                      value={formatHrDate(employee.lastWorkingDate)}
+                    />
+                    <DetailRow
+                      label="Resignation Reason"
+                      value={employee.resignationReason}
+                    />
+                  </>
+                )}
+                {employee.rejoinedDate && (
+                  <DetailRow
+                    label="Rejoined Date"
+                    value={formatHrDate(employee.rejoinedDate)}
+                  />
+                )}
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-slate-900">Address</h3>
-              <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <DetailRow label="Address Type" value={address.addressType} />
-                <DetailRow label="Address Line 1" value={address.addressLine1} />
-                <DetailRow label="Address Line 2" value={address.addressLine2} />
-                <DetailRow label="City" value={address.city} />
-                <DetailRow label="State" value={address.state} />
-                <DetailRow label="Country" value={address.country} />
-                <DetailRow label="Pincode" value={address.pincode} />
-              </div>
+              <h3 className="text-sm font-semibold text-slate-900">Addresses</h3>
+              {addresses.length === 0 ? (
+                <div className="mt-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+                  No address has been saved for this employee.
+                </div>
+              ) : (
+                <div className="mt-3 space-y-3">
+                  {addresses.map((address, index) => (
+                    <div
+                      key={`${address.addressType ?? "address"}-${index}`}
+                      className="rounded-xl border border-slate-100 bg-slate-50 p-3"
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        Address {index + 1}
+                      </p>
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        <DetailRow
+                          label="Address Type"
+                          value={address.addressType}
+                        />
+                        <DetailRow
+                          label="Address Line 1"
+                          value={address.addressLine1}
+                        />
+                        <DetailRow
+                          label="Address Line 2"
+                          value={address.addressLine2}
+                        />
+                        <DetailRow label="City" value={address.city} />
+                        <DetailRow label="State" value={address.state} />
+                        <DetailRow label="Country" value={address.country} />
+                        <DetailRow label="Pincode" value={address.pincode} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -396,25 +528,38 @@ const EmployeeProfilePanel = ({
               <AppButton
                 variant="secondary"
                 className="h-9 rounded-lg px-3"
+                disabled={!canEdit}
                 onClick={() => onEditBank(employee)}
               >
                 <Pencil className="h-4 w-4" />
-                Edit Bank
+                {hasBankInfo(currentBankDetails) ? "Edit Bank" : "Add Bank"}
               </AppButton>
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <DetailRow label="Bank Name" value={currentBankDetails?.bankName} />
-              <DetailRow
-                label="Account Number"
-                value={currentBankDetails?.accountNumber}
-              />
-              <DetailRow label="IFSC Code" value={currentBankDetails?.ifscCode} />
-              <DetailRow
-                label="Branch"
-                value={currentBankDetails?.branchName}
-              />
-              <DetailRow label="UPI ID" value={currentBankDetails?.upiId} />
-            </div>
+            {!hasBankInfo(currentBankDetails) ? (
+              <EmptyPanel icon={Banknote} title="No bank details">
+                Add payroll bank details for this employee when they are ready.
+              </EmptyPanel>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                <DetailRow
+                  label="Bank Name"
+                  value={currentBankDetails?.bankName}
+                />
+                <DetailRow
+                  label="Account Number"
+                  value={currentBankDetails?.accountNumber}
+                />
+                <DetailRow
+                  label="IFSC Code"
+                  value={currentBankDetails?.ifscCode}
+                />
+                <DetailRow
+                  label="Branch"
+                  value={currentBankDetails?.branchName}
+                />
+                <DetailRow label="UPI ID" value={currentBankDetails?.upiId} />
+              </div>
+            )}
           </div>
         )}
 
@@ -424,7 +569,11 @@ const EmployeeProfilePanel = ({
               <h3 className="text-sm font-semibold text-slate-900">
                 Documents
               </h3>
-              <AppButton className="h-9 rounded-lg px-3" onClick={onAddDocument}>
+              <AppButton
+                className="h-9 rounded-lg px-3"
+                disabled={!canEdit}
+                onClick={onAddDocument}
+              >
                 <Plus className="h-4 w-4" />
                 Add Document
               </AppButton>
@@ -448,18 +597,28 @@ const EmployeeProfilePanel = ({
               <div className="space-y-3">
                 {documentList.map((document) => {
                   const documentId = getHrRecordId(document, "document");
+                  const expiryState = getDocumentExpiryState(document.expiryDate);
 
                   return (
                     <div
                       key={documentId ?? document.fileName}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
+                      className="flex flex-col gap-3 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-900">
-                          {document.fileName ?? "-"}
-                        </p>
-                        <p className="mt-0.5 truncate text-xs text-slate-500">
-                          {document.documentType ?? "Document"} - Expires{" "}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate text-sm font-semibold text-slate-900">
+                            {document.fileName ?? "-"}
+                          </p>
+                          {expiryState && (
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${expiryState.className}`}
+                            >
+                              {expiryState.label}
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          {document.documentType ?? "Document"} - Expiry{" "}
                           {formatHrDate(document.expiryDate)}
                         </p>
                       </div>
@@ -469,8 +628,9 @@ const EmployeeProfilePanel = ({
                             href={document.filePath}
                             target="_blank"
                             rel="noreferrer"
-                            className="rounded-lg px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-light"
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-brand hover:bg-brand-light"
                           >
+                            <Download className="h-3.5 w-3.5" />
                             Open
                           </a>
                         )}
@@ -478,7 +638,8 @@ const EmployeeProfilePanel = ({
                           <button
                             type="button"
                             onClick={() => onDeleteDocument(document)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            disabled={!canDelete}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                             aria-label="Delete document"
                           >
                             <Trash2 className="h-4 w-4" />

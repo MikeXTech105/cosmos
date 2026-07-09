@@ -5,8 +5,55 @@ import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 const ITEM_SORT_FIELDS = ["name", "itemCode", "createdAt"];
 
+const ITEM_CREATE_FORM_FIELDS = [
+  ["Name", "name"],
+  ["ItemCode", "itemCode"],
+  ["Barcode", "barcode"],
+  ["CategoryId", "categoryId"],
+  ["UnitId", "unitId"],
+  ["ItemType", "itemType"],
+  ["PurchasePrice", "purchasePrice"],
+  ["SalesPrice", "salesPrice"],
+  ["HSNCode", "hsnCode"],
+  ["GSTRate", "gstRate"],
+  ["TrackInventory", "trackInventory"],
+  ["OpeningStock", "openingStock"],
+  ["OpeningStockValue", "openingStockValue"],
+  ["CurrentStock", "currentStock"],
+  ["ReservedStock", "reservedStock"],
+  ["MinimumStock", "minimumStock"],
+  ["Description", "description"],
+  ["IsActive", "isActive"],
+];
+
+const appendFormValue = (formData, key, value) => {
+  if (value === null || value === undefined || value === "") {
+    return;
+  }
+
+  formData.append(key, String(value));
+};
+
+const buildItemCreateFormData = (payload) => {
+  const formData = new FormData();
+
+  ITEM_CREATE_FORM_FIELDS.forEach(([formKey, payloadKey]) => {
+    appendFormValue(formData, formKey, payload?.[payloadKey]);
+  });
+
+  if (payload?.imageFile) {
+    formData.append("Image", payload.imageFile);
+  }
+
+  return formData;
+};
+
 const buildItemCommandBody = (payload) => {
-  return payload;
+  const commandBody = { ...payload };
+
+  delete commandBody.imageFile;
+
+  return commandBody;
 };
 
 export const itemService = {
@@ -29,7 +76,12 @@ export const itemService = {
   createItem: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.ITEMS,
-      buildItemCommandBody(payload),
+      buildItemCreateFormData(payload),
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
 
     return unwrapResponse(response);

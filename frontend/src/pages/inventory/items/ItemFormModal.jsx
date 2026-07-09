@@ -385,6 +385,11 @@ const ItemFormModal = ({
                           shouldValidate: true,
                         })
                       }
+                      onFileChange={(file) =>
+                        setValue("imageFile", file, {
+                          shouldDirty: true,
+                        })
+                      }
                       error={errors.imageUrl?.message}
                     />
                   )}

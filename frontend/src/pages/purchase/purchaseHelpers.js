@@ -1,3 +1,5 @@
+import { getApiErrorMessage } from "../../utils/apiError";
+
 export const PURCHASE_STATUS = {
   DRAFT: 0,
   CONFIRMED: 1,
@@ -140,6 +142,33 @@ export const normalizeNumberBlurValue = (value, fallback = "0") => {
   return Number.isFinite(numericValue) ? String(numericValue) : fallback;
 };
 
+export const normalizeSignedNumberInput = (rawValue) => {
+  const rawString = String(rawValue ?? "");
+  const isNegative = rawString.trimStart().startsWith("-");
+  const normalized = normalizeNumberInput(rawString);
+
+  if (!normalized) {
+    return isNegative ? "-" : "";
+  }
+
+  return isNegative && normalized !== "0" ? `-${normalized}` : normalized;
+};
+
+export const normalizeSignedNumberBlurValue = (value, fallback = "0") => {
+  const normalized = normalizeSignedNumberInput(value);
+
+  if (!normalized || normalized === "-") {
+    return fallback;
+  }
+
+  const completedValue = normalized.endsWith(".")
+    ? normalized.slice(0, -1)
+    : normalized;
+  const numericValue = Number(completedValue);
+
+  return Number.isFinite(numericValue) ? String(numericValue) : fallback;
+};
+
 export const getTodayInputValue = () => new Date().toISOString().slice(0, 10);
 
 export const addDaysToInputDate = (dateValue, days) => {
@@ -201,22 +230,7 @@ export const formatNumber = (value) => {
 };
 
 export const getActionError = (error, fallback) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 export const getSuccessMessage = (response, fallback) => {

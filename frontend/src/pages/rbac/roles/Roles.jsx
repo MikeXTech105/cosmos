@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { roleService } from "../../../services/rbac/roleService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import RoleFilters from "./RoleFilters";
 import RoleModal from "./RoleModal";
 import RoleStats from "./RoleStats";
@@ -39,12 +40,7 @@ const ROLE_PERMISSIONS = {
 const LIST_KEYS = ["items", "roles", "records", "results", "content"];
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload, responseMeta) => {
@@ -135,42 +131,26 @@ const normalizeRole = (role) => {
   };
 };
 
-const buildPaginationMeta = ({ currentPage, currentPageSize, itemCount, meta }) => {
-  const total =
-    meta?.total ??
-    meta?.totalCount ??
-    meta?.totalElements ??
-    meta?.count ??
-    itemCount;
-  const page =
-    meta?.page ??
-    meta?.pageNumber ??
-    meta?.currentPage ??
-    currentPage;
-  const pageSize =
-    meta?.pageSize ??
-    meta?.size ??
-    meta?.limit ??
-    currentPageSize;
+const filterRoles = (roles, filters) => {
+  const query = filters.search.trim().toLowerCase();
 
-  return {
-    page: Number(page) || currentPage,
-    pageSize: Number(pageSize) || currentPageSize,
-    total: Number(total) || itemCount,
-  };
+  return roles.filter((role) => {
+    const haystack = [role.name, role.description]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const statusMatches =
+      filters.status === "all" ||
+      (filters.status === "active" ? role.isActive : !role.isActive);
+
+    return (!query || haystack.includes(query)) && statusMatches;
+  });
 };
 
-const buildRoleQueryParams = ({ filters, page, pageSize }) => {
-  const trimmedSearch = filters.search.trim();
-  const hasStatus = filters.status !== "all";
+const paginate = (items, currentPage, pageSize) => {
+  const start = (currentPage - 1) * pageSize;
 
-  return {
-    isActive: hasStatus ? filters.status === "active" : undefined,
-    page,
-    pageSize,
-    search: trimmedSearch || undefined,
-    status: hasStatus ? filters.status : undefined,
-  };
+  return items.slice(start, start + pageSize);
 };
 
 const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
@@ -280,11 +260,6 @@ const Roles = () => {
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [paginationMeta, setPaginationMeta] = useState({
-    page: 1,
-    pageSize: PAGE_SIZE_OPTIONS[0],
-    total: 0,
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [modalState, setModalState] = useState({
@@ -328,21 +303,11 @@ const Roles = () => {
     setErrorMessage(null);
 
     try {
-      const response = await roleService.getRoles(
-        buildRoleQueryParams({ filters, page, pageSize }),
-      );
+      const response = await roleService.getRoles();
       const collection = extractCollection(response.data, response.meta);
       const normalizedRoles = collection.items.map(normalizeRole).filter(Boolean);
 
       setRoles(normalizedRoles);
-      setPaginationMeta(
-        buildPaginationMeta({
-          currentPage: page,
-          currentPageSize: pageSize,
-          itemCount: normalizedRoles.length,
-          meta: collection.meta,
-        }),
-      );
     } catch (error) {
       setRoles([]);
       setErrorMessage(
@@ -351,7 +316,7 @@ const Roles = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, page, pageSize]);
+  }, []);
 
   useEffect(() => {
     void Promise.resolve().then(loadRoles);
@@ -375,10 +340,23 @@ const Roles = () => {
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
-  const totalItems = paginationMeta.total;
+  const filteredRoles = useMemo(() => filterRoles(roles, filters), [
+    filters,
+    roles,
+  ]);
+  const totalItems = filteredRoles.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const rangeStart = roles.length ? (page - 1) * pageSize + 1 : 0;
-  const rangeEnd = roles.length ? rangeStart + roles.length - 1 : 0;
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRoles = useMemo(
+    () => paginate(filteredRoles, currentPage, pageSize),
+    [currentPage, filteredRoles, pageSize],
+  );
+  const rangeStart = paginatedRoles.length
+    ? (currentPage - 1) * pageSize + 1
+    : 0;
+  const rangeEnd = paginatedRoles.length
+    ? rangeStart + paginatedRoles.length - 1
+    : 0;
   const filterControls = useMemo(() => {
     return {
       ...filters,
@@ -389,9 +367,9 @@ const Roles = () => {
     return {
       active: roles.filter((role) => role.isActive).length,
       inactive: roles.filter((role) => !role.isActive).length,
-      total: totalItems,
+      total: roles.length,
     };
-  }, [roles, totalItems]);
+  }, [roles]);
 
   const closeModal = useCallback(() => {
     setModalState((current) => ({
@@ -652,14 +630,14 @@ const Roles = () => {
 
       <RoleTable
         actions={tableActions}
-        currentPage={page}
+        currentPage={currentPage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
         onCreate={openCreateModal}
         onRetry={loadRoles}
         pageSize={pageSize}
-        roles={roles}
+        roles={paginatedRoles}
       />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
@@ -686,21 +664,19 @@ const Roles = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={isLoading || page <= 1}
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
+              disabled={isLoading || currentPage <= 1}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
             <span className="min-w-20 text-center text-xs font-semibold text-slate-500">
-              Page {page} / {totalPages}
+              Page {currentPage} / {totalPages}
             </span>
             <button
               type="button"
-              onClick={() =>
-                setPage((current) => Math.min(totalPages, current + 1))
-              }
-              disabled={isLoading || page >= totalPages}
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+              disabled={isLoading || currentPage >= totalPages}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next

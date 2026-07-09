@@ -23,6 +23,8 @@ import {
   getLineCalculations,
   normalizeNumberBlurValue,
   normalizeNumberInput,
+  PAYMENT_MODE_OPTIONS,
+  SALES_PAYMENT_MODE,
 } from "./invoiceHelpers";
 
 const invoiceLineSchema = z.object({
@@ -41,6 +43,27 @@ const invoiceLineSchema = z.object({
   taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
 });
 
+const initialPaymentSchema = z
+  .object({
+    paymentDate: z.string().optional(),
+    amount: z.coerce
+      .number()
+      .min(0, "Payment amount cannot be negative")
+      .optional(),
+    paymentMode: z.coerce.number().int().min(0, "Payment mode is required"),
+    referenceNumber: z.string().max(100, "Reference is too long").optional(),
+    notes: z.string().max(500, "Payment notes are too long").optional(),
+  })
+  .superRefine((payment, context) => {
+    if (Number(payment.amount) > 0 && !payment.paymentDate) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Payment date is required",
+        path: ["paymentDate"],
+      });
+    }
+  });
+
 const invoiceSchema = z.object({
   customerPartyId: z.string().uuid("Customer is required"),
   invoiceNumber: z.string().optional(),
@@ -54,6 +77,7 @@ const invoiceSchema = z.object({
     .string()
     .max(1000, "Terms are too long")
     .optional(),
+  initialPayment: initialPaymentSchema.optional(),
   items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
 });
 
@@ -526,6 +550,73 @@ const InvoiceFormModal = ({
                     </dd>
                   </div>
                 </dl>
+
+                {!isEdit && (
+                  <div className="mt-5 border-t border-slate-200 pt-4">
+                    <h4 className="text-sm font-semibold text-slate-900">
+                      Initial Payment
+                    </h4>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Leave amount blank to save without a receipt.
+                    </p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <NumberInput
+                        control={control}
+                        id="initialPaymentAmount"
+                        name="initialPayment.amount"
+                        label="Amount"
+                        error={errors.initialPayment?.amount?.message}
+                      />
+                      <AppInput
+                        id="initialPaymentDate"
+                        label="Payment Date"
+                        type="date"
+                        error={errors.initialPayment?.paymentDate?.message}
+                        {...register("initialPayment.paymentDate")}
+                      />
+                      <Controller
+                        control={control}
+                        name="initialPayment.paymentMode"
+                        defaultValue={SALES_PAYMENT_MODE.CASH}
+                        render={({ field }) => (
+                          <AppSelect
+                            label="Mode"
+                            value={field.value}
+                            onChange={(value) => field.onChange(Number(value))}
+                            onBlur={field.onBlur}
+                            options={PAYMENT_MODE_OPTIONS}
+                            error={errors.initialPayment?.paymentMode?.message}
+                          />
+                        )}
+                      />
+                      <AppInput
+                        id="initialPaymentReference"
+                        label="Reference"
+                        error={errors.initialPayment?.referenceNumber?.message}
+                        {...register("initialPayment.referenceNumber")}
+                      />
+                    </div>
+                    <div className="mt-3">
+                      <label
+                        htmlFor="initialPaymentNotes"
+                        className="mb-1.5 block text-xs font-semibold text-slate-700"
+                      >
+                        Payment Notes
+                      </label>
+                      <textarea
+                        id="initialPaymentNotes"
+                        rows={2}
+                        className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                        {...register("initialPayment.notes")}
+                      />
+                      {errors.initialPayment?.notes?.message && (
+                        <p className="mt-1.5 text-xs font-medium text-red-600">
+                          {errors.initialPayment.notes.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           </div>

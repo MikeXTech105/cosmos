@@ -17,6 +17,7 @@ import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { roleService } from "../../../services/rbac/roleService";
 import { userService } from "../../../services/rbac/userService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import UserFilters from "./UserFilters";
 import UserModal from "./UserModal";
 import UserStats from "./UserStats";
@@ -43,12 +44,7 @@ const USER_PERMISSIONS = {
 const LIST_KEYS = ["items", "users", "roles", "records", "results", "content"];
 
 const getErrorMessage = (error, fallback) => {
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 const extractCollection = (payload, responseMeta) => {
@@ -257,49 +253,53 @@ const normalizeUser = (user, roleOptions = []) => {
   };
 };
 
-const buildPaginationMeta = ({ currentPage, currentPageSize, itemCount, meta }) => {
-  const total =
-    meta?.total ??
-    meta?.totalCount ??
-    meta?.totalElements ??
-    meta?.count ??
-    itemCount;
-  const page =
-    meta?.page ??
-    meta?.pageNumber ??
-    meta?.currentPage ??
-    currentPage;
-  const pageSize =
-    meta?.pageSize ??
-    meta?.size ??
-    meta?.limit ??
-    currentPageSize;
-
-  return {
-    page: Number(page) || currentPage,
-    pageSize: Number(pageSize) || currentPageSize,
-    total: Number(total) || itemCount,
-  };
-};
-
-const buildUserQueryParams = ({ filters, page, pageSize }) => {
-  const trimmedSearch = filters.search.trim();
-  const hasStatus = filters.status !== "all";
-
-  return {
-    isActive: hasStatus ? filters.status === "active" : undefined,
-    page,
-    pageSize,
-    roleId: filters.roleId === "all" ? undefined : filters.roleId,
-    search: trimmedSearch || undefined,
-    status: hasStatus ? filters.status : undefined,
-  };
-};
-
 const getPrimaryRoleId = (user) => {
   const roleId = user?.roles?.[0]?.id;
 
   return roleId === undefined || roleId === null ? "" : String(roleId);
+};
+
+const mergeDetailWithFallbackRoles = (detailUser, fallbackUser, roleOptions) => {
+  const normalizedUser = normalizeUser(detailUser, roleOptions);
+
+  if (normalizedUser.roles.length > 0 || !fallbackUser) {
+    return normalizedUser;
+  }
+
+  return {
+    ...normalizedUser,
+    roles: normalizeUser(fallbackUser, roleOptions).roles,
+  };
+};
+
+const filterUsers = (users, filters) => {
+  const query = filters.search.trim().toLowerCase();
+
+  return users.filter((user) => {
+    const haystack = [
+      user.username,
+      user.fullName,
+      user.email,
+      ...user.roles.map((role) => role.name),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const statusMatches =
+      filters.status === "all" ||
+      (filters.status === "active" ? user.isActive : !user.isActive);
+    const roleMatches =
+      filters.roleId === "all" ||
+      user.roles.some((role) => String(role.id) === String(filters.roleId));
+
+    return (!query || haystack.includes(query)) && statusMatches && roleMatches;
+  });
+};
+
+const paginate = (items, currentPage, pageSize) => {
+  const start = (currentPage - 1) * pageSize;
+
+  return items.slice(start, start + pageSize);
 };
 
 const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
@@ -410,11 +410,6 @@ const Users = () => {
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-  const [paginationMeta, setPaginationMeta] = useState({
-    page: 1,
-    pageSize: PAGE_SIZE_OPTIONS[0],
-    total: 0,
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -461,7 +456,7 @@ const Users = () => {
     setRolesError(null);
 
     try {
-      const response = await roleService.getRoles({ pageSize: 500 });
+      const response = await roleService.getRoles();
       const collection = extractCollection(response.data, response.meta);
       const normalizedRoles = dedupeRoles(
         collection.items.map(normalizeRole).filter(Boolean),
@@ -483,23 +478,13 @@ const Users = () => {
     setErrorMessage(null);
 
     try {
-      const response = await userService.getUsers(
-        buildUserQueryParams({ filters, page, pageSize }),
-      );
+      const response = await userService.getUsers();
       const collection = extractCollection(response.data, response.meta);
       const normalizedUsers = collection.items
         .map(normalizeUser)
         .filter((user) => user.id);
 
       setUsers(normalizedUsers);
-      setPaginationMeta(
-        buildPaginationMeta({
-          currentPage: page,
-          currentPageSize: pageSize,
-          itemCount: normalizedUsers.length,
-          meta: collection.meta,
-        }),
-      );
     } catch (error) {
       setUsers([]);
       setErrorMessage(
@@ -508,7 +493,7 @@ const Users = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, page, pageSize]);
+  }, []);
 
   useEffect(() => {
     void Promise.resolve().then(loadRoles);
@@ -536,10 +521,23 @@ const Users = () => {
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
-  const totalItems = paginationMeta.total;
+  const filteredUsers = useMemo(() => filterUsers(users, filters), [
+    filters,
+    users,
+  ]);
+  const totalItems = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const rangeStart = users.length ? (page - 1) * pageSize + 1 : 0;
-  const rangeEnd = users.length ? rangeStart + users.length - 1 : 0;
+  const currentPage = Math.min(page, totalPages);
+  const paginatedUsers = useMemo(
+    () => paginate(filteredUsers, currentPage, pageSize),
+    [currentPage, filteredUsers, pageSize],
+  );
+  const rangeStart = paginatedUsers.length
+    ? (currentPage - 1) * pageSize + 1
+    : 0;
+  const rangeEnd = paginatedUsers.length
+    ? rangeStart + paginatedUsers.length - 1
+    : 0;
   const filterControls = useMemo(() => {
     return {
       ...filters,
@@ -550,9 +548,9 @@ const Users = () => {
     return {
       active: users.filter((user) => user.isActive).length,
       inactive: users.filter((user) => !user.isActive).length,
-      total: totalItems,
+      total: users.length,
     };
-  }, [totalItems, users]);
+  }, [users]);
 
   const closeModal = useCallback(() => {
     setModalState((current) => ({
@@ -592,7 +590,11 @@ const Users = () => {
         isLoading: false,
         isOpen: true,
         mode: "edit",
-        user: normalizeUser(extractSingleUser(response.data), latestRoleOptions),
+        user: mergeDetailWithFallbackRoles(
+          extractSingleUser(response.data),
+          user,
+          latestRoleOptions,
+        ),
       });
     } catch (error) {
       toast.error(
@@ -841,14 +843,14 @@ const Users = () => {
 
       <UserTable
         actions={tableActions}
-        currentPage={page}
+        currentPage={currentPage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
         onCreate={openCreateModal}
         onRetry={loadUsers}
         pageSize={pageSize}
-        users={users}
+        users={paginatedUsers}
       />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
@@ -875,21 +877,19 @@ const Users = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={isLoading || page <= 1}
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
+              disabled={isLoading || currentPage <= 1}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
             <span className="min-w-20 text-center text-xs font-semibold text-slate-500">
-              Page {page} / {totalPages}
+              Page {currentPage} / {totalPages}
             </span>
             <button
               type="button"
-              onClick={() =>
-                setPage((current) => Math.min(totalPages, current + 1))
-              }
-              disabled={isLoading || page >= totalPages}
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+              disabled={isLoading || currentPage >= totalPages}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next

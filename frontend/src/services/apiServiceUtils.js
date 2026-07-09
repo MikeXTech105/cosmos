@@ -1,5 +1,17 @@
+import { createApiError } from "../utils/apiError";
+
 export const unwrapResponse = (response) => {
   const responseData = response.data;
+
+  if (
+    responseData?.succeeded === false ||
+    responseData?.data?.succeeded === false
+  ) {
+    throw createApiError(
+      responseData?.succeeded === false ? responseData : responseData.data,
+      response,
+    );
+  }
 
   if (responseData?.data !== undefined) {
     return {

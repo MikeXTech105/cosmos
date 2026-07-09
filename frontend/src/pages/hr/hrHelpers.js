@@ -2,6 +2,7 @@ import {
   clampInventoryPageSize,
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../utils/inventoryQuery";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 export const HR_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
@@ -155,26 +156,7 @@ export const combineDateAndTime = (date, time) => {
 };
 
 export const getHrActionError = (error, fallback) => {
-  if (typeof error === "string") {
-    return error;
-  }
-
-  const errors = error?.response?.data?.errors;
-
-  if (Array.isArray(errors) && errors.length > 0) {
-    return errors.join(", ");
-  }
-
-  if (errors && typeof errors === "object") {
-    return Object.values(errors).flat().join(", ");
-  }
-
-  return (
-    error?.response?.data?.message ??
-    error?.response?.data?.error ??
-    error?.message ??
-    fallback
-  );
+  return getApiErrorMessage(error, fallback);
 };
 
 export const getHrSuccessMessage = (response, fallback) => {
