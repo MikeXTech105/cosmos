@@ -27,11 +27,17 @@ public interface IReportsService
     Task<ApiResponse<IReadOnlyCollection<ExpenseByPartyReportDto>>> GetExpenseByPartyAsync(ExpenseReportQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<IReadOnlyCollection<MonthlyExpenseSummaryReportDto>>> GetMonthlyExpenseSummaryAsync(ExpenseReportQuery query, CancellationToken cancellationToken);
 
-    Task<ApiResponse<IReadOnlyCollection<StockSummaryReportDto>>> GetStockSummaryAsync(InventoryReportQuery query, CancellationToken cancellationToken);
-    Task<ApiResponse<PagedResult<StockLedgerReportDto>>> GetStockLedgerAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockSummaryTotalsDto, StockSummaryReportDto>>> GetStockSummaryAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockLedgerTotalsDto, StockLedgerReportDto>>> GetStockLedgerAsync(StockLedgerReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<InventoryReportResult<ItemLedgerSummaryDto, StockLedgerReportDto>>> GetItemLedgerAsync(long itemId, StockLedgerReportQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<PagedResult<ItemMovementReportDto>>> GetItemMovementAsync(InventoryReportQuery query, CancellationToken cancellationToken);
-    Task<ApiResponse<IReadOnlyCollection<LowStockReportDto>>> GetLowStockAsync(LowStockReportQuery query, CancellationToken cancellationToken);
-    Task<ApiResponse<IReadOnlyCollection<StockValuationReportDto>>> GetStockValuationAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockExceptionSummaryDto, LowStockReportDto>>> GetLowStockAsync(LowStockReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockExceptionSummaryDto, NegativeStockReportDto>>> GetNegativeStockAsync(NegativeStockReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockMovementSummaryDto, StockMovementReportRowDto>>> GetStockMovementsAsync(StockMovementReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<StockValuationSummaryDto, StockValuationReportDto>>> GetStockValuationAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<DeadStockSummaryDto, DeadStockReportDto>>> GetDeadStockAsync(StockAgeingReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<MovingItemsSummaryDto, FastMovingItemReportDto>>> GetFastMovingItemsAsync(MovingItemsReportQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<PagedInventoryReportResult<MovingItemsSummaryDto, SlowMovingItemReportDto>>> GetSlowMovingItemsAsync(MovingItemsReportQuery query, CancellationToken cancellationToken);
 
     Task<ApiResponse<PagedResult<PartyLedgerReportDto>>> GetPartyLedgerAsync(PartyReportQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<IReadOnlyCollection<PartyStatementReportDto>>> GetCustomerStatementAsync(PartyStatementReportQuery query, CancellationToken cancellationToken);
