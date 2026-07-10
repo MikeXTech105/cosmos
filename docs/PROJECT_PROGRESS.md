@@ -4,7 +4,7 @@
 
 COSMOS ERP is a .NET 10 ASP.NET Core Web API backend with SQL Server, Dapper, JWT authentication, SQL-backed roles/pages/permissions, audit logging tables, and module-wise Swagger grouping. The repository also contains a small Vite/React frontend placeholder and SQL setup/verification assets.
 
-This review is based on the current code and SQL scripts. No feature code or database script was changed during this documentation task.
+This review is based on the current code and SQL scripts. Later module updates append implementation status and verification notes below.
 
 Verified facts:
 - Backend builds successfully with `dotnet build Cosmos.slnx --no-restore`.
@@ -12,7 +12,7 @@ Verified facts:
 - API is controller-based ASP.NET Core, not Minimal APIs.
 - Persistence uses Dapper and stored procedures.
 - Swagger JSON was inspected from the running API at `http://127.0.0.1:5199/swagger/...`.
-- Swagger groups `dashboard` and `general` currently contain zero endpoints.
+- Swagger group `dashboard` now contains Dashboard Phase 1 endpoints; Swagger group `general` currently contains zero endpoints.
 
 ## 2. Solution Architecture
 
@@ -55,7 +55,7 @@ Overall structure is clean and understandable. Main inconsistencies:
 
 | Module | Status | Evidence | Main risk |
 |---|---|---|---|
-| Dashboard | Not Started | Swagger `dashboard` group has 0 endpoints. OEE has its own dashboard endpoints. | No general ERP dashboard API. |
+| Dashboard | Phase 1 Implemented / Needs DB Verification | General dashboard controller/service/repository/contracts plus SQL migration `20260710_dashboard_phase1.sql`. OEE dashboard remains separate. | SQL migration must be applied and verified against a live database; recent activity and export are pending. |
 | Party / Customer / Supplier | Partially Completed | Parties controller/service/repository/SQL present. Party table has no explicit customer/supplier type column in reviewed schema. | Party is generic; customer/supplier role semantics need verification. |
 | Items | Partially Completed | Items CRUD, image upload on create, item table, stock columns. | Update image replacement/storage hardening missing; inventory is embedded, not separate stock module. |
 | Categories | Completed | CRUD API, service, repository, SQL, permissions. | Needs DB integration testing. |
@@ -75,21 +75,23 @@ Overall structure is clean and understandable. Main inconsistencies:
 
 ### Dashboard
 
-Status: Not Started for general ERP dashboard.
+Status: Phase 1 Implemented / Needs DB Verification.
 
 Evidence:
 - Swagger group: `dashboard`.
-- Controllers found: none.
-- Services/repositories/DTOs: none found for a general dashboard module.
-- Database tables/stored procedures: none found for a general dashboard.
+- Controller: `DashboardController` at `api/v1/dashboard`.
+- Service/repository/contracts: `IDashboardService`, `DashboardService`, `IDashboardRepository`, `DashboardRepository`, `Cosmos.Contracts/Dashboard`.
+- SQL migration: `backend/database/migrations/20260710_dashboard_phase1.sql`.
 
 Missing pieces:
-- Overall ERP dashboard summary APIs.
-- Cards/graphs for sales, purchase, stock, receivables/payables, GST, HR.
-- Permission/page seed for a general `Dashboard` page needs verification.
+- Live SQL Server execution and data verification.
+- Recent activity timeline.
+- Export endpoints.
+- Company/branch filters; no general dimension exists across the current source tables.
 
 Known risks:
-- Frontend may expect dashboard widgets, but backend exposes only OEE dashboard endpoints.
+- Dashboard KPIs are stored-procedure driven and need verification with representative operational data.
+- Frontend must keep the general dashboard separate from OEE dashboard endpoints unless an explicit manufacturing context is selected.
 
 ### Party / Customer / Supplier
 
@@ -514,8 +516,8 @@ Database:
 - OEE report stored procedures.
 
 Missing pieces:
-- No common report module/architecture.
-- No inventory, GST return, HR summary, financial statement, dashboard, or export framework found.
+- Common reports Phase 1 architecture now exists.
+- Inventory stock reports and general dashboard Phase 1 now exist; GST return reports, financial statements, and export framework remain pending.
 - OEE Excel export endpoint returns a string response schema in Swagger; actual export behavior needs verification.
 
 Known risks:
@@ -909,8 +911,8 @@ Swagger setup:
 - XML comments are included if generated files exist.
 
 Current grouping:
-- Empty: `dashboard`, `general`.
-- Active: `masters`, `items`, `parties`, `sales`, `Purchase & Expense`, `gst`, `OEE`, `hr`, `reports`, `settings`.
+- Empty: `general`.
+- Active: `dashboard`, `masters`, `items`, `parties`, `sales`, `Purchase & Expense`, `gst`, `OEE`, `hr`, `reports`, `settings`.
 
 Controller names visibility:
 - Many controllers use default tags like `Items`, `Categories`, `SalesInvoices`.
@@ -926,7 +928,7 @@ Missing Swagger documentation:
 Duplicated/unclear endpoints:
 - No duplicate routes found in Swagger.
 - `Purchase & Expense` group name contains spaces and `&`, which is accepted but awkward for automation and URLs.
-- Empty `dashboard` document may mislead frontend/API consumers.
+- The `dashboard` document is now populated by Dashboard Phase 1 endpoints.
 
 ## 9. Logging, Validation & Error Handling
 
@@ -1031,7 +1033,7 @@ Medium:
 
 Low:
 - Controller formatting is inconsistent.
-- `dashboard` and `general` Swagger groups are empty.
+- `general` Swagger group is empty.
 - Response status semantics are mixed between `ApiResponse` failures and exceptions.
 
 ## 12. Production Readiness Checklist
@@ -1132,3 +1134,149 @@ Modules safest to extend next:
 - For HR work, preserve resigned employee behavior: do not soft-delete for resignation; use resign/rejoin endpoints.
 - Before changing SQL, check `Database_Verification_Output` because it contains pending generated remediation scripts.
 - Current build warning: `Microsoft.OpenApi` package vulnerability `NU1903` was reported during build and should be reviewed during dependency maintenance.
+
+## 15. Stock Reports Module Update - 2026-07-10
+
+Status: Implemented / Build Verified / Swagger Verified / Needs DB Verification / Export Pending.
+
+The Reports Phase 1 inventory scope was extended into a dedicated Stock Reports module without creating a duplicate reports architecture. The implementation reuses the existing controller -> service -> repository -> Dapper -> stored procedure pattern and the existing `Reports.Inventory` page permission.
+
+### Module Status Summary Updates
+
+| Module | Status | Notes |
+|---|---|---|
+| Inventory / Stock | Reports Implemented / Operational APIs Still Partial | Stock reports now cover summary, ledger, item ledger, low stock, negative stock, movements, valuation, dead stock, fast-moving, and slow-moving items. Stock adjustment, warehouse, batch/serial, and transfer APIs are still missing. |
+| Reports | Phase 1 Extended / Needs DB Verification | Stock Reports extension added on top of Reports Phase 1. Export remains pending. |
+
+### API Inventory Additions
+
+All endpoints use Swagger group `reports`, JWT auth, and `Reports.Inventory.View`.
+
+| Method | Route | Status |
+|---|---|---|
+| GET | `/api/v1/reports/inventory/stock-summary` | Implemented |
+| GET | `/api/v1/reports/inventory/stock-ledger` | Implemented |
+| GET | `/api/v1/reports/inventory/items/{itemId}/ledger` | Implemented |
+| GET | `/api/v1/reports/inventory/low-stock` | Implemented |
+| GET | `/api/v1/reports/inventory/negative-stock` | Implemented |
+| GET | `/api/v1/reports/inventory/stock-movements` | Implemented |
+| GET | `/api/v1/reports/inventory/stock-valuation` | Implemented |
+| GET | `/api/v1/reports/inventory/dead-stock` | Implemented |
+| GET | `/api/v1/reports/inventory/fast-moving-items` | Implemented |
+| GET | `/api/v1/reports/inventory/slow-moving-items` | Implemented |
+
+### Database Migration List Update
+
+- `backend/database/migrations/20260710_stock_reports_module.sql` - Stock Reports stored procedures and `Reports.Inventory` permission reuse. Created, not executed against a live SQL Server in this pass.
+
+### Stored Procedure List Update
+
+- `sp_Report_Inventory_StockSummary`
+- `sp_Report_Inventory_StockLedger`
+- `sp_Report_Inventory_ItemLedger`
+- `sp_Report_Inventory_LowStock`
+- `sp_Report_Inventory_NegativeStock`
+- `sp_Report_Inventory_StockMovements`
+- `sp_Report_Inventory_StockValuation`
+- `sp_Report_Inventory_DeadStock`
+- `sp_Report_Inventory_FastMovingItems`
+- `sp_Report_Inventory_SlowMovingItems`
+
+### Pages And Permissions
+
+- Reused page: `Reports.Inventory`
+- View permission: `Reports.Inventory.View`
+- Future export permission: `Reports.Inventory.Export`
+- `SuperAdmin` seed uses role-name lookup. No hard-coded role/page IDs were added.
+
+### Verification Status
+
+| Area | Status |
+|---|---|
+| Restore | Passed with existing `Microsoft.OpenApi` NU1903 warning |
+| Build | Passed with existing `Microsoft.OpenApi` NU1903 warning |
+| Unit tests | Passed: 24/24 |
+| SQL execution | Not executed |
+| Live database verification | Pending |
+| Swagger JSON inspection | Verified at `http://127.0.0.1:5278/swagger/reports/swagger.json` |
+
+### Known Risks
+
+- The base `Items` table has a non-negative `CurrentStock` check constraint, so the Negative Stock report may normally return no rows unless legacy data or schema changes exist.
+- Sales returns and stock adjustments are not represented as distinct stock flows.
+- Stock valuation remains purchase-price based, not weighted average or FIFO.
+- Historical as-of reporting depends on `StockMovements.CreatedAtUtc`; business document dates are used only for sales velocity reports.
+- Export buttons should remain disabled until a shared export framework exists.
+
+### Recommended Next Roadmap
+
+Next report milestone: Party Ledger and Outstanding Reports.
+
+Potential reports:
+
+- Customer Ledger
+- Supplier Ledger
+- Party Statement
+- Receivables
+- Payables
+- Receivable Ageing
+- Payable Ageing
+- Party Transaction History
+
+## 16. Dashboard Phase 1 Update - 2026-07-10
+
+Status: Implemented / Build Verified / Tests Verified / Swagger Verified / Needs DB Verification.
+
+Dashboard Phase 1 adds the general ERP dashboard backend without changing the existing OEE dashboard surface.
+
+### API Additions
+
+All endpoints use Swagger group `dashboard`, JWT auth, and `Dashboard.View`.
+
+| Method | Route | Status |
+|---|---|---|
+| GET | `/api/v1/dashboard/overview` | Implemented |
+| GET | `/api/v1/dashboard/sales-purchase-trend` | Implemented |
+| GET | `/api/v1/dashboard/revenue-expense-trend` | Implemented |
+| GET | `/api/v1/dashboard/top-selling-items` | Implemented |
+| GET | `/api/v1/dashboard/top-parties` | Implemented |
+| GET | `/api/v1/dashboard/alerts` | Implemented |
+| GET | `/api/v1/dashboard/hr-summary` | Implemented |
+
+### Database Migration List Update
+
+- `backend/database/migrations/20260710_dashboard_phase1.sql` - Dashboard page/permission seed plus general dashboard stored procedures. Created, not executed against a live SQL Server in this pass.
+
+### Stored Procedure List Update
+
+- `sp_Dashboard_Overview`
+- `sp_Dashboard_SalesPurchaseTrend`
+- `sp_Dashboard_RevenueExpenseTrend`
+- `sp_Dashboard_TopSellingItems`
+- `sp_Dashboard_TopParties`
+- `sp_Dashboard_Alerts`
+- `sp_Dashboard_HrSummary`
+
+### Documentation
+
+- `backend/docs/DASHBOARD_PHASE1.md`
+- `backend/docs/DASHBOARD_PHASE1_IMPLEMENTATION_TRACKER.md`
+- `backend/docs/IMPLEMENTATION_INTERACTIONS.md`
+
+### Verification Status
+
+| Area | Status |
+|---|---|
+| Restore | Passed with existing `Microsoft.OpenApi` NU1903 warning |
+| Build | Passed with existing `Microsoft.OpenApi` NU1903 warning |
+| Unit tests | Passed |
+| Swagger JSON inspection | Verified at `/swagger/dashboard/swagger.json` |
+| SQL execution | Not executed |
+| Live database verification | Pending |
+
+### Known Risks
+
+- Dashboard KPIs are stored-procedure driven and need validation against representative SQL Server data.
+- Recent activity is pending until a common activity/audit source exists.
+- Dashboard caching is pending until a shared cache abstraction exists.
+- Export and drill-down endpoints are future work.

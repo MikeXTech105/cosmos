@@ -230,3 +230,60 @@ Each page is seeded with `CanView` and `CanExport` for the `SuperAdmin` role by 
 - HR reports: attendance, payroll, leave balances.
 - Advanced inventory: batch/serial, reorder planning, stock transfer, weighted-average valuation.
 - Shared export framework for Excel/PDF with audit logging and export permissions.
+
+## Dashboard Phase 1 Relationship - 2026-07-10
+
+The general Dashboard Phase 1 backend is implemented as a separate read-only dashboard module, not as a reports export module. It reuses the same source tables and broad formulas documented for Reports Phase 1:
+
+- Confirmed, non-cancelled sales and purchase documents drive sales/purchase KPIs.
+- Expenses use `Expenses.TotalAmount`.
+- Receivables and payables use unpaid invoice/bill balances.
+- Stock valuation uses `Items.CurrentStock * Items.PurchasePrice`.
+
+Dashboard endpoints live under `GET /api/v1/dashboard/*`, use Swagger group `dashboard`, and require `Dashboard.View`. Reports endpoints remain under Swagger group `reports`.
+
+## Stock Reports Extension - 2026-07-10
+
+The original Reports Phase 1 inventory scope included:
+
+- Stock Summary
+- Stock Ledger
+- Item Movement
+- Low Stock
+- Stock Valuation
+
+The Stock Reports extension keeps those routes and expands the inventory reporting surface with:
+
+- Item Ledger: `GET /api/v1/reports/inventory/items/{itemId}/ledger`
+- Negative Stock: `GET /api/v1/reports/inventory/negative-stock`
+- Stock Movements: `GET /api/v1/reports/inventory/stock-movements`
+- Dead Stock: `GET /api/v1/reports/inventory/dead-stock`
+- Fast-Moving Items: `GET /api/v1/reports/inventory/fast-moving-items`
+- Slow-Moving Items: `GET /api/v1/reports/inventory/slow-moving-items`
+
+The extension is implemented as a Phase 1 extension, not a replacement architecture. It reuses `IReportsService`, `ReportsService`, `IReportsRepository`, `ReportsRepository`, the `reports` Swagger group, and `Reports.Inventory` permissions.
+
+New migration:
+
+- `backend/database/migrations/20260710_stock_reports_module.sql`
+
+New stored procedures:
+
+- `sp_Report_Inventory_StockSummary`
+- `sp_Report_Inventory_StockLedger`
+- `sp_Report_Inventory_ItemLedger`
+- `sp_Report_Inventory_LowStock`
+- `sp_Report_Inventory_NegativeStock`
+- `sp_Report_Inventory_StockMovements`
+- `sp_Report_Inventory_StockValuation`
+- `sp_Report_Inventory_DeadStock`
+- `sp_Report_Inventory_FastMovingItems`
+- `sp_Report_Inventory_SlowMovingItems`
+
+Limitations remain:
+
+- SQL migration has not been applied to a live SQL Server in this implementation pass.
+- Swagger JSON inspection was completed for the stock report endpoints; re-run it after future endpoint changes.
+- Export remains pending.
+- Stock valuation still uses `ClosingQuantity x Items.PurchasePrice`.
+- Sales returns, stock adjustments, warehouses, batches, serial numbers, and weighted-average/FIFO costing are not supported by the current schema.

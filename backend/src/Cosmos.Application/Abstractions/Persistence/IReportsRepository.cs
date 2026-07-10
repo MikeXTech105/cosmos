@@ -26,11 +26,17 @@ public interface IReportsRepository
     Task<IReadOnlyCollection<ExpenseByPartyReportDto>> GetExpenseByPartyAsync(ExpenseReportQuery query, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<MonthlyExpenseSummaryReportDto>> GetMonthlyExpenseSummaryAsync(ExpenseReportQuery query, CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<StockSummaryReportDto>> GetStockSummaryAsync(InventoryReportQuery query, CancellationToken cancellationToken);
-    Task<PagedResult<StockLedgerReportDto>> GetStockLedgerAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockSummaryTotalsDto, StockSummaryReportDto>> GetStockSummaryAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockLedgerTotalsDto, StockLedgerReportDto>> GetStockLedgerAsync(StockLedgerReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportResult<ItemLedgerSummaryDto, StockLedgerReportDto>> GetItemLedgerAsync(StockLedgerReportQuery query, CancellationToken cancellationToken);
     Task<PagedResult<ItemMovementReportDto>> GetItemMovementAsync(InventoryReportQuery query, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<LowStockReportDto>> GetLowStockAsync(LowStockReportQuery query, CancellationToken cancellationToken);
-    Task<IReadOnlyCollection<StockValuationReportDto>> GetStockValuationAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockExceptionSummaryDto, LowStockReportDto>> GetLowStockAsync(LowStockReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockExceptionSummaryDto, NegativeStockReportDto>> GetNegativeStockAsync(NegativeStockReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockMovementSummaryDto, StockMovementReportRowDto>> GetStockMovementsAsync(StockMovementReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<StockValuationSummaryDto, StockValuationReportDto>> GetStockValuationAsync(InventoryReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<DeadStockSummaryDto, DeadStockReportDto>> GetDeadStockAsync(StockAgeingReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<MovingItemsSummaryDto, FastMovingItemReportDto>> GetFastMovingItemsAsync(MovingItemsReportQuery query, CancellationToken cancellationToken);
+    Task<InventoryReportData<MovingItemsSummaryDto, SlowMovingItemReportDto>> GetSlowMovingItemsAsync(MovingItemsReportQuery query, CancellationToken cancellationToken);
 
     Task<PagedResult<PartyLedgerReportDto>> GetPartyLedgerAsync(PartyReportQuery query, CancellationToken cancellationToken);
     Task<IReadOnlyCollection<PartyStatementReportDto>> GetCustomerStatementAsync(PartyStatementReportQuery query, CancellationToken cancellationToken);

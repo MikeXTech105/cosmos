@@ -60,4 +60,55 @@ public sealed class ReportValidatorTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.CategoryId));
     }
+
+    [Fact]
+    public async Task Inventory_report_rejects_invalid_stock_status_and_sort_field()
+    {
+        var query = new InventoryReportQuery
+        {
+            StockStatus = "Dormant",
+            SortBy = "DROP TABLE",
+        };
+
+        var result = await new InventoryReportQueryValidator().ValidateAsync(query);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.StockStatus));
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.SortBy));
+    }
+
+    [Fact]
+    public async Task Stock_ledger_rejects_invalid_movement_type()
+    {
+        var query = new StockLedgerReportQuery { MovementType = "AdjustmentIn" };
+
+        var result = await new StockLedgerReportQueryValidator().ValidateAsync(query);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.MovementType));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3651)]
+    public async Task Dead_stock_rejects_invalid_inactivity_days(int inactiveDays)
+    {
+        var query = new StockAgeingReportQuery { InactiveDays = inactiveDays };
+
+        var result = await new StockAgeingReportQueryValidator().ValidateAsync(query);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.InactiveDays));
+    }
+
+    [Fact]
+    public async Task Moving_items_rejects_excessive_top()
+    {
+        var query = new MovingItemsReportQuery { Top = 101 };
+
+        var result = await new MovingItemsReportQueryValidator().ValidateAsync(query);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(query.Top));
+    }
 }

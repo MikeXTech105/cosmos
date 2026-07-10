@@ -3,6 +3,7 @@ using Cosmos.API.Middleware;
 using Cosmos.Application;
 using Cosmos.Infrastructure;
 using Cosmos.Persistence;
+using Cosmos.Shared.Options;
 using Cosmos.Shared.Security;
 using Microsoft.OpenApi;
 using Serilog;
@@ -64,6 +65,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
+builder.Services.Configure<DashboardOptions>(builder.Configuration.GetSection("Dashboard"));
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -100,10 +102,10 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
-    options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecuritySchemeReference("Bearer", null, null),
+            new OpenApiSecuritySchemeReference("Bearer", document),
             new List<string>()
         }
     });
