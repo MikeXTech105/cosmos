@@ -39,6 +39,10 @@ export const ENDPOINTS = {
 
   PARTY_SETTINGS: "/api/v1/settings/party",
 
+  GST_VERIFY_GSTIN: "/api/v1/gst/verify-gstin",
+
+  GST_CONFIG_STATUS: "/api/v1/gst/configuration/status",
+
   SALES_INVOICES: "/api/v1/sales/invoices",
 
   SALES_INVOICE_BY_ID: (id) => `/api/v1/sales/invoices/${id}`,

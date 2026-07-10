@@ -21,6 +21,7 @@ import purchaseBillReducer from "./slices/purchase/purchaseBillSlice";
 import purchaseOrderReducer from "./slices/purchase/purchaseOrderSlice";
 import purchaseReportReducer from "./slices/purchase/purchaseReportSlice";
 import purchaseReturnReducer from "./slices/purchase/purchaseReturnSlice";
+import partyGstReducer from "./slices/party/gstSlice";
 import rbacPageReducer from "./slices/rbac/pageSlice";
 import salesInvoiceReducer from "./slices/sales/invoiceSlice";
 import sidebarReducer from "./slices/sidebarSlice";
@@ -47,6 +48,7 @@ export const store = configureStore({
     oeeMoulds: oeeMouldReducer,
     oeeProductionEntries: oeeProductionEntryReducer,
     oeeReports: oeeReportReducer,
+    partyGst: partyGstReducer,
     purchaseBills: purchaseBillReducer,
     purchaseOrders: purchaseOrderReducer,
     purchaseReports: purchaseReportReducer,
