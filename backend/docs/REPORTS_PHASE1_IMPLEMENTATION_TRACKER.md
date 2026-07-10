@@ -34,3 +34,28 @@
 - Export support is permission/documentation-only.
 - Customer statement completeness depends on sales ledger entries that may not be written by current sales procedures.
 - Stock valuation uses purchase price, not weighted average cost.
+
+## Stock Reports Extension - 2026-07-10
+
+- [x] Existing Phase 1 inventory endpoints reviewed.
+- [x] Existing inventory DTOs, validators, service, repository, controller, SQL procedures, and permission seed reviewed.
+- [x] Stock movement write logic in sales confirmation/cancellation reviewed.
+- [x] Purchase bill and purchase return stock logic reviewed.
+- [x] New stock report contracts added.
+- [x] New stock report validators added.
+- [x] New stock report service methods added.
+- [x] New stock report repository methods added.
+- [x] New stock report controller endpoints added.
+- [x] New idempotent SQL migration created: `20260710_stock_reports_module.sql`.
+- [x] `Reports.Inventory` permission reused; no duplicate report permission page added.
+- [x] `STOCK_REPORTS.md` created.
+- [x] `STOCK_REPORTS_IMPLEMENTATION_TRACKER.md` created.
+- [x] Build passed after implementation.
+- [ ] `20260710_stock_reports_module.sql` applied to live SQL Server.
+- [ ] New stock procedures verified against live operational data.
+- [x] Swagger JSON inspected after API startup.
+- [ ] Export framework implemented.
+
+Stock Reports are considered a Reports Phase 1 extension. They do not remove or rename the original Phase 1 inventory route family.
+
+Swagger verification note: `/swagger/reports/swagger.json` was inspected from `http://127.0.0.1:5278` and showed all Stock Reports paths under the `reports` document with concrete response schema references and document-level Bearer security.

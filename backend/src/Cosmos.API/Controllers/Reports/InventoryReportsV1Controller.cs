@@ -21,16 +21,23 @@ public sealed class InventoryReportsV1Controller(IReportsService service) : ApiC
     /// <summary>Gets stock summary by item.</summary>
     [HttpGet("stock-summary")]
     [RequirePermission("Reports.Inventory", PermissionAction.View)]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<StockSummaryReportDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockSummaryTotalsDto, StockSummaryReportDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StockSummary([FromQuery] InventoryReportQuery query, CancellationToken ct) =>
         FromResponse(await service.GetStockSummaryAsync(query, ct));
 
     /// <summary>Gets paged stock ledger rows from stock movements.</summary>
     [HttpGet("stock-ledger")]
     [RequirePermission("Reports.Inventory", PermissionAction.View)]
-    [ProducesResponseType(typeof(ApiResponse<PagedResult<StockLedgerReportDto>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> StockLedger([FromQuery] InventoryReportQuery query, CancellationToken ct) =>
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockLedgerTotalsDto, StockLedgerReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> StockLedger([FromQuery] StockLedgerReportQuery query, CancellationToken ct) =>
         FromResponse(await service.GetStockLedgerAsync(query, ct));
+
+    /// <summary>Gets an item-specific stock ledger with item balances and totals.</summary>
+    [HttpGet("items/{itemId:long}/ledger")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<InventoryReportResult<ItemLedgerSummaryDto, StockLedgerReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ItemLedger(long itemId, [FromQuery] StockLedgerReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetItemLedgerAsync(itemId, query, ct));
 
     /// <summary>Gets paged item movement totals grouped by item and movement type.</summary>
     [HttpGet("item-movement")]
@@ -42,14 +49,49 @@ public sealed class InventoryReportsV1Controller(IReportsService service) : ApiC
     /// <summary>Gets items whose current stock is less than or equal to minimum stock.</summary>
     [HttpGet("low-stock")]
     [RequirePermission("Reports.Inventory", PermissionAction.View)]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<LowStockReportDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockExceptionSummaryDto, LowStockReportDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> LowStock([FromQuery] LowStockReportQuery query, CancellationToken ct) =>
         FromResponse(await service.GetLowStockAsync(query, ct));
+
+    /// <summary>Gets items with negative current stock.</summary>
+    [HttpGet("negative-stock")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockExceptionSummaryDto, NegativeStockReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> NegativeStock([FromQuery] NegativeStockReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetNegativeStockAsync(query, ct));
+
+    /// <summary>Gets raw stock movement rows and movement totals.</summary>
+    [HttpGet("stock-movements")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockMovementSummaryDto, StockMovementReportRowDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> StockMovements([FromQuery] StockMovementReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetStockMovementsAsync(query, ct));
 
     /// <summary>Gets stock valuation using current stock and purchase price.</summary>
     [HttpGet("stock-valuation")]
     [RequirePermission("Reports.Inventory", PermissionAction.View)]
-    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<StockValuationReportDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<StockValuationSummaryDto, StockValuationReportDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> StockValuation([FromQuery] InventoryReportQuery query, CancellationToken ct) =>
         FromResponse(await service.GetStockValuationAsync(query, ct));
+
+    /// <summary>Gets positive-stock items with no sales movement in the selected inactivity period.</summary>
+    [HttpGet("dead-stock")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<DeadStockSummaryDto, DeadStockReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeadStock([FromQuery] StockAgeingReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetDeadStockAsync(query, ct));
+
+    /// <summary>Gets fastest-moving items ranked by sold quantity and sales value.</summary>
+    [HttpGet("fast-moving-items")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<MovingItemsSummaryDto, FastMovingItemReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> FastMovingItems([FromQuery] MovingItemsReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetFastMovingItemsAsync(query, ct));
+
+    /// <summary>Gets slow-moving items with positive stock and low or zero sales in the selected period.</summary>
+    [HttpGet("slow-moving-items")]
+    [RequirePermission("Reports.Inventory", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PagedInventoryReportResult<MovingItemsSummaryDto, SlowMovingItemReportDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SlowMovingItems([FromQuery] MovingItemsReportQuery query, CancellationToken ct) =>
+        FromResponse(await service.GetSlowMovingItemsAsync(query, ct));
 }
