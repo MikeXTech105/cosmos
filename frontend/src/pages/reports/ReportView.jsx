@@ -1,4 +1,4 @@
-import { Download, RefreshCw } from "lucide-react";
+import { Download, FileSearch, RefreshCw, TrendingUp } from "lucide-react";
 import { createElement, useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -13,6 +13,7 @@ import {
 import {
   formatCell,
   getReportValue,
+  toReportNumber,
 } from "../../utils/reportFormat";
 import {
   buildReportParams,
@@ -67,6 +68,113 @@ const getExportColumns = (report) => {
   return report.columns ?? [];
 };
 
+const formatGeneratedAt = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const toPascalCaseKey = (key) => {
+  const text = String(key ?? "");
+
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : text;
+};
+
+const getRequiredParamValue = (params, paramName) => {
+  if (!paramName) {
+    return null;
+  }
+
+  return params[paramName] ?? params[toPascalCaseKey(paramName)] ?? null;
+};
+
+const hasRequiredParamValue = (value) => {
+  return value !== null && value !== undefined && value !== "" && value !== "all";
+};
+
+const ReportKpiChips = ({ kpis = [], summary }) => {
+  const visibleKpis = kpis
+    .map((kpi) => {
+      const value = getReportValue(summary, kpi.key, undefined);
+
+      if (value === undefined || value === null || value === "") {
+        return null;
+      }
+
+      if (
+        ["currency", "number", "percent", "qty", "quantity"].includes(kpi.format) &&
+        toReportNumber(value) === null
+      ) {
+        return null;
+      }
+
+      return {
+        ...kpi,
+        value,
+      };
+    })
+    .filter(Boolean);
+
+  if (visibleKpis.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {visibleKpis.map((kpi) => (
+        <div
+          key={String(kpi.key)}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                {kpi.label}
+              </p>
+              <p className="mt-0.5 truncate text-lg font-bold text-slate-900">
+                {formatCell(kpi.value, kpi)}
+              </p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const RequiredParamPrompt = ({ report }) => {
+  return (
+    <div className="flex min-h-[420px] flex-col items-center justify-center px-6 py-12 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+        <FileSearch className="h-6 w-6" />
+      </div>
+      <h3 className="mt-4 text-base font-semibold text-slate-900">
+        {report.requiredPromptTitle ?? "Select a required filter"}
+      </h3>
+      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+        {report.requiredPrompt ?? "Choose the required filter to run this report."}
+      </p>
+    </div>
+  );
+};
+
 const DynamicIcon = ({ className, name }) => {
   return createElement(getIconComponent(name), { className });
 };
@@ -84,14 +192,23 @@ const ReportView = ({ report }) => {
   );
   const exporting = useSelector((state) => state.reports.exporting[report.id]);
   const data = reportState?.data ?? null;
-  const rows = toRows(data);
   const group = getReportGroup(report.group);
   const params = useMemo(
     () => buildReportParams(report, filters),
     [filters, report],
   );
+  const requiredParamValue = getRequiredParamValue(params, report.requiresParam);
+  const isMissingRequiredParam =
+    Boolean(report.requiresParam) && !hasRequiredParamValue(requiredParamValue);
+  const rows = isMissingRequiredParam ? [] : toRows(data);
 
   useEffect(() => {
+    if (isMissingRequiredParam) {
+      requestRef.current?.abort?.();
+      requestRef.current = null;
+      return undefined;
+    }
+
     const timeoutId = window.setTimeout(() => {
       requestRef.current?.abort?.();
 
@@ -115,7 +232,7 @@ const ReportView = ({ report }) => {
       requestRef.current?.abort?.();
       requestRef.current = null;
     };
-  }, [dispatch, params, report.id]);
+  }, [dispatch, isMissingRequiredParam, params, report.id]);
 
   const updateFilters = (patch) => {
     const next = { ...filters, ...patch };
@@ -132,6 +249,10 @@ const ReportView = ({ report }) => {
   };
 
   const handleRetry = () => {
+    if (isMissingRequiredParam) {
+      return;
+    }
+
     requestRef.current?.abort?.();
     requestRef.current = dispatch(
       runReportThunk({
@@ -159,8 +280,17 @@ const ReportView = ({ report }) => {
     dispatch(setReportExporting({ reportId: report.id, value: false }));
   };
 
-  const isLoading = reportState?.loading || reportState?.status === "loading";
+  const isLoading =
+    !isMissingRequiredParam &&
+    (reportState?.loading || reportState?.status === "loading");
   const error = reportState?.error;
+  const generatedAtText = formatGeneratedAt(reportState?.generatedAtUtc);
+  const headerDescription = generatedAtText && !isMissingRequiredParam
+    ? `${report.description} Generated ${generatedAtText}.`
+    : report.description;
+  const headerTitle = isMissingRequiredParam
+    ? report.title
+    : reportState?.reportTitle ?? report.title;
 
   return (
     <section className="min-w-0 space-y-5">
@@ -171,14 +301,14 @@ const ReportView = ({ report }) => {
             Reports / {group?.label ?? report.group} / {report.title}
           </>
         }
-        title={report.title}
-        description={report.description}
+        title={headerTitle}
+        description={headerDescription}
         actions={
           <>
             <AppButton
               variant="secondary"
               className="h-10"
-              disabled={isLoading}
+              disabled={isLoading || isMissingRequiredParam}
               onClick={handleRetry}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -207,6 +337,11 @@ const ReportView = ({ report }) => {
         onClear={handleClear}
       />
 
+      <ReportKpiChips
+        kpis={report.summaryKpis}
+        summary={isMissingRequiredParam ? null : reportState?.summary}
+      />
+
       {report.kind === "summary" ? (
         <ReportSummary
           data={data}
@@ -217,22 +352,26 @@ const ReportView = ({ report }) => {
         />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <ReportTable
-            error={error}
-            filters={filters}
-            isLoading={isLoading}
-            meta={reportState?.pagination ?? reportState?.meta}
-            report={report}
-            rows={rows}
-            onPageChange={(PageNumber) => updateFilters({ PageNumber })}
-            onPageSizeChange={(PageSize) =>
-              updateFilters({ PageNumber: 1, PageSize })
-            }
-            onRetry={handleRetry}
-            onSortChange={(sortPatch) =>
-              updateFilters({ ...sortPatch, PageNumber: 1 })
-            }
-          />
+          {isMissingRequiredParam ? (
+            <RequiredParamPrompt report={report} />
+          ) : (
+            <ReportTable
+              error={error}
+              filters={filters}
+              isLoading={isLoading}
+              meta={reportState?.pagination ?? reportState?.meta}
+              report={report}
+              rows={rows}
+              onPageChange={(PageNumber) => updateFilters({ PageNumber })}
+              onPageSizeChange={(PageSize) =>
+                updateFilters({ PageNumber: 1, PageSize })
+              }
+              onRetry={handleRetry}
+              onSortChange={(sortPatch) =>
+                updateFilters({ ...sortPatch, PageNumber: 1 })
+              }
+            />
+          )}
         </div>
       )}
     </section>

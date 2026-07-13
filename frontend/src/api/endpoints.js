@@ -205,6 +205,22 @@ export const ENDPOINTS = {
   HR_PAYROLL_PAYSLIP: (employeeId) =>
     `/api/hr/payroll/payslip/${employeeId}`,
 
+  DASHBOARD_OVERVIEW: "/api/v1/dashboard/overview",
+
+  DASHBOARD_SALES_PURCHASE_TREND:
+    "/api/v1/dashboard/sales-purchase-trend",
+
+  DASHBOARD_REVENUE_EXPENSE_TREND:
+    "/api/v1/dashboard/revenue-expense-trend",
+
+  DASHBOARD_TOP_SELLING_ITEMS: "/api/v1/dashboard/top-selling-items",
+
+  DASHBOARD_TOP_PARTIES: "/api/v1/dashboard/top-parties",
+
+  DASHBOARD_ALERTS: "/api/v1/dashboard/alerts",
+
+  DASHBOARD_HR_SUMMARY: "/api/v1/dashboard/hr-summary",
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",
@@ -285,9 +301,15 @@ export const REPORTS = {
     taxSummary: "/api/v1/reports/purchase/tax-summary",
   },
   inventory: {
+    deadStock: "/api/v1/reports/inventory/dead-stock",
+    fastMovingItems: "/api/v1/reports/inventory/fast-moving-items",
+    itemLedger: (itemId) => `/api/v1/reports/inventory/items/${itemId}/ledger`,
     itemMovement: "/api/v1/reports/inventory/item-movement",
     lowStock: "/api/v1/reports/inventory/low-stock",
+    negativeStock: "/api/v1/reports/inventory/negative-stock",
+    slowMovingItems: "/api/v1/reports/inventory/slow-moving-items",
     stockLedger: "/api/v1/reports/inventory/stock-ledger",
+    stockMovements: "/api/v1/reports/inventory/stock-movements",
     stockSummary: "/api/v1/reports/inventory/stock-summary",
     stockValuation: "/api/v1/reports/inventory/stock-valuation",
   },

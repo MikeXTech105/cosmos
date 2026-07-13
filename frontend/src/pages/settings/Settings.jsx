@@ -1,11 +1,14 @@
 import {
+  Bell,
   Check,
   FileText,
+  Languages,
   MonitorCog,
   Moon,
   Palette,
-  Sparkles,
+  ShieldCheck,
   Sun,
+  SwatchBook,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -13,145 +16,155 @@ import PageHeader from "../../components/common/PageHeader";
 import { APP_THEMES } from "../../config/sidebarThemes";
 import useAuthTheme from "../../hooks/useAuthTheme";
 import useSidebarTheme from "../../hooks/useSidebarTheme";
+import { AUTH_THEME } from "../../utils/authTheme";
 import { invoiceTemplates } from "../sales/invoiceTemplates/templateRegistry";
 import {
   getStoredInvoiceTemplate,
   setStoredInvoiceTemplate,
 } from "../sales/invoiceTemplates/templateStorage";
-import { AUTH_THEME } from "../../utils/authTheme";
 
 const AUTH_THEME_OPTIONS = [
   {
+    activeIconClassName: "text-amber-500",
     icon: Sun,
     label: "Light",
     value: AUTH_THEME.LIGHT,
   },
   {
+    activeIconClassName: "text-indigo-500",
     icon: Moon,
     label: "Dark",
     value: AUTH_THEME.DARK,
   },
 ];
 
-const CardHeader = ({ badge, description, icon: Icon, title }) => {
-  return (
-    <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-dark text-white shadow-sm">
-          <Icon className="h-5 w-5" />
-        </div>
+const SETTINGS_SECTIONS = [
+  {
+    description: "Login and app-wide visual preferences.",
+    icon: Palette,
+    id: "appearance",
+    label: "Appearance",
+  },
+  {
+    description: "Notification preferences are coming soon.",
+    icon: Bell,
+    id: "notifications",
+    label: "Notifications",
+  },
+  {
+    description: "Language preferences are coming soon.",
+    icon: Languages,
+    id: "language",
+    label: "Language",
+  },
+  {
+    description: "Security preferences are coming soon.",
+    icon: ShieldCheck,
+    id: "security",
+    label: "Security",
+  },
+  {
+    description: "Defaults for generated business documents.",
+    icon: FileText,
+    id: "documents",
+    label: "Documents",
+  },
+];
 
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
+const SettingsNav = ({ activeSectionId, onSelect }) => {
+  return (
+    <nav aria-label="Settings sections" className="min-w-0">
+      <div className="-mx-1 overflow-x-auto px-1 pb-1 lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0">
+        <div className="flex min-w-max gap-2 lg:min-w-0 lg:flex-col">
+          {SETTINGS_SECTIONS.map((section) => {
+            const Icon = section.icon;
+            const isActive = section.id === activeSectionId;
+
+            return (
+              <button
+                key={section.id}
+                type="button"
+                aria-current={isActive ? "page" : undefined}
+                className={[
+                  "flex items-center gap-2.5 whitespace-nowrap rounded-xl border px-3 py-2.5 text-left text-sm transition-colors lg:w-full",
+                  isActive
+                    ? "border-slate-200 bg-white font-semibold text-brand shadow-sm"
+                    : "border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700",
+                ].join(" ")}
+                onClick={() => onSelect(section.id)}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{section.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
-
-      {badge}
-    </div>
+    </nav>
   );
 };
 
-const LoginPreview = ({ mode }) => {
-  const isDark = mode === AUTH_THEME.DARK;
+const HeaderIdentity = ({ description, icon: Icon, title, variant = "brand" }) => {
+  const iconClassName =
+    variant === "indigo"
+      ? "bg-gradient-to-br from-indigo-50 via-white to-indigo-100 text-indigo-600 ring-indigo-100"
+      : "bg-gradient-to-br from-brand-light via-white to-brand-mid/30 text-brand ring-brand/10";
 
   return (
-    <div
-      className={[
-        "grid h-36 overflow-hidden rounded-xl border p-2",
-        isDark
-          ? "border-slate-800 bg-slate-950"
-          : "border-slate-200 bg-slate-100",
-      ].join(" ")}
-    >
-      <div className="grid grid-cols-[0.85fr_1fr] overflow-hidden rounded-lg shadow-sm">
-        <div
-          className={[
-            "flex flex-col justify-between p-3",
-            isDark ? "bg-slate-900" : "bg-brand",
-          ].join(" ")}
-        >
-          <div>
-            <div className="h-7 w-7 rounded-lg bg-white/95" />
-            <div className="mt-4 h-2 w-16 rounded-full bg-white/80" />
-            <div className="mt-2 h-2 w-11 rounded-full bg-white/45" />
-          </div>
-          <div className="h-8 rounded-lg bg-white/10" />
-        </div>
-
-        <div
-          className={[
-            "flex flex-col justify-center gap-2 border-l p-3",
-            isDark
-              ? "border-slate-800 bg-slate-900"
-              : "border-slate-200 bg-white",
-          ].join(" ")}
-        >
-          <div
-            className={[
-              "h-2 w-20 rounded-full",
-              isDark ? "bg-slate-600" : "bg-slate-300",
-            ].join(" ")}
-          />
-          <div
-            className={[
-              "h-7 rounded-lg",
-              isDark ? "bg-slate-800" : "bg-slate-100",
-            ].join(" ")}
-          />
-          <div
-            className={[
-              "h-7 rounded-lg",
-              isDark ? "bg-slate-800" : "bg-slate-100",
-            ].join(" ")}
-          />
-          <div className="mt-1 h-7 rounded-lg bg-brand" />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const LoginThemeOption = ({ isSelected, onSelect, option }) => {
-  const Icon = option.icon;
-
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={isSelected}
-      className={[
-        "overflow-hidden rounded-2xl border-2 bg-white text-left shadow-sm transition-all",
-        isSelected
-          ? "border-brand shadow-md shadow-brand/10"
-          : "border-slate-200 hover:border-slate-300 hover:shadow-md",
-      ].join(" ")}
-      onClick={() => onSelect(option.value)}
-    >
-      <div className="p-3">
-        <LoginPreview mode={option.value} />
-      </div>
-
+    <div className="flex min-w-0 items-start gap-3">
       <div
         className={[
-          "flex items-center justify-between gap-3 border-t px-4 py-3",
-          isSelected
-            ? "border-brand/10 bg-brand-light text-brand"
-            : "border-slate-100 bg-slate-50 text-slate-700",
+          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ring-1 ring-inset",
+          iconClassName,
         ].join(" ")}
       >
-        <span className="flex items-center gap-2 text-sm font-semibold">
-          <Icon className="h-4 w-4" />
-          {option.label}
-        </span>
-
-        {isSelected && (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">
-            <Check className="h-3.5 w-3.5" />
-          </span>
-        )}
+        <Icon className="h-5 w-5" />
       </div>
-    </button>
+
+      <div className="min-w-0">
+        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+        <p className="mt-0.5 text-sm leading-5 text-slate-500">{description}</p>
+      </div>
+    </div>
+  );
+};
+
+const LoginThemeToggle = ({ authTheme, onSelect }) => {
+  return (
+    <div
+      className="inline-flex shrink-0 gap-0.5 rounded-xl bg-slate-100 p-0.5"
+      role="radiogroup"
+      aria-label="Login screen theme"
+    >
+      {AUTH_THEME_OPTIONS.map((option) => {
+        const Icon = option.icon;
+        const isSelected = authTheme === option.value;
+
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            className={[
+              "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm transition-all",
+              isSelected
+                ? "bg-white font-semibold text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700",
+            ].join(" ")}
+            onClick={() => onSelect(option.value)}
+          >
+            <Icon
+              className={[
+                "h-4 w-4",
+                isSelected ? option.activeIconClassName : "text-slate-400",
+              ].join(" ")}
+            />
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
   );
 };
 
@@ -161,74 +174,157 @@ const ThemeSwatch = ({ isSelected, onSelect, theme }) => {
       type="button"
       role="radio"
       aria-checked={isSelected}
+      aria-label={`Use ${theme.name} accent theme`}
       className={[
-        "group relative overflow-hidden rounded-xl border-2 bg-white text-left transition-all",
+        "group relative overflow-hidden rounded-xl border-2 bg-white text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/25 focus-visible:ring-offset-2",
         isSelected
-          ? `${theme.preview.border} ${theme.preview.shadow} shadow-lg`
-          : "border-slate-200 hover:border-slate-300 hover:shadow-sm",
+          ? `${theme.preview.border} ${theme.preview.shadow} -translate-y-px shadow-lg`
+          : "border-slate-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-sm",
       ].join(" ")}
       onClick={() => onSelect(theme.id)}
     >
       {isSelected && (
         <span
           className={[
-            "absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-white shadow-sm",
+            "absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full text-white shadow-sm ring-2 ring-white",
             theme.preview.accent,
           ].join(" ")}
+          aria-hidden="true"
         >
-          <Check className="h-3.5 w-3.5" />
+          <Check className="h-3 w-3" strokeWidth={3} />
         </span>
       )}
 
-      <div className="p-2.5">
-        <div className="grid h-28 grid-cols-[34px_1fr] overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="p-1.5 pb-0">
+        <div className="grid h-20 grid-cols-[32%_1fr] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-inner">
           <div
             className={[
-              "flex flex-col gap-2 p-2",
+              "flex flex-col p-1.5",
               theme.preview.root,
             ].join(" ")}
           >
-            <span className={["h-4 w-4 rounded-md", theme.preview.accent].join(" ")} />
-            <span className={["h-2.5 rounded-full", theme.preview.sidebarText].join(" ")} />
-            <span className={["h-2.5 w-4 rounded-full", theme.preview.sidebarText].join(" ")} />
+            <span
+              className={[
+                "h-1 w-full rounded-full",
+                theme.preview.accent,
+              ].join(" ")}
+            />
+            <span
+              className={[
+                "mt-2 h-2 w-2 rounded-sm",
+                theme.preview.accent,
+              ].join(" ")}
+            />
+            <div className="mt-auto space-y-1">
+              <span
+                className={[
+                  "block h-1 w-full rounded-full",
+                  theme.preview.sidebarText,
+                ].join(" ")}
+              />
+              <span
+                className={[
+                  "block h-1 w-3/4 rounded-full opacity-75",
+                  theme.preview.sidebarText,
+                ].join(" ")}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col justify-between bg-slate-50 p-3">
-            <div className="space-y-2">
-              <span className="block h-2.5 w-20 rounded-full bg-slate-300" />
-              <span className={["block h-2 w-28 rounded-full", theme.preview.line].join(" ")} />
-              <span className={["block h-2 w-20 rounded-full", theme.preview.muted].join(" ")} />
-            </div>
-
-            <div className="flex items-end justify-between gap-3">
-              <span className={["h-7 w-16 rounded-lg", theme.preview.accentLight].join(" ")} />
-              <span className={["h-7 w-12 rounded-lg", theme.preview.button].join(" ")} />
+          <div className="flex flex-col bg-slate-50 p-2">
+            <span className="block h-1.5 w-3/4 rounded-full bg-slate-300" />
+            <span className="mt-1.5 block h-1 w-full rounded-full bg-slate-200" />
+            <span className="mt-1 block h-1 w-2/3 rounded-full bg-slate-200" />
+            <div className="mt-auto flex items-center justify-between gap-1.5">
+              <span
+                className={[
+                  "h-3.5 flex-1 rounded",
+                  theme.preview.accentLight,
+                ].join(" ")}
+              />
+              <span
+                className={[
+                  "h-3.5 w-7 rounded",
+                  theme.preview.button,
+                ].join(" ")}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-3.5 py-3">
-        <span className="flex min-w-0 items-center gap-2">
-          <span
-            className={[
-              "h-3 w-3 shrink-0 rounded-full",
-              theme.preview.accent,
-            ].join(" ")}
-          />
-          <span className="truncate text-sm font-semibold text-slate-900">
-            {theme.name}
-          </span>
-        </span>
-
+      <div className="flex min-w-0 items-center gap-1.5 px-2.5 py-2">
         <span
           className={[
-            "h-1.5 w-8 shrink-0 rounded-full opacity-80 transition-opacity group-hover:opacity-100",
+            "h-2 w-2 shrink-0 rounded-full",
             theme.preview.accent,
           ].join(" ")}
         />
+        <span className="truncate text-xs font-medium text-slate-700">
+          {theme.name}
+        </span>
       </div>
     </button>
+  );
+};
+
+const AppearancePanel = ({ authTheme, onAuthThemeSelect, sidebarTheme, sidebarThemeId, onSidebarThemeSelect }) => {
+  return (
+    <div className="flex flex-col gap-4">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <HeaderIdentity
+            icon={MonitorCog}
+            title="Login Screen"
+            description="Theme for the public sign-in page."
+            variant="indigo"
+          />
+          <LoginThemeToggle authTheme={authTheme} onSelect={onAuthThemeSelect} />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <HeaderIdentity
+            icon={SwatchBook}
+            title="Accent Theme"
+            description="Applies live to the sidebar and all accent surfaces."
+          />
+
+          <span
+            className={[
+              "inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-inset ring-brand/10",
+              sidebarTheme.preview.accentLight,
+              sidebarTheme.accent.textClassName,
+            ].join(" ")}
+            aria-live="polite"
+          >
+            <span
+              className={[
+                "h-2 w-2 rounded-full",
+                sidebarTheme.preview.accent,
+              ].join(" ")}
+            />
+            {sidebarTheme.name}
+          </span>
+        </div>
+
+        <div
+          className="grid grid-cols-3 gap-3 p-5 sm:grid-cols-4 lg:grid-cols-6"
+          role="radiogroup"
+          aria-label="Accent theme"
+        >
+          {APP_THEMES.map((theme) => (
+            <ThemeSwatch
+              key={theme.id}
+              theme={theme}
+              isSelected={sidebarThemeId === theme.id}
+              onSelect={onSidebarThemeSelect}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
   );
 };
 
@@ -299,12 +395,75 @@ const InvoiceTemplateOption = ({ isSelected, onSelect, template }) => {
   );
 };
 
+const DocumentsPanel = ({ invoiceTemplateId, onSelect }) => {
+  const selectedTemplate = invoiceTemplates.find((template) => {
+    return template.id === invoiceTemplateId;
+  });
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <HeaderIdentity
+          icon={FileText}
+          title="Invoice Template"
+          description="Sets the default template for sale invoice preview and PDF downloads."
+        />
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
+          <Check className="h-3.5 w-3.5" />
+          {selectedTemplate?.name ?? "Classic"}
+        </span>
+      </div>
+
+      <div
+        className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-5"
+        role="radiogroup"
+        aria-label="Default invoice template"
+      >
+        {invoiceTemplates.map((template) => (
+          <InvoiceTemplateOption
+            key={template.id}
+            template={template}
+            isSelected={invoiceTemplateId === template.id}
+            onSelect={onSelect}
+          />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const ComingSoonPanel = ({ section }) => {
+  const Icon = section.icon;
+
+  return (
+    <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-light via-white to-brand-mid/30 text-brand shadow-sm ring-1 ring-inset ring-brand/10">
+        <Icon className="h-5 w-5" />
+      </div>
+      <h2 className="mt-4 text-base font-semibold text-slate-900">
+        {section.label}
+      </h2>
+      <p className="mt-1 max-w-sm text-sm leading-6 text-slate-500">
+        {section.description}
+      </p>
+      <span className="mt-4 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        Coming soon
+      </span>
+    </section>
+  );
+};
+
 const Settings = () => {
   const { authTheme, setAuthTheme } = useAuthTheme();
   const { setSidebarTheme, sidebarTheme, sidebarThemeId } = useSidebarTheme();
+  const [activeSectionId, setActiveSectionId] = useState("appearance");
   const [invoiceTemplateId, setInvoiceTemplateId] = useState(
     getStoredInvoiceTemplate,
   );
+
+  const activeSection =
+    SETTINGS_SECTIONS.find((section) => section.id === activeSectionId) ??
+    SETTINGS_SECTIONS[0];
 
   const selectInvoiceTemplate = (templateId) => {
     setInvoiceTemplateId(templateId);
@@ -318,94 +477,36 @@ const Settings = () => {
         description="Manage client-side preferences for your COSMOS ERP experience."
       />
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader
-          icon={MonitorCog}
-          title="Login Screen"
-          description="Controls only the public authentication screens."
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[200px_1fr]">
+        <SettingsNav
+          activeSectionId={activeSection.id}
+          onSelect={setActiveSectionId}
         />
 
-        <div
-          className="grid gap-4 p-5 sm:grid-cols-2"
-          role="radiogroup"
-          aria-label="Login screen theme"
-        >
-          {AUTH_THEME_OPTIONS.map((option) => (
-            <LoginThemeOption
-              key={option.value}
-              option={option}
-              isSelected={authTheme === option.value}
-              onSelect={setAuthTheme}
+        <div className="min-w-0">
+          {activeSection.id === "appearance" && (
+            <AppearancePanel
+              authTheme={authTheme}
+              onAuthThemeSelect={setAuthTheme}
+              sidebarTheme={sidebarTheme}
+              sidebarThemeId={sidebarThemeId}
+              onSidebarThemeSelect={setSidebarTheme}
             />
-          ))}
-        </div>
-      </section>
+          )}
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader
-          icon={Palette}
-          title="Accent Theme"
-          description="Applies live to the sidebar and all app accent surfaces."
-          badge={
-            <span
-              className={[
-                "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold",
-                sidebarTheme.preview.accentLight,
-                sidebarTheme.accent.textClassName,
-              ].join(" ")}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              {sidebarTheme.name}
-            </span>
-          }
-        />
-
-        <div
-          className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4"
-          role="radiogroup"
-          aria-label="Accent theme"
-        >
-          {APP_THEMES.map((theme) => (
-            <ThemeSwatch
-              key={theme.id}
-              theme={theme}
-              isSelected={sidebarThemeId === theme.id}
-              onSelect={setSidebarTheme}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <CardHeader
-          icon={FileText}
-          title="Invoice Template"
-          description="Sets the default template for sale invoice preview and PDF downloads."
-          badge={
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1.5 text-xs font-semibold text-brand">
-              <Check className="h-3.5 w-3.5" />
-              {invoiceTemplates.find((template) => {
-                return template.id === invoiceTemplateId;
-              })?.name ?? "Classic"}
-            </span>
-          }
-        />
-
-        <div
-          className="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-5"
-          role="radiogroup"
-          aria-label="Default invoice template"
-        >
-          {invoiceTemplates.map((template) => (
-            <InvoiceTemplateOption
-              key={template.id}
-              template={template}
-              isSelected={invoiceTemplateId === template.id}
+          {activeSection.id === "documents" && (
+            <DocumentsPanel
+              invoiceTemplateId={invoiceTemplateId}
               onSelect={selectInvoiceTemplate}
             />
-          ))}
+          )}
+
+          {activeSection.id !== "appearance" &&
+            activeSection.id !== "documents" && (
+              <ComingSoonPanel section={activeSection} />
+            )}
         </div>
-      </section>
+      </div>
     </div>
   );
 };

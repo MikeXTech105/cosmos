@@ -11,16 +11,21 @@ const DEFAULT_META = {
 };
 
 const initialReportState = {
+  appliedFilters: null,
   correlationId: null,
   data: null,
   error: null,
   filters: {},
+  generatedAtUtc: null,
   lastRunAt: null,
   loading: false,
   meta: { ...DEFAULT_META },
   pagination: { ...DEFAULT_META },
   requestId: null,
+  reportTitle: null,
+  summary: null,
   status: "idle",
+  valuationMethod: null,
 };
 
 const initialState = {
@@ -40,8 +45,8 @@ const getReportState = (state, reportId) => {
   return state.byReport[reportId];
 };
 
-const normalizeMeta = (payload, data) => {
-  const source = payload?.meta ?? data ?? {};
+const normalizeMeta = (payload, data, rowContainer) => {
+  const source = payload?.meta ?? rowContainer ?? data ?? {};
   const totalCount =
     Number(source.totalCount ?? source.totalRecords ?? source.count) ||
     DEFAULT_META.totalCount;
@@ -58,15 +63,42 @@ const normalizeMeta = (payload, data) => {
   };
 };
 
-const normalizeReportResult = (payload) => {
-  const data = payload?.data;
-  const isPaged = data && typeof data === "object" && Array.isArray(data.items);
-  const rows = isPaged ? data.items : data;
+const getRowsFromData = (data) => {
+  const rowContainer = data?.rows ?? data;
+
+  if (Array.isArray(rowContainer)) {
+    return {
+      rowContainer,
+      rows: rowContainer,
+    };
+  }
+
+  if (Array.isArray(rowContainer?.items)) {
+    return {
+      rowContainer,
+      rows: rowContainer.items,
+    };
+  }
 
   return {
+    rowContainer,
+    rows: rowContainer,
+  };
+};
+
+const normalizeReportResult = (payload) => {
+  const data = payload?.data;
+  const { rowContainer, rows } = getRowsFromData(data);
+
+  return {
+    appliedFilters: data?.appliedFilters ?? null,
     correlationId: payload?.correlationId ?? null,
     data: rows,
-    meta: normalizeMeta(payload, data),
+    generatedAtUtc: data?.generatedAtUtc ?? null,
+    meta: normalizeMeta(payload, data, rowContainer),
+    reportTitle: data?.reportTitle ?? null,
+    summary: data?.summary ?? null,
+    valuationMethod: data?.valuationMethod ?? null,
   };
 };
 
@@ -144,15 +176,20 @@ const reportsSlice = createSlice({
         }
 
         reportState.correlationId = action.payload.correlationId;
+        reportState.appliedFilters = action.payload.appliedFilters;
         reportState.data = action.payload.data;
         reportState.error = null;
         reportState.filters = action.payload.filters;
+        reportState.generatedAtUtc = action.payload.generatedAtUtc;
         reportState.lastRunAt = new Date().toISOString();
         reportState.loading = false;
         reportState.meta = action.payload.meta;
         reportState.pagination = action.payload.meta;
         reportState.requestId = null;
+        reportState.reportTitle = action.payload.reportTitle;
+        reportState.summary = action.payload.summary;
         reportState.status = "succeeded";
+        reportState.valuationMethod = action.payload.valuationMethod;
       })
       .addCase(runReportThunk.rejected, (state, action) => {
         const reportId = action.payload?.reportId ?? action.meta.arg.reportId;

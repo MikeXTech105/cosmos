@@ -45,6 +45,27 @@ export const REPORT_PERMISSION_PAGES = [
     pageName: "ReportsInventoryStockValuation",
     route: "/reports/inventory/stock-valuation",
   },
+  {
+    pageName: "ReportsInventoryNegativeStock",
+    route: "/reports/inventory/negative-stock",
+  },
+  {
+    pageName: "ReportsInventoryStockMovements",
+    route: "/reports/inventory/stock-movements",
+  },
+  {
+    pageName: "ReportsInventoryItemLedger",
+    route: "/reports/inventory/item-ledger",
+  },
+  { pageName: "ReportsInventoryDeadStock", route: "/reports/inventory/dead-stock" },
+  {
+    pageName: "ReportsInventoryFastMovingItems",
+    route: "/reports/inventory/fast-moving-items",
+  },
+  {
+    pageName: "ReportsInventorySlowMovingItems",
+    route: "/reports/inventory/slow-moving-items",
+  },
   { pageName: "ReportsPartyLedger", route: "/reports/party/ledger" },
   {
     pageName: "ReportsPartyCustomerStatement",

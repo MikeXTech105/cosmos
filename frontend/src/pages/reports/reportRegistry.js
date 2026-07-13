@@ -9,9 +9,15 @@ import {
   monthlyExpenseColumns,
 } from "./columns/expenseColumns";
 import {
+  deadStockColumns,
+  fastMovingItemsColumns,
+  itemLedgerColumns,
   itemMovementColumns,
   lowStockColumns,
+  negativeStockColumns,
+  slowMovingItemsColumns,
   stockLedgerColumns,
+  stockMovementsColumns,
   stockSummaryColumns,
   stockValuationColumns,
 } from "./columns/inventoryColumns";
@@ -84,10 +90,25 @@ const party = (label, param = "PartyId") => ({
   param,
 });
 const item = "item";
+const itemLedgerItem = {
+  key: "item",
+  param: "itemId",
+  required: true,
+};
 const category = (source = "inventory") => ({
   key: "category",
   source,
 });
+const unit = "unit";
+const movementType = "movementType";
+const sourceType = "sourceType";
+const stockStatus = "stockStatus";
+const asOfDate = "asOfDate";
+const inactiveDays = "inactiveDays";
+const minimumStockValue = "minimumStockValue";
+const minimumTransactions = "minimumTransactions";
+const top = "top";
+const includeInactive = "includeInactive";
 const status = (statusType) => ({
   key: "status",
   statusType,
@@ -119,6 +140,43 @@ const expenseKpis = [
   { format: "currency", key: "expenseAmount", label: "Expense Amount" },
   { format: "currency", key: "taxAmount", label: "Tax" },
   { format: "currency", key: "totalAmount", label: "Total" },
+];
+
+const stockExceptionKpis = [
+  { format: "number", key: "itemCount", label: "Items" },
+  { format: "qty", key: "totalCurrentStock", label: "Current Stock" },
+  { format: "qty", key: "totalAvailableStock", label: "Available Stock" },
+  { format: "qty", key: "totalShortageQuantity", label: "Shortage" },
+  { format: "currency", key: "estimatedValueImpact", label: "Value Impact" },
+];
+
+const stockMovementKpis = [
+  { format: "qty", key: "totalInward", label: "Total Inward" },
+  { format: "qty", key: "totalOutward", label: "Total Outward" },
+  { format: "qty", key: "netMovement", label: "Net Movement" },
+  { format: "number", key: "numberOfTransactions", label: "Transactions" },
+];
+
+const itemLedgerKpis = [
+  { format: "qty", key: "openingBalance", label: "Opening Balance" },
+  { format: "qty", key: "totalInward", label: "Total Inward" },
+  { format: "qty", key: "totalOutward", label: "Total Outward" },
+  { format: "qty", key: "closingBalance", label: "Closing Balance" },
+  { format: "qty", key: "currentStock", label: "Current Stock" },
+  { format: "qty", key: "availableStock", label: "Available Stock" },
+];
+
+const deadStockKpis = [
+  { format: "number", key: "itemCount", label: "Items" },
+  { format: "qty", key: "totalQuantity", label: "Total Quantity" },
+  { format: "currency", key: "totalStockValue", label: "Stock Value" },
+];
+
+const movingItemsKpis = [
+  { format: "number", key: "itemCount", label: "Items" },
+  { format: "qty", key: "totalSoldQuantity", label: "Sold Quantity" },
+  { format: "number", key: "totalSalesTransactions", label: "Transactions" },
+  { format: "currency", key: "totalSalesValue", label: "Sales Value" },
 ];
 
 export const reportRegistry = [
@@ -423,6 +481,164 @@ export const reportRegistry = [
     route: "/reports/inventory/stock-valuation",
     slug: "stock-valuation",
     title: "Stock Valuation",
+  },
+  {
+    columns: negativeStockColumns,
+    defaultSort: { by: "itemName", dir: "asc" },
+    description: "Items whose current stock has fallen below zero.",
+    exportable: true,
+    fetcher: inventoryReportsService.getNegativeStock,
+    filters: [dateRange, search, category(), unit, includeInactive],
+    group: "inventory",
+    icon: "alertTriangle",
+    id: "inventory-negative-stock",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventoryNegativeStock",
+    route: "/reports/inventory/negative-stock",
+    slug: "negative-stock",
+    summaryKpis: stockExceptionKpis,
+    title: "Negative Stock",
+  },
+  {
+    columns: stockMovementsColumns,
+    defaultSort: { by: "movementDate", dir: "desc" },
+    description: "Every inward and outward stock transaction.",
+    exportable: true,
+    fetcher: inventoryReportsService.getStockMovements,
+    filters: [
+      dateRange,
+      search,
+      movementType,
+      sourceType,
+      party("Party"),
+      asOfDate,
+      item,
+      category(),
+      unit,
+      stockStatus,
+      includeInactive,
+    ],
+    group: "inventory",
+    icon: "stock",
+    id: "inventory-stock-movements",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventoryStockMovements",
+    route: "/reports/inventory/stock-movements",
+    slug: "stock-movements",
+    summaryKpis: stockMovementKpis,
+    title: "Stock Movements",
+  },
+  {
+    columns: itemLedgerColumns,
+    defaultSort: { by: "movementDate", dir: "desc" },
+    description: "Running stock ledger for a single item.",
+    exportable: true,
+    fetcher: (params, options) =>
+      inventoryReportsService.getItemLedger(params.itemId, params, options),
+    filters: [
+      dateRange,
+      search,
+      itemLedgerItem,
+      movementType,
+      sourceType,
+      party("Party"),
+      asOfDate,
+      category(),
+      unit,
+      stockStatus,
+      includeInactive,
+    ],
+    group: "inventory",
+    icon: "chartBar",
+    id: "inventory-item-ledger",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventoryItemLedger",
+    requiresParam: "itemId",
+    requiredPrompt: "Select an item to view its ledger.",
+    requiredPromptTitle: "Select an item",
+    route: "/reports/inventory/item-ledger",
+    slug: "item-ledger",
+    summaryKpis: itemLedgerKpis,
+    title: "Item Ledger",
+  },
+  {
+    columns: deadStockColumns,
+    defaultSort: { by: "daysSinceLastSale", dir: "desc" },
+    description: "Items with no movement for a given number of days.",
+    exportable: true,
+    fetcher: inventoryReportsService.getDeadStock,
+    filters: [
+      asOfDate,
+      inactiveDays,
+      category(),
+      item,
+      minimumStockValue,
+      search,
+      includeInactive,
+    ],
+    group: "inventory",
+    icon: "clock",
+    id: "inventory-dead-stock",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventoryDeadStock",
+    route: "/reports/inventory/dead-stock",
+    slug: "dead-stock",
+    summaryKpis: deadStockKpis,
+    title: "Dead Stock",
+  },
+  {
+    columns: fastMovingItemsColumns,
+    defaultSort: { by: "rank", dir: "asc" },
+    description: "Highest transaction-volume items for the period.",
+    exportable: true,
+    fetcher: inventoryReportsService.getFastMovingItems,
+    filters: [
+      dateRange,
+      category(),
+      top,
+      minimumTransactions,
+      search,
+      includeInactive,
+    ],
+    group: "inventory",
+    icon: "activity",
+    id: "inventory-fast-moving-items",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventoryFastMovingItems",
+    route: "/reports/inventory/fast-moving-items",
+    slug: "fast-moving-items",
+    summaryKpis: movingItemsKpis,
+    title: "Fast Moving Items",
+  },
+  {
+    columns: slowMovingItemsColumns,
+    defaultSort: { by: "daysSinceLastSale", dir: "desc" },
+    description: "Lowest transaction-volume items for the period.",
+    exportable: true,
+    fetcher: inventoryReportsService.getSlowMovingItems,
+    filters: [
+      dateRange,
+      category(),
+      top,
+      minimumTransactions,
+      search,
+      includeInactive,
+    ],
+    group: "inventory",
+    icon: "clock",
+    id: "inventory-slow-moving-items",
+    kind: "table",
+    paginated: true,
+    permission: "ReportsInventorySlowMovingItems",
+    route: "/reports/inventory/slow-moving-items",
+    slug: "slow-moving-items",
+    summaryKpis: movingItemsKpis,
+    title: "Slow Moving Items",
   },
   {
     columns: partyLedgerColumns,

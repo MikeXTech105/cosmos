@@ -7,6 +7,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
+import { unitService } from "../../../services/inventory/unitService";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
 import { partyService } from "../../party/partyService";
 import {
@@ -63,6 +64,17 @@ const getCategoryOption = (category) => {
   );
 };
 
+const getUnitOption = (unit) => {
+  return compactOption(
+    unit?.id ?? unit?.unitId,
+    unit?.name ?? unit?.unitName ?? unit?.symbol,
+  );
+};
+
+const trimLeadingZeroes = (value) => {
+  return String(value).replace(/^0+(?=\d)/, "");
+};
+
 const lookupRequestMap = {
   categories: () =>
     categoryService.getCategories({
@@ -88,6 +100,12 @@ const lookupRequestMap = {
       PageNumber: 1,
       PageSize: 200,
     }),
+  units: () =>
+    unitService.getUnits({
+      IsActive: true,
+      PageNumber: 1,
+      PageSize: 200,
+    }),
 };
 
 const getNeededLookups = (report) => {
@@ -100,6 +118,8 @@ const getNeededLookups = (report) => {
       needs.add("parties");
     } else if (config.key === "item") {
       needs.add("items");
+    } else if (config.key === "unit") {
+      needs.add("units");
     } else if (config.key === "category") {
       needs.add(config.source === "expense" ? "expenseCategories" : "categories");
     }
@@ -121,6 +141,7 @@ const ReportFilterBar = ({
     expenseCategories: [],
     items: [],
     parties: [],
+    units: [],
   });
   const [loadingLookups, setLoadingLookups] = useState({});
   const [loadedLookups, setLoadedLookups] = useState({});
@@ -147,7 +168,9 @@ const ReportFilterBar = ({
               ? getPartyOption
               : key === "items"
                 ? getItemOption
-                : getCategoryOption;
+                : key === "units"
+                  ? getUnitOption
+                  : getCategoryOption;
           const options = extractList(response).map(mapper).filter(Boolean);
 
           setLookups((current) => ({ ...current, [key]: options }));
@@ -266,14 +289,51 @@ const ReportFilterBar = ({
     if (config.key === "item") {
       return (
         <AppSelect
-          key="ItemId"
-          value={filters.ItemId ?? "all"}
-          onChange={(value) => onChange({ ItemId: value, PageNumber: 1 })}
-          options={withAll("All items", lookups.items)}
+          key={param}
+          value={filters[param] ?? "all"}
+          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
+          options={withAll(
+            config.required ? "Select an item" : "All items",
+            lookups.items,
+          )}
           placeholder="Item"
           className="min-w-[180px]"
           disabled={disabled || loadingLookups.items}
           aria-label="Filter by item"
+        />
+      );
+    }
+
+    if (config.key === "unit") {
+      return (
+        <AppSelect
+          key="UnitId"
+          value={filters.UnitId ?? "all"}
+          onChange={(value) => onChange({ PageNumber: 1, UnitId: value })}
+          options={withAll("All units", lookups.units)}
+          placeholder="Unit"
+          className="min-w-[160px]"
+          disabled={disabled || loadingLookups.units}
+          aria-label="Filter by unit"
+        />
+      );
+    }
+
+    if (
+      config.key === "movementType" ||
+      config.key === "sourceType" ||
+      config.key === "stockStatus" ||
+      config.key === "top"
+    ) {
+      return (
+        <AppSelect
+          key={param}
+          value={filters[param] ?? "all"}
+          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
+          options={withAll(`All ${definition.label ?? config.key}`, definition.options)}
+          placeholder={definition.label ?? config.key}
+          className="min-w-[160px]"
+          aria-label={`Filter by ${definition.label ?? config.key}`}
         />
       );
     }
@@ -301,6 +361,54 @@ const ReportFilterBar = ({
       );
     }
 
+    if (config.key === "asOfDate") {
+      return (
+        <div key="AsOfDate" className="min-w-[150px]">
+          <AppInput
+            type="date"
+            value={filters.AsOfDate ?? ""}
+            onChange={(event) =>
+              onChange({ AsOfDate: event.target.value, PageNumber: 1 })
+            }
+            className="h-10 px-3"
+            aria-label="As of date"
+          />
+        </div>
+      );
+    }
+
+    if (
+      config.key === "inactiveDays" ||
+      config.key === "minimumStockValue" ||
+      config.key === "minimumTransactions"
+    ) {
+      const labels = {
+        inactiveDays: "Inactive days",
+        minimumStockValue: "Min stock value",
+        minimumTransactions: "Min transactions",
+      };
+
+      return (
+        <div key={param} className="min-w-[150px]">
+          <AppInput
+            type="number"
+            min="0"
+            step={config.key === "minimumStockValue" ? "0.01" : "1"}
+            value={filters[param] ?? ""}
+            onChange={(event) =>
+              onChange({
+                [param]: trimLeadingZeroes(event.target.value),
+                PageNumber: 1,
+              })
+            }
+            placeholder={labels[config.key]}
+            className="h-10 px-3"
+            aria-label={labels[config.key]}
+          />
+        </div>
+      );
+    }
+
     if (config.key === "status") {
       return (
         <AppSelect
@@ -324,6 +432,28 @@ const ReportFilterBar = ({
           className="min-w-[160px]"
           aria-label="Filter by payment status"
         />
+      );
+    }
+
+    if (config.key === "includeInactive") {
+      return (
+        <label
+          key="IncludeInactive"
+          className="flex h-10 min-w-[170px] cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          <span className="truncate">Include inactive</span>
+          <input
+            type="checkbox"
+            checked={Boolean(filters.IncludeInactive)}
+            onChange={(event) =>
+              onChange({
+                IncludeInactive: event.target.checked,
+                PageNumber: 1,
+              })
+            }
+            className="h-4 w-4 rounded border-slate-300 accent-brand"
+          />
+        </label>
       );
     }
 
