@@ -23,6 +23,7 @@ import purchaseReportReducer from "./slices/purchase/purchaseReportSlice";
 import purchaseReturnReducer from "./slices/purchase/purchaseReturnSlice";
 import partyGstReducer from "./slices/party/gstSlice";
 import rbacPageReducer from "./slices/rbac/pageSlice";
+import reportsReducer from "./slices/reports/reportsSlice";
 import salesInvoiceReducer from "./slices/sales/invoiceSlice";
 import sidebarReducer from "./slices/sidebarSlice";
 import supplierPaymentReducer from "./slices/purchase/supplierPaymentSlice";
@@ -54,6 +55,7 @@ export const store = configureStore({
     purchaseReports: purchaseReportReducer,
     purchaseReturns: purchaseReturnReducer,
     rbacPages: rbacPageReducer,
+    reports: reportsReducer,
     salesInvoices: salesInvoiceReducer,
     sidebar: sidebarReducer,
     supplierPayments: supplierPaymentReducer,
