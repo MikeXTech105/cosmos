@@ -249,3 +249,50 @@ export const ENDPOINTS = {
 
   OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
 };
+
+const PARTY_REPORTS = {
+  customerStatement: "/api/v1/reports/parties/customer-statement",
+  ledger: "/api/v1/reports/parties/ledger",
+  payableAging: "/api/v1/reports/parties/payable-aging",
+  receivableAging: "/api/v1/reports/parties/receivable-aging",
+  supplierStatement: "/api/v1/reports/parties/supplier-statement",
+};
+
+const EXPENSE_REPORTS = {
+  byCategory: "/api/v1/reports/expenses/by-category",
+  byParty: "/api/v1/reports/expenses/by-party",
+  monthlySummary: "/api/v1/reports/expenses/monthly-summary",
+  summary: "/api/v1/reports/expenses/summary",
+};
+
+export const REPORTS = {
+  sales: {
+    byItem: "/api/v1/reports/sales/by-item",
+    byParty: "/api/v1/reports/sales/by-party",
+    invoices: "/api/v1/reports/sales/invoices",
+    paymentsIn: "/api/v1/reports/sales/payments-in",
+    receivables: "/api/v1/reports/sales/receivables",
+    summary: "/api/v1/reports/sales/summary",
+    taxSummary: "/api/v1/reports/sales/tax-summary",
+  },
+  purchase: {
+    bills: "/api/v1/reports/purchase/bills",
+    byItem: "/api/v1/reports/purchase/by-item",
+    bySupplier: "/api/v1/reports/purchase/by-supplier",
+    payables: "/api/v1/reports/purchase/payables",
+    paymentsOut: "/api/v1/reports/purchase/payments-out",
+    summary: "/api/v1/reports/purchase/summary",
+    taxSummary: "/api/v1/reports/purchase/tax-summary",
+  },
+  inventory: {
+    itemMovement: "/api/v1/reports/inventory/item-movement",
+    lowStock: "/api/v1/reports/inventory/low-stock",
+    stockLedger: "/api/v1/reports/inventory/stock-ledger",
+    stockSummary: "/api/v1/reports/inventory/stock-summary",
+    stockValuation: "/api/v1/reports/inventory/stock-valuation",
+  },
+  party: PARTY_REPORTS,
+  parties: PARTY_REPORTS,
+  expense: EXPENSE_REPORTS,
+  expenses: EXPENSE_REPORTS,
+};

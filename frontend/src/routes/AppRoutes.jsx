@@ -52,6 +52,10 @@ const ExpenseCategories = lazy(
   () => import("../pages/purchase/expenseCategories/index.js"),
 );
 const PurchaseReports = lazy(() => import("../pages/purchase/reports/index.js"));
+const ReportsHome = lazy(() => import("../pages/reports/index.js"));
+const ReportRoutePage = lazy(
+  () => import("../pages/reports/ReportRoutePage.jsx"),
+);
 const OeeDashboard = lazy(() => import("../pages/oee/dashboard/index.js"));
 const OeeProductionEntries = lazy(
   () => import("../pages/oee/productionEntries/index.js"),
@@ -358,6 +362,22 @@ const AppRoutes = () => {
                 <PurchaseReports />
               </PermissionGuard>
             }
+          />
+          <Route
+            path="/reports"
+            element={
+              <PermissionGuard route="/reports" pageName="Reports">
+                <ReportsHome />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/reports/:group"
+            element={<ReportsHome />}
+          />
+          <Route
+            path="/reports/:group/:reportId"
+            element={<ReportRoutePage />}
           />
           <Route
             path="/oee/dashboard"
