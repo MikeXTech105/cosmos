@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
+import DefaultRouteRedirect from "./DefaultRouteRedirect";
 
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
@@ -67,6 +68,10 @@ const OeeDowntimeReasons = lazy(
 );
 const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
+const AccessDeniedPage = lazy(
+  () => import("../pages/errors/AccessDeniedPage.jsx"),
+);
+const NotFoundPage = lazy(() => import("../pages/errors/NotFoundPage.jsx"));
 
 const RouteFallback = () => {
   return (
@@ -80,7 +85,14 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <DefaultRouteRedirect />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           element={
@@ -101,7 +113,14 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              <PermissionGuard route="/dashboard" pageName="Dashboard">
+                <Dashboard />
+              </PermissionGuard>
+            }
+          />
           <Route
             path="/users"
             element={
@@ -442,9 +461,10 @@ const AppRoutes = () => {
             }
           />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/403" element={<AccessDeniedPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
-
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Suspense>
   );

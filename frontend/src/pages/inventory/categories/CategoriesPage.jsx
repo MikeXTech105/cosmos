@@ -97,16 +97,27 @@ const CategoriesPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, category) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       setModal({ entity: category, isLoading: true, isOpen: true, mode });
 
       try {
@@ -126,11 +137,20 @@ const CategoriesPage = () => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [dispatch],
+    [capabilities.canUpdate, capabilities.canView, dispatch],
   );
 
   const submitCategory = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -154,11 +174,19 @@ const CategoriesPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadCategories, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadCategories,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -177,7 +205,12 @@ const CategoriesPage = () => {
       toast.error(getActionError(error, "Unable to delete category."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadCategories]);
+  }, [
+    capabilities.canDelete,
+    confirmation.entity,
+    dispatch,
+    loadCategories,
+  ]);
 
   const filterControls = {
     ...categoriesState.filters,
@@ -208,14 +241,12 @@ const CategoriesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Category
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Category
+              </AppButton>
+            )}
           </>
         }
       />
@@ -254,7 +285,7 @@ const CategoriesPage = () => {
         categories={categoriesState.list}
         error={categoriesState.error}
         isLoading={categoriesState.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(setCategoryPage(value))}
         onPageSizeChange={(value) => dispatch(setCategoryPageSize(value))}
         onRetry={loadCategories}

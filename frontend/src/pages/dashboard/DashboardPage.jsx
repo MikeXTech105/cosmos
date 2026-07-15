@@ -1,5 +1,5 @@
 import { BarChart3 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 
@@ -17,10 +17,19 @@ import DashboardFilters from "./DashboardFilters";
 import AlertsPanel from "./widgets/AlertsPanel";
 import HrSummaryPanel from "./widgets/HrSummaryPanel";
 import OverviewStats from "./widgets/OverviewStats";
-import RevenueExpenseTrendChart from "./widgets/RevenueExpenseTrendChart";
-import SalesPurchaseTrendChart from "./widgets/SalesPurchaseTrendChart";
 import TopParties from "./widgets/TopParties";
 import TopSellingItems from "./widgets/TopSellingItems";
+
+const RevenueExpenseTrendChart = lazy(
+  () => import("./widgets/RevenueExpenseTrendChart"),
+);
+const SalesPurchaseTrendChart = lazy(
+  () => import("./widgets/SalesPurchaseTrendChart"),
+);
+
+const ChartFallback = () => {
+  return <div className="h-[360px] animate-pulse rounded-2xl bg-slate-100" />;
+};
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
@@ -120,18 +129,22 @@ const DashboardPage = () => {
       />
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <SalesPurchaseTrendChart
-          error={dashboard.salesPurchaseTrend.error}
-          isLoading={dashboard.salesPurchaseTrend.loading}
-          rows={dashboard.salesPurchaseTrend.data}
-          onRetry={() => retryWidget("salesPurchaseTrend")}
-        />
-        <RevenueExpenseTrendChart
-          error={dashboard.revenueExpenseTrend.error}
-          isLoading={dashboard.revenueExpenseTrend.loading}
-          rows={dashboard.revenueExpenseTrend.data}
-          onRetry={() => retryWidget("revenueExpenseTrend")}
-        />
+        <Suspense fallback={<ChartFallback />}>
+          <SalesPurchaseTrendChart
+            error={dashboard.salesPurchaseTrend.error}
+            isLoading={dashboard.salesPurchaseTrend.loading}
+            rows={dashboard.salesPurchaseTrend.data}
+            onRetry={() => retryWidget("salesPurchaseTrend")}
+          />
+        </Suspense>
+        <Suspense fallback={<ChartFallback />}>
+          <RevenueExpenseTrendChart
+            error={dashboard.revenueExpenseTrend.error}
+            isLoading={dashboard.revenueExpenseTrend.loading}
+            rows={dashboard.revenueExpenseTrend.data}
+            onRetry={() => retryWidget("revenueExpenseTrend")}
+          />
+        </Suspense>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">

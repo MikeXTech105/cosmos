@@ -11,6 +11,7 @@ import {
   getReportGroup,
   reportRegistry,
 } from "../pages/reports/reportRegistry";
+import { canViewReport } from "../utils/reportPermissions";
 import {
   canViewPermission,
   findPermissionPage,
@@ -213,22 +214,9 @@ const flattenMenuItems = (items, ancestors = []) => {
   });
 };
 
-const canViewReportCommandItem = ({ isSuperAdmin, pages, report }) => {
-  if (isSuperAdmin) {
-    return true;
-  }
-
-  const permission = findPermissionPage(pages, {
-    pageName: report.permission,
-    route: report.route,
-  });
-
-  return canViewPermission(permission);
-};
-
-const createReportCommandItems = (pages, isSuperAdmin) => {
+const createReportCommandItems = (pages, roles, user) => {
   return reportRegistry
-    .filter((report) => canViewReportCommandItem({ isSuperAdmin, pages, report }))
+    .filter((report) => canViewReport({ pages, report, roles, user }))
     .map((report) => {
       const group = getReportGroup(report.group);
 
@@ -296,8 +284,8 @@ export const useSidebar = () => {
   );
 
   const reportCommandItems = useMemo(
-    () => createReportCommandItems(pages, isSuperAdmin),
-    [isSuperAdmin, pages],
+    () => createReportCommandItems(pages, roles, user),
+    [pages, roles, user],
   );
 
   const flatMenuItems = useMemo(

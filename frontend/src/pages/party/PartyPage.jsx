@@ -9,15 +9,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
-import {
-  findPermissionPage,
-  isSuperAdminAuth,
-} from "../../hooks/usePermission";
+import useCapabilities from "../../hooks/useCapabilities";
 import {
   PARTY_SETTINGS_COMMAND_FIELDS,
   PARTY_SETTINGS_SECTIONS,
@@ -52,17 +48,6 @@ const DEFAULT_SORT = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-
-const PARTY_PERMISSIONS = {
-  activate: "party.activate",
-  create: "party.create",
-  deactivate: "party.deactivate",
-  delete: "party.delete",
-  export: "party.export",
-  settings: "party.settings",
-  update: "party.update",
-  view: "party.view",
-};
 
 const buildPaginationMeta = ({ page, pageSize, pagedResult }) => {
   return {
@@ -139,9 +124,6 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const PartyPage = () => {
-  const authPages = useSelector((state) => state.auth.pages ?? []);
-  const roles = useSelector((state) => state.auth.roles);
-  const user = useSelector((state) => state.auth.user);
   const [parties, setParties] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.Search);
@@ -178,60 +160,21 @@ const PartyPage = () => {
     party: null,
   });
 
-  const isSuperAdmin = useMemo(
-    () => isSuperAdminAuth({ roles, user }),
-    [roles, user],
-  );
-
-  const partyPermission = useMemo(() => {
-    return findPermissionPage(authPages, {
-      id: "party",
-      label: "Party Master",
-      route: "/party",
-    });
-  }, [authPages]);
-
-  const capabilities = useMemo(() => {
-    const scopedPermissions = Array.isArray(partyPermission?.permissions)
-      ? partyPermission.permissions.map(String)
-      : [];
-    const permissionSet = new Set(scopedPermissions);
-
-    const hasBooleanPermission = (names) => {
-      return names.some((name) => {
-        return (
-          partyPermission?.[name] === true ||
-          partyPermission?.permissions?.[name] === true
-        );
-      });
-    };
-
-    const canPerform = (permission, booleanNames = []) => {
-      if (isSuperAdmin) {
-        return true;
-      }
-
-      if (hasBooleanPermission(booleanNames)) {
-        return true;
-      }
-
-      return permissionSet.size === 0 || permissionSet.has(permission);
-    };
-
-    return {
-      canActivate: canPerform(PARTY_PERMISSIONS.activate, ["canActivate"]),
-      canCreate: canPerform(PARTY_PERMISSIONS.create, ["canCreate"]),
-      canDeactivate: canPerform(PARTY_PERMISSIONS.deactivate, ["canDeactivate"]),
-      canDelete: canPerform(PARTY_PERMISSIONS.delete, ["canDelete"]),
-      canExport: canPerform(PARTY_PERMISSIONS.export, ["canExport"]),
-      canSettings: canPerform(PARTY_PERMISSIONS.settings, ["canSettings"]),
-      canUpdate: canPerform(PARTY_PERMISSIONS.update, [
-        "canEdit",
-        "canUpdate",
-      ]),
-      canView: canPerform(PARTY_PERMISSIONS.view, ["canView"]),
-    };
-  }, [isSuperAdmin, partyPermission]);
+  const capabilities = useCapabilities({
+    actions: [
+      "view",
+      "create",
+      "update",
+      "delete",
+      "export",
+      "activate",
+      "deactivate",
+      "settings",
+    ],
+    label: "Party Master",
+    resource: "party",
+    route: "/party",
+  });
 
   const loadParties = useCallback(async () => {
     setIsLoading(true);
@@ -339,15 +282,25 @@ const PartyPage = () => {
   }, []);
 
   const openCreateModal = useCallback(() => {
+    if (!capabilities.canCreate) {
+      toast.error("You don't have permission to create parties.");
+      return;
+    }
+
     setFormModal({
       isLoading: false,
       isOpen: true,
       mode: "create",
       party: null,
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openEditModal = useCallback(async (party) => {
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update parties.");
+      return;
+    }
+
     setFormModal({
       isLoading: true,
       isOpen: true,
@@ -371,9 +324,14 @@ const PartyPage = () => {
         isLoading: false,
       }));
     }
-  }, []);
+  }, [capabilities.canUpdate]);
 
   const openDetailsModal = useCallback(async (party) => {
+    if (!capabilities.canView) {
+      toast.error("You don't have permission to view parties.");
+      return;
+    }
+
     setDetailsModal({
       isLoading: true,
       isOpen: true,
@@ -395,9 +353,14 @@ const PartyPage = () => {
         isLoading: false,
       }));
     }
-  }, []);
+  }, [capabilities.canView]);
 
   const openSettingsModal = useCallback(async () => {
+    if (!capabilities.canSettings) {
+      toast.error("You don't have permission to manage party settings.");
+      return;
+    }
+
     setSettingsModal({
       isLoading: true,
       isOpen: true,
@@ -419,9 +382,19 @@ const PartyPage = () => {
         isLoading: false,
       }));
     }
-  }, []);
+  }, [capabilities.canSettings]);
 
   const submitParty = useCallback(async (payload) => {
+    const allowed =
+      formModal.mode === "edit"
+        ? capabilities.canUpdate
+        : capabilities.canCreate;
+
+    if (!allowed) {
+      toast.error("You don't have permission to save this party.");
+      return;
+    }
+
     try {
       if (formModal.mode === "edit") {
         await partyService.updateParty(formModal.party.id, payload);
@@ -444,9 +417,21 @@ const PartyPage = () => {
       );
       throw error;
     }
-  }, [closeFormModal, formModal.mode, formModal.party, loadParties]);
+  }, [
+    capabilities.canCreate,
+    capabilities.canUpdate,
+    closeFormModal,
+    formModal.mode,
+    formModal.party,
+    loadParties,
+  ]);
 
   const submitSettings = useCallback(async (payload) => {
+    if (!capabilities.canSettings) {
+      toast.error("You don't have permission to manage party settings.");
+      return;
+    }
+
     try {
       const response = await partyService.updatePartySettings(payload);
 
@@ -460,9 +445,18 @@ const PartyPage = () => {
       toast.error(getErrorMessage(error, "Unable to update party settings."));
       throw error;
     }
-  }, [closeSettingsModal]);
+  }, [capabilities.canSettings, closeSettingsModal]);
 
   const updatePartyStatus = useCallback(async (party, isActive) => {
+    const allowed = isActive
+      ? capabilities.canActivate
+      : capabilities.canDeactivate;
+
+    if (!allowed) {
+      toast.error("You don't have permission to change party status.");
+      return;
+    }
+
     const previousParties = parties;
 
     setParties((current) =>
@@ -488,15 +482,25 @@ const PartyPage = () => {
       setParties(previousParties);
       toast.error(getErrorMessage(error, "Unable to update party status."));
     }
-  }, [loadParties, parties]);
+  }, [
+    capabilities.canActivate,
+    capabilities.canDeactivate,
+    loadParties,
+    parties,
+  ]);
 
   const openDeleteConfirmation = useCallback((party) => {
+    if (!capabilities.canDelete) {
+      toast.error("You don't have permission to delete parties.");
+      return;
+    }
+
     setConfirmation({
       isOpen: true,
       isSubmitting: false,
       party,
     });
-  }, []);
+  }, [capabilities.canDelete]);
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -508,6 +512,12 @@ const PartyPage = () => {
 
   const confirmDelete = useCallback(async () => {
     if (!confirmation.party) {
+      return;
+    }
+
+    if (!capabilities.canDelete) {
+      toast.error("You don't have permission to delete parties.");
+      closeConfirmation();
       return;
     }
 
@@ -528,7 +538,12 @@ const PartyPage = () => {
         isSubmitting: false,
       }));
     }
-  }, [closeConfirmation, confirmation.party, loadParties]);
+  }, [
+    capabilities.canDelete,
+    closeConfirmation,
+    confirmation.party,
+    loadParties,
+  ]);
 
   const handleFilterChange = useCallback((patch) => {
     const shouldResetPage =
@@ -565,8 +580,13 @@ const PartyPage = () => {
   }, []);
 
   const handleExport = useCallback(() => {
+    if (!capabilities.canExport) {
+      toast.error("You don't have permission to export parties.");
+      return;
+    }
+
     toast.info("Export is available as a UI action and will connect to reporting.");
-  }, []);
+  }, [capabilities.canExport]);
 
   const tableActions = useMemo(
     () => ({
@@ -625,42 +645,45 @@ const PartyPage = () => {
               Refresh
             </button>
           </AppTooltip>
-          <AppTooltip label="Party Settings">
-            <button
-              type="button"
-              onClick={openSettingsModal}
-              disabled={!capabilities.canSettings}
-              aria-label="Party Settings"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </button>
-          </AppTooltip>
-          <AppTooltip label="Export Parties">
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={!capabilities.canExport}
-              aria-label="Export Parties"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-          </AppTooltip>
-          <AppTooltip label="Add Party">
-            <button
-              type="button"
-              onClick={openCreateModal}
-              disabled={!capabilities.canCreate}
-              aria-label="Add Party"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              Add Party
-            </button>
-          </AppTooltip>
+          {capabilities.canSettings && (
+            <AppTooltip label="Party Settings">
+              <button
+                type="button"
+                onClick={openSettingsModal}
+                aria-label="Party Settings"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </button>
+            </AppTooltip>
+          )}
+          {capabilities.canExport && (
+            <AppTooltip label="Export Parties">
+              <button
+                type="button"
+                onClick={handleExport}
+                aria-label="Export Parties"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </button>
+            </AppTooltip>
+          )}
+          {capabilities.canCreate && (
+            <AppTooltip label="Add Party">
+              <button
+                type="button"
+                onClick={openCreateModal}
+                aria-label="Add Party"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                Add Party
+              </button>
+            </AppTooltip>
+          )}
         </div>
       </div>
 
@@ -691,7 +714,7 @@ const PartyPage = () => {
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
-        onCreate={openCreateModal}
+        onCreate={capabilities.canCreate ? openCreateModal : undefined}
         onRetry={loadParties}
         pageSize={pageSize}
         parties={displayParties}

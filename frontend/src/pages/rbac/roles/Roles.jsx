@@ -9,11 +9,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { roleService } from "../../../services/rbac/roleService";
 import { getApiErrorMessage } from "../../../utils/apiError";
 import RoleFilters from "./RoleFilters";
@@ -27,15 +27,6 @@ const DEFAULT_FILTERS = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-
-const ROLE_PERMISSIONS = {
-  activate: "roles.activate",
-  create: "roles.create",
-  deactivate: "roles.deactivate",
-  delete: "roles.delete",
-  update: "roles.update",
-  view: "roles.view",
-};
 
 const LIST_KEYS = ["items", "roles", "records", "results", "content"];
 
@@ -254,7 +245,6 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const Roles = () => {
-  const authPages = useSelector((state) => state.auth.pages ?? []);
   const [roles, setRoles] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search);
@@ -275,28 +265,20 @@ const Roles = () => {
     type: null,
   });
 
-  const permissionSet = useMemo(() => {
-    const permissions = authPages.flatMap((pageItem) => {
-      return Array.isArray(pageItem.permissions) ? pageItem.permissions : [];
-    });
-
-    return new Set(permissions.map(String));
-  }, [authPages]);
-
-  const capabilities = useMemo(() => {
-    const canPerform = (permission) => {
-      return permissionSet.size === 0 || permissionSet.has(permission);
-    };
-
-    return {
-      canActivate: canPerform(ROLE_PERMISSIONS.activate),
-      canCreate: canPerform(ROLE_PERMISSIONS.create),
-      canDeactivate: canPerform(ROLE_PERMISSIONS.deactivate),
-      canDelete: canPerform(ROLE_PERMISSIONS.delete),
-      canUpdate: canPerform(ROLE_PERMISSIONS.update),
-      canView: canPerform(ROLE_PERMISSIONS.view),
-    };
-  }, [permissionSet]);
+  const capabilities = useCapabilities({
+    actions: [
+      "view",
+      "create",
+      "update",
+      "delete",
+      "activate",
+      "deactivate",
+      "export",
+    ],
+    label: "Roles",
+    resource: "roles",
+    route: "/roles",
+  });
 
   const loadRoles = useCallback(async () => {
     setIsLoading(true);
@@ -380,15 +362,27 @@ const Roles = () => {
   }, []);
 
   const openCreateModal = useCallback(() => {
+    if (!capabilities.canCreate) {
+      toast.error("You don't have permission to create roles.");
+      return;
+    }
+
     setModalState({
       isLoading: false,
       isOpen: true,
       mode: "create",
       role: null,
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openRoleModal = useCallback(async (mode, role) => {
+    const allowed = mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+    if (!allowed) {
+      toast.error("You don't have permission to open this role.");
+      return;
+    }
+
     setModalState({
       isLoading: true,
       isOpen: true,
@@ -413,9 +407,19 @@ const Roles = () => {
         isLoading: false,
       }));
     }
-  }, []);
+  }, [capabilities.canUpdate, capabilities.canView]);
 
   const submitRole = useCallback(async (payload) => {
+    const allowed =
+      modalState.mode === "edit"
+        ? capabilities.canUpdate
+        : capabilities.canCreate;
+
+    if (!allowed) {
+      toast.error("You don't have permission to save this role.");
+      return;
+    }
+
     try {
       if (modalState.mode === "edit") {
         await roleService.updateRole(modalState.role.id, payload);
@@ -437,16 +441,38 @@ const Roles = () => {
         ),
       );
     }
-  }, [closeModal, loadRoles, modalState.mode, modalState.role]);
+  }, [
+    capabilities.canCreate,
+    capabilities.canUpdate,
+    closeModal,
+    loadRoles,
+    modalState.mode,
+    modalState.role,
+  ]);
 
   const openConfirmation = useCallback((type, role) => {
+    const allowed = {
+      activate: capabilities.canActivate,
+      deactivate: capabilities.canDeactivate,
+      delete: capabilities.canDelete,
+    }[type];
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this role action.");
+      return;
+    }
+
     setConfirmation({
       isOpen: true,
       isSubmitting: false,
       role,
       type,
     });
-  }, []);
+  }, [
+    capabilities.canActivate,
+    capabilities.canDeactivate,
+    capabilities.canDelete,
+  ]);
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -459,6 +485,18 @@ const Roles = () => {
 
   const confirmAction = useCallback(async () => {
     if (!confirmation.role) {
+      return;
+    }
+
+    const allowed = {
+      activate: capabilities.canActivate,
+      deactivate: capabilities.canDeactivate,
+      delete: capabilities.canDelete,
+    }[confirmation.type];
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this role action.");
+      closeConfirmation();
       return;
     }
 
@@ -500,7 +538,15 @@ const Roles = () => {
         isSubmitting: false,
       }));
     }
-  }, [closeConfirmation, confirmation.role, confirmation.type, loadRoles]);
+  }, [
+    capabilities.canActivate,
+    capabilities.canDeactivate,
+    capabilities.canDelete,
+    closeConfirmation,
+    confirmation.role,
+    confirmation.type,
+    loadRoles,
+  ]);
 
   const handleFilterChange = useCallback((patch) => {
     if (Object.hasOwn(patch, "search")) {
@@ -531,8 +577,13 @@ const Roles = () => {
   }, []);
 
   const handleExport = useCallback(() => {
+    if (!capabilities.canExport) {
+      toast.error("You don't have permission to export roles.");
+      return;
+    }
+
     toast.info("Export is available as a UI action and will connect to reporting.");
-  }, []);
+  }, [capabilities.canExport]);
 
   const tableActions = useMemo(
     () => ({
@@ -589,29 +640,32 @@ const Roles = () => {
               Refresh
             </button>
           </AppTooltip>
-          <AppTooltip label="Export Roles">
-            <button
-              type="button"
-              onClick={handleExport}
-              aria-label="Export Roles"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-          </AppTooltip>
-          <AppTooltip label="Add Role">
-            <button
-              type="button"
-              onClick={openCreateModal}
-              disabled={!capabilities.canCreate}
-              aria-label="Add Role"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              Add Role
-            </button>
-          </AppTooltip>
+          {capabilities.canExport && (
+            <AppTooltip label="Export Roles">
+              <button
+                type="button"
+                onClick={handleExport}
+                aria-label="Export Roles"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </button>
+            </AppTooltip>
+          )}
+          {capabilities.canCreate && (
+            <AppTooltip label="Add Role">
+              <button
+                type="button"
+                onClick={openCreateModal}
+                aria-label="Add Role"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                Add Role
+              </button>
+            </AppTooltip>
+          )}
         </div>
       </div>
 
@@ -634,7 +688,7 @@ const Roles = () => {
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
-        onCreate={openCreateModal}
+        onCreate={capabilities.canCreate ? openCreateModal : undefined}
         onRetry={loadRoles}
         pageSize={pageSize}
         roles={paginatedRoles}

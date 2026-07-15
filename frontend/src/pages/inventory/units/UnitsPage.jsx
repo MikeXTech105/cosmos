@@ -91,16 +91,27 @@ const UnitsPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, unit) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       setModal({ entity: unit, isLoading: true, isOpen: true, mode });
 
       try {
@@ -116,11 +127,20 @@ const UnitsPage = () => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [dispatch],
+    [capabilities.canUpdate, capabilities.canView, dispatch],
   );
 
   const submitUnit = useCallback(
     async (payload, saveAndNew) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -147,11 +167,19 @@ const UnitsPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadUnits, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadUnits,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -170,7 +198,7 @@ const UnitsPage = () => {
       toast.error(getActionError(error, "Unable to delete unit."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadUnits]);
+  }, [capabilities.canDelete, confirmation.entity, dispatch, loadUnits]);
 
   const filterControls = {
     ...unitsState.filters,
@@ -201,14 +229,12 @@ const UnitsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Unit
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Unit
+              </AppButton>
+            )}
           </>
         }
       />
@@ -242,7 +268,7 @@ const UnitsPage = () => {
         }}
         error={unitsState.error}
         isLoading={unitsState.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(setUnitPage(value))}
         onPageSizeChange={(value) => dispatch(setUnitPageSize(value))}
         onRetry={loadUnits}

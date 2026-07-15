@@ -28,11 +28,11 @@ const ActionButton = ({ className, icon: Icon, label, onClick }) => {
 };
 
 const RoleActions = ({
-  canActivate = true,
-  canDeactivate = true,
-  canDelete = true,
-  canEdit = true,
-  canView = true,
+  canActivate = false,
+  canDeactivate = false,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   onActivate,
   onDeactivate,
   onDelete,

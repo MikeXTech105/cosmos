@@ -10,11 +10,11 @@ import {
   UserX,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { roleService } from "../../../services/rbac/roleService";
 import { userService } from "../../../services/rbac/userService";
 import { getApiErrorMessage } from "../../../utils/apiError";
@@ -30,16 +30,6 @@ const DEFAULT_FILTERS = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-
-const USER_PERMISSIONS = {
-  activate: "users.activate",
-  assignRole: "users.assignRole",
-  create: "users.create",
-  deactivate: "users.deactivate",
-  delete: "users.delete",
-  update: "users.update",
-  view: "users.view",
-};
 
 const LIST_KEYS = ["items", "users", "roles", "records", "results", "content"];
 
@@ -403,7 +393,6 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const Users = () => {
-  const authPages = useSelector((state) => state.auth.pages ?? []);
   const [users, setUsers] = useState([]);
   const [roleOptions, setRoleOptions] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -427,29 +416,21 @@ const Users = () => {
     user: null,
   });
 
-  const permissionSet = useMemo(() => {
-    const permissions = authPages.flatMap((pageItem) => {
-      return Array.isArray(pageItem.permissions) ? pageItem.permissions : [];
-    });
-
-    return new Set(permissions.map(String));
-  }, [authPages]);
-
-  const capabilities = useMemo(() => {
-    const canPerform = (permission) => {
-      return permissionSet.size === 0 || permissionSet.has(permission);
-    };
-
-    return {
-      canActivate: canPerform(USER_PERMISSIONS.activate),
-      canAssignRole: canPerform(USER_PERMISSIONS.assignRole),
-      canCreate: canPerform(USER_PERMISSIONS.create),
-      canDeactivate: canPerform(USER_PERMISSIONS.deactivate),
-      canDelete: canPerform(USER_PERMISSIONS.delete),
-      canUpdate: canPerform(USER_PERMISSIONS.update),
-      canView: canPerform(USER_PERMISSIONS.view),
-    };
-  }, [permissionSet]);
+  const capabilities = useCapabilities({
+    actions: [
+      "view",
+      "create",
+      "update",
+      "delete",
+      "activate",
+      "deactivate",
+      "assignRole",
+      "export",
+    ],
+    label: "Users",
+    resource: "users",
+    route: "/users",
+  });
 
   const loadRoles = useCallback(async () => {
     setIsRolesLoading(true);
@@ -561,6 +542,11 @@ const Users = () => {
   }, []);
 
   const openCreateModal = useCallback(() => {
+    if (!capabilities.canCreate || !capabilities.canAssignRole) {
+      toast.error("You don't have permission to create users and assign roles.");
+      return;
+    }
+
     loadRoles();
     setModalState({
       isLoading: false,
@@ -568,9 +554,14 @@ const Users = () => {
       mode: "create",
       user: null,
     });
-  }, [loadRoles]);
+  }, [capabilities.canAssignRole, capabilities.canCreate, loadRoles]);
 
   const openEditModal = useCallback(async (user) => {
+    if (!capabilities.canUpdate || !capabilities.canAssignRole) {
+      toast.error("You don't have permission to update users and roles.");
+      return;
+    }
+
     const rolesPromise = loadRoles();
 
     setModalState({
@@ -605,9 +596,24 @@ const Users = () => {
         isLoading: false,
       }));
     }
-  }, [loadRoles, roleOptions]);
+  }, [
+    capabilities.canAssignRole,
+    capabilities.canUpdate,
+    loadRoles,
+    roleOptions,
+  ]);
 
   const submitUser = useCallback(async (payload) => {
+    const isEdit = modalState.mode === "edit";
+    const maySubmit = isEdit
+      ? capabilities.canUpdate && capabilities.canAssignRole
+      : capabilities.canCreate && capabilities.canAssignRole;
+
+    if (!maySubmit) {
+      toast.error("You don't have permission to save this user.");
+      return;
+    }
+
     const { roleId, ...userPayload } = payload;
 
     try {
@@ -657,16 +663,40 @@ const Users = () => {
         ),
       );
     }
-  }, [closeModal, loadRoles, loadUsers, modalState.mode, modalState.user]);
+  }, [
+    capabilities.canAssignRole,
+    capabilities.canCreate,
+    capabilities.canUpdate,
+    closeModal,
+    loadRoles,
+    loadUsers,
+    modalState.mode,
+    modalState.user,
+  ]);
 
   const openConfirmation = useCallback((type, user) => {
+    const allowed = {
+      activate: capabilities.canActivate,
+      deactivate: capabilities.canDeactivate,
+      delete: capabilities.canDelete,
+    }[type];
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this user action.");
+      return;
+    }
+
     setConfirmation({
       isOpen: true,
       isSubmitting: false,
       type,
       user,
     });
-  }, []);
+  }, [
+    capabilities.canActivate,
+    capabilities.canDeactivate,
+    capabilities.canDelete,
+  ]);
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -679,6 +709,18 @@ const Users = () => {
 
   const confirmAction = useCallback(async () => {
     if (!confirmation.user) {
+      return;
+    }
+
+    const allowed = {
+      activate: capabilities.canActivate,
+      deactivate: capabilities.canDeactivate,
+      delete: capabilities.canDelete,
+    }[confirmation.type];
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this user action.");
+      closeConfirmation();
       return;
     }
 
@@ -712,7 +754,15 @@ const Users = () => {
         isSubmitting: false,
       }));
     }
-  }, [closeConfirmation, confirmation.type, confirmation.user, loadUsers]);
+  }, [
+    capabilities.canActivate,
+    capabilities.canDeactivate,
+    capabilities.canDelete,
+    closeConfirmation,
+    confirmation.type,
+    confirmation.user,
+    loadUsers,
+  ]);
 
   const handleFilterChange = useCallback((patch) => {
     if (Object.hasOwn(patch, "search")) {
@@ -743,8 +793,13 @@ const Users = () => {
   }, []);
 
   const handleExport = useCallback(() => {
+    if (!capabilities.canExport) {
+      toast.error("You don't have permission to export users.");
+      return;
+    }
+
     toast.info("Export is available as a UI action and will connect to reporting.");
-  }, []);
+  }, [capabilities.canExport]);
 
   const tableActions = useMemo(
     () => ({
@@ -799,29 +854,32 @@ const Users = () => {
               Refresh
             </button>
           </AppTooltip>
-          <AppTooltip label="Export Users">
-            <button
-              type="button"
-              onClick={handleExport}
-              aria-label="Export Users"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-          </AppTooltip>
-          <AppTooltip label="Add User">
-            <button
-              type="button"
-              onClick={openCreateModal}
-              disabled={!capabilities.canCreate || !capabilities.canAssignRole}
-              aria-label="Add User"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              Add User
-            </button>
-          </AppTooltip>
+          {capabilities.canExport && (
+            <AppTooltip label="Export Users">
+              <button
+                type="button"
+                onClick={handleExport}
+                aria-label="Export Users"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+              >
+                <Download className="h-4 w-4" />
+                Export
+              </button>
+            </AppTooltip>
+          )}
+          {capabilities.canCreate && capabilities.canAssignRole && (
+            <AppTooltip label="Add User">
+              <button
+                type="button"
+                onClick={openCreateModal}
+                aria-label="Add User"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                Add User
+              </button>
+            </AppTooltip>
+          )}
         </div>
       </div>
 
@@ -847,7 +905,11 @@ const Users = () => {
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
-        onCreate={openCreateModal}
+        onCreate={
+          capabilities.canCreate && capabilities.canAssignRole
+            ? openCreateModal
+            : undefined
+        }
         onRetry={loadUsers}
         pageSize={pageSize}
         users={paginatedUsers}

@@ -19,6 +19,7 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
@@ -98,6 +99,12 @@ const PurchaseDocumentListPage = ({ config }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const state = useSelector((store) => store[config.selectorKey]);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete", "confirm", "cancel", "convert"],
+    label: config.pageName ?? config.label,
+    resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
+    route: config.routeBase,
+  });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
     resource: "party",
@@ -362,13 +369,30 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const openLookupCreate = useCallback(
     (type) => {
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        return;
+      }
+
       if (type === "item") {
         void loadItemCreateLookups();
       }
 
       setLookupCreateModal((current) => ({ ...current, [type]: true }));
     },
-    [loadItemCreateLookups],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      loadItemCreateLookups,
+    ],
   );
 
   const closeLookupCreate = useCallback((type) => {
@@ -402,6 +426,17 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const submitLookupCreate = useCallback(
     async (type, payload, saveAndNew = false) => {
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        return;
+      }
+
       try {
         if (type === "supplier") {
           await partyService.createParty(payload);
@@ -431,10 +466,22 @@ const PurchaseDocumentListPage = ({ config }) => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup, refreshItemCreateLookup],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      refreshItemCreateLookup,
+    ],
   );
 
   const openEdit = async (record) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       isLoading: true,
       isOpen: true,
@@ -458,6 +505,13 @@ const PurchaseDocumentListPage = ({ config }) => {
   };
 
   const submitRecord = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -477,6 +531,16 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const runAction = async () => {
     if (!confirmation.record) {
+      return;
+    }
+
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+      delete: capabilities.canDelete,
+    };
+
+    if (!permissionMap[confirmation.action]) {
       return;
     }
 
@@ -508,6 +572,10 @@ const PurchaseDocumentListPage = ({ config }) => {
   };
 
   const submitConvert = async (payload) => {
+    if (!capabilities.canConvert || !convertOrder.order) {
+      return;
+    }
+
     try {
       const response = await dispatch(
         config.convertThunk({ id: convertOrder.order.id, payload }),
@@ -535,6 +603,46 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const Icon = config.icon;
 
+  const openCreate = () => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    setModal({
+      isLoading: false,
+      isOpen: true,
+      mode: "create",
+      record: null,
+    });
+  };
+
+  const openAction = (action, record) => {
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+      delete: capabilities.canDelete,
+    };
+
+    if (!permissionMap[action]) {
+      return;
+    }
+
+    setConfirmation({
+      action,
+      isLoading: false,
+      isOpen: true,
+      record,
+    });
+  };
+
+  const openConvert = (record) => {
+    if (!capabilities.canConvert) {
+      return;
+    }
+
+    setConvertOrder({ isOpen: true, order: record });
+  };
+
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
@@ -559,20 +667,12 @@ const PurchaseDocumentListPage = ({ config }) => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                  record: null,
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                New
+              </AppButton>
+            )}
           </>
         }
       />
@@ -760,62 +860,43 @@ const PurchaseDocumentListPage = ({ config }) => {
                           label="View"
                           onClick={() => navigate(config.detailPath(record.id))}
                         />
-                        <ActionButton
-                          icon={Pencil}
-                          label="Edit"
-                          onClick={() => void openEdit(record)}
-                        />
-                        {config.supportsConfirm && (
+                        {capabilities.canUpdate && (
+                          <ActionButton
+                            icon={Pencil}
+                            label="Edit"
+                            onClick={() => void openEdit(record)}
+                          />
+                        )}
+                        {config.supportsConfirm && capabilities.canConfirm && (
                           <ActionButton
                             icon={CheckCircle2}
                             label="Confirm"
-                            onClick={() =>
-                              setConfirmation({
-                                action: "confirm",
-                                isLoading: false,
-                                isOpen: true,
-                                record,
-                              })
-                            }
+                            onClick={() => openAction("confirm", record)}
                           />
                         )}
-                        {config.supportsCancel && (
+                        {config.supportsCancel && capabilities.canCancel && (
                           <ActionButton
                             icon={Ban}
                             label="Cancel"
                             tone="danger"
-                            onClick={() =>
-                              setConfirmation({
-                                action: "cancel",
-                                isLoading: false,
-                                isOpen: true,
-                                record,
-                              })
-                            }
+                            onClick={() => openAction("cancel", record)}
                           />
                         )}
-                        {config.supportsConvert && (
+                        {config.supportsConvert && capabilities.canConvert && (
                           <ActionButton
                             icon={ArrowRight}
                             label="Convert to Bill"
-                            onClick={() =>
-                              setConvertOrder({ isOpen: true, order: record })
-                            }
+                            onClick={() => openConvert(record)}
                           />
                         )}
-                        <ActionButton
-                          icon={Trash2}
-                          label="Delete"
-                          tone="danger"
-                          onClick={() =>
-                            setConfirmation({
-                              action: "delete",
-                              isLoading: false,
-                              isOpen: true,
-                              record,
-                            })
-                          }
-                        />
+                        {capabilities.canDelete && (
+                          <ActionButton
+                            icon={Trash2}
+                            label="Delete"
+                            tone="danger"
+                            onClick={() => openAction("delete", record)}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

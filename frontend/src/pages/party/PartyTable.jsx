@@ -84,11 +84,11 @@ const ActionButton = ({ className, icon: Icon, label, onClick }) => {
 };
 
 const PartyActions = ({
-  canActivate = true,
-  canDeactivate = true,
-  canDelete = true,
-  canEdit = true,
-  canView = true,
+  canActivate = false,
+  canDeactivate = false,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   onActivate,
   onDeactivate,
   onDelete,
@@ -182,7 +182,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <RefreshCw className="h-4 w-4" />
             Retry
           </button>
-        ) : (
+        ) : onCreate ? (
           <button
             type="button"
             onClick={onCreate}
@@ -191,7 +191,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <Plus className="h-4 w-4" />
             Add Party
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

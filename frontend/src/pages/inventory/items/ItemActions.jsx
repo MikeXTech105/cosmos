@@ -26,9 +26,9 @@ const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
 };
 
 const ItemActions = ({
-  canDelete,
-  canEdit,
-  canView,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   item,
   onDelete,
   onEdit,

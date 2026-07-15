@@ -6,6 +6,8 @@ import { useSearchParams } from "react-router-dom";
 import AppButton from "../../components/common/AppButton";
 import PageHeader from "../../components/common/PageHeader";
 import { getIconComponent } from "../../config/iconMap";
+import { escapeCsvValue } from "../../utils/csv";
+import { canPerformAction } from "../../utils/permissionResolver";
 import {
   runReportThunk,
   setReportExporting,
@@ -34,12 +36,6 @@ const toRows = (data) => {
   return data ? [data] : [];
 };
 
-const escapeCsvValue = (value) => {
-  const text = String(value ?? "");
-
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-};
-
 const downloadCsv = ({ columns, filename, rows }) => {
   const headers = columns.map((column) => column.header ?? column.label);
   const body = rows.map((row) => {
@@ -50,7 +46,7 @@ const downloadCsv = ({ columns, filename, rows }) => {
       .join(",");
   });
   const csv = [headers.map(escapeCsvValue).join(","), ...body].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
@@ -191,6 +187,7 @@ const ReportView = ({ report }) => {
     (state) => state.reports.byReport[report.id],
   );
   const exporting = useSelector((state) => state.reports.exporting[report.id]);
+  const auth = useSelector((state) => state.auth);
   const data = reportState?.data ?? null;
   const group = getReportGroup(report.group);
   const params = useMemo(
@@ -201,6 +198,17 @@ const ReportView = ({ report }) => {
   const isMissingRequiredParam =
     Boolean(report.requiresParam) && !hasRequiredParamValue(requiredParamValue);
   const rows = isMissingRequiredParam ? [] : toRows(data);
+  const canExport = useMemo(
+    () =>
+      canPerformAction({
+        action: "export",
+        pages: auth.pages,
+        roles: auth.roles,
+        target: { label: report.permission, route: report.route },
+        user: auth.user,
+      }),
+    [auth.pages, auth.roles, auth.user, report.permission, report.route],
+  );
 
   useEffect(() => {
     if (isMissingRequiredParam) {
@@ -263,7 +271,7 @@ const ReportView = ({ report }) => {
   };
 
   const handleExport = () => {
-    if (rows.length === 0) {
+    if (!canExport || rows.length === 0 || exporting) {
       return;
     }
 
@@ -314,7 +322,7 @@ const ReportView = ({ report }) => {
               <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
-            {report.exportable && (
+            {report.exportable && canExport && (
               <AppButton
                 className="h-10"
                 disabled={isLoading || rows.length === 0 || exporting}

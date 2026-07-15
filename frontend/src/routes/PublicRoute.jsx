@@ -2,12 +2,14 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 import { getAuthData } from "../utils/authStorage";
+import { getDefaultAuthorizedRoute } from "../utils/authorizedRoute";
 
 const PublicRoute = ({ children }) => {
-  const token =
-    useSelector((state) => state.auth.accessToken) ?? getAuthData().accessToken;
+  const auth = useSelector((state) => state.auth);
+  const token = auth.accessToken ?? getAuthData().accessToken;
+  const defaultRoute = getDefaultAuthorizedRoute(auth);
 
-  return token ? <Navigate to="/dashboard" replace /> : children;
+  return token ? <Navigate to={defaultRoute} replace /> : children;
 };
 
 export default PublicRoute;

@@ -15,18 +15,18 @@ export const unwrapResponse = (response) => {
     );
   }
 
-  if (responseData?.data !== undefined) {
-    return {
-      data: responseData.data,
-      message: responseData.message,
-      meta: responseData.meta ?? responseData.pagination ?? null,
-    };
-  }
+  const hasDataEnvelope = responseData?.data !== undefined;
+  const data = hasDataEnvelope ? responseData.data : responseData;
 
   return {
-    data: responseData,
-    message: responseData?.message,
-    meta: responseData?.meta ?? responseData?.pagination ?? null,
+    data,
+    message: responseData?.message ?? data?.message,
+    meta:
+      responseData?.meta ??
+      responseData?.pagination ??
+      data?.meta ??
+      data?.pagination ??
+      null,
   };
 };
 

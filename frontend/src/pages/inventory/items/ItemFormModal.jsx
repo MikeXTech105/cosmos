@@ -385,10 +385,13 @@ const ItemFormModal = ({
                           shouldValidate: true,
                         })
                       }
-                      onFileChange={(file) =>
-                        setValue("imageFile", file, {
-                          shouldDirty: true,
-                        })
+                      onFileChange={
+                        isEdit
+                          ? undefined
+                          : (file) =>
+                              setValue("imageFile", file, {
+                                shouldDirty: true,
+                              })
                       }
                       error={errors.imageUrl?.message}
                     />
