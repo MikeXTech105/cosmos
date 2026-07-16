@@ -16,6 +16,8 @@ IF OBJECT_ID(N'dbo.sp_Auth_Logout', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Auth
 IF OBJECT_ID(N'dbo.sp_Auth_RefreshToken', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Auth_RefreshToken;
 IF OBJECT_ID(N'dbo.sp_Auth_ResetPassword', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Auth_ResetPassword;
 IF OBJECT_ID(N'dbo.sp_Auth_SaveRefreshToken', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Auth_SaveRefreshToken;
+IF OBJECT_ID(N'dbo.sp_SystemOwner_GetState', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_SystemOwner_GetState;
+IF OBJECT_ID(N'dbo.sp_SystemOwner_Provision', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_SystemOwner_Provision;
 IF OBJECT_ID(N'dbo.sp_Category_Create', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Category_Create;
 IF OBJECT_ID(N'dbo.sp_Category_Delete', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Category_Delete;
 IF OBJECT_ID(N'dbo.sp_Category_Exists', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_Category_Exists;
@@ -169,6 +171,7 @@ IF OBJECT_ID(N'dbo.sp_User_GetAll', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User
 IF OBJECT_ID(N'dbo.sp_User_GetById', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_GetById;
 IF OBJECT_ID(N'dbo.sp_User_GetEntityById', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_GetEntityById;
 IF OBJECT_ID(N'dbo.sp_User_GetPagePermissions', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_GetPagePermissions;
+IF OBJECT_ID(N'dbo.sp_User_IsSystemOwner', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_IsSystemOwner;
 IF OBJECT_ID(N'dbo.sp_User_GetRoles', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_GetRoles;
 IF OBJECT_ID(N'dbo.sp_User_SetActive', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_SetActive;
 IF OBJECT_ID(N'dbo.sp_User_Update', N'P') IS NOT NULL DROP PROCEDURE dbo.sp_User_Update;

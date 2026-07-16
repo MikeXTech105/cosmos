@@ -27,6 +27,17 @@ public sealed class UserRepository : IUserRepository
         return await StoredProcedureExecutor.QuerySingleOrDefaultAsync<User>(connection, "sp_User_GetEntityById", new { Id = id }, cancellationToken);
     }
 
+    public async Task<bool> IsSystemOwnerAsync(int userId, CancellationToken cancellationToken)
+    {
+        using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        var result = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<int>(
+            connection,
+            "sp_User_IsSystemOwner",
+            new { UserId = userId },
+            cancellationToken);
+        return result == 1;
+    }
+
     public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
