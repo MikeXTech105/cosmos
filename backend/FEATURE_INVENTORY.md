@@ -140,3 +140,16 @@
 
 Verification result:
 - `dotnet test Cosmos.slnx --no-restore` passed with 4 tests.
+# Procurement Planning
+
+Status: Backend implemented and staging-verified; frontend and confirmed client Item/SKU migration remain.
+
+- Configurable AMZ/BLI/INS and future sales channels.
+- Channel SKU to existing finished-product Item mapping with unresolved history.
+- Manual sales plus safe CSV/XLSX preview/confirm, duplicate protection, batch history, and audited cancellation.
+- Configurable finished-product BOMs using the existing Item and Unit masters.
+- Material lead-time history, override/configured fallback, safety factor, MOQ, order multiple, automatic/manual flags.
+- Workbook-compatible calculation using global `Items.CurrentStock`, excluding reservations, inbound, and open orders.
+- Validation, preview, saved Draft snapshot, reason-required adjustment, finalization, history filters, and true XLSX export.
+- Swagger group `procurement-planning` and six permission pages.
+- Migration/report artifact and detailed backend/frontend documentation in `backend/docs`.

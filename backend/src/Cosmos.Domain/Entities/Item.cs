@@ -9,6 +9,7 @@ public sealed class Item
     public long CategoryId { get; set; }
     public long UnitId { get; set; }
     public int ItemType { get; set; }
+    public int? ProcurementClassification { get; set; }
     public decimal PurchasePrice { get; set; }
     public decimal SalesPrice { get; set; }
     public string? HSNCode { get; set; }
