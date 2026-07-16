@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPageService, PageService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<ISystemOwnerProvisioningService, SystemOwnerProvisioningService>();
         services.AddScoped<IPartyService, PartyService>();
         services.AddScoped<IPartySettingsService, PartySettingsService>();
         services.AddScoped<IItemService, ItemService>();

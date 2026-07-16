@@ -67,6 +67,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.Configure<DashboardOptions>(builder.Configuration.GetSection("Dashboard"));
+builder.Services.Configure<SystemOwnerOptions>(options =>
+{
+    options.Username = builder.Configuration[SystemOwnerOptions.UsernameEnvironmentVariable];
+    options.Email = builder.Configuration[SystemOwnerOptions.EmailEnvironmentVariable];
+    options.Password = builder.Configuration[SystemOwnerOptions.PasswordEnvironmentVariable];
+});
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -118,6 +124,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var provisioner = scope.ServiceProvider.GetRequiredService<Cosmos.Application.Abstractions.Services.ISystemOwnerProvisioningService>();
+    await provisioner.EnsureProvisionedAsync(CancellationToken.None);
+}
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();

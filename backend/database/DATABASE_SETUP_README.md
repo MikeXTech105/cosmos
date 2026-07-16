@@ -7,6 +7,8 @@ This folder contains the clean SQL Server deployment package for the current Dap
 1. `000_Reset_Database.sql` - drops Cosmos ERP objects from the selected database. It does not drop the database.
 2. `001_Full_Database_Setup.sql` - creates the full schema, indexes, constraints, table types, view, stored procedures, and required seed data.
 3. `002_Verify_Database_Setup.sql` - checks required objects, important columns, foreign keys, stored procedures, table types, and seed data.
+4. `migrations/20260716_system_owner.sql` - upgrades an existing security schema with the protected System Owner flags, constraints, procedures, and guards.
+5. `verify_system_owner.sql` - verifies owner uniqueness, linkage, protected-role independence, indexes, and bootstrap objects after first API startup.
 
 ## SSMS Run Order
 
@@ -64,15 +66,29 @@ Purchase & Expense depends on Party, Items, and the Sales shared objects `Number
 
 - Tables: 48
 - Views: 1
-- Stored procedures: 162
+- Stored procedures: 165 (including the three protected System Owner procedures)
 - Functions: 0
 - User-defined table types: 5
 - Foreign keys: 59
 - Seed/master rows inserted by setup: at least 42 (`SuperAdmin`, `admin`, 31 page rows, 6 payment modes, 3 HR leave types, and 1 PartySettings row). `RolePermissions` are seeded for SuperAdmin across all pages.
 
+The protected System Owner is not seeded by SQL. The API provisions it once from secure environment configuration after the schema is ready. See `docs/SYSTEM_OWNER.md`.
+
 ## Manual Action Needed
 
 Update environment-specific connection strings before starting the API. Keep secrets out of committed appsettings for production; use environment variables, user secrets, or your deployment secret store.
+
+## Protected System Owner Upgrade
+
+For an existing database:
+
+1. Back up the database and stop/drain API instances.
+2. Run `migrations/20260716_system_owner.sql`.
+3. Inject `COSMOS_SYSTEM_OWNER_USERNAME`, `COSMOS_SYSTEM_OWNER_EMAIL`, and `COSMOS_SYSTEM_OWNER_PASSWORD` from a secret store.
+4. Start the upgraded API to perform the locked, one-time BCrypt bootstrap.
+5. Run `verify_system_owner.sql`.
+
+The migration is safe to rerun. `001_Full_Database_Setup.sql` includes the same final security overrides for fresh installations. Do not place the owner password or hash in a SQL script. Full provisioning, login/refresh, visibility, recovery, and deployment details are in `docs/SYSTEM_OWNER.md`.
 
 ## Procurement Planning Additive Migration
 

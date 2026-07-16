@@ -9,6 +9,7 @@ public sealed class User
     public string FullName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
+    public bool IsSystemUser { get; set; }
     public DateTime CreatedOn { get; set; }
     public DateTime? UpdatedOn { get; set; }
 }
