@@ -2,6 +2,8 @@ using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Abstractions.Security;
 using Cosmos.Application.Services;
 using Cosmos.Application.Validators;
+using Cosmos.Contracts.Users;
+using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Options;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -66,12 +68,59 @@ public sealed class SystemOwnerProvisioningTests
             .ReturnsAsync(new SystemOwnerProvisioningState(0, 0, 0, 0, 0));
         var service = CreateService(repository, new Mock<IPasswordHasher>(), new SystemOwnerOptions());
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<SystemOwnerProvisioningValidationException>(
             () => service.EnsureProvisionedAsync(CancellationToken.None));
 
-        Assert.Contains(SystemOwnerOptions.UsernameEnvironmentVariable, exception.Message, StringComparison.Ordinal);
-        Assert.Contains(SystemOwnerOptions.EmailEnvironmentVariable, exception.Message, StringComparison.Ordinal);
-        Assert.Contains(SystemOwnerOptions.PasswordEnvironmentVariable, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(exception.Errors, error => error is { Field: "Username", Message: "username is required" });
+        Assert.Contains(exception.Errors, error => error is { Field: "Email", Message: "email is required" });
+        Assert.Contains(exception.Errors, error => error is { Field: "Password", Message: "password is required" });
+        Assert.Contains("- Username: username is required", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("- Email: email is required", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("- Password: password is required", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EnsureProvisionedAsync_InvalidConfigurationReportsSafeFieldDiagnosticsWithoutValues()
+    {
+        const string invalidEmail = "private-email-value";
+        const string invalidPassword = "private-password!1";
+        var repository = new Mock<ISystemOwnerRepository>();
+        repository
+            .Setup(x => x.GetProvisioningStateAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SystemOwnerProvisioningState(0, 0, 0, 0, 0));
+        var hasher = new Mock<IPasswordHasher>(MockBehavior.Strict);
+        var service = CreateService(repository, hasher, new SystemOwnerOptions
+        {
+            Username = " ",
+            Email = invalidEmail,
+            Password = invalidPassword
+        });
+
+        var exception = await Assert.ThrowsAsync<SystemOwnerProvisioningValidationException>(
+            () => service.EnsureProvisionedAsync(CancellationToken.None));
+
+        Assert.Contains("- Username: username is required", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("- Email: invalid email format", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("- Password: password must contain an uppercase letter", exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(invalidEmail, exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(invalidPassword, exception.Message, StringComparison.Ordinal);
+        hasher.VerifyNoOtherCalls();
+        repository.Verify(
+            x => x.ProvisionAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ValidationRunner_PreservesExistingApiValidationBehavior()
+    {
+        var request = new CreateUserRequest("valid-user", "valid@example.invalid", "Valid User", "lowercase!1", true);
+
+        var exception = await Assert.ThrowsAsync<CosmosException>(
+            () => ValidationRunner.ValidateAsync(new CreateUserRequestValidator(), request, CancellationToken.None));
+
+        Assert.Equal("Validation failed.", exception.Message);
+        Assert.Equal(400, exception.StatusCode);
+        Assert.Contains("Password must contain at least one uppercase letter.", exception.Errors);
     }
 
     [Fact]
