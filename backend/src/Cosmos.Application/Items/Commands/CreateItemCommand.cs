@@ -7,6 +7,7 @@ public sealed record CreateItemCommand(
     long CategoryId,
     long UnitId,
     int ItemType,
+    int? ProcurementClassification,
     decimal PurchasePrice,
     decimal SalesPrice,
     string? HSNCode,

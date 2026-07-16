@@ -33,6 +33,7 @@ public sealed class ItemRepository : IItemRepository
                 query.Barcode,
                 query.ItemCode,
                 query.CategoryId,
+                query.ProcurementClassification,
                 query.IsActive,
                 query.PageNumber,
                 query.PageSize,
@@ -108,6 +109,7 @@ public sealed class ItemRepository : IItemRepository
         parameters.Add("CategoryId", command.CategoryId);
         parameters.Add("UnitId", command.UnitId);
         parameters.Add("ItemType", command.ItemType);
+        parameters.Add("ProcurementClassification", command.ProcurementClassification);
         parameters.Add("PurchasePrice", command.PurchasePrice);
         parameters.Add("SalesPrice", command.SalesPrice);
         parameters.Add("HSNCode", TrimToNull(command.HSNCode));

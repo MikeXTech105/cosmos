@@ -1,5 +1,26 @@
 # COSMOS ERP - Project Progress Document
 
+## Procurement Planning Update — 2026-07-15
+
+Status: Backend implemented and verified; frontend and confirmed client data mapping remain.
+
+The new Procurement Planning module accepts manual or CSV/XLSX channel sales, maps marketplace SKUs to existing finished-product Items, expands sales through configurable BOMs, applies physical stock/lead-time/safety/MOQ rules, and saves auditable Draft/Finalized recommendation snapshots. It does not create purchase orders.
+
+Completed:
+
+- Added nullable backward-compatible Item `ProcurementClassification` without changing Product/Service `ItemType` stock semantics.
+- Added nine module tables, supporting constraints/indexes, stored procedures, AMZ/BLI/INS seeds, one parent page, and six child pages.
+- Added application contracts, validators, pure calculation engine, Dapper repository, services, permission-protected controllers, true XLSX/CSV import/export, audit events, and module Swagger document.
+- Inspected the supplied workbook and produced a six-sheet migration/compatibility report. No workbook Item was guessed or auto-created.
+- Applied and reapplied the migration on staging; transactional database smoke test passed and rolled back.
+- Full xUnit suite passed: 64/64, including existing regressions and procurement calculation/import/workbook cases.
+
+Current data/frontend actions:
+
+- Confirm Item classification/matching, real AMZ/BLI/INS SKUs, BOM rows, lead time, safety factor, MOQ, and order multiples using the migration report.
+- Build the React screens from `backend/docs/PROCUREMENT_PLANNING_FRONTEND_INTEGRATION.md`.
+- The repository has no common warehouse/company stock dimension, so planning is explicitly global on `Items.CurrentStock`; warehouse/tenant scoping requires a future cross-module design.
+
 ## 1. Project Overview
 
 COSMOS ERP is a .NET 10 ASP.NET Core Web API backend with SQL Server, Dapper, JWT authentication, SQL-backed roles/pages/permissions, audit logging tables, and module-wise Swagger grouping. The repository also contains a small Vite/React frontend placeholder and SQL setup/verification assets.

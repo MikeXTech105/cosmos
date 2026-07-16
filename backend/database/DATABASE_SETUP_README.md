@@ -73,3 +73,14 @@ Purchase & Expense depends on Party, Items, and the Sales shared objects `Number
 ## Manual Action Needed
 
 Update environment-specific connection strings before starting the API. Keep secrets out of committed appsettings for production; use environment variables, user secrets, or your deployment secret store.
+
+## Procurement Planning Additive Migration
+
+The clean `001_Full_Database_Setup.sql` package predates Procurement Planning. After the normal three-script setup, run:
+
+1. `migrations/20260715_procurement_planning_module.sql`
+2. Optional transactional verification: `migrations/20260715_procurement_planning_smoke_tests.sql`
+
+The module migration is idempotent, does not contain `USE`, and must be executed against the database selected by the operator. The smoke script creates realistic mapping/BOM/settings/sales/run data inside a transaction, verifies snapshot preservation and adjustment/finalization behavior, then rolls back.
+
+Do not import the client workbook directly into `Items`. Review `docs/PROCUREMENT_PLANNING_WORKBOOK_MIGRATION_REPORT.xlsx`, confirm all Item and channel-SKU mappings, and use the module APIs for configuration/import.
