@@ -1,5 +1,40 @@
 # Implementation Interactions
 
+## 2026-07-16 - Protected System Owner
+
+Original requirement:
+
+Implement exactly one protected System Owner account and role, separate from configurable `SuperAdmin`, with secure one-time provisioning, centralized authorization bypass, dynamic current/future page access, hidden immutable administration records, SQL defense in depth, auditing, tests, canonical setup alignment, and documentation. Backend only.
+
+Architecture decisions:
+
+- Used explicit `Users.IsSystemUser` and `Roles.IsSystemRole` flags and their relationship; no authorization check uses username, email, role name, or fixed IDs.
+- Kept `SuperAdmin` as a normal RBAC role.
+- Centralized owner bypass in `PermissionService.UserHasPermissionAsync` after database account-state checks.
+- Generated owner login/refresh pages dynamically from active `Pages` with all six existing action flags.
+- Provisioned through a .NET startup service using existing BCrypt hashing and a transaction/application-lock SQL procedure.
+- Returned ordinary not-found behavior for protected user/role administration and added stored-procedure guards.
+- Reused `AuditLogs`; provisioning and safe HTTP mutation metadata preserve actor attribution without sensitive payloads.
+
+Migration:
+
+- `backend/database/migrations/20260716_system_owner.sql`
+
+Files added include the provisioning abstraction/service/repository/options, four security test files, `backend/database/verify_system_owner.sql`, and `backend/docs/SYSTEM_OWNER.md`. The canonical setup and reset scripts, domain entities, central permission flow, user/role/permission services, Dapper executor, startup registration, and audit middleware were updated.
+
+Verification:
+
+- `dotnet build Cosmos.slnx --no-restore`: passed; existing `Microsoft.OpenApi` NU1903 advisory remains.
+- `dotnet test Cosmos.slnx --no-build`: passed 93/93.
+- Disposable local SQL Server canonical setup: passed.
+- Migration apply plus two reruns: passed.
+- Concurrent provisioning: exactly one owner user, role, and link.
+- Real API bootstrap/login/refresh: passed; login returned 31 active pages with every action true.
+- Newly active page appeared with every action true after refresh.
+- Hidden list/direct lookup, protected mutation, assignment, permission, and reset-token SQL checks: passed.
+- `verify_system_owner.sql`: passed.
+- Disposable database removed. No staging or production database was changed.
+
 ## 2026-07-10 - Stock Reports Module
 
 Original requirement:

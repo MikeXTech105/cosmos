@@ -1,5 +1,25 @@
 # COSMOS ERP - Project Progress Document
 
+## Protected System Owner Update — 2026-07-16
+
+Status: Backend implemented, unit-tested, and verified against a disposable local SQL Server database. No frontend changes were made.
+
+Completed:
+
+- Added `Users.IsSystemUser` and `Roles.IsSystemRole` with safe defaults and filtered unique indexes.
+- Added idempotent migration `backend/database/migrations/20260716_system_owner.sql`, matching canonical setup overrides, reset support, and `verify_system_owner.sql`.
+- Added secure environment-only, BCrypt-based, transaction-locked one-time provisioning. Startup fails when an owner is missing and required configuration is absent or when protected records conflict.
+- Added centralized flag/link owner detection in `PermissionService`; normal `SuperAdmin` remains `RolePermissions`-based.
+- Added dynamic all-action permissions for every active page on login and refresh, including future pages without protected-role permission rows.
+- Added service and stored-procedure protections for hidden user/role lookup, mutation, assignment, password reset, and role-permission operations.
+- Preserved authenticated actor IDs and added safe mutation/provisioning audit metadata without request bodies or credentials.
+- Added 29 focused security/provisioning/SQL-contract regressions; full suite passes 93/93.
+- Executed canonical setup, migration reruns, concurrent bootstrap, API login/refresh, future-page refresh, protected SQL guards, and verification queries on a disposable local SQL Server database; all passed, then the database was removed.
+
+Deployment and break-glass recovery: `backend/docs/SYSTEM_OWNER.md`.
+
+Build result: passed with the existing `Microsoft.OpenApi` NU1903 advisory warning. Production/staging SQL deployment was not performed.
+
 ## Procurement Planning Update — 2026-07-15
 
 Status: Backend implemented and verified; frontend and confirmed client data mapping remain.

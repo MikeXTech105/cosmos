@@ -9,6 +9,7 @@ public interface IUserRepository
 {
     Task<IReadOnlyCollection<UserDto>> GetAllAsync(CancellationToken cancellationToken);
     Task<User?> GetEntityByIdAsync(int id, CancellationToken cancellationToken);
+    Task<bool> IsSystemOwnerAsync(int userId, CancellationToken cancellationToken);
     Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken);
     Task<UserDto> CreateAsync(User user, CancellationToken cancellationToken);
     Task<UserDto> UpdateAsync(int id, UpdateUserRequest request, CancellationToken cancellationToken);

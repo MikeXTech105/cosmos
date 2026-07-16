@@ -12,6 +12,11 @@ services:
     ports:
       - "8080:8080"
 
+    environment:
+      COSMOS_SYSTEM_OWNER_USERNAME: "systemowner"
+      COSMOS_SYSTEM_OWNER_EMAIL: "owner@cosmos.com"
+      COSMOS_SYSTEM_OWNER_PASSWORD: "System#Owner!"
+
     restart: always
 
   cosmos_frontend:
