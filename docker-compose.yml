@@ -15,7 +15,7 @@ services:
     environment:
       COSMOS_SYSTEM_OWNER_USERNAME: "systemowner"
       COSMOS_SYSTEM_OWNER_EMAIL: "owner@cosmos.com"
-      COSMOS_SYSTEM_OWNER_PASSWORD: "System@123"
+      COSMOS_SYSTEM_OWNER_PASSWORD: "System!123"
 
     restart: always
 
