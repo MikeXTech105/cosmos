@@ -1,6 +1,7 @@
 using System.Reflection;
 using Cosmos.API.Middleware;
 using Cosmos.Application;
+using Cosmos.Application.Services;
 using Cosmos.Infrastructure;
 using Cosmos.Persistence;
 using Cosmos.Shared.Options;
@@ -125,10 +126,18 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-await using (var scope = app.Services.CreateAsyncScope())
+try
 {
+    await using var scope = app.Services.CreateAsyncScope();
     var provisioner = scope.ServiceProvider.GetRequiredService<Cosmos.Application.Abstractions.Services.ISystemOwnerProvisioningService>();
     await provisioner.EnsureProvisionedAsync(CancellationToken.None);
+}
+catch (SystemOwnerProvisioningValidationException exception)
+{
+    app.Logger.LogCritical(
+        "System Owner startup provisioning failed validation. {ValidationSummary}",
+        exception.Message);
+    throw;
 }
 
 app.UseMiddleware<CorrelationIdMiddleware>();
