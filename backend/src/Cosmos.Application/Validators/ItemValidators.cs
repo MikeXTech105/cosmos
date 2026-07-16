@@ -36,6 +36,9 @@ public sealed class GetItemsQueryValidator : AbstractValidator<GetItemsQuery>
         RuleFor(x => x.SortBy).Must(x => string.IsNullOrWhiteSpace(x) || AllowedSortColumns.Contains(x)).WithMessage("SortBy is invalid.");
         RuleFor(x => x.SortDirection).Must(x => string.IsNullOrWhiteSpace(x) || string.Equals(x, "ASC", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "DESC", StringComparison.OrdinalIgnoreCase)).WithMessage("SortDirection must be ASC or DESC.");
         RuleFor(x => x.CategoryId).GreaterThan(0).When(x => x.CategoryId.HasValue);
+        RuleFor(x => x.ProcurementClassification)
+            .Must(x => !x.HasValue || Enum.IsDefined(typeof(ProcurementItemClassification), x.Value))
+            .WithMessage("ProcurementClassification is invalid.");
     }
 }
 
@@ -145,6 +148,9 @@ internal sealed class ItemCommandValidator<T> : AbstractValidator<T>
             .MustAsync(repository.UnitExistsAsync)
             .WithMessage("Unit was not found.");
         RuleFor(x => GetInt(x, nameof(CreateItemCommand.ItemType))).Must(x => Enum.IsDefined(typeof(ItemType), x)).WithMessage("ItemType is invalid.");
+        RuleFor(x => GetNullableInt(x, nameof(CreateItemCommand.ProcurementClassification)))
+            .Must(x => !x.HasValue || Enum.IsDefined(typeof(ProcurementItemClassification), x.Value))
+            .WithMessage("ProcurementClassification is invalid.");
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.SalesPrice))).GreaterThanOrEqualTo(0);
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.PurchasePrice))).GreaterThanOrEqualTo(0);
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.GSTRate))).InclusiveBetween(0, 100);
@@ -160,6 +166,7 @@ internal sealed class ItemCommandValidator<T> : AbstractValidator<T>
 
     private static string? GetString(T instance, string propertyName) => typeof(T).GetProperty(propertyName)?.GetValue(instance) as string;
     private static int GetInt(T instance, string propertyName) => (int)(typeof(T).GetProperty(propertyName)?.GetValue(instance) ?? 0);
+    private static int? GetNullableInt(T instance, string propertyName) => (int?)typeof(T).GetProperty(propertyName)?.GetValue(instance);
     private static long GetLong(T instance, string propertyName) => (long)(typeof(T).GetProperty(propertyName)?.GetValue(instance) ?? 0L);
     private static decimal GetDecimal(T instance, string propertyName) => (decimal)(typeof(T).GetProperty(propertyName)?.GetValue(instance) ?? 0m);
 }

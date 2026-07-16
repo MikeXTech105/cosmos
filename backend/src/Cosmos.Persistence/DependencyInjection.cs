@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IOeeRepository, OeeRepository>();
         services.AddScoped<IReportsRepository, ReportsRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IProcurementPlanningRepository, ProcurementPlanningRepository>();
         services.AddScoped<IGstRepository, GstRepository>();
         return services;
     }
