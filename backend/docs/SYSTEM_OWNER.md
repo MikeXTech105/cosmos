@@ -68,7 +68,7 @@ These are placeholders, not deployable credentials. Prefer the orchestrator's se
 10. Log in through `POST /api/auth/login`, confirm all active pages and action flags are present, then rotate through `POST /api/auth/refresh-token`.
 11. After successful first provisioning, remove the initial password value from long-lived process configuration if the deployment platform permits. Repeated startup does not read it when a valid owner already exists and never resets the password.
 
-If no valid owner exists and any required value is missing, startup fails with the required environment-variable names. Partial or conflicting flagged records also stop startup; the application never silently chooses or repairs one.
+If no valid owner exists and provisioning configuration is missing or invalid, startup fails with field names and safe validation messages such as `Username: username is required`; configured values are never included in the exception or log. Partial or conflicting flagged records also stop startup; the application never silently chooses or repairs one.
 
 ## Fresh installation order
 
