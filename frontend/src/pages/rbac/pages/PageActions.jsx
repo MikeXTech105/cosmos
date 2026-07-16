@@ -24,10 +24,10 @@ const ActionButton = ({ className, disabled, icon: Icon, label, onClick }) => {
 };
 
 const PageActions = ({
-  canAddChild = true,
-  canDelete = true,
-  canEdit = true,
-  canView = true,
+  canAddChild = false,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   onAddChild,
   onDelete,
   onEdit,

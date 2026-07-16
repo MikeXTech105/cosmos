@@ -56,6 +56,7 @@ const normalizeIconName = (name = "") => {
 
 export const iconMap = {
   activity: Activity,
+  alerttriangle: AlertTriangle,
   analytics: BarChart3,
   app: AppWindow,
   approvals: ClipboardCheck,

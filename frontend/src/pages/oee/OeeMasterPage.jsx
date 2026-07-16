@@ -382,26 +382,30 @@ const OeeMasterTable = ({
                 ))}
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
-                    <ActionButton
-                      label={`View ${config.entityLabel}`}
-                      onClick={() => actions.onView(record)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </ActionButton>
-                    <ActionButton
-                      label={`Edit ${config.entityLabel}`}
-                      disabled={!actions.canEdit}
-                      onClick={() => actions.onEdit(record)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </ActionButton>
-                    <ActionButton
-                      label={`Delete ${config.entityLabel}`}
-                      disabled={!actions.canDelete}
-                      onClick={() => actions.onDelete(record)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </ActionButton>
+                    {actions.canView && (
+                      <ActionButton
+                        label={`View ${config.entityLabel}`}
+                        onClick={() => actions.onView(record)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </ActionButton>
+                    )}
+                    {actions.canEdit && (
+                      <ActionButton
+                        label={`Edit ${config.entityLabel}`}
+                        onClick={() => actions.onEdit(record)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </ActionButton>
+                    )}
+                    {actions.canDelete && (
+                      <ActionButton
+                        label={`Delete ${config.entityLabel}`}
+                        onClick={() => actions.onDelete(record)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </ActionButton>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -488,16 +492,27 @@ const OeeMasterPage = ({ config }) => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, record) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       const id = getOeeRecordId(record, config.recordResource);
 
       if (!id) {
@@ -526,11 +541,20 @@ const OeeMasterPage = ({ config }) => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [config, dispatch],
+    [capabilities.canUpdate, capabilities.canView, config, dispatch],
   );
 
   const submitRecord = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -562,11 +586,20 @@ const OeeMasterPage = ({ config }) => {
         throw error;
       }
     },
-    [closeModal, config, dispatch, loadRecords, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      config,
+      dispatch,
+      loadRecords,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -598,7 +631,13 @@ const OeeMasterPage = ({ config }) => {
       );
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [config, confirmation.entity, dispatch, loadRecords]);
+  }, [
+    capabilities.canDelete,
+    config,
+    confirmation.entity,
+    dispatch,
+    loadRecords,
+  ]);
 
   const filterControls = {
     ...state.filters,
@@ -629,14 +668,12 @@ const OeeMasterPage = ({ config }) => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              {config.addLabel}
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                {config.addLabel}
+              </AppButton>
+            )}
           </>
         }
       />
@@ -695,7 +732,7 @@ const OeeMasterPage = ({ config }) => {
         config={config}
         error={state.error}
         isLoading={state.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(config.setPage(value))}
         onPageSizeChange={(value) => dispatch(config.setPageSize(value))}
         onRetry={loadRecords}

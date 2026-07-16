@@ -19,6 +19,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
 import {
@@ -291,6 +292,12 @@ const ExpenseModal = ({
 const ExpensesPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.expenses);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete"],
+    label: "Expenses",
+    resource: ["expenses", "expense"],
+    route: "/purchase/expenses",
+  });
   const canCreateCategory = useCreatePermission({
     label: "Expense Categories",
     resource: "expenseCategories",
@@ -467,9 +474,16 @@ const ExpensesPage = () => {
     };
   }, [state.list, state.totalCount]);
 
-  const openLookupCreate = useCallback((type) => {
-    setLookupCreateModal((current) => ({ ...current, [type]: true }));
-  }, []);
+  const openLookupCreate = useCallback(
+    (type) => {
+      const allowed = type === "category" ? canCreateCategory : canCreateParty;
+
+      if (allowed) {
+        setLookupCreateModal((current) => ({ ...current, [type]: true }));
+      }
+    },
+    [canCreateCategory, canCreateParty],
+  );
 
   const closeLookupCreate = useCallback((type) => {
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
@@ -477,6 +491,12 @@ const ExpensesPage = () => {
 
   const submitLookupCreate = useCallback(
     async (type, payload) => {
+      const allowed = type === "category" ? canCreateCategory : canCreateParty;
+
+      if (!allowed) {
+        return;
+      }
+
       try {
         if (type === "category") {
           await expenseCategoryService.createExpenseCategory(payload);
@@ -496,10 +516,19 @@ const ExpensesPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup],
+    [
+      canCreateCategory,
+      canCreateParty,
+      closeLookupCreate,
+      loadLookup,
+    ],
   );
 
   const openEdit = async (expense) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       expense,
       isLoading: true,
@@ -523,6 +552,13 @@ const ExpensesPage = () => {
   };
 
   const submitExpense = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -541,7 +577,7 @@ const ExpensesPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.expense) {
+    if (!capabilities.canDelete || !confirmation.expense) {
       return;
     }
 
@@ -591,20 +627,22 @@ const ExpensesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  expense: null,
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New Expense
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                onClick={() =>
+                  setModal({
+                    expense: null,
+                    isLoading: false,
+                    isOpen: true,
+                    mode: "create",
+                  })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                New Expense
+              </AppButton>
+            )}
           </>
         }
       />
@@ -769,26 +807,30 @@ const ExpensesPage = () => {
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
                       <div className="inline-flex gap-2">
-                        <AppButton
-                          variant="secondary"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() => void openEdit(expense)}
-                        >
-                          Edit
-                        </AppButton>
-                        <AppButton
-                          variant="danger"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setConfirmation({
-                              expense,
-                              isLoading: false,
-                              isOpen: true,
-                            })
-                          }
-                        >
-                          Delete
-                        </AppButton>
+                        {capabilities.canUpdate && (
+                          <AppButton
+                            variant="secondary"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() => void openEdit(expense)}
+                          >
+                            Edit
+                          </AppButton>
+                        )}
+                        {capabilities.canDelete && (
+                          <AppButton
+                            variant="danger"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setConfirmation({
+                                expense,
+                                isLoading: false,
+                                isOpen: true,
+                              })
+                            }
+                          >
+                            Delete
+                          </AppButton>
+                        )}
                       </div>
                     </td>
                   </tr>

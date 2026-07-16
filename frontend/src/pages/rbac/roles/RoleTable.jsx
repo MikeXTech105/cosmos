@@ -76,7 +76,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <RefreshCw className="h-4 w-4" />
             Retry
           </button>
-        ) : (
+        ) : onCreate ? (
           <button
             type="button"
             onClick={onCreate}
@@ -85,7 +85,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <Plus className="h-4 w-4" />
             Create Role
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );

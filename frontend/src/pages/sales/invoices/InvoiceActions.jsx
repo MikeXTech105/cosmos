@@ -48,6 +48,11 @@ const ActionButton = ({
 };
 
 const InvoiceActions = ({
+  canCancel = false,
+  canConfirm = false,
+  canExport = false,
+  canUpdate = false,
+  canView = false,
   invoice,
   onCancel,
   onConfirm,
@@ -55,41 +60,51 @@ const InvoiceActions = ({
   onEdit,
   onView,
 }) => {
-  const canEdit = isInvoiceDraft(invoice);
-  const canConfirm = isInvoiceDraft(invoice);
-  const canCancel = isInvoiceConfirmed(invoice);
+  const mayEditStatus = isInvoiceDraft(invoice);
+  const mayConfirmStatus = isInvoiceDraft(invoice);
+  const mayCancelStatus = isInvoiceConfirmed(invoice);
 
   return (
     <div className="flex items-center justify-end gap-0.5">
-      <ActionButton
-        icon={Eye}
-        label="View Invoice"
-        onClick={() => onView(invoice)}
-      />
-      <ActionButton
-        icon={Pencil}
-        label="Edit Invoice"
-        disabled={!canEdit}
-        onClick={() => onEdit(invoice)}
-      />
-      <ActionButton
-        icon={CheckCircle2}
-        label="Confirm Invoice"
-        disabled={!canConfirm}
-        onClick={() => onConfirm(invoice)}
-      />
-      <ActionButton
-        icon={Ban}
-        label="Cancel Invoice"
-        tone="danger"
-        disabled={!canCancel || isInvoiceCancelled(invoice)}
-        onClick={() => onCancel(invoice)}
-      />
-      <ActionButton
-        icon={Download}
-        label="Download PDF"
-        onClick={() => onDownloadPdf(invoice)}
-      />
+      {canView && (
+        <ActionButton
+          icon={Eye}
+          label="View Invoice"
+          onClick={() => onView(invoice)}
+        />
+      )}
+      {canUpdate && (
+        <ActionButton
+          icon={Pencil}
+          label="Edit Invoice"
+          disabled={!mayEditStatus}
+          onClick={() => onEdit(invoice)}
+        />
+      )}
+      {canConfirm && (
+        <ActionButton
+          icon={CheckCircle2}
+          label="Confirm Invoice"
+          disabled={!mayConfirmStatus}
+          onClick={() => onConfirm(invoice)}
+        />
+      )}
+      {canCancel && (
+        <ActionButton
+          icon={Ban}
+          label="Cancel Invoice"
+          tone="danger"
+          disabled={!mayCancelStatus || isInvoiceCancelled(invoice)}
+          onClick={() => onCancel(invoice)}
+        />
+      )}
+      {canExport && (
+        <ActionButton
+          icon={Download}
+          label="Download PDF"
+          onClick={() => onDownloadPdf(invoice)}
+        />
+      )}
     </div>
   );
 };

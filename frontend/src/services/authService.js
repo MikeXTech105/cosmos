@@ -1,38 +1,23 @@
 import axiosInstance from "../api/axios";
 import { ENDPOINTS } from "../api/endpoints";
-import { createApiError } from "../utils/apiError";
-
-const unwrapResponse = (response) => {
-  const responseData = response.data;
-
-  if (
-    responseData?.succeeded === false ||
-    responseData?.data?.succeeded === false
-  ) {
-    throw createApiError(
-      responseData?.succeeded === false ? responseData : responseData.data,
-      response,
-    );
-  }
-
-  if (
-    responseData?.data &&
-    typeof responseData.data === "object" &&
-    !Array.isArray(responseData.data)
-  ) {
-    return {
-      ...responseData.data,
-      message: responseData.message,
-    };
-  }
-
-  return responseData;
-};
+import { unwrapResponse } from "./apiServiceUtils";
 
 const postAuth = async (endpoint, payload) => {
   const response = await axiosInstance.post(endpoint, payload);
+  const normalized = unwrapResponse(response);
 
-  return unwrapResponse(response);
+  if (
+    normalized.data &&
+    typeof normalized.data === "object" &&
+    !Array.isArray(normalized.data)
+  ) {
+    return {
+      ...normalized.data,
+      message: normalized.message ?? normalized.data.message,
+    };
+  }
+
+  return normalized.data;
 };
 
 export const authService = {

@@ -20,19 +20,21 @@ const TreeEmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
           ? errorMessage ?? "Something went wrong while loading pages."
           : "Create pages or adjust the filters to view the hierarchy."}
       </p>
-      <button
-        type="button"
-        onClick={hasError ? onRetry : onCreate}
-        className={[
-          "mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold shadow-sm transition-all active:scale-[0.98]",
-          hasError
-            ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-            : "bg-brand text-white hover:bg-brand-dark",
-        ].join(" ")}
-      >
-        <Plus className="h-4 w-4" />
-        {hasError ? "Retry" : "Create Page"}
-      </button>
+      {(hasError || onCreate) && (
+        <button
+          type="button"
+          onClick={hasError ? onRetry : onCreate}
+          className={[
+            "mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold shadow-sm transition-all active:scale-[0.98]",
+            hasError
+              ? "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              : "bg-brand text-white hover:bg-brand-dark",
+          ].join(" ")}
+        >
+          <Plus className="h-4 w-4" />
+          {hasError ? "Retry" : "Create Page"}
+        </button>
+      )}
     </div>
   );
 };

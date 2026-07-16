@@ -53,18 +53,20 @@ const InvoiceTable = ({
             ? error
             : "Create the first sale invoice, or adjust the current filters."}
         </p>
-        <AppButton
-          variant={error ? "secondary" : "primary"}
-          className="mt-5 h-10"
-          onClick={error ? onRetry : onCreate}
-        >
-          {error ? (
-            <RefreshCw className="h-4 w-4" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          )}
-          {error ? "Retry" : "New Invoice"}
-        </AppButton>
+        {(error || onCreate) && (
+          <AppButton
+            variant={error ? "secondary" : "primary"}
+            className="mt-5 h-10"
+            onClick={error ? onRetry : onCreate}
+          >
+            {error ? (
+              <RefreshCw className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            {error ? "Retry" : "New Invoice"}
+          </AppButton>
+        )}
       </div>
     );
   }

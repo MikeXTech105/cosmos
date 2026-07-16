@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
+import dashboardReducer from "./slices/dashboard/dashboardSlice";
 import categoryReducer from "./slices/inventory/categorySlice";
 import hrAttendanceReducer from "./slices/hr/attendanceSlice";
 import hrDepartmentReducer from "./slices/hr/departmentSlice";
@@ -33,6 +34,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     categories: categoryReducer,
+    dashboard: dashboardReducer,
     expenseCategories: expenseCategoryReducer,
     expenses: expenseReducer,
     hrAttendance: hrAttendanceReducer,

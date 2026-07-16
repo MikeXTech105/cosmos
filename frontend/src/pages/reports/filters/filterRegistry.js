@@ -6,6 +6,28 @@ import {
 export const REPORT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 export const DEFAULT_REPORT_PAGE_SIZE = 20;
 export const MAX_REPORT_PAGE_SIZE = 200;
+export const REPORT_TOP_OPTIONS = [5, 10, 20, 50];
+
+export const REPORT_INVENTORY_MOVEMENT_TYPE_OPTIONS = [
+  { label: "In", value: "In" },
+  { label: "Out", value: "Out" },
+  { label: "Adjustment", value: "Adjustment" },
+  { label: "Transfer", value: "Transfer" },
+];
+
+export const REPORT_INVENTORY_SOURCE_TYPE_OPTIONS = [
+  { label: "Purchase", value: "Purchase" },
+  { label: "Sale", value: "Sale" },
+  { label: "Adjustment", value: "Adjustment" },
+  { label: "Opening", value: "Opening" },
+];
+
+export const REPORT_INVENTORY_STOCK_STATUS_OPTIONS = [
+  { label: "In Stock", value: "InStock" },
+  { label: "Low", value: "Low" },
+  { label: "Out of Stock", value: "OutOfStock" },
+  { label: "Negative", value: "Negative" },
+];
 
 const pad = (value) => String(value).padStart(2, "0");
 
@@ -69,6 +91,10 @@ export const DATE_PRESETS = [
 ];
 
 export const filterRegistry = {
+  asOfDate: {
+    label: "As of date",
+    param: "AsOfDate",
+  },
   category: {
     label: "Category",
     param: "CategoryId",
@@ -76,12 +102,37 @@ export const filterRegistry = {
   dateRange: {
     params: ["FromDate", "ToDate"],
   },
+  includeInactive: {
+    label: "Include inactive",
+    param: "IncludeInactive",
+    type: "boolean",
+  },
+  inactiveDays: {
+    label: "Inactive days",
+    param: "InactiveDays",
+    type: "number",
+  },
   item: {
     label: "Item",
     param: "ItemId",
   },
   lowStockOnly: {
     param: "LowStockOnly",
+  },
+  minimumStockValue: {
+    label: "Minimum stock value",
+    param: "MinimumStockValue",
+    type: "number",
+  },
+  minimumTransactions: {
+    label: "Minimum transactions",
+    param: "MinimumTransactions",
+    type: "number",
+  },
+  movementType: {
+    label: "movement type",
+    options: REPORT_INVENTORY_MOVEMENT_TYPE_OPTIONS,
+    param: "MovementType",
   },
   party: {
     label: "Party",
@@ -94,10 +145,29 @@ export const filterRegistry = {
   search: {
     param: "Search",
   },
+  sourceType: {
+    label: "source type",
+    options: REPORT_INVENTORY_SOURCE_TYPE_OPTIONS,
+    param: "SourceType",
+  },
   status: {
     getOptions: (config = {}) =>
       REPORT_STATUS_OPTIONS[config.statusType] ?? REPORT_STATUS_OPTIONS.salesInvoice,
     param: "Status",
+  },
+  stockStatus: {
+    label: "stock status",
+    options: REPORT_INVENTORY_STOCK_STATUS_OPTIONS,
+    param: "StockStatus",
+  },
+  top: {
+    label: "limit",
+    options: REPORT_TOP_OPTIONS,
+    param: "Top",
+  },
+  unit: {
+    label: "Unit",
+    param: "UnitId",
   },
 };
 
@@ -159,6 +229,7 @@ export const getDefaultReportFilters = (report) => {
 
   (report.filters ?? []).forEach((filter) => {
     const config = normalizeFilterConfig(filter);
+    const definition = filterRegistry[config.key];
     const param = getFilterParamName(config);
 
     if (config.key === "dateRange") {
@@ -174,7 +245,7 @@ export const getDefaultReportFilters = (report) => {
       return;
     }
 
-    if (config.key === "lowStockOnly") {
+    if (config.key === "lowStockOnly" || definition?.type === "boolean") {
       defaults[param] = false;
       return;
     }
@@ -200,7 +271,7 @@ export const getReportFiltersFromSearchParams = (report, searchParams) => {
       filters[key] = normalizePageNumber(value);
     } else if (key === "PageSize") {
       filters[key] = clampPageSize(value);
-    } else if (key === "LowStockOnly") {
+    } else if (typeof defaults[key] === "boolean") {
       filters[key] = value === "true";
     } else {
       filters[key] = value ?? defaults[key];
@@ -234,6 +305,7 @@ export const buildReportParams = (report, filters) => {
 
   (report.filters ?? []).forEach((filter) => {
     const config = normalizeFilterConfig(filter);
+    const definition = filterRegistry[config.key];
     const param = getFilterParamName(config);
 
     if (config.key === "dateRange") {
@@ -247,7 +319,7 @@ export const buildReportParams = (report, filters) => {
       return;
     }
 
-    if (config.key === "lowStockOnly") {
+    if (config.key === "lowStockOnly" || definition?.type === "boolean") {
       params[param] = filters[param] ? true : undefined;
       return;
     }

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import AppTooltip from "../../../components/common/AppTooltip";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { pageService } from "../../../services/rbac/pageService";
 import { permissionService } from "../../../services/rbac/permissionService";
 import { roleService } from "../../../services/rbac/roleService";
@@ -238,6 +239,12 @@ const buildPermissionMatrix = (pages, permissions) => {
 };
 
 const Permissions = () => {
+  const capabilities = useCapabilities({
+    actions: ["view", "update"],
+    label: "Permissions",
+    resource: "permissions",
+    route: "/permissions",
+  });
   const [roles, setRoles] = useState([]);
   const [pages, setPages] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
@@ -383,9 +390,14 @@ const Permissions = () => {
   const totalCount = pages.length * permissionColumns.length;
 
   const updateMatrix = useCallback((updater) => {
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update role permissions.");
+      return;
+    }
+
     setMatrix((current) => updater(current));
     setIsDirty(true);
-  }, []);
+  }, [capabilities.canUpdate]);
 
   const toggleCell = useCallback((pageId, columnKey, checked) => {
     updateMatrix((current) => ({
@@ -439,6 +451,11 @@ const Permissions = () => {
   }, [isAllSelected, pages, updateMatrix]);
 
   const savePermissions = useCallback(async () => {
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update role permissions.");
+      return;
+    }
+
     if (!selectedRoleId) {
       return;
     }
@@ -469,7 +486,7 @@ const Permissions = () => {
     } finally {
       setIsSaving(false);
     }
-  }, [matrix, pages, selectedRoleId]);
+  }, [capabilities.canUpdate, matrix, pages, selectedRoleId]);
 
   const matrixError = pagesError ?? permissionsError;
   const matrixLoading =
@@ -498,23 +515,25 @@ const Permissions = () => {
           </p>
         </div>
 
-        <AppTooltip label="Save Permissions">
-          <button
-            type="button"
-            onClick={savePermissions}
-            disabled={saveDisabled}
-            aria-label="Save Permissions"
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Permissions"}
-          </button>
-        </AppTooltip>
+        {capabilities.canUpdate && (
+          <AppTooltip label="Save Permissions">
+            <button
+              type="button"
+              onClick={savePermissions}
+              disabled={saveDisabled}
+              aria-label="Save Permissions"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
+            >
+              <Save className="h-4 w-4" />
+              {isSaving ? "Saving..." : "Save Permissions"}
+            </button>
+          </AppTooltip>
+        )}
       </div>
 
       <RoleSelector
         error={rolesError}
-        isDisabled={isSaving}
+        isDisabled={isSaving || !capabilities.canUpdate}
         isLoading={isRolesLoading}
         roles={roles}
         selectedRoleId={selectedRoleId}

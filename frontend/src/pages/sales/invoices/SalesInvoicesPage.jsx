@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
@@ -69,6 +70,12 @@ const SalesInvoicesPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const invoiceState = useSelector((state) => state.salesInvoices);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "confirm", "cancel", "export"],
+    label: "Sale Invoices",
+    resource: ["saleInvoices", "salesInvoices", "invoices"],
+    route: "/sales/invoices",
+  });
   const canCreateCustomer = useCreatePermission({
     label: "Party Master",
     resource: "party",
@@ -305,6 +312,11 @@ const SalesInvoicesPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      toast.error("You don't have permission to create invoices.");
+      return;
+    }
+
     void loadLookups();
     setModal({
       entity: null,
@@ -312,7 +324,7 @@ const SalesInvoicesPage = () => {
       isOpen: true,
       mode: "create",
     });
-  }, [loadLookups]);
+  }, [capabilities.canCreate, loadLookups]);
 
   const loadItemCreateLookups = useCallback(async () => {
     setItemCreateLookups((current) => ({
@@ -355,13 +367,31 @@ const SalesInvoicesPage = () => {
 
   const openLookupCreate = useCallback(
     (type) => {
+      const allowed = {
+        category: canCreateCategory,
+        customer: canCreateCustomer,
+        item: canCreateItem,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        toast.error("You don't have permission to create this record.");
+        return;
+      }
+
       if (type === "item") {
         void loadItemCreateLookups();
       }
 
       setLookupCreateModal((current) => ({ ...current, [type]: true }));
     },
-    [loadItemCreateLookups],
+    [
+      canCreateCategory,
+      canCreateCustomer,
+      canCreateItem,
+      canCreateUnit,
+      loadItemCreateLookups,
+    ],
   );
 
   const closeLookupCreate = useCallback((type) => {
@@ -395,6 +425,18 @@ const SalesInvoicesPage = () => {
 
   const submitLookupCreate = useCallback(
     async (type, payload, saveAndNew = false) => {
+      const allowed = {
+        category: canCreateCategory,
+        customer: canCreateCustomer,
+        item: canCreateItem,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        toast.error("You don't have permission to create this record.");
+        return;
+      }
+
       try {
         if (type === "customer") {
           await partyService.createParty(payload);
@@ -424,11 +466,24 @@ const SalesInvoicesPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup, refreshItemCreateLookup],
+    [
+      canCreateCategory,
+      canCreateCustomer,
+      canCreateItem,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      refreshItemCreateLookup,
+    ],
   );
 
   const openEdit = useCallback(
     async (invoice) => {
+      if (!capabilities.canUpdate) {
+        toast.error("You don't have permission to update invoices.");
+        return;
+      }
+
       void loadLookups();
       setModal({
         entity: invoice,
@@ -450,11 +505,21 @@ const SalesInvoicesPage = () => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [dispatch, loadLookups],
+    [capabilities.canUpdate, dispatch, loadLookups],
   );
 
   const submitInvoice = useCallback(
     async (payload) => {
+      const allowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!allowed) {
+        toast.error("You don't have permission to save this invoice.");
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -478,17 +543,33 @@ const SalesInvoicesPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadInvoices, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadInvoices,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const openConfirmation = useCallback((action, invoice) => {
+    const allowed =
+      action === "cancel" ? capabilities.canCancel : capabilities.canConfirm;
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this invoice action.");
+      return;
+    }
+
     setConfirmation({
       action,
       entity: invoice,
       isLoading: false,
       isOpen: true,
     });
-  }, []);
+  }, [capabilities.canCancel, capabilities.canConfirm]);
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -501,6 +582,17 @@ const SalesInvoicesPage = () => {
 
   const submitConfirmation = useCallback(async () => {
     if (!confirmation.entity) {
+      return;
+    }
+
+    const allowed =
+      confirmation.action === "cancel"
+        ? capabilities.canCancel
+        : capabilities.canConfirm;
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this invoice action.");
+      closeConfirmation();
       return;
     }
 
@@ -533,10 +625,22 @@ const SalesInvoicesPage = () => {
       );
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [closeConfirmation, confirmation, dispatch, loadInvoices]);
+  }, [
+    capabilities.canCancel,
+    capabilities.canConfirm,
+    closeConfirmation,
+    confirmation,
+    dispatch,
+    loadInvoices,
+  ]);
 
   const downloadPdf = useCallback(
     async (invoice) => {
+      if (!capabilities.canExport) {
+        toast.error("You don't have permission to export invoices.");
+        return;
+      }
+
       setIsPdfLoading(true);
       try {
         const response = await dispatch(fetchInvoiceById(invoice.id)).unwrap();
@@ -557,7 +661,7 @@ const SalesInvoicesPage = () => {
         setIsPdfLoading(false);
       }
     },
-    [customerById, dispatch],
+    [capabilities.canExport, customerById, dispatch],
   );
 
   const filterControls = {
@@ -589,10 +693,12 @@ const SalesInvoicesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton className="h-10" onClick={openCreate}>
-              <Plus className="h-4 w-4" />
-              New Invoice
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                New Invoice
+              </AppButton>
+            )}
           </>
         }
       />
@@ -635,6 +741,11 @@ const SalesInvoicesPage = () => {
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <InvoiceTable
           actions={{
+            canCancel: capabilities.canCancel,
+            canConfirm: capabilities.canConfirm,
+            canExport: capabilities.canExport,
+            canUpdate: capabilities.canUpdate,
+            canView: capabilities.canView,
             onCancel: (invoice) => openConfirmation("cancel", invoice),
             onConfirm: (invoice) => openConfirmation("confirm", invoice),
             onDownloadPdf: downloadPdf,
@@ -644,7 +755,7 @@ const SalesInvoicesPage = () => {
           error={invoiceState.error}
           invoices={invoiceState.list}
           isLoading={invoiceState.loading}
-          onCreate={openCreate}
+          onCreate={capabilities.canCreate ? openCreate : undefined}
           onPageChange={(value) => dispatch(setInvoicePage(value))}
           onPageSizeChange={(value) => dispatch(setInvoicePageSize(value))}
           onRetry={loadInvoices}

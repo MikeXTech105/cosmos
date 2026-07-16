@@ -1,5 +1,3 @@
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 import { createRoot } from "react-dom/client";
 
 import { buildTemplateInvoice } from "../invoices/invoiceHelpers";
@@ -32,38 +30,55 @@ export const exportInvoicePdf = async ({
   const root = createRoot(container);
   const normalizedInvoice = buildTemplateInvoice(invoice, customer);
 
-  root.render(<TemplateComponent invoice={normalizedInvoice} />);
-  await waitForPaint();
+  try {
+    const dependenciesPromise = Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
 
-  const canvas = await html2canvas(container, {
-    backgroundColor: "#ffffff",
-    scale: 2,
-    useCORS: true,
-  });
-  const imageData = canvas.toDataURL("image/png");
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const imageWidth = pageWidth;
-  const imageHeight = (canvas.height * imageWidth) / canvas.width;
-  let heightLeft = imageHeight;
-  let position = 0;
+    root.render(<TemplateComponent invoice={normalizedInvoice} />);
+    await waitForPaint();
 
-  pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
-  heightLeft -= pageHeight;
+    const [html2canvasModule, jsPdfModule] = await dependenciesPromise;
+    const html2canvas = html2canvasModule.default ?? html2canvasModule;
+    const JsPdf =
+      jsPdfModule.jsPDF ?? jsPdfModule.default?.jsPDF ?? jsPdfModule.default;
 
-  while (heightLeft > 0) {
-    position = heightLeft - imageHeight;
-    pdf.addPage();
+    if (typeof html2canvas !== "function" || typeof JsPdf !== "function") {
+      throw new Error("PDF export dependencies could not be loaded.");
+    }
+
+    const canvas = await html2canvas(container, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true,
+    });
+    const imageData = canvas.toDataURL("image/png");
+    const pdf = new JsPdf("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imageWidth = pageWidth;
+    const imageHeight = (canvas.height * imageWidth) / canvas.width;
+    let heightLeft = imageHeight;
+    let position = 0;
+
     pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
     heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imageHeight;
+      pdf.addPage();
+      pdf.addImage(imageData, "PNG", 0, position, imageWidth, imageHeight);
+      heightLeft -= pageHeight;
+    }
+
+    const safeNumber = String(
+      normalizedInvoice.invoiceNumber ?? normalizedInvoice.id ?? "Draft",
+    ).replace(/[^a-z0-9-]+/gi, "-");
+
+    pdf.save(`Invoice-${safeNumber}.pdf`);
+  } finally {
+    root.unmount();
+    container.remove();
   }
-
-  const safeNumber = String(
-    normalizedInvoice.invoiceNumber ?? normalizedInvoice.id ?? "Draft",
-  ).replace(/[^a-z0-9-]+/gi, "-");
-
-  pdf.save(`Invoice-${safeNumber}.pdf`);
-  root.unmount();
-  container.remove();
 };

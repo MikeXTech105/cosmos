@@ -102,16 +102,27 @@ const DepartmentsPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, department) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       const id = getHrRecordId(department, "department");
 
       if (!id) {
@@ -136,11 +147,20 @@ const DepartmentsPage = () => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [dispatch],
+    [capabilities.canUpdate, capabilities.canView, dispatch],
   );
 
   const submitDepartment = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -167,11 +187,19 @@ const DepartmentsPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadDepartments, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadDepartments,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -195,7 +223,12 @@ const DepartmentsPage = () => {
       toast.error(getHrActionError(error, "Unable to delete department."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadDepartments]);
+  }, [
+    capabilities.canDelete,
+    confirmation.entity,
+    dispatch,
+    loadDepartments,
+  ]);
 
   const filterControls = {
     ...departmentsState.filters,
@@ -226,14 +259,12 @@ const DepartmentsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Department
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Department
+              </AppButton>
+            )}
           </>
         }
       />
@@ -273,7 +304,7 @@ const DepartmentsPage = () => {
         departments={departmentsState.list}
         error={departmentsState.error}
         isLoading={departmentsState.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(setHrDepartmentPage(value))}
         onPageSizeChange={(value) => dispatch(setHrDepartmentPageSize(value))}
         onRetry={loadDepartments}

@@ -61,6 +61,7 @@ import {
   getHrSuccessMessage,
   getLookupLabel,
 } from "../hrHelpers";
+import useHrCapabilities from "../useHrCapabilities";
 import {
   HrEmptyState,
   HrPagination,
@@ -458,6 +459,12 @@ const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
 const AttendancePage = () => {
   const dispatch = useDispatch();
   const attendanceState = useSelector((state) => state.hrAttendance);
+  const capabilities = useHrCapabilities({
+    actions: ["view", "create", "approve"],
+    label: "Attendance",
+    resource: ["attendance", "hrAttendance"],
+    route: "/hr/attendance",
+  });
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [modal, setModal] = useState(null);
@@ -555,6 +562,10 @@ const AttendancePage = () => {
 
   const runAction = useCallback(
     async (action, payload) => {
+      if (!capabilities.canCreate) {
+        return;
+      }
+
       try {
         const response =
           action === "checkIn"
@@ -568,11 +579,15 @@ const AttendancePage = () => {
         throw error;
       }
     },
-    [dispatch, loadAttendance],
+    [capabilities.canCreate, dispatch, loadAttendance],
   );
 
   const saveManualEntry = useCallback(
     async (payload) => {
+      if (!capabilities.canCreate) {
+        return;
+      }
+
       try {
         const response = await dispatch(
           createHrAttendanceManualEntry(payload),
@@ -585,11 +600,15 @@ const AttendancePage = () => {
         throw error;
       }
     },
-    [dispatch, loadAttendance],
+    [capabilities.canCreate, dispatch, loadAttendance],
   );
 
   const saveAdjustment = useCallback(
     async (payload) => {
+      if (!capabilities.canCreate) {
+        return;
+      }
+
       try {
         const response = await dispatch(
           requestHrAttendanceAdjustment(payload),
@@ -601,11 +620,15 @@ const AttendancePage = () => {
         throw error;
       }
     },
-    [dispatch],
+    [capabilities.canCreate, dispatch],
   );
 
   const saveDecision = useCallback(
     async (payload) => {
+      if (!capabilities.canApprove) {
+        return;
+      }
+
       try {
         const response =
           decisionMode === "approve"
@@ -618,7 +641,7 @@ const AttendancePage = () => {
         throw error;
       }
     },
-    [decisionMode, dispatch],
+    [capabilities.canApprove, decisionMode, dispatch],
   );
 
   const loadMonthlyReport = useCallback(async () => {
@@ -678,10 +701,12 @@ const AttendancePage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton className="h-10" onClick={() => setModal("manual")}>
-              <Plus className="h-4 w-4" />
-              Manual Entry
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={() => setModal("manual")}>
+                <Plus className="h-4 w-4" />
+                Manual Entry
+              </AppButton>
+            )}
           </>
         }
       />
@@ -761,42 +786,52 @@ const AttendancePage = () => {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-        <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkIn")}>
-          <LogIn className="h-4 w-4" />
-          Check In
-        </AppButton>
-        <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkOut")}>
-          <LogOut className="h-4 w-4" />
-          Check Out
-        </AppButton>
-        <AppButton variant="secondary" className="h-10" onClick={() => setModal("adjustment")}>
-          <FileClock className="h-4 w-4" />
-          Adjustment
-        </AppButton>
-        <AppButton
-          variant="secondary"
-          className="h-10"
-          onClick={() => {
-            setDecisionMode("approve");
-            setModal("decision");
-          }}
-        >
-          <ShieldCheck className="h-4 w-4" />
-          Approve
-        </AppButton>
-        <AppButton
-          variant="secondary"
-          className="h-10"
-          onClick={() => {
-            setDecisionMode("reject");
-            setModal("decision");
-          }}
-        >
-          <ShieldX className="h-4 w-4" />
-          Reject
-        </AppButton>
-      </div>
+      {(capabilities.canCreate || capabilities.canApprove) && (
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+          {capabilities.canCreate && (
+            <>
+              <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkIn")}>
+                <LogIn className="h-4 w-4" />
+                Check In
+              </AppButton>
+              <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkOut")}>
+                <LogOut className="h-4 w-4" />
+                Check Out
+              </AppButton>
+              <AppButton variant="secondary" className="h-10" onClick={() => setModal("adjustment")}>
+                <FileClock className="h-4 w-4" />
+                Adjustment
+              </AppButton>
+            </>
+          )}
+          {capabilities.canApprove && (
+            <>
+              <AppButton
+                variant="secondary"
+                className="h-10"
+                onClick={() => {
+                  setDecisionMode("approve");
+                  setModal("decision");
+                }}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Approve
+              </AppButton>
+              <AppButton
+                variant="secondary"
+                className="h-10"
+                onClick={() => {
+                  setDecisionMode("reject");
+                  setModal("decision");
+                }}
+              >
+                <ShieldX className="h-4 w-4" />
+                Reject
+              </AppButton>
+            </>
+          )}
+        </div>
+      )}
 
       {!attendanceState.loading && (attendanceState.error || attendanceState.list.length === 0) ? (
         <HrEmptyState
