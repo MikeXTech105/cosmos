@@ -223,8 +223,8 @@ const getLeaveBalanceRows = (leaveBalance) => {
 const EmployeeProfilePanel = ({
   attendanceRecords = [],
   bankDetails,
-  canDelete = true,
-  canEdit = true,
+  canDelete = false,
+  canEdit = false,
   departmentOptions,
   designationOptions,
   documents,
@@ -306,10 +306,9 @@ const EmployeeProfilePanel = ({
           </div>
 
           <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
-            {isResignedEmployee ? (
+            {isResignedEmployee && canEdit ? (
               <AppButton
                 className="h-9 rounded-lg px-3"
-                disabled={!canEdit}
                 onClick={() => onRejoin?.(employee)}
               >
                 <UserPlus className="h-4 w-4" />
@@ -317,37 +316,38 @@ const EmployeeProfilePanel = ({
               </AppButton>
             ) : (
               <>
-                <AppButton
-                  variant="secondary"
-                  className="h-9 rounded-lg px-3"
-                  disabled={!canEditCurrentEmployee}
-                  onClick={() => onEdit(employee)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </AppButton>
-                {isActiveEmployee && (
+                {canEditCurrentEmployee && (
+                  <AppButton
+                    variant="secondary"
+                    className="h-9 rounded-lg px-3"
+                    onClick={() => onEdit(employee)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </AppButton>
+                )}
+                {isActiveEmployee && canEdit && (
                   <AppButton
                     variant="secondary"
                     className="h-9 rounded-lg px-3 text-amber-700 hover:bg-amber-50"
-                    disabled={!canEdit}
                     onClick={() => onResign?.(employee)}
                   >
                     <LogOut className="h-4 w-4" />
                     Resign
                   </AppButton>
                 )}
-                <AppTooltip label="Delete employee">
-                  <button
-                    type="button"
-                    onClick={() => onDelete(employee)}
-                    disabled={!canDeleteCurrentEmployee}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                    aria-label="Delete employee"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </AppTooltip>
+                {canDeleteCurrentEmployee && (
+                  <AppTooltip label="Delete employee">
+                    <button
+                      type="button"
+                      onClick={() => onDelete(employee)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                      aria-label="Delete employee"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </AppTooltip>
+                )}
               </>
             )}
           </div>
@@ -525,15 +525,16 @@ const EmployeeProfilePanel = ({
               <h3 className="text-sm font-semibold text-slate-900">
                 Bank Details
               </h3>
-              <AppButton
-                variant="secondary"
-                className="h-9 rounded-lg px-3"
-                disabled={!canEdit}
-                onClick={() => onEditBank(employee)}
-              >
-                <Pencil className="h-4 w-4" />
-                {hasBankInfo(currentBankDetails) ? "Edit Bank" : "Add Bank"}
-              </AppButton>
+              {canEdit && (
+                <AppButton
+                  variant="secondary"
+                  className="h-9 rounded-lg px-3"
+                  onClick={() => onEditBank(employee)}
+                >
+                  <Pencil className="h-4 w-4" />
+                  {hasBankInfo(currentBankDetails) ? "Edit Bank" : "Add Bank"}
+                </AppButton>
+              )}
             </div>
             {!hasBankInfo(currentBankDetails) ? (
               <EmptyPanel icon={Banknote} title="No bank details">
@@ -569,14 +570,15 @@ const EmployeeProfilePanel = ({
               <h3 className="text-sm font-semibold text-slate-900">
                 Documents
               </h3>
-              <AppButton
-                className="h-9 rounded-lg px-3"
-                disabled={!canEdit}
-                onClick={onAddDocument}
-              >
-                <Plus className="h-4 w-4" />
-                Add Document
-              </AppButton>
+              {canEdit && (
+                <AppButton
+                  className="h-9 rounded-lg px-3"
+                  onClick={onAddDocument}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Document
+                </AppButton>
+              )}
             </div>
 
             {relatedLoading ? (
@@ -634,17 +636,18 @@ const EmployeeProfilePanel = ({
                             Open
                           </a>
                         )}
-                        <AppTooltip label="Delete document">
-                          <button
-                            type="button"
-                            onClick={() => onDeleteDocument(document)}
-                            disabled={!canDelete}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-                            aria-label="Delete document"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </AppTooltip>
+                        {canDelete && (
+                          <AppTooltip label="Delete document">
+                            <button
+                              type="button"
+                              onClick={() => onDeleteDocument(document)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              aria-label="Delete document"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </AppTooltip>
+                        )}
                       </div>
                     </div>
                   );

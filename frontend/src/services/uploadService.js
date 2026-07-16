@@ -2,15 +2,7 @@ import axiosInstance from "../api/axios";
 import { ENDPOINTS } from "../api/endpoints";
 import { unwrapResponse } from "./apiServiceUtils";
 
-const readFileAsDataUrl = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Unable to read image file."));
-    reader.readAsDataURL(file);
-  });
-};
+export const isImageUploadConfigured = () => Boolean(ENDPOINTS.UPLOAD_IMAGE);
 
 const extractUploadUrl = (response) => {
   const data = response?.data ?? response;
@@ -37,14 +29,7 @@ const extractUploadUrl = (response) => {
 export const uploadService = {
   uploadImage: async (file, onUploadProgress) => {
     if (!ENDPOINTS.UPLOAD_IMAGE) {
-      // Temporary fallback: the live Swagger contract has no file upload endpoint.
-      // Replace UPLOAD_IMAGE with the real multipart endpoint to switch to server storage.
-      onUploadProgress?.({
-        loaded: file.size,
-        total: file.size,
-      });
-
-      return readFileAsDataUrl(file);
+      throw new Error("Image upload is not configured.");
     }
 
     const formData = new FormData();

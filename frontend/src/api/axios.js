@@ -5,11 +5,29 @@ import {
   getAuthData,
   updateAuthTokens,
 } from "../utils/authStorage";
-import { createApiError } from "../utils/apiError";
+import { unwrapResponse } from "../services/apiServiceUtils";
 import { store } from "../store/store";
 import { clearCredentials, setTokens } from "../store/slices/authSlice";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const getApiBaseUrl = () => {
+  const value = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
+
+  try {
+    const url = new URL(value);
+
+    if (!["http:", "https:"].includes(url.protocol)) {
+      throw new Error("unsupported protocol");
+    }
+
+    return value.replace(/\/+$/, "");
+  } catch {
+    throw new Error(
+      "VITE_API_BASE_URL must be configured as a valid HTTP(S) URL.",
+    );
+  }
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const AUTH_REFRESH_EXCLUDED_ENDPOINTS = [
   ENDPOINTS.LOGIN,
@@ -29,41 +47,29 @@ const axiosInstance = axios.create({
   },
 });
 
-const unwrapResponse = (response) => {
-  const responseData = response.data;
+const normalizeEndpointPath = (url = "") => {
+  try {
+    const pathname = new URL(url, `${API_BASE_URL}/`).pathname;
 
-  if (
-    responseData?.succeeded === false ||
-    responseData?.data?.succeeded === false
-  ) {
-    throw createApiError(
-      responseData?.succeeded === false ? responseData : responseData.data,
-      response,
-    );
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
   }
-
-  if (
-    responseData?.data &&
-    typeof responseData.data === "object" &&
-    !Array.isArray(responseData.data)
-  ) {
-    return responseData.data;
-  }
-
-  return responseData;
 };
 
+const AUTH_REFRESH_EXCLUDED_PATHS = new Set(
+  AUTH_REFRESH_EXCLUDED_ENDPOINTS.map(normalizeEndpointPath),
+);
+
 const shouldSkipRefresh = (url = "") => {
-  return AUTH_REFRESH_EXCLUDED_ENDPOINTS.some((endpoint) =>
-    url.includes(endpoint),
-  );
+  return AUTH_REFRESH_EXCLUDED_PATHS.has(normalizeEndpointPath(url));
 };
 
 const clearSessionAndRedirect = () => {
   clearAuthData();
   store.dispatch(clearCredentials());
 
-  if (window.location.pathname !== "/login") {
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
     window.location.assign("/login");
   }
 };
@@ -85,7 +91,7 @@ const requestNewAccessToken = async () => {
     },
   );
 
-  const data = unwrapResponse(response);
+  const data = unwrapResponse(response).data;
   const nextTokens = {
     accessToken: data.accessToken,
     refreshToken: data.refreshToken ?? refreshToken,
@@ -116,17 +122,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    if (
-      response.data?.succeeded === false ||
-      response.data?.data?.succeeded === false
-    ) {
-      return Promise.reject(
-        createApiError(
-          response.data?.succeeded === false ? response.data : response.data.data,
-          response,
-        ),
-      );
-    }
+    unwrapResponse(response);
 
     return response;
   },

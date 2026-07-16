@@ -11,6 +11,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import {
   createExpenseCategory,
   deleteExpenseCategory,
@@ -136,6 +137,12 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
 const ExpenseCategoriesPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.expenseCategories);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete"],
+    label: "Expense Categories",
+    resource: ["expenseCategories", "expenseCategory"],
+    route: "/purchase/expense-categories",
+  });
   const [searchInput, setSearchInput] = useState(state.filters.Search);
   const [modal, setModal] = useState({
     category: null,
@@ -187,6 +194,13 @@ const ExpenseCategoriesPage = () => {
   );
 
   const submitCategory = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -205,7 +219,7 @@ const ExpenseCategoriesPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.category) {
+    if (!capabilities.canDelete || !confirmation.category) {
       return;
     }
 
@@ -251,15 +265,17 @@ const ExpenseCategoriesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({ category: null, isOpen: true, mode: "create" })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New Category
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                onClick={() =>
+                  setModal({ category: null, isOpen: true, mode: "create" })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                New Category
+              </AppButton>
+            )}
           </>
         }
       />
@@ -392,32 +408,36 @@ const ExpenseCategoriesPage = () => {
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-right">
                       <div className="inline-flex gap-2">
-                        <AppButton
-                          variant="secondary"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setModal({
-                              category,
-                              isOpen: true,
-                              mode: "edit",
-                            })
-                          }
-                        >
-                          Edit
-                        </AppButton>
-                        <AppButton
-                          variant="danger"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setConfirmation({
-                              category,
-                              isLoading: false,
-                              isOpen: true,
-                            })
-                          }
-                        >
-                          Delete
-                        </AppButton>
+                        {capabilities.canUpdate && (
+                          <AppButton
+                            variant="secondary"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setModal({
+                                category,
+                                isOpen: true,
+                                mode: "edit",
+                              })
+                            }
+                          >
+                            Edit
+                          </AppButton>
+                        )}
+                        {capabilities.canDelete && (
+                          <AppButton
+                            variant="danger"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setConfirmation({
+                                category,
+                                isLoading: false,
+                                isOpen: true,
+                              })
+                            }
+                          >
+                            Delete
+                          </AppButton>
+                        )}
                       </div>
                     </td>
                   </tr>

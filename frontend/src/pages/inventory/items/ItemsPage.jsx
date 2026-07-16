@@ -272,6 +272,10 @@ const ItemsPage = () => {
   }, []);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     void loadLookups();
     setModal({
       entity: null,
@@ -279,11 +283,19 @@ const ItemsPage = () => {
       isOpen: true,
       mode: "create",
     });
-  }, [loadLookups]);
+  }, [capabilities.canCreate, loadLookups]);
 
-  const openLookupCreate = useCallback((type) => {
-    setLookupCreateModal({ isOpen: true, type });
-  }, []);
+  const openLookupCreate = useCallback(
+    (type) => {
+      const isAllowed =
+        type === "categories" ? canCreateCategory : canCreateUnit;
+
+      if (isAllowed) {
+        setLookupCreateModal({ isOpen: true, type });
+      }
+    },
+    [canCreateCategory, canCreateUnit],
+  );
 
   const closeLookupCreate = useCallback(() => {
     setLookupCreateModal({ isOpen: false, type: null });
@@ -294,6 +306,13 @@ const ItemsPage = () => {
       const type = lookupCreateModal.type;
 
       if (!type) {
+        return;
+      }
+
+      const isAllowed =
+        type === "categories" ? canCreateCategory : canCreateUnit;
+
+      if (!isAllowed) {
         return;
       }
 
@@ -324,11 +343,21 @@ const ItemsPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup, lookupCreateModal.type],
+    [
+      canCreateCategory,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      lookupCreateModal.type,
+    ],
   );
 
   const selectItem = useCallback(
     async (item) => {
+      if (!capabilities.canView) {
+        return;
+      }
+
       dispatch(setSelectedItem(item));
 
       try {
@@ -337,11 +366,15 @@ const ItemsPage = () => {
         toast.error(getActionError(error, "Unable to load item details."));
       }
     },
-    [dispatch],
+    [capabilities.canView, dispatch],
   );
 
   const openEdit = useCallback(
     async (item) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       void loadLookups();
       setModal({
         entity: item,
@@ -363,11 +396,20 @@ const ItemsPage = () => {
         setModal((current) => ({ ...current, isLoading: false }));
       }
     },
-    [dispatch, loadLookups],
+    [capabilities.canUpdate, dispatch, loadLookups],
   );
 
   const submitItem = useCallback(
     async (payload, saveAndNew) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -424,11 +466,19 @@ const ItemsPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadItems, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadItems,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -447,7 +497,7 @@ const ItemsPage = () => {
       toast.error(getActionError(error, "Unable to delete item."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadItems]);
+  }, [capabilities.canDelete, confirmation.entity, dispatch, loadItems]);
 
   const filterControls = {
     ...itemsState.filters,
@@ -478,14 +528,12 @@ const ItemsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Item
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Item
+              </AppButton>
+            )}
           </>
         }
       />
@@ -537,7 +585,7 @@ const ItemsPage = () => {
             error={itemsState.error}
             isLoading={itemsState.loading}
             items={itemsState.list}
-            onCreate={openCreate}
+            onCreate={capabilities.canCreate ? openCreate : undefined}
             onPageChange={(value) => dispatch(setItemPage(value))}
             onPageSizeChange={(value) => dispatch(setItemPageSize(value))}
             onRetry={loadItems}

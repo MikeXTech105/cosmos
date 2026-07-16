@@ -28,7 +28,7 @@ const DetailRow = ({ label, value }) => {
   );
 };
 
-const ItemDetailsPanel = ({ canEdit, item, isLoading, onEdit }) => {
+const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
   if (isLoading) {
     return (
       <div className="h-full min-h-[420px] space-y-4 p-5">

@@ -8,6 +8,11 @@ import {
   getSidebarCategory,
 } from "../config/sidebar";
 import {
+  getReportGroup,
+  reportRegistry,
+} from "../pages/reports/reportRegistry";
+import { canViewReport } from "../utils/reportPermissions";
+import {
   canViewPermission,
   findPermissionPage,
   isSuperAdminAuth,
@@ -209,6 +214,28 @@ const flattenMenuItems = (items, ancestors = []) => {
   });
 };
 
+const createReportCommandItems = (pages, roles, user) => {
+  return reportRegistry
+    .filter((report) => canViewReport({ pages, report, roles, user }))
+    .map((report) => {
+      const group = getReportGroup(report.group);
+
+      return {
+        raw: report,
+        id: `report-${report.id}`,
+        parentId: null,
+        label: report.title,
+        route: report.route,
+        iconName: report.icon,
+        Icon: getIconComponent(report.icon),
+        description: report.description,
+        sortOrder: 0,
+        modulePath: `Reports / ${group?.label ?? report.group}`,
+        children: [],
+      };
+    });
+};
+
 const getActiveTrail = (items) => {
   for (const item of items) {
     if (item.isActive) {
@@ -256,9 +283,14 @@ export const useSidebar = () => {
     [activeMenuTree, sidebar.searchQuery],
   );
 
+  const reportCommandItems = useMemo(
+    () => createReportCommandItems(pages, roles, user),
+    [pages, roles, user],
+  );
+
   const flatMenuItems = useMemo(
-    () => flattenMenuItems(activeMenuTree),
-    [activeMenuTree],
+    () => [...flattenMenuItems(activeMenuTree), ...reportCommandItems],
+    [activeMenuTree, reportCommandItems],
   );
 
   useEffect(() => {

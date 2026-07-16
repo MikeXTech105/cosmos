@@ -12,6 +12,10 @@ import { loginUser } from "../../services/authService";
 import { setCredentials } from "../../store/slices/authSlice";
 import { saveAuthData } from "../../utils/authStorage";
 import { getApiErrorMessage } from "../../utils/apiError";
+import {
+  getDefaultAuthorizedRoute,
+  isRouteAuthorized,
+} from "../../utils/authorizedRoute";
 import { loginSchema } from "../../utils/validationSchemas";
 
 const getRememberMeDefault = () => {
@@ -58,15 +62,24 @@ const Login = () => {
         pages: data.pages ?? [],
       };
 
-      saveAuthData(authData);
+      saveAuthData(authData, { rememberMe });
       dispatch(setCredentials(authData));
       window.localStorage.setItem("cosmos_remember_me", String(rememberMe));
 
       toast.success(data.message ?? "Signed in successfully");
 
-      navigate(location.state?.from?.pathname ?? "/dashboard", {
-        replace: true,
-      });
+      const requestedLocation = location.state?.from;
+      const requestedRoute = requestedLocation
+        ? `${requestedLocation.pathname ?? ""}${requestedLocation.search ?? ""}${requestedLocation.hash ?? ""}`
+        : "";
+      const nextRoute = isRouteAuthorized({
+        ...authData,
+        route: requestedRoute,
+      })
+        ? requestedRoute
+        : getDefaultAuthorizedRoute(authData);
+
+      navigate(nextRoute, { replace: true });
     } catch (error) {
       toast.error(
         getApiErrorMessage(

@@ -18,6 +18,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
@@ -390,6 +391,12 @@ const PaymentModal = ({
 const SupplierPaymentsPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.supplierPayments);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete"],
+    label: "Supplier Payments",
+    resource: ["supplierPayments", "supplierPayment"],
+    route: "/purchase/supplier-payments",
+  });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
     resource: "party",
@@ -523,6 +530,10 @@ const SupplierPaymentsPage = () => {
 
   const submitSupplier = useCallback(
     async (payload) => {
+      if (!canCreateSupplier) {
+        return;
+      }
+
       try {
         await partyService.createParty(payload);
         toast.success("Supplier created successfully");
@@ -534,10 +545,14 @@ const SupplierPaymentsPage = () => {
         throw error;
       }
     },
-    [loadSuppliers],
+    [canCreateSupplier, loadSuppliers],
   );
 
   const openEdit = async (payment) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       isLoading: true,
       isOpen: true,
@@ -562,6 +577,13 @@ const SupplierPaymentsPage = () => {
   };
 
   const submitPayment = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -580,7 +602,7 @@ const SupplierPaymentsPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.payment) {
+    if (!capabilities.canDelete || !confirmation.payment) {
       return;
     }
 
@@ -630,20 +652,22 @@ const SupplierPaymentsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                  payment: null,
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New Payment
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                onClick={() =>
+                  setModal({
+                    isLoading: false,
+                    isOpen: true,
+                    mode: "create",
+                    payment: null,
+                  })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                New Payment
+              </AppButton>
+            )}
           </>
         }
       />
@@ -684,7 +708,11 @@ const SupplierPaymentsPage = () => {
             aria-label="Filter by supplier"
             creatable={canCreateSupplier}
             createLabel="Create new supplier"
-            onCreateClick={() => setSupplierCreateOpen(true)}
+            onCreateClick={() => {
+              if (canCreateSupplier) {
+                setSupplierCreateOpen(true);
+              }
+            }}
           />
           <AppInput
             type="date"
@@ -802,26 +830,30 @@ const SupplierPaymentsPage = () => {
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
                       <div className="inline-flex gap-2">
-                        <AppButton
-                          variant="secondary"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() => void openEdit(payment)}
-                        >
-                          Edit
-                        </AppButton>
-                        <AppButton
-                          variant="danger"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setConfirmation({
-                              isLoading: false,
-                              isOpen: true,
-                              payment,
-                            })
-                          }
-                        >
-                          Delete
-                        </AppButton>
+                        {capabilities.canUpdate && (
+                          <AppButton
+                            variant="secondary"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() => void openEdit(payment)}
+                          >
+                            Edit
+                          </AppButton>
+                        )}
+                        {capabilities.canDelete && (
+                          <AppButton
+                            variant="danger"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setConfirmation({
+                                isLoading: false,
+                                isOpen: true,
+                                payment,
+                              })
+                            }
+                          >
+                            Delete
+                          </AppButton>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -852,7 +884,11 @@ const SupplierPaymentsPage = () => {
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-        onCreateSupplier={() => setSupplierCreateOpen(true)}
+        onCreateSupplier={() => {
+          if (canCreateSupplier) {
+            setSupplierCreateOpen(true);
+          }
+        }}
         onLoadBills={loadSupplierBills}
         onSubmit={submitPayment}
         payment={modal.payment}

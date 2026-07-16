@@ -55,6 +55,7 @@ import {
   HrPagination,
   HrStatCard,
 } from "../HrShared";
+import useHrCapabilities from "../useHrCapabilities";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -306,6 +307,12 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 const LeavesPage = () => {
   const dispatch = useDispatch();
   const leaveState = useSelector((state) => state.hrLeaves);
+  const capabilities = useHrCapabilities({
+    actions: ["view", "create", "update", "approve"],
+    label: "Leaves",
+    resource: ["leaves", "hrLeaves"],
+    route: "/hr/leaves",
+  });
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [modal, setModal] = useState(null);
   const [selectedLeave, setSelectedLeave] = useState(null);
@@ -386,6 +393,10 @@ const LeavesPage = () => {
 
   const submitLeave = useCallback(
     async (payload) => {
+      if (!capabilities.canCreate) {
+        return;
+      }
+
       try {
         const response = await dispatch(applyHrLeave(payload)).unwrap();
         toast.success(getHrSuccessMessage(response, "Leave request submitted"));
@@ -396,11 +407,18 @@ const LeavesPage = () => {
         throw error;
       }
     },
-    [dispatch, loadLeaves],
+    [capabilities.canCreate, dispatch, loadLeaves],
   );
 
   const submitAction = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal === "cancel" ? capabilities.canUpdate : capabilities.canApprove;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const actionMap = {
           approve: approveHrLeave,
@@ -417,10 +435,23 @@ const LeavesPage = () => {
         throw error;
       }
     },
-    [dispatch, loadLeaves, modal],
+    [
+      capabilities.canApprove,
+      capabilities.canUpdate,
+      dispatch,
+      loadLeaves,
+      modal,
+    ],
   );
 
   const openAction = (action, leave) => {
+    const isAllowed =
+      action === "cancel" ? capabilities.canUpdate : capabilities.canApprove;
+
+    if (!isAllowed) {
+      return;
+    }
+
     setSelectedLeave(leave);
     setModal(action);
   };
@@ -482,10 +513,12 @@ const LeavesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton className="h-10" onClick={() => setModal("apply")}>
-              <Plus className="h-4 w-4" />
-              Apply Leave
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={() => setModal("apply")}>
+                <Plus className="h-4 w-4" />
+                Apply Leave
+              </AppButton>
+            )}
           </>
         }
       />
@@ -617,15 +650,21 @@ const LeavesPage = () => {
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
                           <div className="flex justify-end gap-2">
-                            <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>
-                              Approve
-                            </AppButton>
-                            <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("reject", leave)}>
-                              Reject
-                            </AppButton>
-                            <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("cancel", leave)}>
-                              Cancel
-                            </AppButton>
+                            {capabilities.canApprove && (
+                              <>
+                                <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>
+                                  Approve
+                                </AppButton>
+                                <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("reject", leave)}>
+                                  Reject
+                                </AppButton>
+                              </>
+                            )}
+                            {capabilities.canUpdate && (
+                              <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("cancel", leave)}>
+                                Cancel
+                              </AppButton>
+                            )}
                           </div>
                         </td>
                       </tr>

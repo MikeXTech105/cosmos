@@ -12,6 +12,7 @@ import {
   getPillMeta,
   getReportValue,
   isNumericColumn,
+  toReportNumber,
 } from "../../utils/reportFormat";
 import { REPORT_PAGE_SIZE_OPTIONS } from "./filters/filterRegistry";
 
@@ -199,6 +200,8 @@ const ReportTable = ({
                   >
                     {columns.map((column) => {
                       const value = getReportValue(row, column.key);
+                      const isNegativeTone =
+                        column.tone === "negative" && toReportNumber(value) < 0;
 
                       if (column.format === "pill") {
                         const metaValue = getPillMeta(value, column);
@@ -230,6 +233,7 @@ const ReportTable = ({
                               ? "text-right font-medium tabular-nums text-slate-900"
                               : "",
                             column.format === "enum" ? "font-medium" : "",
+                            isNegativeTone ? "text-red-600" : "",
                           ].join(" ")}
                         >
                           {formatCell(value, column)}

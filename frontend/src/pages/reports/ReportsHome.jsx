@@ -1,15 +1,11 @@
 import { ArrowRight, FileSearch, Search } from "lucide-react";
 import { createElement, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import { getIconComponent } from "../../config/iconMap";
-import {
-  canViewPermission,
-  findPermissionPage,
-  isSuperAdminAuth,
-} from "../../hooks/usePermission";
+import { canViewReport } from "../../utils/reportPermissions";
 import {
   getReportGroup,
   reportGroups,
@@ -18,24 +14,6 @@ import {
 
 const DynamicIcon = ({ className, name }) => {
   return createElement(getIconComponent(name), { className });
-};
-
-const canViewReport = ({ isSuperAdmin, pages, report }) => {
-  if (isSuperAdmin) {
-    return true;
-  }
-
-  const permission =
-    findPermissionPage(pages, {
-      pageName: report.permission,
-      route: report.route,
-    }) ??
-    findPermissionPage(pages, {
-      pageName: `${report.title} Report`,
-      route: report.route,
-    });
-
-  return canViewPermission(permission);
 };
 
 const ReportCard = ({ report }) => {
@@ -69,21 +47,19 @@ const ReportsHome = () => {
   const roles = useSelector((state) => state.auth.roles);
   const user = useSelector((state) => state.auth.user);
   const [searchQuery, setSearchQuery] = useState("");
-  const isSuperAdmin = useMemo(
-    () => isSuperAdminAuth({ roles, user }),
-    [roles, user],
-  );
   const activeGroup = group ? getReportGroup(group) : null;
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const visibleReports = useMemo(() => {
+  const authorizedReports = useMemo(() => {
     return reportRegistry.filter((report) => {
       if (group && report.group !== group) {
         return false;
       }
 
-      if (!canViewReport({ isSuperAdmin, pages, report })) {
-        return false;
-      }
+      return canViewReport({ pages, report, roles, user });
+    });
+  }, [group, pages, roles, user]);
+  const visibleReports = useMemo(() => {
+    return authorizedReports.filter((report) => {
 
       if (!normalizedQuery) {
         return true;
@@ -95,7 +71,7 @@ const ReportsHome = () => {
         .toLowerCase()
         .includes(normalizedQuery);
     });
-  }, [group, isSuperAdmin, normalizedQuery, pages]);
+  }, [authorizedReports, normalizedQuery]);
   const groupedReports = useMemo(() => {
     return reportGroups
       .filter((entry) => !group || entry.id === group)
@@ -124,6 +100,10 @@ const ReportsHome = () => {
         </div>
       </section>
     );
+  }
+
+  if (group && authorizedReports.length === 0) {
+    return <Navigate to="/403" replace />;
   }
 
   return (

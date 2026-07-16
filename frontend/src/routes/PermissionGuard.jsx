@@ -1,20 +1,25 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import usePermission, {
-  canViewPermission,
-  isSuperAdminAuth,
-} from "../hooks/usePermission";
+import { canPerformAction } from "../utils/permissionResolver";
 
 const PermissionGuard = ({ route, pageName, children }) => {
-  const roles = useSelector((state) => state.auth.roles);
+  const location = useLocation();
+  const pages = useSelector((state) => state.auth.pages ?? []);
+  const roles = useSelector((state) => state.auth.roles ?? []);
   const user = useSelector((state) => state.auth.user);
-  const permission = usePermission({ label: pageName, route });
+  const canView = canPerformAction({
+    action: "view",
+    pages,
+    roles,
+    target: { label: pageName, route },
+    user,
+  });
 
-  return isSuperAdminAuth({ roles, user }) || canViewPermission(permission) ? (
+  return canView ? (
     children
   ) : (
-    <Navigate to="/dashboard" replace />
+    <Navigate to="/403" replace state={{ from: location }} />
   );
 };
 

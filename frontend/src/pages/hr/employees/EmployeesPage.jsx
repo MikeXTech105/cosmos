@@ -288,6 +288,10 @@ const EmployeesPage = () => {
 
   const selectEmployee = useCallback(
     async (employee) => {
+      if (!capabilities.canView) {
+        return;
+      }
+
       const id = getHrRecordId(employee, "employee");
 
       if (!id) {
@@ -308,7 +312,7 @@ const EmployeesPage = () => {
       void dispatch(fetchHrEmployeeDocuments(id));
       void loadEmployeeRelated(id);
     },
-    [dispatch, loadEmployeeRelated],
+    [capabilities.canView, dispatch, loadEmployeeRelated],
   );
 
   useEffect(() => {
@@ -325,9 +329,26 @@ const EmployeesPage = () => {
     setModal((current) => ({ ...current, isOpen: false }));
   }, []);
 
-  const openLookupCreate = useCallback((type) => {
-    setLookupCreateModal((current) => ({ ...current, [type]: true }));
-  }, []);
+  const openLookupCreate = useCallback(
+    (type) => {
+      const allowed = {
+        department: canCreateDepartment,
+        designation: canCreateDesignation,
+        employee: capabilities.canCreate,
+        shift: canCreateShift,
+      }[type];
+
+      if (allowed) {
+        setLookupCreateModal((current) => ({ ...current, [type]: true }));
+      }
+    },
+    [
+      canCreateDepartment,
+      canCreateDesignation,
+      canCreateShift,
+      capabilities.canCreate,
+    ],
+  );
 
   const closeLookupCreate = useCallback((type) => {
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
@@ -335,6 +356,17 @@ const EmployeesPage = () => {
 
   const submitLookupCreate = useCallback(
     async (type, payload) => {
+      const allowed = {
+        department: canCreateDepartment,
+        designation: canCreateDesignation,
+        employee: capabilities.canCreate,
+        shift: canCreateShift,
+      }[type];
+
+      if (!allowed) {
+        return;
+      }
+
       try {
         if (type === "department") {
           await hrDepartmentService.createDepartment(payload);
@@ -357,10 +389,22 @@ const EmployeesPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, dispatch, loadLookups],
+    [
+      canCreateDepartment,
+      canCreateDesignation,
+      canCreateShift,
+      capabilities.canCreate,
+      closeLookupCreate,
+      dispatch,
+      loadLookups,
+    ],
   );
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
     void loadLookupsIfNeeded();
     setModal({
       entity: null,
@@ -368,10 +412,14 @@ const EmployeesPage = () => {
       isOpen: true,
       mode: "create",
     });
-  }, [loadLookupsIfNeeded]);
+  }, [capabilities.canCreate, loadLookupsIfNeeded]);
 
   const openEdit = useCallback(
     async (employee) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       const id = getHrRecordId(employee, "employee");
 
       if (!id) {
@@ -417,11 +465,20 @@ const EmployeesPage = () => {
       );
       setModal((current) => ({ ...current, isLoading: false }));
     },
-    [dispatch, loadLookupsIfNeeded],
+    [capabilities.canUpdate, dispatch, loadLookupsIfNeeded],
   );
 
   const submitEmployee = useCallback(
     async (payload, options = {}) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const employeeId = getHrRecordId(modal.entity, "employee");
         const response =
@@ -462,11 +519,19 @@ const EmployeesPage = () => {
         throw error;
       }
     },
-    [closeModal, dispatch, loadEmployees, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadEmployees,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -496,10 +561,20 @@ const EmployeesPage = () => {
       toast.error(getHrActionError(error, "Unable to delete record."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, confirmation.type, dispatch, loadEmployees]);
+  }, [
+    capabilities.canDelete,
+    confirmation.entity,
+    confirmation.type,
+    dispatch,
+    loadEmployees,
+  ]);
 
   const submitBankDetails = useCallback(
     async (payload) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       const id = getHrRecordId(employeesState.selected, "employee");
 
       if (!id) {
@@ -521,11 +596,15 @@ const EmployeesPage = () => {
         throw error;
       }
     },
-    [dispatch, employeesState.selected],
+    [capabilities.canUpdate, dispatch, employeesState.selected],
   );
 
   const submitDocument = useCallback(
     async (payload) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       const id = getHrRecordId(employeesState.selected, "employee");
 
       if (!id) {
@@ -547,16 +626,23 @@ const EmployeesPage = () => {
         throw error;
       }
     },
-    [dispatch, employeesState.selected],
+    [capabilities.canUpdate, dispatch, employeesState.selected],
   );
 
-  const openLifecycleModal = useCallback((mode, employee) => {
-    setLifecycleModal({
-      employee,
-      isOpen: true,
-      mode,
-    });
-  }, []);
+  const openLifecycleModal = useCallback(
+    (mode, employee) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
+      setLifecycleModal({
+        employee,
+        isOpen: true,
+        mode,
+      });
+    },
+    [capabilities.canUpdate],
+  );
 
   const closeLifecycleModal = useCallback(() => {
     setLifecycleModal((current) => ({ ...current, isOpen: false }));
@@ -564,6 +650,10 @@ const EmployeesPage = () => {
 
   const submitLifecycle = useCallback(
     async (payload) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       const employee = lifecycleModal.employee ?? employeesState.selected;
       const id = getHrRecordId(employee, "employee");
       const isRejoin = lifecycleModal.mode === "rejoin";
@@ -621,6 +711,7 @@ const EmployeesPage = () => {
       }
     },
     [
+      capabilities.canUpdate,
       closeLifecycleModal,
       dispatch,
       employeesState.selected,
@@ -659,14 +750,12 @@ const EmployeesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Employee
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Employee
+              </AppButton>
+            )}
           </>
         }
       />
@@ -716,7 +805,7 @@ const EmployeesPage = () => {
           employees={employeesState.list}
           error={employeesState.error}
           isLoading={employeesState.loading}
-          onCreate={openCreate}
+          onCreate={capabilities.canCreate ? openCreate : undefined}
           onPageChange={(value) => dispatch(setHrEmployeePage(value))}
           onPageSizeChange={(value) => dispatch(setHrEmployeePageSize(value))}
           onRetry={loadEmployees}
@@ -739,7 +828,11 @@ const EmployeesPage = () => {
           attendanceRecords={employeeRelated.attendance}
           leaveBalance={employeeRelated.leaveBalance}
           leaveRecords={employeeRelated.leaves}
-          onAddDocument={() => setDocumentModal(true)}
+          onAddDocument={() => {
+            if (capabilities.canUpdate) {
+              setDocumentModal(true);
+            }
+          }}
           onDelete={(employee) =>
             setConfirmation({
               entity: employee,
@@ -757,7 +850,11 @@ const EmployeesPage = () => {
             })
           }
           onEdit={openEdit}
-          onEditBank={() => setBankModal(true)}
+          onEditBank={() => {
+            if (capabilities.canUpdate) {
+              setBankModal(true);
+            }
+          }}
           onRejoin={(employee) => openLifecycleModal("rejoin", employee)}
           onResign={(employee) => openLifecycleModal("resign", employee)}
           relatedLoading={

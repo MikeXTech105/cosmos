@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { itemService } from "../../../services/inventory/itemService";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
@@ -51,6 +52,12 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const state = useSelector((store) => store[config.selectorKey]);
+  const capabilities = useCapabilities({
+    actions: ["view", "update", "confirm", "cancel"],
+    label: config.pageName ?? config.label,
+    resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
+    route: config.routeBase,
+  });
   const record =
     String(state.selected?.id ?? "") === String(id) ? state.selected : null;
   const [lookups, setLookups] = useState({
@@ -211,6 +218,10 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   );
 
   const submitRecord = async (payload) => {
+    if (!capabilities.canUpdate || !record) {
+      return;
+    }
+
     try {
       const response = await dispatch(
         config.updateThunk({ id: record.id, payload }),
@@ -226,6 +237,15 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   };
 
   const runAction = async () => {
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+    };
+
+    if (!record || !permissionMap[confirmation.action]) {
+      return;
+    }
+
     setConfirmation((current) => ({ ...current, isLoading: true }));
 
     try {
@@ -245,6 +265,37 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   };
 
   const Icon = config.icon;
+
+  const openEdit = () => {
+    if (!capabilities.canUpdate || !record) {
+      return;
+    }
+
+    void loadLookups();
+    setModal({
+      isLoading: false,
+      isOpen: true,
+      mode: "edit",
+      record,
+    });
+  };
+
+  const openAction = (action) => {
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+    };
+
+    if (!permissionMap[action]) {
+      return;
+    }
+
+    setConfirmation({
+      action,
+      isLoading: false,
+      isOpen: true,
+    });
+  };
 
   if (state.detailLoading && !record) {
     return (
@@ -354,48 +405,30 @@ const PurchaseDocumentDetailPage = ({ config }) => {
 
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap gap-2">
-                <AppButton
-                  variant="secondary"
-                  className="h-10 rounded-lg px-3"
-                  onClick={() => {
-                    void loadLookups();
-                    setModal({
-                      isLoading: false,
-                      isOpen: true,
-                      mode: "edit",
-                      record,
-                    });
-                  }}
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </AppButton>
-                {config.supportsConfirm && (
+                {capabilities.canUpdate && (
+                  <AppButton
+                    variant="secondary"
+                    className="h-10 rounded-lg px-3"
+                    onClick={openEdit}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </AppButton>
+                )}
+                {config.supportsConfirm && capabilities.canConfirm && (
                   <AppButton
                     className="h-10 rounded-lg px-3"
-                    onClick={() =>
-                      setConfirmation({
-                        action: "confirm",
-                        isLoading: false,
-                        isOpen: true,
-                      })
-                    }
+                    onClick={() => openAction("confirm")}
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     Confirm
                   </AppButton>
                 )}
-                {config.supportsCancel && (
+                {config.supportsCancel && capabilities.canCancel && (
                   <AppButton
                     variant="danger"
                     className="h-10 rounded-lg px-3"
-                    onClick={() =>
-                      setConfirmation({
-                        action: "cancel",
-                        isLoading: false,
-                        isOpen: true,
-                      })
-                    }
+                    onClick={() => openAction("cancel")}
                   >
                     <Ban className="h-4 w-4" />
                     Cancel

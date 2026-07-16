@@ -6,9 +6,9 @@ const actionButtonClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-brand disabled:cursor-not-allowed disabled:opacity-40";
 
 const DepartmentActions = ({
-  canDelete,
-  canEdit,
-  canView,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   department,
   onDelete,
   onEdit,
@@ -16,41 +16,38 @@ const DepartmentActions = ({
 }) => {
   return (
     <div className="flex justify-end gap-1">
-      <AppTooltip label="View department">
+      {canView && <AppTooltip label="View department">
         <button
           type="button"
           className={actionButtonClass}
-          disabled={!canView}
           onClick={() => onView(department)}
           aria-label="View department"
         >
           <Eye className="h-4 w-4" />
         </button>
-      </AppTooltip>
+      </AppTooltip>}
 
-      <AppTooltip label="Edit department">
+      {canEdit && <AppTooltip label="Edit department">
         <button
           type="button"
           className={actionButtonClass}
-          disabled={!canEdit}
           onClick={() => onEdit(department)}
           aria-label="Edit department"
         >
           <Pencil className="h-4 w-4" />
         </button>
-      </AppTooltip>
+      </AppTooltip>}
 
-      <AppTooltip label="Delete department">
+      {canDelete && <AppTooltip label="Delete department">
         <button
           type="button"
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-          disabled={!canDelete}
           onClick={() => onDelete(department)}
           aria-label="Delete department"
         >
           <Trash2 className="h-4 w-4" />
         </button>
-      </AppTooltip>
+      </AppTooltip>}
     </div>
   );
 };

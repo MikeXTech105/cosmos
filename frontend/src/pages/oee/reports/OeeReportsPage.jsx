@@ -34,6 +34,7 @@ import {
   getOeeRecordId,
   OEE_HORIZON_OPTIONS,
 } from "../oeeHelpers";
+import useOeeCapabilities from "../useOeeCapabilities";
 
 const tabs = [
   { id: "daily", label: "Daily", icon: FileSpreadsheet },
@@ -291,6 +292,12 @@ const downloadBlob = ({ blob, filename }) => {
 const OeeReportsPage = () => {
   const dispatch = useDispatch();
   const reports = useSelector((state) => state.oeeReports);
+  const capabilities = useOeeCapabilities({
+    actions: ["view", "export"],
+    label: "OEE Reports",
+    resource: ["oeeReports", "reports"],
+    route: "/oee/reports",
+  });
   const [activeTab, setActiveTab] = useState("daily");
   const [exporting, setExporting] = useState(false);
   const [lookups, setLookups] = useState({
@@ -378,6 +385,10 @@ const OeeReportsPage = () => {
   );
 
   const exportExcel = async () => {
+    if (!capabilities.canExport || exporting) {
+      return;
+    }
+
     setExporting(true);
 
     try {
@@ -424,14 +435,16 @@ const OeeReportsPage = () => {
               />
               Run Report
             </AppButton>
-            <AppButton
-              className="h-10"
-              isLoading={exporting}
-              onClick={exportExcel}
-            >
-              <Download className="h-4 w-4" />
-              Export to Excel
-            </AppButton>
+            {capabilities.canExport && (
+              <AppButton
+                className="h-10"
+                isLoading={exporting}
+                onClick={exportExcel}
+              >
+                <Download className="h-4 w-4" />
+                Export to Excel
+              </AppButton>
+            )}
           </>
         }
       />
