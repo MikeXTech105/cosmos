@@ -221,6 +221,96 @@ export const ENDPOINTS = {
 
   DASHBOARD_HR_SUMMARY: "/api/v1/dashboard/hr-summary",
 
+  // Procurement Planning - Channels
+  PP_CHANNELS: "/api/v1/procurement-planning/channels",
+
+  PP_CHANNEL_BY_ID: (id) => `/api/v1/procurement-planning/channels/${id}`,
+
+  PP_CHANNEL_STATUS: (id) =>
+    `/api/v1/procurement-planning/channels/${id}/status`,
+
+  // Procurement Planning - SKU mappings
+  PP_SKU_MAPPINGS: "/api/v1/procurement-planning/sku-mappings",
+
+  PP_SKU_MAPPINGS_UNMAPPED:
+    "/api/v1/procurement-planning/sku-mappings/unmapped",
+
+  PP_SKU_MAPPING_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sku-mappings/${id}`,
+
+  PP_SKU_MAPPING_STATUS: (id) =>
+    `/api/v1/procurement-planning/sku-mappings/${id}/status`,
+
+  // Procurement Planning - Sales
+  PP_SALES_IMPORT_TEMPLATE:
+    "/api/v1/procurement-planning/sales/import-template",
+
+  PP_SALES_IMPORT_PREVIEW:
+    "/api/v1/procurement-planning/sales/imports/preview",
+
+  PP_SALES_IMPORT_CONFIRM:
+    "/api/v1/procurement-planning/sales/imports/confirm",
+
+  PP_SALES_IMPORT_BATCHES:
+    "/api/v1/procurement-planning/sales/import-batches",
+
+  PP_SALES_IMPORT_BATCH_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sales/import-batches/${id}`,
+
+  PP_SALES_IMPORT_BATCH_CANCEL: (id) =>
+    `/api/v1/procurement-planning/sales/import-batches/${id}/cancel`,
+
+  PP_SALES_MANUAL: "/api/v1/procurement-planning/sales/manual",
+
+  PP_SALES_MANUAL_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sales/manual/${id}`,
+
+  PP_SALES_HISTORY: "/api/v1/procurement-planning/sales/history",
+
+  PP_SALES_SUMMARY: "/api/v1/procurement-planning/sales/summary",
+
+  // Procurement Planning - BOMs
+  PP_BOM_BY_PRODUCT: (productId) =>
+    `/api/v1/procurement-planning/boms/products/${productId}`,
+
+  PP_BOM_ISSUES: "/api/v1/procurement-planning/boms/issues",
+
+  // Procurement Planning - Settings
+  PP_SETTINGS: "/api/v1/procurement-planning/settings",
+
+  PP_SETTING_BY_ITEM: (itemId) =>
+    `/api/v1/procurement-planning/settings/items/${itemId}`,
+
+  PP_SETTINGS_MISSING: "/api/v1/procurement-planning/settings/missing",
+
+  PP_LEAD_TIME_HISTORY:
+    "/api/v1/procurement-planning/settings/lead-time-history",
+
+  PP_LEAD_TIME_HISTORY_BY_ITEM: (itemId) =>
+    `/api/v1/procurement-planning/settings/items/${itemId}/lead-time-history`,
+
+  // Procurement Planning - Plans
+  PP_PLAN_VALIDATE: "/api/v1/procurement-planning/plans/validate",
+
+  PP_PLAN_PREVIEW: "/api/v1/procurement-planning/plans/preview",
+
+  PP_PLAN_RUNS: "/api/v1/procurement-planning/plans/runs",
+
+  PP_PLAN_RUN_BY_ID: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}`,
+
+  PP_PLAN_RUN_LINES: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/lines`,
+
+  PP_PLAN_RUN_LINE: (runId, lineId) =>
+    `/api/v1/procurement-planning/plans/runs/${runId}/lines/${lineId}`,
+
+  PP_PLAN_RUN_FINALIZE: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/finalize`,
+
+  PP_PLAN_RUN_EXPORT: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/export`,
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",

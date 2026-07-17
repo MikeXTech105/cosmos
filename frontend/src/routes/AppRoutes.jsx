@@ -67,6 +67,24 @@ const OeeDowntimeReasons = lazy(
   () => import("../pages/oee/downtimeReasons/index.js"),
 );
 const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
+const ProcurementSalesImport = lazy(
+  () => import("../pages/procurement/salesImport/index.js"),
+);
+const ProcurementSkuMapping = lazy(
+  () => import("../pages/procurement/skuMapping/index.js"),
+);
+const ProcurementBomMapping = lazy(
+  () => import("../pages/procurement/bomMapping/index.js"),
+);
+const ProcurementSettings = lazy(
+  () => import("../pages/procurement/settings/index.js"),
+);
+const ProcurementGeneratePlan = lazy(
+  () => import("../pages/procurement/generatePlan/index.js"),
+);
+const ProcurementPlanningHistory = lazy(
+  () => import("../pages/procurement/planningHistory/index.js"),
+);
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const AccessDeniedPage = lazy(
   () => import("../pages/errors/AccessDeniedPage.jsx"),
@@ -449,6 +467,72 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/oee/reports" pageName="OEE Reports">
                 <OeeReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/sales-import"
+            element={
+              <PermissionGuard
+                route="/procurement/sales-import"
+                pageName="ProcurementPlanning.SalesImport"
+              >
+                <ProcurementSalesImport />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/sku-mapping"
+            element={
+              <PermissionGuard
+                route="/procurement/sku-mapping"
+                pageName="ProcurementPlanning.SkuMapping"
+              >
+                <ProcurementSkuMapping />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/bom-mapping"
+            element={
+              <PermissionGuard
+                route="/procurement/bom-mapping"
+                pageName="ProcurementPlanning.BomMapping"
+              >
+                <ProcurementBomMapping />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/settings"
+            element={
+              <PermissionGuard
+                route="/procurement/settings"
+                pageName="ProcurementPlanning.Settings"
+              >
+                <ProcurementSettings />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/generate-plan"
+            element={
+              <PermissionGuard
+                route="/procurement/generate-plan"
+                pageName="ProcurementPlanning.GeneratePlan"
+              >
+                <ProcurementGeneratePlan />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement/planning-history"
+            element={
+              <PermissionGuard
+                route="/procurement/planning-history"
+                pageName="ProcurementPlanning.PlanningHistory"
+              >
+                <ProcurementPlanningHistory />
               </PermissionGuard>
             }
           />

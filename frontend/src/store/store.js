@@ -16,6 +16,12 @@ import oeeMachineReducer from "./slices/oee/oeeMachineSlice";
 import oeeMouldReducer from "./slices/oee/oeeMouldSlice";
 import oeeProductionEntryReducer from "./slices/oee/oeeProductionEntrySlice";
 import oeeReportReducer from "./slices/oee/oeeReportSlice";
+import procurementBomReducer from "./slices/procurement/bomSlice";
+import procurementPlanningReducer from "./slices/procurement/planningSlice";
+import procurementSalesChannelsReducer from "./slices/procurement/salesChannelSlice";
+import procurementSalesImportReducer from "./slices/procurement/salesImportSlice";
+import procurementSettingsReducer from "./slices/procurement/procurementSettingSlice";
+import procurementSkuMappingsReducer from "./slices/procurement/skuMappingSlice";
 import expenseCategoryReducer from "./slices/purchase/expenseCategorySlice";
 import expenseReducer from "./slices/purchase/expenseSlice";
 import purchaseBillReducer from "./slices/purchase/purchaseBillSlice";
@@ -51,6 +57,12 @@ export const store = configureStore({
     oeeMoulds: oeeMouldReducer,
     oeeProductionEntries: oeeProductionEntryReducer,
     oeeReports: oeeReportReducer,
+    procurementBom: procurementBomReducer,
+    procurementPlanning: procurementPlanningReducer,
+    procurementSalesChannels: procurementSalesChannelsReducer,
+    procurementSalesImport: procurementSalesImportReducer,
+    procurementSettings: procurementSettingsReducer,
+    procurementSkuMappings: procurementSkuMappingsReducer,
     partyGst: partyGstReducer,
     purchaseBills: purchaseBillReducer,
     purchaseOrders: purchaseOrderReducer,
