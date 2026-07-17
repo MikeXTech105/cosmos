@@ -18,7 +18,10 @@ public sealed record SalesChannelDto(
     long? CreatedBy,
     DateTime? ModifiedAt,
     long? ModifiedBy,
-    int TotalCount = 0);
+    int TotalCount = 0)
+{
+    public SalesChannelDto() : this(0, string.Empty, string.Empty, 0, false, default, null, null, null, 0) { }
+}
 
 public sealed record SaveSalesChannelRequest(string Code, string Name, int DisplayOrder, bool IsActive = true);
 public sealed record ChangeActiveStatusRequest(bool IsActive);
@@ -39,7 +42,10 @@ public sealed record ChannelSkuMappingDto(
     long? CreatedBy,
     DateTime? ModifiedAt,
     long? ModifiedBy,
-    int TotalCount = 0);
+    int TotalCount = 0)
+{
+    public ChannelSkuMappingDto() : this(0, 0, string.Empty, string.Empty, string.Empty, null, 0, string.Empty, string.Empty, null, false, default, null, null, null, 0) { }
+}
 
 public sealed record ChannelSkuMappingQuery(
     string? Search = null,
@@ -111,7 +117,10 @@ public sealed record SalesImportBatchDto(
     string? CorrectionReason,
     DateTime CreatedAt,
     long? CreatedBy,
-    int TotalCount = 0);
+    int TotalCount = 0)
+{
+    public SalesImportBatchDto() : this(0, string.Empty, string.Empty, string.Empty, 0, 0, 0, 0, null, default, null, 0) { }
+}
 
 public sealed record SalesImportBatchQuery(int PageNumber = 1, int PageSize = 20);
 
@@ -156,7 +165,10 @@ public sealed record SalesHistoryDto(
     string? Notes,
     DateTime CreatedAt,
     long? CreatedBy,
-    int TotalCount = 0);
+    int TotalCount = 0)
+{
+    public SalesHistoryDto() : this(0, default, 0, string.Empty, string.Empty, null, null, null, null, 0, null, false, null, default, null, 0) { }
+}
 
 public sealed record SalesSummaryChannelDto(long Id, string Code, string Name, int DisplayOrder);
 public sealed record ProductSalesSummaryRowDto(
@@ -226,7 +238,10 @@ public sealed record ProcurementSettingDto(
     long? CreatedBy,
     DateTime? ModifiedAt,
     long? ModifiedBy,
-    int TotalCount = 0);
+    int TotalCount = 0)
+{
+    public ProcurementSettingDto() : this(0, 0, string.Empty, string.Empty, 0, string.Empty, null, null, null, 0, 0, null, false, false, 0, false, default, null, null, null, 0) { }
+}
 
 public sealed record ProcurementSettingQuery(
     string? Search = null,
