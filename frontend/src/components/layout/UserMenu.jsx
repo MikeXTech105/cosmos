@@ -9,24 +9,7 @@ import { logoutUser } from "../../services/authService";
 import { clearCredentials } from "../../store/slices/authSlice";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { clearAuthData } from "../../utils/authStorage";
-
-const getDisplayName = (user) => {
-  return (
-    user?.fullName ??
-    user?.name ??
-    user?.username ??
-    user?.email ??
-    "System Admin"
-  );
-};
-
-const getInitial = (name) => {
-  return name.trim().charAt(0).toUpperCase() || "S";
-};
-
-const getRoleName = (user, roles) => {
-  return user?.role ?? user?.roleName ?? roles?.[0]?.name ?? roles?.[0] ?? "Admin";
-};
+import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay";
 
 const UserMenu = () => {
   const [open, setOpen] = useState(false);
