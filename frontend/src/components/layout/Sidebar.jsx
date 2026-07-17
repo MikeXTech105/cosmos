@@ -1,11 +1,14 @@
 import { Command, Search, ShieldCheck } from "lucide-react";
+import { useSelector } from "react-redux";
 
 import { useSidebar } from "../../hooks/useSidebar";
 import useSidebarTheme from "../../hooks/useSidebarTheme";
+import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay";
 import SidebarGroup from "./SidebarGroup";
 import SidebarItem from "./SidebarItem";
 
 const SidebarContent = ({ sidebarTheme }) => {
+  const { roles, user } = useSelector((state) => state.auth);
   const {
     expandedGroupIds,
     hasPages,
@@ -17,6 +20,8 @@ const SidebarContent = ({ sidebarTheme }) => {
   } = useSidebar();
   const forceOpen = searchQuery.trim().length > 0;
   const classes = sidebarTheme.classes;
+  const displayName = getDisplayName(user);
+  const roleName = getRoleName(user, roles);
 
   return (
     <div className="flex h-full flex-col">
@@ -154,14 +159,20 @@ const SidebarContent = ({ sidebarTheme }) => {
                 classes.userAvatar,
               ].join(" ")}
             >
-              S
+              {getInitial(displayName)}
             </div>
             <div className="min-w-0">
-              <p className={["truncate text-xs font-semibold", classes.userName].join(" ")}>
-                System
+              <p
+                className={["truncate text-xs font-semibold", classes.userName].join(" ")}
+                title={displayName}
+              >
+                {displayName}
               </p>
-              <p className={["truncate text-[11px]", classes.userRole].join(" ")}>
-                Admin
+              <p
+                className={["truncate text-[11px]", classes.userRole].join(" ")}
+                title={roleName}
+              >
+                {roleName}
               </p>
             </div>
           </div>

@@ -23,6 +23,14 @@ const ACTION_BOOLEAN_KEYS = {
   settings: ["canSettings", "settings"],
 };
 
+const PRIVILEGED_ROLE_ALIASES = new Set([
+  "owner",
+  "super admin",
+  "superadmin",
+  "system owner",
+  "systemowner",
+]);
+
 const normalizeText = (value) => {
   return String(value ?? "")
     .replace(/[_-]+/g, " ")
@@ -241,14 +249,14 @@ const getRoleIdentity = (role) => {
   );
 };
 
-const isExplicitSuperAdmin = (value) => {
+const isPrivilegedRole = (value) => {
   if (value?.isSuperAdmin === true) {
     return true;
   }
 
-  const normalizedRole = normalizeText(getRoleIdentity(value)).replace(/\s+/g, "");
+  const normalizedRole = normalizeText(getRoleIdentity(value));
 
-  return normalizedRole === "superadmin";
+  return PRIVILEGED_ROLE_ALIASES.has(normalizedRole);
 };
 
 export const isSuperAdminAuth = ({ roles = [], user = null } = {}) => {
@@ -269,7 +277,7 @@ export const isSuperAdminAuth = ({ roles = [], user = null } = {}) => {
     ...(Array.isArray(roles) ? roles : [roles]),
   ].filter(Boolean);
 
-  return roleValues.some(isExplicitSuperAdmin);
+  return roleValues.some(isPrivilegedRole);
 };
 
 export const canPerformAction = ({

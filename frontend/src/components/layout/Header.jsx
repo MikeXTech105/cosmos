@@ -1,11 +1,4 @@
-import {
-  Bell,
-  Command,
-  Moon,
-  Search,
-  Sun,
-} from "lucide-react";
-import { useState } from "react";
+import { Command, Search } from "lucide-react";
 
 import { useSidebar } from "../../hooks/useSidebar";
 import Breadcrumbs from "./Breadcrumbs";
@@ -13,7 +6,6 @@ import SearchCommand from "./SearchCommand";
 import UserMenu from "./UserMenu";
 
 const Header = () => {
-  const [darkMode, setDarkMode] = useState(false);
   const { openCommand } = useSidebar();
 
   return (
@@ -47,28 +39,6 @@ const Header = () => {
               aria-label="Open search"
             >
               <Search className="h-4 w-4" />
-            </button>
-
-            <button
-              type="button"
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-              aria-label="Notifications"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand ring-2 ring-white" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setDarkMode((value) => !value)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-              aria-label="Toggle theme"
-            >
-              {darkMode ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
             </button>
 
             <UserMenu />

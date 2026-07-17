@@ -111,19 +111,54 @@ describe("capability evaluation", () => {
 });
 
 describe("isSuperAdminAuth", () => {
-  it.each(["Super Admin", "super_admin", "SUPER-ADMIN", "superadmin"])(
+  it.each([
+    "Super Admin",
+    "super_admin",
+    "SUPER-ADMIN",
+    "superadmin",
+    "System Owner",
+    "system_owner",
+    "SYSTEM-OWNER",
+    "systemowner",
+    "Owner",
+  ])(
     "accepts exact normalized value %s",
     (role) => {
       expect(isSuperAdminAuth({ roles: [role] })).toBe(true);
     },
   );
 
-  it.each(["Not Super Admin", "Super Admin Assistant", "Former Super Admin", "Admin"])(
-    "rejects non-exact value %s",
-    (role) => {
-      expect(isSuperAdminAuth({ roles: [role] })).toBe(false);
-    },
-  );
+  it.each([
+    "Not Super Admin",
+    "Super Admin Assistant",
+    "Former Super Admin",
+    "Owner Relations Manager",
+    "Former System Owner",
+    "Admin",
+  ])("rejects non-exact value %s", (role) => {
+    expect(isSuperAdminAuth({ roles: [role] })).toBe(false);
+  });
+
+  it("checks user role fields and nested role collections", () => {
+    expect(isSuperAdminAuth({ user: { roleName: "System Owner" } })).toBe(true);
+    expect(isSuperAdminAuth({ user: { roleCode: "system_owner" } })).toBe(true);
+    expect(
+      isSuperAdminAuth({ user: { roles: [{ name: "System Owner" }] } }),
+    ).toBe(true);
+  });
+
+  it("grants every capability to System Owner without permission pages", () => {
+    for (const action of ["view", "create", "update", "delete", "export", "approve"]) {
+      expect(
+        canPerformAction({
+          action,
+          pages: [],
+          roles: [{ name: "System Owner" }],
+          target: { route: "/restricted" },
+        }),
+      ).toBe(true);
+    }
+  });
 
   it("supports an explicit backend flag", () => {
     expect(isSuperAdminAuth({ user: { isSuperAdmin: true } })).toBe(true);
