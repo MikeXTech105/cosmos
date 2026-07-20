@@ -73,6 +73,7 @@ public sealed record SalesInvoiceCalculatedTotals(
     int PaymentStatus);
 
 public sealed record SalesSummaryReportDto(int TotalInvoices, decimal TotalSalesAmount, decimal TotalPaidAmount, decimal TotalDueAmount);
+public sealed record SalesInvoiceListSummaryDto(int TotalInvoices, decimal TotalSalesAmount, decimal UnpaidAmount, int OverdueCount);
 public sealed record CustomerReceivableReportDto(Guid CustomerPartyId, string CustomerName, decimal TotalSales, decimal PaidAmount, decimal DueAmount);
 public sealed record ItemWiseSalesReportDto(long ItemId, string ItemName, decimal QuantitySold, decimal TotalAmount);
 

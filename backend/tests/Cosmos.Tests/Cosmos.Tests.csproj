@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Cosmos.Infrastructure\Cosmos.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Cosmos.Persistence\Cosmos.Persistence.csproj" />
     <ProjectReference Include="..\..\src\Cosmos.Shared\Cosmos.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Cosmos.API\Cosmos.API.csproj" />
   </ItemGroup>
 
 </Project>

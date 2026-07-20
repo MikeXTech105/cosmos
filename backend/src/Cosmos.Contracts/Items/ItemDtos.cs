@@ -54,6 +54,8 @@ public sealed record ItemListItemDto(
     DateTime? ModifiedAt,
     int TotalCount);
 
+public sealed record ItemListSummaryDto(int TotalCount, int ProductCount, int ServiceCount, int LowStockCount);
+
 public sealed record CategoryDto(
     long Id,
     string Name,
@@ -73,6 +75,8 @@ public sealed record CategoryListItemDto(
     DateTime CreatedAt,
     DateTime? ModifiedAt,
     int TotalCount);
+
+public sealed record MasterListSummaryDto(int TotalCount, int ActiveCount, int InactiveCount);
 
 public sealed record UnitDto(
     long Id,

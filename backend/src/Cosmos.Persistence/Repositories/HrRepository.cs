@@ -4,6 +4,7 @@ using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.HR;
 using Cosmos.Contracts.Common;
 using Cosmos.Contracts.HR;
+using Cosmos.Contracts.Items;
 using Cosmos.Domain.HR;
 using Cosmos.Persistence.Connection;
 using Cosmos.Persistence.Dapper;
@@ -19,20 +20,38 @@ public sealed class HrRepository : IHrRepository
     public HrRepository(ISqlConnectionFactory connectionFactory) => _connectionFactory = connectionFactory;
 
     public Task<DepartmentDto?> GetDepartmentAsync(long id, CancellationToken ct) => QuerySingleAsync<DepartmentDto>("sp_HR_Department_GetById", new { Id = id }, ct);
-    public Task<PagedResult<DepartmentDto>> GetDepartmentsAsync(HrPagedQuery query, CancellationToken ct) => QueryPagedAsync<DepartmentDto>("sp_HR_Department_GetList", PagedParameters(query), query.PageNumber, query.PageSize, ct);
+    public async Task<PagedResult<DepartmentDto>> GetDepartmentsAsync(HrPagedQuery query, CancellationToken ct)
+    {
+        var rows = await QueryAsync<DepartmentDto>("sp_HR_Department_GetList", PagedParameters(query), ct);
+        var summary = await QuerySingleAsync<MasterListSummaryDto>("sp_HR_Department_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<DepartmentDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<DepartmentDto> CreateDepartmentAsync(CreateDepartmentCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<DepartmentDto>("sp_HR_Department_Create", new { command.DepartmentCode, command.DepartmentName, command.Description, command.IsActive, UserId = userId }, ct);
     public Task<DepartmentDto> UpdateDepartmentAsync(long id, UpdateDepartmentCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<DepartmentDto>("sp_HR_Department_Update", new { Id = id, command.DepartmentCode, command.DepartmentName, command.Description, command.IsActive, UserId = userId }, ct);
     public Task<OperationResult> DeleteDepartmentAsync(long id, long? userId, CancellationToken ct) => ExecuteStatusAsync("sp_HR_Department_Delete", new { Id = id, UserId = userId }, ct);
     public Task<bool> DepartmentValueExistsAsync(string field, string value, long? excludingId, CancellationToken ct) => QueryScalarAsync<bool>("sp_HR_Department_ValueExists", new { Field = field, Value = value, ExcludingId = excludingId }, ct);
 
     public Task<DesignationDto?> GetDesignationAsync(long id, CancellationToken ct) => QuerySingleAsync<DesignationDto>("sp_HR_Designation_GetById", new { Id = id }, ct);
-    public Task<PagedResult<DesignationDto>> GetDesignationsAsync(HrPagedQuery query, CancellationToken ct) => QueryPagedAsync<DesignationDto>("sp_HR_Designation_GetList", PagedParameters(query), query.PageNumber, query.PageSize, ct);
+    public async Task<PagedResult<DesignationDto>> GetDesignationsAsync(HrPagedQuery query, CancellationToken ct)
+    {
+        var rows = await QueryAsync<DesignationDto>("sp_HR_Designation_GetList", PagedParameters(query), ct);
+        var summary = await QuerySingleAsync<MasterListSummaryDto>("sp_HR_Designation_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<DesignationDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<DesignationDto> CreateDesignationAsync(CreateDesignationCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<DesignationDto>("sp_HR_Designation_Create", new { command.DesignationCode, command.DesignationName, command.DepartmentId, command.Description, command.IsActive, UserId = userId }, ct);
     public Task<DesignationDto> UpdateDesignationAsync(long id, UpdateDesignationCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<DesignationDto>("sp_HR_Designation_Update", new { Id = id, command.DesignationCode, command.DesignationName, command.DepartmentId, command.Description, command.IsActive, UserId = userId }, ct);
     public Task<OperationResult> DeleteDesignationAsync(long id, long? userId, CancellationToken ct) => ExecuteStatusAsync("sp_HR_Designation_Delete", new { Id = id, UserId = userId }, ct);
 
     public Task<ShiftDto?> GetShiftAsync(long id, CancellationToken ct) => QuerySingleAsync<ShiftDto>("sp_HR_Shift_GetById", new { Id = id }, ct);
-    public Task<PagedResult<ShiftDto>> GetShiftsAsync(HrPagedQuery query, CancellationToken ct) => QueryPagedAsync<ShiftDto>("sp_HR_Shift_GetList", PagedParameters(query), query.PageNumber, query.PageSize, ct);
+    public async Task<PagedResult<ShiftDto>> GetShiftsAsync(HrPagedQuery query, CancellationToken ct)
+    {
+        var rows = await QueryAsync<ShiftDto>("sp_HR_Shift_GetList", PagedParameters(query), ct);
+        var summary = await QuerySingleAsync<MasterListSummaryDto>("sp_HR_Shift_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<ShiftDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<ShiftDto> CreateShiftAsync(CreateShiftCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<ShiftDto>("sp_HR_Shift_Create", ShiftParameters(null, command, userId), ct);
     public Task<ShiftDto> UpdateShiftAsync(long id, UpdateShiftCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<ShiftDto>("sp_HR_Shift_Update", ShiftParameters(id, command, userId), ct);
     public Task<OperationResult> DeleteShiftAsync(long id, long? userId, CancellationToken ct) => ExecuteStatusAsync("sp_HR_Shift_Delete", new { Id = id, UserId = userId }, ct);

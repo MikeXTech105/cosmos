@@ -1,4 +1,5 @@
 using Cosmos.API.Security;
+using Cosmos.API.Exports;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Contracts.Roles;
 using Cosmos.Domain.Security;
@@ -21,6 +22,23 @@ public sealed class RolesController : ApiControllerBase
     [HttpGet]
     [RequirePermission("Roles", PermissionAction.View)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) => FromResponse(await _service.GetAllAsync(cancellationToken));
+
+    /// <summary>Exports roles as UTF-8 CSV.</summary>
+    [HttpGet("export")]
+    [RequirePermission("Roles", PermissionAction.Export)]
+    [Produces("text/csv")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
+        [FromQuery] string? format,
+        CancellationToken cancellationToken)
+    {
+        CsvExport.RequireCsv(format);
+        var result = await _service.ExportAsync(search, isActive, sortBy, sortDirection, cancellationToken);
+        return CsvExport.Create(result.Data ?? Array.Empty<RoleExportDto>(), $"cosmos_roles_{DateTime.UtcNow:yyyy-MM-dd}.csv");
+    }
 
     /// <summary>Gets a role by id.</summary>
     [HttpGet("{id:int}")]

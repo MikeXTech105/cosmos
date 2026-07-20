@@ -1,5 +1,52 @@
 # COSMOS ERP - Project Progress Document
 
+## Backend API Frontend Stabilization Update - 2026-07-20
+
+Status: Implemented and locally verified against a disposable SQL Server database. API runtime/browser smoke testing remains a deployment follow-up.
+
+Completed:
+
+- Standardized API success/failure envelopes with correlation IDs, exact FluentValidation field maps, actionable 409 conflict maps, safe authorization failures, and no internal details in unhandled-error responses.
+- Added optional full-result `summary` objects to item, category, unit, sales invoice, purchase/expense, HR, and OEE paginated lists. Summaries are produced by filter-aware stored procedures, independent of page size/number.
+- Extended Party lists and exports with `PartyType`, `HasGstin`, and `HasCreditLimit`; the tab summary deliberately ignores only `PartyType`, while `totalCount` applies every list filter.
+- Added permission-protected CSV exports for users, roles, parties, and the supported generic reports registry. Files use UTF-8 BOM, deterministic names, correct content disposition, and safe business columns only.
+- Added authenticated `GET`/`PUT /api/auth/me` with self-only FullName/Email updates. Duplicate email returns `409`, an `Email` field map, and `conflictCode: USER_EMAIL_EXISTS`.
+- Made login/profile `isSuperAdmin` database-authoritative through protected-owner flags plus an exact trusted-role alias procedure; server-side permission enforcement remains authoritative for every protected action.
+- Added a signature-validated, size-limited, safe-name `POST /api/uploads/images` endpoint for item images; CORS now uses configured exact origins, credentials, exposed `Content-Disposition`/`X-Correlation-Id`, and pre-auth OPTIONS handling.
+- Added filter/sort guardrails where this API surface introduced them, including Party’s maximum page size of 200 and deterministic Party ID tie-breakers.
+
+Verification:
+
+- Applied the canonical setup, procurement, System Owner, OEE, and this migration to `Cosmos_BackendFixes_Verify_20260720`; executed every new summary procedure, Party export/filter checks, user export procedure, and profile update/conflict procedure.
+- Built `backend/src/Cosmos.API/Cosmos.API.csproj` into a separate verification output directory: success with the pre-existing `Microsoft.OpenApi` NU1903 advisory warning.
+- Existing automated suite passed: 112/112 tests.
+- Target-environment follow-up: apply `backend/database/migrations/20260720_backend_api_frontend_fixes.sql`, set the exact production frontend CORS origin, and validate HTTPS, multipart upload, Swagger, browser CORS, and report exports with deployment identities/data.
+
+## Rojmel / Wallet Module Update - 2026-07-20
+
+Status: Implemented / Build Verified / Tests Verified (112/112) / Disposable SQL DB Verified / Swagger Needs Runtime Verification / Export Pending.
+
+Completed:
+
+- Added the Rojmel wallet ledger slice: contracts and wallet enums, permission constants, FluentValidation, five application services, Dapper repository, six authenticated API controllers, DI registrations, and Swagger group `rojmel`.
+- Added page/action permissions: `Rojmel.Dashboard`, `Rojmel.MyWallet`, `Rojmel.Wallets`, `Rojmel.Transactions`, `Rojmel.Transfers`, `Rojmel.Reports`, and `Rojmel.Admin`; migration grants all actions only to `SuperAdmin` by default.
+- Renamed the module's database procedures from the SQL Server-reserved `sp_` prefix to `usp_`, preventing master-database procedure shadowing during deployment and runtime lookup.
+- Enforced two levels of protection: controller action permissions and current-user/all-wallet scope passed to every wallet repository procedure. Normal users receive only their linked user wallet records; company and external wallets remain administrator-only.
+- Added wallet, category, transaction, and transfer tables with filtered company/default-wallet uniqueness indexes; seed categories and an empty company master wallet are idempotent.
+- Added balance-changing SQL procedures with explicit transactions, `UPDLOCK/HOLDLOCK`, non-negative balance checks, linked transfer in/out ledger rows, and cancellation reversal rows. Transfers are excluded from income/expense totals.
+- Added Rojmel dashboard and seven report endpoints, three module docs, rules/ownership/report-exclusion tests, Dapper contract mapping tests, and controller permission-metadata tests.
+- Applied the canonical setup and the Rojmel migration three times on a fresh disposable local SQL Server database. Verified company/user/external wallet creation, income, transfer linked entries, insufficient-balance rejection, normal-user filtering, income/expense transfer exclusion, and both transfer and transaction reversal paths. The disposable database was then removed.
+
+API inventory additions: `/api/v1/rojmel/my-wallet`, `/wallets`, `/transactions`, `/transfers`, `/dashboard`, and `/reports` as documented in `backend/docs/ROJMEL_WALLET_FRONTEND_INTEGRATION.md`.
+
+Database migration addition: `backend/database/migrations/20260720_rojmel_wallet_module.sql`.
+
+Known risks / next roadmap:
+
+- Apply the migration to the target environment and repeat the documented wallet/transfer/ownership smoke tests with representative production-like roles and data.
+- Run the API and inspect `/swagger/rojmel/swagger.json`; runtime Swagger verification was not yet performed.
+- Export, attachment storage, editable categories, and an approval/draft workflow are deferred Phase 2 work.
+
 ## Protected System Owner Update — 2026-07-16
 
 Status: Backend implemented, unit-tested, and verified against a disposable local SQL Server database. No frontend changes were made.
