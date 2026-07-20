@@ -1,4 +1,5 @@
 using Cosmos.API.Security;
+using Cosmos.API.Exports;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Contracts.Users;
 using Cosmos.Domain.Security;
@@ -25,6 +26,24 @@ public sealed class UsersController : ApiControllerBase
     [SwaggerOperation(Summary = "Get users", Description = "Requires Users/View permission from SQL Server.")]
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<UserDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) => FromResponse(await _service.GetAllAsync(cancellationToken));
+
+    /// <summary>Exports users as UTF-8 CSV without password or token data.</summary>
+    [HttpGet("export")]
+    [RequirePermission("Users", PermissionAction.Export)]
+    [Produces("text/csv")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? search,
+        [FromQuery] bool? isActive,
+        [FromQuery] int? roleId,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortDirection,
+        [FromQuery] string? format,
+        CancellationToken cancellationToken)
+    {
+        CsvExport.RequireCsv(format);
+        var result = await _service.ExportAsync(search, isActive, roleId, sortBy, sortDirection, cancellationToken);
+        return CsvExport.Create(result.Data ?? Array.Empty<UserExportDto>(), $"cosmos_users_{DateTime.UtcNow:yyyy-MM-dd}.csv");
+    }
 
     /// <summary>Gets a user by id.</summary>
     [HttpGet("{id:int}")]

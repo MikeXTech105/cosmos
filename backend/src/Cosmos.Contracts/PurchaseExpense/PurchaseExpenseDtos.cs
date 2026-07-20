@@ -16,4 +16,8 @@ public sealed record SupplierOutstandingDto(Guid SupplierId, string SupplierName
 public sealed record ExpenseSummaryDto(decimal TotalExpense, decimal TotalTax, int TotalRecords);
 public sealed record CategoryWiseExpenseDto(long CategoryId, string CategoryName, decimal TotalAmount);
 public sealed record ItemPurchaseHistoryDto(string PurchaseBillNo, DateOnly Date, string SupplierName, decimal Quantity, decimal PurchasePrice, decimal TotalAmount);
-
+public sealed record PurchaseBillListSummaryDto(int TotalCount, decimal TotalAmount, decimal PaidAmount, decimal BalanceAmount);
+public sealed record PurchaseOrderListSummaryDto(int TotalCount, decimal TotalAmount, decimal PaidAmount, decimal BalanceAmount);
+public sealed record PurchaseReturnListSummaryDto(int TotalCount, decimal TotalAmount, decimal PaidAmount, decimal BalanceAmount);
+public sealed record ExpenseListSummaryDto(int TotalCount, decimal TotalAmount, decimal ThisMonthAmount);
+public sealed record SupplierPaymentListSummaryDto(int TotalCount, decimal TotalPaidAmount);

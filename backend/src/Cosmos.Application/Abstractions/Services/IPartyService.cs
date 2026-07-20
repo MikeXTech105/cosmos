@@ -10,6 +10,7 @@ public interface IPartyService
 {
     Task<ApiResponse<PartyDto>> GetByIdAsync(GetPartyByIdQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<PagedResult<PartyListItemDto>>> GetListAsync(GetPartiesQuery query, CancellationToken cancellationToken);
+    Task<ApiResponse<IReadOnlyCollection<PartyExportDto>>> ExportAsync(GetPartiesQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<PartyDto>> CreateAsync(CreatePartyCommand command, CancellationToken cancellationToken);
     Task<ApiResponse<PartyDto>> UpdateAsync(Guid id, UpdatePartyCommand command, CancellationToken cancellationToken);
     Task<ApiResponse> DeleteAsync(DeletePartyCommand command, CancellationToken cancellationToken);

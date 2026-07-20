@@ -5,7 +5,9 @@ using Cosmos.Application.Services;
 using Cosmos.Infrastructure;
 using Cosmos.Persistence;
 using Cosmos.Shared.Options;
+using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -22,7 +24,10 @@ builder.Host.UseSerilog((context, loggerConfiguration) =>
 
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
-    .Get<string[]>();
+    .Get<string[]>()?
+    .Where(origin => Uri.TryCreate(origin, UriKind.Absolute, out _))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray() ?? Array.Empty<string>();
 
 var swaggerModules = new[]
 {
@@ -37,6 +42,7 @@ var swaggerModules = new[]
     new SwaggerModule("hr", "Cosmos ERP - HR API", "HR API"),
     new SwaggerModule("reports", "Cosmos ERP - Reports API", "Reports API"),
     new SwaggerModule("procurement-planning", "Cosmos ERP - Procurement Planning API", "Procurement Planning"),
+    new SwaggerModule("rojmel", "Cosmos ERP - Rojmel / Wallet API", "Rojmel / Wallet"),
     new SwaggerModule("settings", "Cosmos ERP - Settings API", "Settings API"),
     new SwaggerModule("general", "Cosmos ERP - General API", "General API")
 };
@@ -46,10 +52,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("CorsPolicy", policy =>
     {
         policy
-            .WithOrigins(allowedOrigins!)
+            .WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowCredentials()
+            .WithExposedHeaders(CorrelationIdMiddleware.HeaderName, "Content-Disposition");
     });
 });
 
@@ -64,7 +71,26 @@ builder.Services.AddApplication();
 builder.Services.AddPersistence();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(entry => entry.Value is { Errors.Count: > 0 })
+                .ToDictionary(
+                    entry => string.IsNullOrWhiteSpace(entry.Key) ? "_" : entry.Key,
+                    entry => (IReadOnlyCollection<string>)entry.Value!.Errors
+                        .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage) ? "The supplied value is invalid." : error.ErrorMessage)
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray(),
+                    StringComparer.Ordinal);
+            var correlationId = context.HttpContext.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value)
+                ? value?.ToString()
+                : null;
+            return new BadRequestObjectResult(ApiResponse.Failure("Validation failed.", errors, correlationId));
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.Configure<DashboardOptions>(builder.Configuration.GetSection("Dashboard"));

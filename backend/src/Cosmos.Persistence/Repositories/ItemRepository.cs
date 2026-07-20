@@ -42,8 +42,12 @@ public sealed class ItemRepository : IItemRepository
             },
             cancellationToken);
 
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<ItemListItemDto>(rows, query.PageNumber, query.PageSize, totalCount);
+        var summary = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<ItemListSummaryDto>(
+            connection,
+            "sp_Item_GetListSummary",
+            new { query.Search, query.Barcode, query.ItemCode, query.CategoryId, query.ProcurementClassification, query.IsActive },
+            cancellationToken) ?? new ItemListSummaryDto(0, 0, 0, 0);
+        return new PagedResult<ItemListItemDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
     }
 
     public async Task<ItemDto> CreateAsync(CreateItemCommand command, CancellationToken cancellationToken)

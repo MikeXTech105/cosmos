@@ -30,6 +30,45 @@ public sealed class RoleService : IRoleService
     public async Task<ApiResponse<IReadOnlyCollection<RoleDetailDto>>> GetAllAsync(CancellationToken cancellationToken) =>
         ApiResponse<IReadOnlyCollection<RoleDetailDto>>.Success(await _repository.GetAllAsync(cancellationToken));
 
+    public async Task<ApiResponse<IReadOnlyCollection<RoleExportDto>>> ExportAsync(
+        string? search,
+        bool? isActive,
+        string? sortBy,
+        string? sortDirection,
+        CancellationToken cancellationToken)
+    {
+        var normalizedSort = string.IsNullOrWhiteSpace(sortBy) ? "Name" : sortBy.Trim();
+        if (!new[] { "Name", "CreatedOn", "IsActive" }.Contains(normalizedSort, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new CosmosException("Unsupported sort field.", 400, new[] { "Allowed values: Name, CreatedOn, IsActive." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortBy"] = new[] { "Allowed values: Name, CreatedOn, IsActive." } });
+        }
+
+        if (!string.IsNullOrWhiteSpace(sortDirection)
+            && !string.Equals(sortDirection, "ASC", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(sortDirection, "DESC", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CosmosException("SortDirection is invalid.", 400, new[] { "Allowed values: ASC, DESC." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortDirection"] = new[] { "Allowed values: ASC, DESC." } });
+        }
+
+        var descending = !string.IsNullOrWhiteSpace(sortDirection) && string.Equals(sortDirection, "DESC", StringComparison.OrdinalIgnoreCase);
+        var roles = (await _repository.GetAllAsync(cancellationToken))
+            .Where(role => (string.IsNullOrWhiteSpace(search)
+                    || role.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    || (role.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                && (isActive is null || role.IsActive == isActive));
+        roles = normalizedSort.ToLowerInvariant() switch
+        {
+            "createdon" => descending ? roles.OrderByDescending(role => role.CreatedOn).ThenBy(role => role.Id) : roles.OrderBy(role => role.CreatedOn).ThenBy(role => role.Id),
+            "isactive" => descending ? roles.OrderByDescending(role => role.IsActive).ThenBy(role => role.Id) : roles.OrderBy(role => role.IsActive).ThenBy(role => role.Id),
+            _ => descending ? roles.OrderByDescending(role => role.Name).ThenBy(role => role.Id) : roles.OrderBy(role => role.Name).ThenBy(role => role.Id)
+        };
+        return ApiResponse<IReadOnlyCollection<RoleExportDto>>.Success(roles
+            .Select(role => new RoleExportDto(role.Name, role.Description, role.IsActive ? "Active" : "Inactive", role.CreatedOn))
+            .ToArray());
+    }
+
     public async Task<ApiResponse<RoleDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
         ApiResponse<RoleDetailDto>.Success(await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Role was not found."));
 

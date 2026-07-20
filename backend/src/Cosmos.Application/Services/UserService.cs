@@ -45,6 +45,36 @@ public sealed class UserService : IUserService
     public async Task<ApiResponse<IReadOnlyCollection<UserDto>>> GetAllAsync(CancellationToken cancellationToken) =>
         ApiResponse<IReadOnlyCollection<UserDto>>.Success(await _repository.GetAllAsync(cancellationToken));
 
+    public async Task<ApiResponse<IReadOnlyCollection<UserExportDto>>> ExportAsync(
+        string? search,
+        bool? isActive,
+        int? roleId,
+        string? sortBy,
+        string? sortDirection,
+        CancellationToken cancellationToken)
+    {
+        var allowedSorts = new[] { "FullName", "Username", "Email", "CreatedOn", "IsActive" };
+        var normalizedSort = string.IsNullOrWhiteSpace(sortBy)
+            ? "Username"
+            : allowedSorts.FirstOrDefault(value => string.Equals(value, sortBy.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (normalizedSort is null)
+        {
+            throw new CosmosException("Unsupported sort field.", 400, new[] { "Allowed values: FullName, Username, Email, CreatedOn, IsActive." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortBy"] = new[] { "Allowed values: FullName, Username, Email, CreatedOn, IsActive." } });
+        }
+
+        if (!string.IsNullOrWhiteSpace(sortDirection)
+            && !string.Equals(sortDirection, "ASC", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(sortDirection, "DESC", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CosmosException("SortDirection is invalid.", 400, new[] { "Allowed values: ASC, DESC." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortDirection"] = new[] { "Allowed values: ASC, DESC." } });
+        }
+
+        return ApiResponse<IReadOnlyCollection<UserExportDto>>.Success(
+            await _repository.ExportAsync(search, isActive, roleId, normalizedSort, sortDirection, cancellationToken));
+    }
+
     public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
         ApiResponse<UserDto>.Success(await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found."));
 

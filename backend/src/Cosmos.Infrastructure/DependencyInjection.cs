@@ -4,7 +4,9 @@ using Cosmos.Application.Abstractions.Services;
 using Cosmos.Infrastructure.Gst;
 using Cosmos.Infrastructure.Security;
 using Cosmos.Shared.Options;
+using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +52,29 @@ public static class DependencyInjection
                         }
 
                         return Task.CompletedTask;
+                    },
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        var correlationId = context.HttpContext.Items.TryGetValue("X-Correlation-Id", out var value)
+                            ? value?.ToString()
+                            : null;
+                        await context.Response.WriteAsJsonAsync(
+                            ApiResponse.Failure("Unauthorized", new[] { "Authentication is required." }, correlationId),
+                            context.HttpContext.RequestAborted);
+                    },
+                    OnForbidden = async context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/json";
+                        var correlationId = context.HttpContext.Items.TryGetValue("X-Correlation-Id", out var value)
+                            ? value?.ToString()
+                            : null;
+                        await context.Response.WriteAsJsonAsync(
+                            ApiResponse.Failure("Forbidden", new[] { "You do not have permission to perform this action." }, correlationId),
+                            context.HttpContext.RequestAborted);
                     }
                 };
                 options.TokenValidationParameters = new TokenValidationParameters

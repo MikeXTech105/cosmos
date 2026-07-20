@@ -25,4 +25,5 @@ public sealed record CreatePartyCommand(
     int OpeningBalanceType,
     decimal CreditLimit,
     int CreditPeriodDays,
-    bool IsActive);
+    bool IsActive,
+    string PartyType = "Both");

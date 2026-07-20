@@ -25,8 +25,12 @@ public sealed class CategoryRepository : ICategoryRepository
     {
         using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var rows = await StoredProcedureExecutor.QueryAsync<CategoryListItemDto>(connection, "sp_Category_GetList", query, cancellationToken);
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<CategoryListItemDto>(rows, query.PageNumber, query.PageSize, totalCount);
+        var summary = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<MasterListSummaryDto>(
+            connection,
+            "sp_Category_GetListSummary",
+            new { query.Search, query.IsActive },
+            cancellationToken) ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<CategoryListItemDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
     }
 
     public async Task<CategoryDto> CreateAsync(CreateCategoryCommand command, CancellationToken cancellationToken)

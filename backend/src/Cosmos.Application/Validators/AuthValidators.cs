@@ -48,6 +48,15 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
     }
 }
 
+public sealed class UpdateCurrentUserProfileRequestValidator : AbstractValidator<UpdateCurrentUserProfileRequest>
+{
+    public UpdateCurrentUserProfileRequestValidator()
+    {
+        RuleFor(x => x.FullName).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(256);
+    }
+}
+
 internal sealed class PasswordPolicyValidator : AbstractValidator<string>
 {
     public PasswordPolicyValidator()

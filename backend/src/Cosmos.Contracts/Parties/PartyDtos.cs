@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Cosmos.Contracts.Parties;
 
 public sealed record PartyDto(
@@ -33,7 +35,10 @@ public sealed record PartyDto(
     Guid? ModifiedBy,
     bool IsDeleted,
     DateTime? DeletedOn,
-    byte[] RowVersion);
+    byte[] RowVersion)
+{
+    public string PartyType { get; init; } = "Both";
+}
 
 public sealed record PartyListItemDto(
     Guid Id,
@@ -50,7 +55,33 @@ public sealed record PartyListItemDto(
     bool IsActive,
     DateTime CreatedOn,
     DateTime? ModifiedOn,
-    int TotalCount);
+    int TotalCount)
+{
+    public string PartyType { get; init; } = "Both";
+}
+
+public sealed record PartyListSummaryDto(
+    int AllCount,
+    int CustomerCount,
+    int SupplierCount,
+    int BothCount,
+    int InactiveCount,
+    decimal TotalCreditLimit);
+
+public sealed record PartyListMetadataDto(int TotalCount);
+
+public sealed record PartyExportDto(
+    [property: DisplayName("Party Name")] string PartyName,
+    [property: DisplayName("Party Type")] string PartyType,
+    [property: DisplayName("GSTIN")] string? GSTIN,
+    [property: DisplayName("Mobile")] string? Mobile,
+    [property: DisplayName("Email")] string? Email,
+    [property: DisplayName("Billing City")] string? BillingCity,
+    [property: DisplayName("Billing State")] string? BillingState,
+    [property: DisplayName("Credit Limit")] decimal CreditLimit,
+    [property: DisplayName("Opening Balance")] decimal OpeningBalance,
+    [property: DisplayName("Opening Balance Type")] int OpeningBalanceType,
+    [property: DisplayName("Status")] string Status);
 
 public sealed record PartySettingsDto(
     Guid Id,
