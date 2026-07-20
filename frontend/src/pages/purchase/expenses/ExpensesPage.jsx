@@ -742,6 +742,9 @@ const ExpensesPage = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
+                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Date
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -768,7 +771,7 @@ const ExpensesPage = () => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={7} className="px-3 py-3">
+                    <td colSpan={8} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -776,15 +779,18 @@ const ExpensesPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No expenses found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((expense) => (
+                state.list.map((expense, index) => (
                   <tr key={expense.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {formatDate(expense.expenseDate)}
                     </td>
@@ -806,7 +812,7 @@ const ExpensesPage = () => {
                       {expense.referenceNo || "-"}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
-                      <div className="inline-flex gap-2">
+                      <div className="flex items-center justify-end gap-0.5">
                         {capabilities.canUpdate && (
                           <AppButton
                             variant="secondary"

@@ -292,7 +292,12 @@ const OeeMasterFilters = ({
   );
 };
 
-const ActionButton = ({ children, disabled, label, onClick }) => {
+const ActionButton = ({ children, disabled, label, onClick, tone = "default" }) => {
+  const buttonClass =
+    tone === "danger"
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <button
       type="button"
@@ -300,7 +305,7 @@ const ActionButton = ({ children, disabled, label, onClick }) => {
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand/30 hover:bg-brand-light hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
+      className={buttonClass}
     >
       {children}
     </button>
@@ -364,6 +369,7 @@ const OeeMasterTable = ({
         <table className="w-full min-w-[780px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               {columns.map((column) => (
                 <th key={column.key} className="px-4 py-3 font-semibold">
                   {column.label}
@@ -373,15 +379,18 @@ const OeeMasterTable = ({
             </tr>
           </thead>
           <tbody>
-            {records.map((record) => (
+            {records.map((record, index) => (
               <tr key={getOeeRecordId(record)} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {(pageNumber - 1) * pageSize + index + 1}
+                </td>
                 {columns.map((column) => (
                   <td key={column.key} className="px-4 py-3 text-slate-700">
                     {column.render ? column.render(record) : record[column.key] ?? "-"}
                   </td>
                 ))}
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex items-center justify-end gap-0.5">
                     {actions.canView && (
                       <ActionButton
                         label={`View ${config.entityLabel}`}
@@ -402,6 +411,7 @@ const OeeMasterTable = ({
                       <ActionButton
                         label={`Delete ${config.entityLabel}`}
                         onClick={() => actions.onDelete(record)}
+                        tone="danger"
                       >
                         <Trash2 className="h-4 w-4" />
                       </ActionButton>

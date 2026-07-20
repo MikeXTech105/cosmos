@@ -847,7 +847,7 @@ const AttendancePage = () => {
             <table className="w-full min-w-[900px] text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  {["Employee", "Date", "Check In", "Check Out", "Hours", "Status"].map((heading) => (
+                  {["#", "Employee", "Date", "Check In", "Check Out", "Hours", "Status"].map((heading) => (
                     <th key={heading} className="border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
                       {heading}
                     </th>
@@ -858,13 +858,16 @@ const AttendancePage = () => {
                 {attendanceState.loading
                   ? Array.from({ length: 6 }, (_, index) => (
                       <tr key={index}>
-                        <td colSpan={6} className="px-4 py-3">
+                        <td colSpan={7} className="px-4 py-3">
                           <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                         </td>
                       </tr>
                     ))
-                  : attendanceState.list.map((row) => (
+                  : attendanceState.list.map((row, index) => (
                       <tr key={getHrRecordId(row, "attendance") ?? `${row.employeeId}-${row.attendanceDate}`} className="hover:bg-slate-50">
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                          {(attendanceState.pageNumber - 1) * attendanceState.pageSize + index + 1}
+                        </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
                           {row.employeeName ?? getLookupLabel(employeeOptions, row.employeeId)}
                         </td>

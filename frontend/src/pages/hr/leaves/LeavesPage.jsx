@@ -609,7 +609,7 @@ const LeavesPage = () => {
             <table className="w-full min-w-[980px] text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  {["Employee", "Type", "Dates", "Days", "Status", "Actions"].map((heading) => (
+                  {["#", "Employee", "Type", "Dates", "Days", "Status", "Actions"].map((heading) => (
                     <th
                       key={heading}
                       className={[
@@ -626,13 +626,16 @@ const LeavesPage = () => {
                 {leaveState.loading
                   ? Array.from({ length: 6 }, (_, index) => (
                       <tr key={index}>
-                        <td colSpan={6} className="px-4 py-3">
+                        <td colSpan={7} className="px-4 py-3">
                           <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                         </td>
                       </tr>
                     ))
-                  : leaveState.list.map((leave) => (
+                  : leaveState.list.map((leave, index) => (
                       <tr key={getHrRecordId(leave, "leaveApplication") ?? leave.leaveApplicationId} className="hover:bg-slate-50">
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                          {(leaveState.pageNumber - 1) * leaveState.pageSize + index + 1}
+                        </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
                           {leave.employeeName ?? getLookupLabel(employeeOptions, leave.employeeId)}
                         </td>
@@ -649,7 +652,7 @@ const LeavesPage = () => {
                           <LeaveStatusPill status={leave.status} />
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex items-center justify-end gap-0.5">
                             {capabilities.canApprove && (
                               <>
                                 <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>

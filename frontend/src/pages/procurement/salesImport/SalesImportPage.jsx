@@ -959,7 +959,7 @@ const HistoryTab = ({
           </div>
         </div>
         {loading ? (
-          <ProcurementLoadingRows columns={7} />
+          <ProcurementLoadingRows columns={8} />
         ) : error ? (
           <ProcurementErrorState error={error} onRetry={load} />
         ) : rows.length === 0 ? (
@@ -969,6 +969,7 @@ const HistoryTab = ({
             <table className="min-w-[1000px] w-full text-left">
               <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
                 <tr>
+                  <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Date</th><th className="px-4 py-3">Channel</th>
                   <th className="px-4 py-3">Channel SKU</th><th className="px-4 py-3">Item</th>
                   <th className="px-4 py-3 text-right">Quantity</th><th className="px-4 py-3">Source</th>
@@ -976,19 +977,20 @@ const HistoryTab = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {rows.map((row) => {
+                {rows.map((row, index) => {
                   const manual = isManualSalesRow(row);
                   return (
                     <tr key={getRecordId(row, ["salesHistoryId", "manualSalesId"])} className="hover:bg-slate-50/70">
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td>
                       <td className="px-4 py-3 text-slate-600">{formatProcurementDate(row.salesDate)}</td>
                       <td className="px-4 py-3 text-slate-700">{row.channelCode ?? row.channelName ?? "-"}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{row.channelSku ?? "-"}</td>
                       <td className="px-4 py-3"><p className="font-medium text-slate-800">{row.itemCode ?? "Unmapped"}</p><p className="text-xs text-slate-500">{row.itemName}</p></td>
                       <td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(row.quantity)}</td>
                       <td className="px-4 py-3"><ProcurementPill tone={manual ? "brand" : "slate"}>{manual ? "Manual" : "Imported"}</ProcurementPill></td>
-                      <td className="px-4 py-3"><div className="flex justify-end gap-1">
-                        {manual && canEdit && <AppButton className="h-8 px-2.5" variant="ghost" onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" /></AppButton>}
-                        {manual && canDelete && <AppButton className="h-8 px-2.5 text-red-600" variant="ghost" onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 className="h-4 w-4" /></AppButton>}
+                      <td className="px-4 py-3"><div className="flex items-center justify-end gap-0.5">
+                        {manual && canEdit && <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" /></button>}
+                        {manual && canDelete && <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 className="h-4 w-4" /></button>}
                       </div></td>
                     </tr>
                   );
@@ -1095,9 +1097,9 @@ const BatchesTab = ({ canEdit }) => {
   return (
     <ProcurementSectionCard title="Import batches" description="Open a batch to inspect its retained source rows and audit status." actions={<AppButton variant="secondary" disabled={loading} onClick={load}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh</AppButton>}>
       {cancelError && <div className="p-4 pb-0"><ProcurementInlineError title="Batch conflict" message={cancelError} /></div>}
-      {loading ? <ProcurementLoadingRows columns={6} /> : error ? <ProcurementErrorState error={error} onRetry={load} /> : rows.length === 0 ? <ProcurementEmptyState title="No import batches yet" /> : (
-        <div className="overflow-x-auto"><table className="min-w-[900px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">File</th><th className="px-4 py-3">Imported</th><th className="px-4 py-3 text-right">Rows</th><th className="px-4 py-3 text-right">Unmapped</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Actions</th></tr></thead>
-        <tbody className="divide-y divide-slate-100 text-sm">{rows.map((batch) => { const cancelled = Number(batch.status) === SalesImportBatchStatus.Cancelled || String(batch.status).toLowerCase().includes("cancel"); return <tr key={getRecordId(batch, ["importBatchId"])}><td className="px-4 py-3"><button type="button" className="font-semibold text-brand hover:underline" onClick={() => void openDetail(batch)}>{batch.fileName ?? batch.originalFileName ?? "Import batch"}</button><p className="text-xs text-slate-500">{batch.batchNumber ?? getRecordId(batch, ["importBatchId"])}</p></td><td className="px-4 py-3 text-slate-600">{formatProcurementDateTime(batch.importedAt ?? batch.createdAt)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.totalRows ?? batch.rowCount)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.unmappedRows ?? batch.unmappedCount, "0")}</td><td className="px-4 py-3"><ProcurementPill tone={cancelled ? "red" : "emerald"}>{cancelled ? "Cancelled" : "Completed"}</ProcurementPill></td><td className="px-4 py-3"><div className="flex justify-end gap-2"><AppButton className="h-8 px-3" variant="secondary" onClick={() => void openDetail(batch)}>View</AppButton>{canEdit && <AppButton className="h-8 px-3" variant="ghost" disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}>Cancel</AppButton>}</div></td></tr>; })}</tbody></table></div>
+      {loading ? <ProcurementLoadingRows columns={7} /> : error ? <ProcurementErrorState error={error} onRetry={load} /> : rows.length === 0 ? <ProcurementEmptyState title="No import batches yet" /> : (
+        <div className="overflow-x-auto"><table className="min-w-[900px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">#</th><th className="px-4 py-3">File</th><th className="px-4 py-3">Imported</th><th className="px-4 py-3 text-right">Rows</th><th className="px-4 py-3 text-right">Unmapped</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Actions</th></tr></thead>
+        <tbody className="divide-y divide-slate-100 text-sm">{rows.map((batch, index) => { const cancelled = Number(batch.status) === SalesImportBatchStatus.Cancelled || String(batch.status).toLowerCase().includes("cancel"); return <tr key={getRecordId(batch, ["importBatchId"])}><td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td><td className="px-4 py-3"><button type="button" className="font-semibold text-brand hover:underline" onClick={() => void openDetail(batch)}>{batch.fileName ?? batch.originalFileName ?? "Import batch"}</button><p className="text-xs text-slate-500">{batch.batchNumber ?? getRecordId(batch, ["importBatchId"])}</p></td><td className="px-4 py-3 text-slate-600">{formatProcurementDateTime(batch.importedAt ?? batch.createdAt)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.totalRows ?? batch.rowCount)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.unmappedRows ?? batch.unmappedCount, "0")}</td><td className="px-4 py-3"><ProcurementPill tone={cancelled ? "red" : "emerald"}>{cancelled ? "Cancelled" : "Completed"}</ProcurementPill></td><td className="px-4 py-3"><div className="flex items-center justify-end gap-0.5"><AppButton className="h-8 px-3" variant="secondary" onClick={() => void openDetail(batch)}>View</AppButton>{canEdit && <AppButton className="h-8 px-3" variant="ghost" disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}>Cancel</AppButton>}</div></td></tr>; })}</tbody></table></div>
       )}
       <ProcurementPagination disabled={loading} {...pagination} onPageChange={setPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setPage(1); }} />
 

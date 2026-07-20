@@ -349,6 +349,9 @@ const ExpenseCategoriesPage = () => {
           <table className="w-full min-w-[720px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
+                <th className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
                 <th className="w-[28%] border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Name
                 </th>
@@ -367,7 +370,7 @@ const ExpenseCategoriesPage = () => {
               {state.loading ? (
                 Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={4} className="px-4 py-3">
+                    <td colSpan={5} className="px-4 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -375,15 +378,18 @@ const ExpenseCategoriesPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No expense categories found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((category) => (
+                state.list.map((category, index) => (
                   <tr key={category.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
                       {category.name}
                     </td>
@@ -407,7 +413,7 @@ const ExpenseCategoriesPage = () => {
                       />
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-right">
-                      <div className="inline-flex gap-2">
+                      <div className="flex items-center justify-end gap-0.5">
                         {capabilities.canUpdate && (
                           <AppButton
                             variant="secondary"

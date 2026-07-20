@@ -92,7 +92,7 @@ const ItemTable = ({
                     </td>
                   </tr>
                 ))
-              : items.map((item) => {
+              : items.map((item, index) => {
                   const lowStock = isLowStock(item);
                   const isSelected = String(selectedId) === String(item.id);
                   const itemType = getItemTypeLabel(item.itemType);
@@ -113,6 +113,9 @@ const ItemTable = ({
                         isSelected ? "bg-brand-light/60" : "",
                       ].join(" ")}
                     >
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                        {(pageNumber - 1) * pageSize + index + 1}
+                      </td>
                       <td className="border-b border-slate-100 px-3 py-3">
                         <div className="flex items-center gap-3">
                           <ItemImageThumbnail

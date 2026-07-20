@@ -127,7 +127,7 @@ const RunList = ({
         />
       </div>
       {loading ? (
-        <ProcurementLoadingRows columns={6} />
+        <ProcurementLoadingRows columns={7} />
       ) : error ? (
         <ProcurementErrorState error={error} onRetry={onRetry} />
       ) : runs.length === 0 ? (
@@ -141,6 +141,7 @@ const RunList = ({
           <table className="min-w-[1000px] w-full text-left">
             <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
               <tr>
+                <th className="px-4 py-3">#</th>
                 <th className="px-4 py-3">Run</th>
                 <th className="px-4 py-3">Demand range</th>
                 <th className="px-4 py-3 text-right">Days</th>
@@ -152,7 +153,7 @@ const RunList = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {runs.map((run) => {
+              {runs.map((run, index) => {
                 const status = runStatusMeta(run);
                 const days =
                   Number(run.numberOfDays) ||
@@ -162,6 +163,9 @@ const RunList = ({
                     key={getRecordId(run, ["planningRunId"])}
                     className="hover:bg-slate-50/80"
                   >
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(page - 1) * pageSize + index + 1}
+                    </td>
                     <td className="px-4 py-3">
                       <p className="font-semibold text-slate-900">
                         {run.runNumber ?? getRecordId(run, ["planningRunId"])}
@@ -193,13 +197,15 @@ const RunList = ({
                       <ProcurementPill tone={status.tone}>{status.label}</ProcurementPill>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <AppButton
-                        className="h-8 px-3"
-                        variant="secondary"
-                        onClick={() => onOpen(run)}
-                      >
-                        Open snapshot
-                      </AppButton>
+                      <div className="flex items-center justify-end gap-0.5">
+                        <AppButton
+                          className="h-8 px-3"
+                          variant="secondary"
+                          onClick={() => onOpen(run)}
+                        >
+                          Open snapshot
+                        </AppButton>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -500,7 +506,7 @@ const RunDetail = ({
           />
         </div>
         {linesLoading ? <ProcurementLoadingRows columns={8} rows={6} /> : linesError ? <ProcurementErrorState error={linesError} onRetry={onLoadLines} /> : lines.length === 0 ? <ProcurementEmptyState title="No snapshot lines match the filters" /> : (
-          <div className="max-h-[60vh] overflow-auto"><table className="min-w-[1180px] w-full text-left"><thead className="sticky top-0 z-10 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="sticky left-0 z-20 min-w-64 border-b border-r border-slate-200 bg-slate-50 px-4 py-3">Material</th><th className="border-b border-slate-200 px-4 py-3 text-right">Suggested</th><th className="border-b border-slate-200 px-4 py-3 text-right">Final</th><th className="border-b border-slate-200 px-4 py-3 text-right">Delta</th><th className="border-b border-slate-200 px-4 py-3 text-right">Shortage</th><th className="border-b border-slate-200 px-4 py-3 text-right">Stock</th><th className="border-b border-slate-200 px-4 py-3">Warnings / flags</th><th className="border-b border-slate-200 px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`px-4 py-3 text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`px-4 py-3 text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="px-4 py-3"><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td className="px-4 py-3 text-right">{canEdit && !finalized ? <AppButton className="h-8 px-3" variant="secondary" onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" />Adjust</AppButton> : <span className="text-xs text-slate-400">{finalized ? "Locked" : "Read only"}</span>}</td></tr>; })}</tbody></table></div>
+          <div className="max-h-[60vh] overflow-auto"><table className="min-w-[1180px] w-full text-left"><thead className="sticky top-0 z-10 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="sticky left-0 z-20 min-w-64 border-b border-r border-slate-200 bg-slate-50 px-4 py-3">Material</th><th className="border-b border-slate-200 px-4 py-3 text-right">Suggested</th><th className="border-b border-slate-200 px-4 py-3 text-right">Final</th><th className="border-b border-slate-200 px-4 py-3 text-right">Delta</th><th className="border-b border-slate-200 px-4 py-3 text-right">Shortage</th><th className="border-b border-slate-200 px-4 py-3 text-right">Stock</th><th className="border-b border-slate-200 px-4 py-3">Warnings / flags</th><th className="border-b border-slate-200 px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`px-4 py-3 text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`px-4 py-3 text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="px-4 py-3"><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-0.5">{canEdit && !finalized ? <AppButton className="h-8 px-3" variant="secondary" onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" />Adjust</AppButton> : <span className="text-xs text-slate-400">{finalized ? "Locked" : "Read only"}</span>}</div></td></tr>; })}</tbody></table></div>
         )}
         <ProcurementPagination disabled={linesLoading} {...pagination} onPageChange={(value) => onUpdateLineFilters({ page: value })} onPageSizeChange={(value) => onUpdateLineFilters({ page: 1, pageSize: Number(value) })} />
       </ProcurementSectionCard>
