@@ -17,7 +17,17 @@ internal static class ValidationRunner
         var result = await validator.ValidateAsync(context, cancellationToken);
         if (!result.IsValid)
         {
-            throw new CosmosException("Validation failed.", 400, result.Errors.Select(x => x.ErrorMessage));
+            var fieldErrors = result.Errors
+                .GroupBy(x => string.IsNullOrWhiteSpace(x.PropertyName) ? "_" : x.PropertyName, StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => (IReadOnlyCollection<string>)group
+                        .Select(x => x.ErrorMessage)
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray(),
+                    StringComparer.Ordinal);
+
+            throw new CosmosException("Validation failed.", 400, fieldErrors.Values.SelectMany(x => x), fieldErrors);
         }
     }
 }

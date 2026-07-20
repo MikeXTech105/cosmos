@@ -9,6 +9,7 @@ public interface IPartyRepository
 {
     Task<PartyDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<PagedResult<PartyListItemDto>> GetListAsync(GetPartiesQuery query, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<PartyExportDto>> ExportAsync(GetPartiesQuery query, CancellationToken cancellationToken);
     Task<PartyDto> CreateAsync(CreatePartyCommand command, CancellationToken cancellationToken);
     Task<PartyDto> UpdateAsync(Guid id, UpdatePartyCommand command, CancellationToken cancellationToken);
     Task<OperationResult> DeleteAsync(Guid id, CancellationToken cancellationToken);

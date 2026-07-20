@@ -6,4 +6,7 @@ public sealed record GetPartiesQuery(
     int PageSize = 20,
     string? SortBy = "PartyName",
     string? SortDirection = "ASC",
-    bool? IsActive = null);
+    bool? IsActive = null,
+    string? PartyType = null,
+    bool? HasGstin = null,
+    bool? HasCreditLimit = null);

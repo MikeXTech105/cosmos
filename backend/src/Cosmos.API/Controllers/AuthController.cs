@@ -34,6 +34,20 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.RefreshTokenAsync(request, cancellationToken));
 
+    /// <summary>Gets the authenticated user's current, database-authoritative profile.</summary>
+    [Authorize]
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(ApiResponse<CurrentUserProfileDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken) =>
+        FromResponse(await _service.GetCurrentUserProfileAsync(CurrentUserId, cancellationToken));
+
+    /// <summary>Updates only the authenticated user's display name and email.</summary>
+    [Authorize]
+    [HttpPut("me")]
+    [ProducesResponseType(typeof(ApiResponse<CurrentUserProfileDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateMe(UpdateCurrentUserProfileRequest request, CancellationToken cancellationToken) =>
+        FromResponse(await _service.UpdateCurrentUserProfileAsync(CurrentUserId, request, cancellationToken));
+
     /// <summary>Revokes an active refresh token.</summary>
     [Authorize]
     [HttpPost("logout")]

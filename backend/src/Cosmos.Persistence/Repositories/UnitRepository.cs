@@ -25,8 +25,12 @@ public sealed class UnitRepository : IUnitRepository
     {
         using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
         var rows = await StoredProcedureExecutor.QueryAsync<UnitListItemDto>(connection, "sp_Unit_GetList", query, cancellationToken);
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<UnitListItemDto>(rows, query.PageNumber, query.PageSize, totalCount);
+        var summary = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<MasterListSummaryDto>(
+            connection,
+            "sp_Unit_GetListSummary",
+            new { query.Search, query.IsActive },
+            cancellationToken) ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<UnitListItemDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
     }
 
     public async Task<UnitDto> CreateAsync(CreateUnitCommand command, CancellationToken cancellationToken)

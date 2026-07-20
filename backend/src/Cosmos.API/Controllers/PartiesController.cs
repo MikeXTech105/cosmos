@@ -1,4 +1,5 @@
 using Cosmos.API.Security;
+using Cosmos.API.Exports;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Application.Parties.Commands;
 using Cosmos.Application.Parties.Queries;
@@ -27,6 +28,17 @@ public sealed class PartiesController : ApiControllerBase
     [ProducesResponseType(typeof(ApiResponse<PagedResult<PartyListItemDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetList([FromQuery] GetPartiesQuery query, CancellationToken cancellationToken) =>
         FromResponse(await _service.GetListAsync(query, cancellationToken));
+
+    /// <summary>Exports every party matching the supplied list filters as UTF-8 CSV.</summary>
+    [HttpGet("export")]
+    [RequirePermission("Party", PermissionAction.Export)]
+    [Produces("text/csv")]
+    public async Task<IActionResult> Export([FromQuery] GetPartiesQuery query, [FromQuery] string? format, CancellationToken cancellationToken)
+    {
+        CsvExport.RequireCsv(format);
+        var result = await _service.ExportAsync(query, cancellationToken);
+        return CsvExport.Create(result.Data ?? Array.Empty<PartyExportDto>(), $"cosmos_parties_{DateTime.UtcNow:yyyy-MM-dd}.csv");
+    }
 
     /// <summary>Gets a party by id.</summary>
     [HttpGet("{id:guid}")]

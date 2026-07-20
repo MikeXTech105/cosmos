@@ -8,11 +8,14 @@ namespace Cosmos.Application.Abstractions.Persistence;
 public interface IUserRepository
 {
     Task<IReadOnlyCollection<UserDto>> GetAllAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<UserExportDto>> ExportAsync(string? search, bool? isActive, int? roleId, string? sortBy, string? sortDirection, CancellationToken cancellationToken);
     Task<User?> GetEntityByIdAsync(int id, CancellationToken cancellationToken);
     Task<bool> IsSystemOwnerAsync(int userId, CancellationToken cancellationToken);
+    Task<bool> IsPrivilegedAdministratorAsync(int userId, CancellationToken cancellationToken);
     Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken);
     Task<UserDto> CreateAsync(User user, CancellationToken cancellationToken);
     Task<UserDto> UpdateAsync(int id, UpdateUserRequest request, CancellationToken cancellationToken);
+    Task<UserDto> UpdateSelfAsync(int id, string email, string fullName, CancellationToken cancellationToken);
     Task<OperationResult> DeleteAsync(int id, CancellationToken cancellationToken);
     Task<OperationResult> SetActiveAsync(int id, bool isActive, CancellationToken cancellationToken);
     Task<OperationResult> AssignRolesAsync(int userId, IReadOnlyCollection<int> roleIds, CancellationToken cancellationToken);

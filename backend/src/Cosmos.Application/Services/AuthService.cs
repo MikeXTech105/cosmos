@@ -20,6 +20,7 @@ public sealed class AuthService : IAuthService
     private readonly IValidator<ChangePasswordRequest> _changePasswordValidator;
     private readonly IValidator<ForgotPasswordRequest> _forgotPasswordValidator;
     private readonly IValidator<ResetPasswordRequest> _resetPasswordValidator;
+    private readonly IValidator<UpdateCurrentUserProfileRequest> _updateProfileValidator;
 
     public AuthService(
         IAuthRepository authRepository,
@@ -31,7 +32,8 @@ public sealed class AuthService : IAuthService
         IValidator<LogoutRequest> logoutValidator,
         IValidator<ChangePasswordRequest> changePasswordValidator,
         IValidator<ForgotPasswordRequest> forgotPasswordValidator,
-        IValidator<ResetPasswordRequest> resetPasswordValidator)
+        IValidator<ResetPasswordRequest> resetPasswordValidator,
+        IValidator<UpdateCurrentUserProfileRequest> updateProfileValidator)
     {
         _authRepository = authRepository;
         _userRepository = userRepository;
@@ -43,6 +45,7 @@ public sealed class AuthService : IAuthService
         _changePasswordValidator = changePasswordValidator;
         _forgotPasswordValidator = forgotPasswordValidator;
         _resetPasswordValidator = resetPasswordValidator;
+        _updateProfileValidator = updateProfileValidator;
     }
 
     public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
@@ -78,6 +81,39 @@ public sealed class AuthService : IAuthService
         await _authRepository.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
         var response = await BuildLoginResponseAsync(user, cancellationToken);
         return ApiResponse<LoginResponse>.Success(response, "Token refreshed.");
+    }
+
+    public async Task<ApiResponse<CurrentUserProfileDto>> GetCurrentUserProfileAsync(int userId, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetEntityByIdAsync(userId, cancellationToken)
+            ?? throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        if (!user.IsActive || user.IsDeleted)
+        {
+            throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        }
+
+        return ApiResponse<CurrentUserProfileDto>.Success(await BuildCurrentUserProfileAsync(user, cancellationToken));
+    }
+
+    public async Task<ApiResponse<CurrentUserProfileDto>> UpdateCurrentUserProfileAsync(
+        int userId,
+        UpdateCurrentUserProfileRequest request,
+        CancellationToken cancellationToken)
+    {
+        await ValidationRunner.ValidateAsync(_updateProfileValidator, request, cancellationToken);
+        var user = await _userRepository.GetEntityByIdAsync(userId, cancellationToken)
+            ?? throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        if (!user.IsActive || user.IsDeleted)
+        {
+            throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        }
+
+        await _userRepository.UpdateSelfAsync(userId, request.Email.Trim(), request.FullName.Trim(), cancellationToken);
+        var updated = await _userRepository.GetEntityByIdAsync(userId, cancellationToken)
+            ?? throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        return ApiResponse<CurrentUserProfileDto>.Success(
+            await BuildCurrentUserProfileAsync(updated, cancellationToken),
+            "Profile updated.");
     }
 
     public async Task<ApiResponse> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
@@ -138,13 +174,30 @@ public sealed class AuthService : IAuthService
         var roles = await _userRepository.GetRolesByUserIdAsync(user.Id, cancellationToken);
         var pages = await _userRepository.GetPagePermissionsByUserIdAsync(user.Id, cancellationToken);
 
+        var isSuperAdmin = await _userRepository.IsPrivilegedAdministratorAsync(user.Id, cancellationToken);
+
         return new LoginResponse(
             access.Token,
             refresh.Token,
             access.ExpiresOn,
             refresh.ExpiresOn,
-            new UserSummaryDto(user.Id, user.Username, user.Email, user.FullName, user.IsActive),
+            new UserSummaryDto(user.Id, user.Username, user.Email, user.FullName, user.IsActive, isSuperAdmin),
             roles,
-            pages);
+            pages,
+            isSuperAdmin);
+    }
+
+    private async Task<CurrentUserProfileDto> BuildCurrentUserProfileAsync(Cosmos.Domain.Entities.User user, CancellationToken cancellationToken)
+    {
+        var roles = await _userRepository.GetRolesByUserIdAsync(user.Id, cancellationToken);
+        var isSuperAdmin = await _userRepository.IsPrivilegedAdministratorAsync(user.Id, cancellationToken);
+        return new CurrentUserProfileDto(
+            user.Id,
+            user.Username,
+            user.FullName,
+            user.Email,
+            user.IsActive,
+            isSuperAdmin,
+            roles);
     }
 }
