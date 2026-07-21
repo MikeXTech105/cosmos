@@ -6,6 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import AppSelect from "../../../components/common/AppSelect";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+
+const USER_FIELDS = ["username", "email", "fullName", "password", "isActive", "roleId"];
 
 const inputClassName =
   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
@@ -120,6 +123,7 @@ const UserModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
@@ -132,7 +136,7 @@ const UserModal = ({
     }
   }, [defaultRoleId, isOpen, mode, reset, user]);
 
-  const submitForm = (values) => {
+  const submitForm = async (values) => {
     const selectedRole = roleOptions.find((role) => {
       return String(role.id) === String(values.roleId);
     });
@@ -153,7 +157,16 @@ const UserModal = ({
           roleId,
         };
 
-    return onSubmit(payload);
+    try {
+      await onSubmit(payload);
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        fieldAliases: { fullName: "name", roleId: ["role", "roles"] },
+        formFieldNames: USER_FIELDS,
+        setError,
+      });
+    }
   };
 
   const submitDisabled =
@@ -225,6 +238,11 @@ const UserModal = ({
                 onSubmit={handleSubmit(submitForm)}
               >
                 <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-5 py-5 sm:grid-cols-2 sm:px-6">
+                  {errors.root?.server?.message && (
+                    <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">
+                      {errors.root.server.message}
+                    </p>
+                  )}
                   <div>
                     <label
                       htmlFor="username"

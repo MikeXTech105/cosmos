@@ -141,6 +141,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -208,7 +209,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Submit Leave
           </AppButton>
         </div>
@@ -261,6 +262,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -295,7 +297,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             {labels[action]}
           </AppButton>
         </div>
@@ -524,10 +526,10 @@ const LeavesPage = () => {
       />
 
       <div className="grid gap-3 md:grid-cols-4">
-        <HrStatCard icon={Clock3} label="Pending" value={stats.pending} colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} colorClass="bg-emerald-50 text-emerald-600" />
-        <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} colorClass="bg-brand-light text-brand" />
+        <HrStatCard icon={Clock3} label="Pending" value={stats.pending} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
+        <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
+        <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} scope="current-page" colorClass="bg-red-50 text-red-600" />
+        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">

@@ -45,6 +45,7 @@ const EmployeeDocumentModal = ({ isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -107,7 +108,7 @@ const EmployeeDocumentModal = ({ isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Uploading…">
             Save Document
           </AppButton>
         </div>

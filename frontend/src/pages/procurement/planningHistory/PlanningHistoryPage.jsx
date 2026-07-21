@@ -57,7 +57,7 @@ import {
   validateDateRange,
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const getRunStatus = (run) => run?.status ?? run?.planningRunStatus;
 
@@ -291,6 +291,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
 
   return (
     <AppModal
+      isBusy={saving}
       isOpen={Boolean(line)}
       maxWidth="max-w-xl"
       title="Adjust draft planning line"
@@ -365,7 +366,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
       )}
       <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
-        <AppButton isLoading={saving} onClick={submit}>
+        <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>
           <Save className="h-4 w-4" />Save adjustment
         </AppButton>
       </div>
@@ -407,9 +408,10 @@ const RunDetail = ({
         </AppButton>
         <div className="flex flex-wrap gap-2">
           {canExport && (
-            <AppButton
-              isLoading={exporting}
-              variant="secondary"
+          <AppButton
+            isLoading={exporting}
+            loadingText="Exporting…"
+            variant="secondary"
               onClick={async () => {
                 setExporting(true);
                 setExportError("");
@@ -431,7 +433,7 @@ const RunDetail = ({
             </AppButton>
           )}
           {canApprove && !finalized && (
-            <AppButton isLoading={finalizing} onClick={onFinalize}>
+            <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={onFinalize}>
               <ShieldCheck className="h-4 w-4" />Finalize run
             </AppButton>
           )}
@@ -808,7 +810,7 @@ const PlanningHistoryPage = () => {
         <ProcurementInlineError message={finalizeError} title="Run conflict" />
         <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setFinalizeOpen(false)}>Keep draft</AppButton>
-          <AppButton isLoading={finalizing} onClick={finalize}>
+          <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={finalize}>
             <ShieldCheck className="h-4 w-4" />Finalize snapshot
           </AppButton>
         </div>

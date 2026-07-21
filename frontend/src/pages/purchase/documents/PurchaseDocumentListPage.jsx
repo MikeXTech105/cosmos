@@ -317,12 +317,14 @@ const PurchaseDocumentListPage = ({ config }) => {
     );
 
     return {
-      balance: formatCurrency(balance),
-      count: state.totalCount,
-      paid: formatCurrency(paid),
-      total: formatCurrency(total),
+      balance: formatCurrency(state.summary?.balanceAmount ?? balance),
+      count: state.summary?.totalCount ?? state.totalCount,
+      paid: formatCurrency(state.summary?.paidAmount ?? paid),
+      total: formatCurrency(state.summary?.totalAmount ?? total),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const loadItemCreateLookups = useCallback(async () => {
     setItemCreateLookups((current) => ({
@@ -678,18 +680,21 @@ const PurchaseDocumentListPage = ({ config }) => {
           icon={Icon}
           label="Count"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={Icon}
           label="Total"
           value={stats.total}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <PurchaseStatCard
           icon={Icon}
           label={config.supportsPaidAmount ? "Unpaid" : "Paid / Balance"}
           value={config.supportsPaidAmount ? stats.balance : stats.paid}
+          scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
         />
       </div>

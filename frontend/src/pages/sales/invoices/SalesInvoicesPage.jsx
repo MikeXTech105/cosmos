@@ -300,12 +300,19 @@ const SalesInvoicesPage = () => {
     }, 0);
 
     return {
-      overdue: invoiceState.list.filter(isInvoiceOverdue).length,
-      totalInvoices: invoiceState.totalCount,
-      totalSales: formatCurrency(totalSales),
-      unpaid: formatCurrency(unpaid),
+      overdue:
+        invoiceState.summary?.overdueCount ??
+        invoiceState.list.filter(isInvoiceOverdue).length,
+      totalInvoices:
+        invoiceState.summary?.totalInvoices ?? invoiceState.totalCount,
+      totalSales: formatCurrency(
+        invoiceState.summary?.totalSalesAmount ?? totalSales,
+      ),
+      unpaid: formatCurrency(invoiceState.summary?.unpaidAmount ?? unpaid),
+      metricScope: invoiceState.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [invoiceState.list, invoiceState.totalCount]);
+  }, [invoiceState.list, invoiceState.summary, invoiceState.summaryScope, invoiceState.totalCount]);
 
   const closeModal = useCallback(() => {
     setModal((current) => ({ ...current, isOpen: false }));

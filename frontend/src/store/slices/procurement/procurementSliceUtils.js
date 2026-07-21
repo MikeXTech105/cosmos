@@ -11,6 +11,8 @@ export const createProcurementInitialState = (filters = {}) => ({
   pageSize: 20,
   totalCount: 0,
   totalPages: 1,
+  summary: null,
+  summaryScope: "current-page",
   filters,
   selected: null,
 });
@@ -28,6 +30,8 @@ export const setListFulfilled = (state, action) => {
   state.pageSize = page.pageSize;
   state.totalCount = page.totalCount;
   state.totalPages = page.totalPages;
+  state.summary = page.summary;
+  state.summaryScope = page.summaryScope;
 };
 
 export const setListRejected = (state, action) => {

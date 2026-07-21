@@ -6,7 +6,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -15,6 +15,9 @@ import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
 import PageHeader from "../../components/common/PageHeader";
+import useLatestRequest from "../../hooks/useLatestRequest";
+import { applyApiErrorsToForm } from "../../utils/formApiErrors";
+import { getApiStatus } from "../../utils/apiError";
 import {
   buildOeeListQueryParams,
   extractOeeEntity,
@@ -127,6 +130,14 @@ const OeeMasterFormModal = ({
 
     try {
       await onSubmit(config.toPayload(values));
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        formFieldNames: config.fields.map((field) => field.name),
+        setError: (name, detail) => {
+          setErrors((current) => ({ ...current, [name]: detail.message }));
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,6 +151,7 @@ const OeeMasterFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth={config.modalWidth ?? "max-w-2xl"}
       onClose={isSubmitting ? undefined : onClose}
@@ -165,6 +177,11 @@ const OeeMasterFormModal = ({
         </div>
       ) : (
         <form className="mt-6 space-y-5" onSubmit={submitForm}>
+          {errors["root.server"] && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors["root.server"]}
+            </p>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             {config.fields.map((field) => {
               if (field.type === "checkbox") {
@@ -238,7 +255,7 @@ const OeeMasterFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : `Create ${config.entityLabel}`}
               </AppButton>
             )}
@@ -454,6 +471,12 @@ const OeeMasterPage = ({ config }) => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -490,29 +513,41 @@ const OeeMasterPage = ({ config }) => {
 
   const stats = useMemo(
     () => ({
-      active: state.list.filter((record) => getOeeBoolean(record.isActive)).length,
-      inactive: state.list.filter((record) => !getOeeBoolean(record.isActive)).length,
-      total: state.totalCount,
+      active:
+        state.summary?.activeCount ??
+        state.list.filter((record) => getOeeBoolean(record.isActive)).length,
+      inactive:
+        state.summary?.inactiveCount ??
+        state.list.filter((record) => !getOeeBoolean(record.isActive)).length,
+      total: state.summary?.totalCount ?? state.totalCount,
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     }),
-    [state.list, state.totalCount],
+    [state.list, state.summary, state.summaryScope, state.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, record) => {
@@ -531,9 +566,14 @@ const OeeMasterPage = ({ config }) => {
       }
 
       setModal({ entity: record, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(config.fetchById(id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(config.fetchById(id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
 
         setModal({
           entity: extractOeeEntity(response.data, config.entityKey),
@@ -542,16 +582,42 @@ const OeeMasterPage = ({ config }) => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error(`This ${config.entityLabel.toLowerCase()} no longer exists. The list was refreshed.`);
+          closeModal();
+          await loadRecords();
+          return;
+        }
         toast.error(
           getOeeActionError(
             error,
             `Unable to load ${config.entityLabel.toLowerCase()} details.`,
           ),
         );
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(getOeeRecordId(current.entity, config.recordResource)) === String(id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [capabilities.canUpdate, capabilities.canView, config, dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      config,
+      dispatch,
+      isLatestDetailRequest,
+      loadRecords,
+    ],
   );
 
   const submitRecord = useCallback(
@@ -587,6 +653,12 @@ const OeeMasterPage = ({ config }) => {
         closeModal();
         await loadRecords();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error(`This ${config.entityLabel.toLowerCase()} no longer exists. The list was refreshed.`);
+          closeModal();
+          await loadRecords();
+          return;
+        }
         toast.error(
           getOeeActionError(
             error,
@@ -693,17 +765,20 @@ const OeeMasterPage = ({ config }) => {
           icon={config.icon}
           label={`Total ${config.pluralLabel}`}
           value={formatOeeNumber(stats.total, { maximumFractionDigits: 0 })}
+          scope={stats.totalScope}
         />
         <OeeStatCard
           icon={config.activeIcon ?? config.icon}
           label="Active"
           value={formatOeeNumber(stats.active, { maximumFractionDigits: 0 })}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <OeeStatCard
           icon={config.inactiveIcon ?? config.icon}
           label="Inactive"
           value={formatOeeNumber(stats.inactive, { maximumFractionDigits: 0 })}
+          scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
         />
       </div>

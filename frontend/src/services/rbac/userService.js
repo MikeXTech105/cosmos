@@ -15,8 +15,18 @@ export const userService = {
     return unwrapResponse(response);
   },
 
-  getUserById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.USER_BY_ID(id));
+  exportUsers: async (params, { signal } = {}) => {
+    return axiosInstance.get(ENDPOINTS.USERS_EXPORT, {
+      params: normalizeParams(params),
+      responseType: "blob",
+      signal,
+    });
+  },
+
+  getUserById: async (id, { signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.USER_BY_ID(id), {
+      signal,
+    });
 
     return unwrapResponse(response);
   },

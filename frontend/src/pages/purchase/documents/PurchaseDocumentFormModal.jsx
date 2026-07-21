@@ -173,6 +173,7 @@ const PurchaseDocumentFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-7xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -419,7 +420,7 @@ const PurchaseDocumentFormModal = ({
             >
               Cancel
             </AppButton>
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               <Check className="h-4 w-4" />
               Save
             </AppButton>

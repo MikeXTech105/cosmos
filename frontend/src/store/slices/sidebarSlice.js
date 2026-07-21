@@ -6,6 +6,7 @@ const initialState = {
     "category-rbac": true,
   },
   commandOpen: false,
+  mobileOpen: false,
 };
 
 const sidebarSlice = createSlice({
@@ -57,6 +58,18 @@ const sidebarSlice = createSlice({
 
       state.commandOpen = false;
     },
+
+    openMobileSidebar: (state) => {
+      state.mobileOpen = true;
+    },
+
+    closeMobileSidebar: (state) => {
+      state.mobileOpen = false;
+    },
+
+    toggleMobileSidebar: (state) => {
+      state.mobileOpen = !state.mobileOpen;
+    },
   },
 });
 
@@ -67,6 +80,9 @@ export const {
   resetSidebarSearch,
   openCommand,
   closeCommand,
+  openMobileSidebar,
+  closeMobileSidebar,
+  toggleMobileSidebar,
 } = sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

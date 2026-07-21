@@ -443,6 +443,7 @@ const OeeReportsPage = () => {
               <AppButton
                 className="h-10"
                 isLoading={exporting}
+                loadingText="Exporting…"
                 onClick={exportExcel}
               >
                 <Download className="h-4 w-4" />

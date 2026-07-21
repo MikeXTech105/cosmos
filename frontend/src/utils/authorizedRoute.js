@@ -6,7 +6,13 @@ import {
   normalizeRoute,
 } from "./permissionResolver";
 
-const ALWAYS_AUTHENTICATED_ROUTES = new Set(["/403", "/404", "/change-password"]);
+const ALWAYS_AUTHENTICATED_ROUTES = new Set([
+  "/403",
+  "/404",
+  "/change-password",
+  "/preferences",
+  "/profile",
+]);
 
 const canViewModule = ({ module, pages, roles, user }) => {
   return canPerformAction({

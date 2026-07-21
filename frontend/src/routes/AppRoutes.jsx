@@ -86,6 +86,8 @@ const ProcurementPlanningHistory = lazy(
   () => import("../pages/procurement/planningHistory/index.js"),
 );
 const Settings = lazy(() => import("../pages/settings/index.js"));
+const Profile = lazy(() => import("../pages/profile/index.js"));
+const Preferences = lazy(() => import("../pages/preferences/index.js"));
 const AccessDeniedPage = lazy(
   () => import("../pages/errors/AccessDeniedPage.jsx"),
 );
@@ -545,6 +547,8 @@ const AppRoutes = () => {
             }
           />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/preferences" element={<Preferences />} />
           <Route path="/403" element={<AccessDeniedPage />} />
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<NotFoundPage />} />

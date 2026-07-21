@@ -9,6 +9,10 @@ const initialState = {
   selectedRun: null,
   history: [],
   payslip: null,
+  detailRequestId: null,
+  selectedRequestEntityId: null,
+  historyRequestId: null,
+  payslipRequestId: null,
 };
 
 export const processHrPayroll = createAsyncThunk(
@@ -80,17 +84,28 @@ const payrollSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchHrPayrollRunById.pending, (state) => {
+      .addCase(fetchHrPayrollRunById.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.detailRequestId = action.meta.requestId;
+        state.selectedRequestEntityId = action.meta.arg;
       })
       .addCase(fetchHrPayrollRunById.fulfilled, (state, action) => {
+        if (
+          state.detailRequestId !== action.meta.requestId ||
+          String(state.selectedRequestEntityId) !== String(action.meta.arg)
+        ) {
+          return;
+        }
         state.loading = false;
         state.selectedRun = action.payload.data;
+        state.detailRequestId = null;
       })
       .addCase(fetchHrPayrollRunById.rejected, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.error = action.payload ?? action.error.message;
+        state.detailRequestId = null;
       })
       .addCase(processHrPayroll.fulfilled, (state, action) => {
         state.selectedRun = action.payload.data;
@@ -98,13 +113,33 @@ const payrollSlice = createSlice({
       .addCase(approveHrPayroll.fulfilled, (state, action) => {
         state.selectedRun = action.payload.data ?? state.selectedRun;
       })
+      .addCase(fetchHrPayrollHistory.pending, (state, action) => {
+        state.historyRequestId = action.meta.requestId;
+      })
       .addCase(fetchHrPayrollHistory.fulfilled, (state, action) => {
+        if (state.historyRequestId !== action.meta.requestId) return;
         state.history = Array.isArray(action.payload.data)
           ? action.payload.data
           : action.payload.data?.items ?? [];
+        state.historyRequestId = null;
+      })
+      .addCase(fetchHrPayrollHistory.rejected, (state, action) => {
+        if (state.historyRequestId === action.meta.requestId) {
+          state.historyRequestId = null;
+        }
+      })
+      .addCase(fetchHrPayslip.pending, (state, action) => {
+        state.payslipRequestId = action.meta.requestId;
       })
       .addCase(fetchHrPayslip.fulfilled, (state, action) => {
+        if (state.payslipRequestId !== action.meta.requestId) return;
         state.payslip = action.payload.data;
+        state.payslipRequestId = null;
+      })
+      .addCase(fetchHrPayslip.rejected, (state, action) => {
+        if (state.payslipRequestId === action.meta.requestId) {
+          state.payslipRequestId = null;
+        }
       });
   },
 });

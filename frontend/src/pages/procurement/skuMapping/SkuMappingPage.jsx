@@ -43,7 +43,7 @@ import {
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import useActiveSalesChannels from "../useProcurementChannels";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const emptyForm = () => ({
   channelProductName: "",
@@ -149,6 +149,7 @@ const MappingModal = ({
 
   return (
     <AppModal
+      isBusy={saving}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       title={
@@ -228,7 +229,7 @@ const MappingModal = ({
       </div>
       <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
-        <AppButton isLoading={saving} onClick={submit}>
+        <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>
           <Link2 className="h-4 w-4" />Save mapping
         </AppButton>
       </div>

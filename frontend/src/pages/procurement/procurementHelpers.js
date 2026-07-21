@@ -1,5 +1,10 @@
 import { PlanningMessageSeverity } from "../../constants/procurementEnums";
-import { getApiErrorList, getApiErrorMessage } from "../../utils/apiError";
+import {
+  getApiErrorList,
+  getApiErrorMessage,
+  getApiFieldErrors,
+  getApiStatus,
+} from "../../utils/apiError";
 
 const EMPTY_VALUE = "-";
 
@@ -206,49 +211,12 @@ export const getProcurementBoolean = (value, fallback = false) => {
   return Boolean(value);
 };
 
-export const getApiStatus = (error) =>
-  Number(error?.response?.status ?? error?.status ?? error?.apiError?.status);
+export { getApiStatus };
 
 export const getProcurementError = (error, fallback) =>
   getApiErrorMessage(error, fallback);
 
-export const getFieldErrorMap = (error) => {
-  const source =
-    error?.apiError?.errors ??
-    error?.response?.data?.errors ??
-    error?.errors ??
-    {};
-
-  if (!source || typeof source !== "object" || Array.isArray(source)) {
-    return {};
-  }
-
-  const normalizeFieldPath = (key) => {
-    const segments = String(key)
-      .replace(/\[(\d+)\]/g, ".$1")
-      .split(".")
-      .filter(Boolean);
-
-    if (["model", "payload", "request"].includes(segments[0]?.toLowerCase())) {
-      segments.shift();
-    }
-
-    return segments
-      .map((segment) =>
-        /^\d+$/.test(segment)
-          ? segment
-          : `${segment.charAt(0).toLowerCase()}${segment.slice(1)}`,
-      )
-      .join(".");
-  };
-
-  return Object.fromEntries(
-    Object.entries(source).map(([key, value]) => [
-      normalizeFieldPath(key),
-      Array.isArray(value) ? value.join(" ") : String(value),
-    ]),
-  );
-};
+export const getFieldErrorMap = getApiFieldErrors;
 
 export const getErrorDetails = (error) => getApiErrorList(error);
 

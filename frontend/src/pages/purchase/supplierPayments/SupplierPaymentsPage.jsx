@@ -163,6 +163,7 @@ const PaymentModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-5xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -381,7 +382,7 @@ const PaymentModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Payment
           </AppButton>
         </div>
@@ -525,10 +526,12 @@ const SupplierPaymentsPage = () => {
     );
 
     return {
-      count: state.totalCount,
-      totalPaid: formatCurrency(totalPaid),
+      count: state.summary?.totalCount ?? state.totalCount,
+      totalPaid: formatCurrency(state.summary?.totalPaidAmount ?? totalPaid),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const submitSupplier = useCallback(
     async (payload) => {
@@ -679,12 +682,14 @@ const SupplierPaymentsPage = () => {
           icon={CreditCard}
           label="Total Paid"
           value={stats.totalPaid}
+          scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={CreditCard}
           label="Payments"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
       </div>

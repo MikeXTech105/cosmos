@@ -13,6 +13,7 @@ const initialState = {
   exporting: false,
   error: null,
   exportError: null,
+  reportRequestId: null,
   filters: {
     LastDays: 30,
     FromDate: "",
@@ -89,15 +90,21 @@ export const exportOeeReportExcel = createAsyncThunk(
   },
 );
 
-const setPending = (state) => {
+const setPending = (state, action) => {
   state.loading = true;
   state.error = null;
+  state.reportRequestId = action.meta.requestId;
 };
 
 const setRejected = (state, action) => {
+  if (state.reportRequestId !== action.meta.requestId) return;
   state.loading = false;
   state.error = action.payload ?? action.error.message;
+  state.reportRequestId = null;
 };
+
+const isCurrentReportRequest = (state, action) =>
+  state.reportRequestId === action.meta.requestId;
 
 const getRows = (payload) => (Array.isArray(payload.data) ? payload.data : []);
 
@@ -117,26 +124,34 @@ const oeeReportSlice = createSlice({
     builder
       .addCase(fetchOeeDailyReport.pending, setPending)
       .addCase(fetchOeeDailyReport.fulfilled, (state, action) => {
+        if (!isCurrentReportRequest(state, action)) return;
         state.loading = false;
         state.daily = getRows(action.payload);
+        state.reportRequestId = null;
       })
       .addCase(fetchOeeDailyReport.rejected, setRejected)
       .addCase(fetchOeeMachinePerformanceReport.pending, setPending)
       .addCase(fetchOeeMachinePerformanceReport.fulfilled, (state, action) => {
+        if (!isCurrentReportRequest(state, action)) return;
         state.loading = false;
         state.machinePerformance = getRows(action.payload);
+        state.reportRequestId = null;
       })
       .addCase(fetchOeeMachinePerformanceReport.rejected, setRejected)
       .addCase(fetchOeeMouldPerformanceReport.pending, setPending)
       .addCase(fetchOeeMouldPerformanceReport.fulfilled, (state, action) => {
+        if (!isCurrentReportRequest(state, action)) return;
         state.loading = false;
         state.mouldPerformance = getRows(action.payload);
+        state.reportRequestId = null;
       })
       .addCase(fetchOeeMouldPerformanceReport.rejected, setRejected)
       .addCase(fetchOeeDowntimeReport.pending, setPending)
       .addCase(fetchOeeDowntimeReport.fulfilled, (state, action) => {
+        if (!isCurrentReportRequest(state, action)) return;
         state.loading = false;
         state.downtime = getRows(action.payload);
+        state.reportRequestId = null;
       })
       .addCase(fetchOeeDowntimeReport.rejected, setRejected)
       .addCase(exportOeeReportExcel.pending, (state) => {

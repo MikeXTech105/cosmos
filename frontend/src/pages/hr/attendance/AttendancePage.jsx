@@ -141,6 +141,7 @@ const QuickActionModal = ({ action, employeeOptions, isOpen, onClose, onSubmit }
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -181,7 +182,7 @@ const QuickActionModal = ({ action, employeeOptions, isOpen, onClose, onSubmit }
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save
           </AppButton>
         </div>
@@ -232,6 +233,7 @@ const ManualEntryModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -299,7 +301,7 @@ const ManualEntryModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Entry
           </AppButton>
         </div>
@@ -336,6 +338,7 @@ const AdjustmentModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -382,7 +385,7 @@ const AdjustmentModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Submit Request
           </AppButton>
         </div>
@@ -417,6 +420,7 @@ const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -447,7 +451,7 @@ const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             {mode === "approve" ? "Approve" : "Reject"}
           </AppButton>
         </div>
@@ -712,10 +716,10 @@ const AttendancePage = () => {
       />
 
       <div className="grid gap-3 md:grid-cols-4">
-        <HrStatCard icon={UserCheck} label="Present" value={stats.present} colorClass="bg-emerald-50 text-emerald-600" />
-        <HrStatCard icon={UserX} label="Absent" value={stats.absent} colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={Clock} label="Late" value={stats.late} colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CalendarCheck} label="On Leave" value={stats.leave} colorClass="bg-brand-light text-brand" />
+        <HrStatCard icon={UserCheck} label="Present" value={stats.present} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
+        <HrStatCard icon={UserX} label="Absent" value={stats.absent} scope="current-page" colorClass="bg-red-50 text-red-600" />
+        <HrStatCard icon={Clock} label="Late" value={stats.late} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
+        <HrStatCard icon={CalendarCheck} label="On Leave" value={stats.leave} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">

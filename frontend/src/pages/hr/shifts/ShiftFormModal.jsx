@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { hrShiftSchema } from "../../../utils/validationSchemas";
 import { getHrBoolean } from "../hrHelpers";
 import { HrNumberInput } from "../HrShared";
@@ -40,6 +41,7 @@ const getDefaultValues = (shift) => ({
   weeklyHours: shift?.weeklyHours ?? 48,
   isActive: getHrBoolean(shift?.isActive, true),
 });
+const SHIFT_FIELDS = Object.keys(getDefaultValues());
 
 const ShiftFormModal = ({
   isLoading,
@@ -57,6 +59,7 @@ const ShiftFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrShiftSchema),
     defaultValues: getDefaultValues(shift),
@@ -69,16 +72,20 @@ const ShiftFormModal = ({
   }, [isOpen, reset, shift]);
 
   const submitForm = async (values) => {
-    await onSubmit({
-      shiftCode: values.shiftCode.trim(),
-      shiftName: values.shiftName.trim(),
-      startTime: toApiTime(values.startTime),
-      endTime: toApiTime(values.endTime),
-      graceMinutes: Number(values.graceMinutes),
-      isNightShift: values.isNightShift,
-      weeklyHours: Number(values.weeklyHours),
-      isActive: values.isActive,
-    });
+    try {
+      await onSubmit({
+        shiftCode: values.shiftCode.trim(),
+        shiftName: values.shiftName.trim(),
+        startTime: toApiTime(values.startTime),
+        endTime: toApiTime(values.endTime),
+        graceMinutes: Number(values.graceMinutes),
+        isNightShift: values.isNightShift,
+        weeklyHours: Number(values.weeklyHours),
+        isActive: values.isActive,
+      });
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: SHIFT_FIELDS, setError });
+    }
   };
 
   const title = isView
@@ -89,6 +96,7 @@ const ShiftFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -119,6 +127,11 @@ const ShiftFormModal = ({
           className="mt-6 space-y-5"
           onSubmit={handleSubmit(submitForm)}
         >
+          {errors.root?.server?.message && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors.root.server.message}
+            </p>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <AppInput
               id="shiftCode"
@@ -233,7 +246,7 @@ const ShiftFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Create Shift"}
               </AppButton>
             )}

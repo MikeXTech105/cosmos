@@ -49,7 +49,7 @@ import {
   toNumberOrNull,
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const QUICK_FILTERS = [
   { id: "all", label: "All materials" },
@@ -281,7 +281,7 @@ const SettingEditor = ({
   };
 
   return (
-    <AppModal isOpen={isOpen} maxWidth="max-w-5xl" title={existing ? "Edit procurement setting" : "Configure procurement setting"} onClose={saving ? undefined : onClose}>
+    <AppModal isBusy={saving} isOpen={isOpen} maxWidth="max-w-5xl" title={existing ? "Edit procurement setting" : "Configure procurement setting"} onClose={saving ? undefined : onClose}>
       {loading ? <ProcurementLoadingRows columns={3} rows={5} /> : loadError ? (
         <ProcurementErrorState
           error={loadError}
@@ -310,7 +310,7 @@ const SettingEditor = ({
           <ProcurementInlineError message={errors.form} title="Setting could not be saved" />
         </div>
       )}
-      <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>{canSave && !loadError && <AppButton disabled={loading} isLoading={saving} onClick={submit}><Settings2 className="h-4 w-4" />Save setting</AppButton>}</div>
+      <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>{canSave && !loadError && <AppButton disabled={loading} isLoading={saving} loadingText="Saving…" onClick={submit}><Settings2 className="h-4 w-4" />Save setting</AppButton>}</div>
     </AppModal>
   );
 };
@@ -369,10 +369,10 @@ const LeadTimeHistoryModal = ({ canManage, item, isOpen, onClose }) => {
   };
 
   return (
-    <AppModal isOpen={isOpen} maxWidth="max-w-5xl" title={`Lead-time history · ${getItemLabel(item)}`} onClose={adding ? undefined : onClose}>
+    <AppModal isBusy={adding} isOpen={isOpen} maxWidth="max-w-5xl" title={`Lead-time history · ${getItemLabel(item)}`} onClose={adding ? undefined : onClose}>
       <div className="max-h-[76vh] space-y-5 overflow-y-auto pr-1">
         <div className="grid gap-3 rounded-xl border border-brand/20 bg-brand-light/40 p-4 md:grid-cols-[160px_minmax(0,1fr)]"><div><p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Computed average</p><p className="mt-1 text-xl font-semibold text-slate-900">{formatProcurementDecimal(average)} days</p></div><p className="self-center text-xs leading-5 text-slate-600">Completed order receipts feed the history-average lead-time source used by automatic planning.</p></div>
-        {canManage && <ProcurementSectionCard title="Add received order" description="Received date must be on or after the ordered date."><div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4"><AppInput error={formErrors.reference} label="Reference" required value={form.reference} onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))} /><AppInput error={formErrors.orderedDate} label="Ordered date" required type="date" max={form.receivedDate || toIsoDate(new Date())} value={form.orderedDate} onChange={(event) => setForm((current) => ({ ...current, orderedDate: event.target.value }))} /><AppInput error={formErrors.receivedDate} label="Received date" required type="date" min={form.orderedDate} max={toIsoDate(new Date())} value={form.receivedDate} onChange={(event) => setForm((current) => ({ ...current, receivedDate: event.target.value }))} /><AppInput error={formErrors.notes} label="Notes" value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} /></div><div className="flex items-center justify-between gap-3 px-4 pb-4"><ProcurementInlineError message={formErrors.form} /><AppButton isLoading={adding} onClick={submit}><Plus className="h-4 w-4" />Add record</AppButton></div></ProcurementSectionCard>}
+        {canManage && <ProcurementSectionCard title="Add received order" description="Received date must be on or after the ordered date."><div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4"><AppInput error={formErrors.reference} label="Reference" required value={form.reference} onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))} /><AppInput error={formErrors.orderedDate} label="Ordered date" required type="date" max={form.receivedDate || toIsoDate(new Date())} value={form.orderedDate} onChange={(event) => setForm((current) => ({ ...current, orderedDate: event.target.value }))} /><AppInput error={formErrors.receivedDate} label="Received date" required type="date" min={form.orderedDate} max={toIsoDate(new Date())} value={form.receivedDate} onChange={(event) => setForm((current) => ({ ...current, receivedDate: event.target.value }))} /><AppInput error={formErrors.notes} label="Notes" value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} /></div><div className="flex items-center justify-between gap-3 px-4 pb-4"><ProcurementInlineError message={formErrors.form} /><AppButton isLoading={adding} loadingText="Adding…" onClick={submit}><Plus className="h-4 w-4" />Add record</AppButton></div></ProcurementSectionCard>}
         <ProcurementSectionCard title="Received-order history">{loading ? <ProcurementLoadingRows columns={5} rows={4} /> : error ? <ProcurementErrorState error={error} onRetry={load} /> : rows.length === 0 ? <ProcurementEmptyState title="No lead-time history" /> : <div className="overflow-x-auto"><table className="min-w-[760px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Reference</th><th className="px-4 py-3">Ordered</th><th className="px-4 py-3">Received</th><th className="px-4 py-3 text-right">Lead time</th><th className="px-4 py-3">Notes</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{rows.map((record, index) => <tr key={getRecordId(record, ["leadTimeHistoryId"]) ?? index}><td className="px-4 py-3 font-semibold text-slate-800">{record.reference}</td><td className="px-4 py-3 text-slate-600">{formatProcurementDate(record.orderedDate)}</td><td className="px-4 py-3 text-slate-600">{formatProcurementDate(record.receivedDate)}</td><td className="px-4 py-3 text-right font-semibold tabular-nums">{formatProcurementDecimal(record.leadTimeDays ?? record.numberOfDays)}</td><td className="px-4 py-3 text-slate-600">{record.notes ?? "-"}</td></tr>)}</tbody></table></div>}</ProcurementSectionCard>
       </div>
     </AppModal>

@@ -128,6 +128,7 @@ const ExpenseModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-4xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -280,7 +281,7 @@ const ExpenseModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Expense
           </AppButton>
         </div>
@@ -468,11 +469,13 @@ const ExpensesPage = () => {
     }, 0);
 
     return {
-      count: state.totalCount,
-      thisMonth: formatCurrency(thisMonth),
-      total: formatCurrency(total),
+      count: state.summary?.totalCount ?? state.totalCount,
+      thisMonth: formatCurrency(state.summary?.thisMonthAmount ?? thisMonth),
+      total: formatCurrency(state.summary?.totalAmount ?? total),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const openLookupCreate = useCallback(
     (type) => {
@@ -652,18 +655,21 @@ const ExpensesPage = () => {
           icon={CircleDollarSign}
           label="Total Expenses"
           value={stats.total}
+          scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={ReceiptText}
           label="This Month"
           value={stats.thisMonth}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <PurchaseStatCard
           icon={ReceiptText}
           label="Count"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-sky-50 text-sky-600"
         />
       </div>

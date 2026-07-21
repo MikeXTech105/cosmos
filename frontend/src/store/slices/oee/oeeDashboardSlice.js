@@ -18,6 +18,7 @@ const initialPanel = (fallback) => ({
 });
 
 const initialState = {
+  requestId: null,
   filters: {
     LastDays: 30,
     FromDate: "",
@@ -84,10 +85,12 @@ const oeeDashboardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchOeeDashboard.pending, (state) => {
+      .addCase(fetchOeeDashboard.pending, (state, action) => {
+        state.requestId = action.meta.requestId;
         setAllLoading(state, true);
       })
       .addCase(fetchOeeDashboard.fulfilled, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
         Object.entries(action.payload).forEach(([key, panel]) => {
           state[key].loading = false;
           state[key].error = panel.error;
@@ -96,13 +99,16 @@ const oeeDashboardSlice = createSlice({
             state[key].data = panel.data;
           }
         });
+        state.requestId = null;
       })
       .addCase(fetchOeeDashboard.rejected, (state, action) => {
+        if (state.requestId !== action.meta.requestId) return;
         setAllLoading(state, false);
         Object.keys(requestMap).forEach((key) => {
           state[key].error =
             action.payload ?? action.error.message ?? "Unable to load data.";
         });
+        state.requestId = null;
       });
   },
 });

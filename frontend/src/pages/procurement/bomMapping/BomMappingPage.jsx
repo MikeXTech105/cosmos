@@ -43,7 +43,7 @@ import {
   hasDecimalPrecision,
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const emptyLine = () => ({ componentItem: null, quantityRequired: "" });
 
@@ -392,10 +392,10 @@ const BomMappingPage = () => {
         )}
       </ProcurementSectionCard>
 
-      <AppModal isOpen={confirmOpen} title="Replace this product's active BOM?" onClose={() => !saving && setConfirmOpen(false)}>
+      <AppModal isBusy={saving} isOpen={confirmOpen} title="Replace this product's active BOM?" onClose={() => !saving && setConfirmOpen(false)}>
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-semibold">Replace-all operation</p><p className="mt-0.5 text-xs leading-5">The submitted component list becomes the entire active BOM. Existing rows not in this list are made inactive and retained in backend history.</p></div></div>
         <p className="mt-4 text-sm text-slate-600">{fields.length} component{fields.length === 1 ? "" : "s"} will be active for <strong>{getItemLabel(selectedProduct)}</strong>.</p>
-        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setConfirmOpen(false)}>Review again</AppButton><AppButton isLoading={saving} onClick={save}><Save className="h-4 w-4" />Replace active BOM</AppButton></div>
+        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setConfirmOpen(false)}>Review again</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={save}><Save className="h-4 w-4" />Replace active BOM</AppButton></div>
       </AppModal>
     </section>
   );

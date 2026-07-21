@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
 import {
@@ -95,6 +97,12 @@ const ItemsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [lookupCreateModal, setLookupCreateModal] = useState({
     isOpen: false,
     type: null,
@@ -255,27 +263,37 @@ const ItemsPage = () => {
 
   const stats = useMemo(
     () => ({
-      lowStock: itemsState.list.filter(isLowStock).length,
-      products: itemsState.list.filter(
+      lowStock:
+        itemsState.summary?.lowStockCount ??
+        itemsState.list.filter(isLowStock).length,
+      products: itemsState.summary?.productCount ?? itemsState.list.filter(
         (item) => getItemTypeLabel(item.itemType) !== "Service",
       ).length,
-      services: itemsState.list.filter(
+      services: itemsState.summary?.serviceCount ?? itemsState.list.filter(
         (item) => getItemTypeLabel(item.itemType) === "Service",
       ).length,
-      total: itemsState.totalCount,
+      total: itemsState.summary?.totalCount ?? itemsState.totalCount,
+      metricScope: itemsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [itemsState.list, itemsState.totalCount],
+    [itemsState.list, itemsState.summary, itemsState.summaryScope, itemsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     void loadLookups();
     setModal({
       entity: null,
@@ -283,7 +301,7 @@ const ItemsPage = () => {
       isOpen: true,
       mode: "create",
     });
-  }, [capabilities.canCreate, loadLookups]);
+  }, [cancelDetailRequests, capabilities.canCreate, loadLookups]);
 
   const openLookupCreate = useCallback(
     (type) => {
@@ -382,9 +400,14 @@ const ItemsPage = () => {
         isOpen: true,
         mode: "edit",
       });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchItemById(item.id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchItemById(item.id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: getResponseItem(response),
           isLoading: false,
@@ -392,11 +415,36 @@ const ItemsPage = () => {
           mode: "edit",
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This item no longer exists. The list was refreshed.");
+          closeModal();
+          await loadItems();
+          return;
+        }
         toast.error(getActionError(error, "Unable to load item details."));
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === "edit" &&
+          String(current.entity?.id) === String(item.id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [capabilities.canUpdate, dispatch, loadLookups],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadItems,
+      loadLookups,
+    ],
   );
 
   const submitItem = useCallback(
@@ -462,6 +510,12 @@ const ItemsPage = () => {
           }
         }
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This item no longer exists. The list was refreshed.");
+          closeModal();
+          await loadItems();
+          return;
+        }
         toast.error(getActionError(error, "Unable to save item."));
         throw error;
       }

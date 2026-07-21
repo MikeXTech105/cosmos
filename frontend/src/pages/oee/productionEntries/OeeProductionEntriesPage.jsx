@@ -126,6 +126,7 @@ const QuickCreateModal = ({
 
   return (
     <AppModal
+      isBusy={isSaving}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSaving ? undefined : onClose}
@@ -189,7 +190,7 @@ const QuickCreateModal = ({
           <AppButton variant="secondary" disabled={isSaving} onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSaving}>
+          <AppButton type="submit" isLoading={isSaving} loadingText="Saving…">
             Create
           </AppButton>
         </div>
@@ -266,6 +267,7 @@ const EditEntryModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-3xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -367,7 +369,7 @@ const EditEntryModal = ({
             <AppButton variant="secondary" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </AppButton>
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               Save Changes
             </AppButton>
           </div>
@@ -934,6 +936,7 @@ const OeeProductionEntriesPage = () => {
               <AppButton
                 className="h-10"
                 isLoading={production.bulkSaving}
+                loadingText="Saving…"
                 onClick={saveAll}
               >
                 <Save className="h-4 w-4" />
