@@ -7,8 +7,12 @@ This folder contains the clean SQL Server deployment package for the current Dap
 1. `000_Reset_Database.sql` - drops Cosmos ERP objects from the selected database. It does not drop the database.
 2. `001_Full_Database_Setup.sql` - creates the full schema, indexes, constraints, table types, view, stored procedures, and required seed data.
 3. `002_Verify_Database_Setup.sql` - checks required objects, important columns, foreign keys, stored procedures, table types, and seed data.
-4. `migrations/20260716_system_owner.sql` - upgrades an existing security schema with the protected System Owner flags, constraints, procedures, and guards.
-5. `verify_system_owner.sql` - verifies owner uniqueness, linkage, protected-role independence, indexes, and bootstrap objects after first API startup.
+4. `migrations/20260703_hr_employee_resignation_rejoin.sql` - adds the employee resignation/rejoin lifecycle columns and procedures.
+5. `migrations/20260720_backend_api_frontend_fixes.sql` - adds the current Party list contract and purchase/expense summary procedures.
+6. `migrations/20260721_runtime_api_contract_fixes.sql` - repairs HR update lifecycle safeguards and active-reference validation.
+7. `verify_runtime_api_contracts.sql` - read-only pre-deployment verification for the Party list and purchase-bill summary contracts.
+8. `migrations/20260716_system_owner.sql` - upgrades an existing security schema with the protected System Owner flags, constraints, procedures, and guards.
+9. `verify_system_owner.sql` - verifies owner uniqueness, linkage, protected-role independence, indexes, and bootstrap objects after first API startup.
 
 ## SSMS Run Order
 
@@ -19,6 +23,17 @@ Open SSMS and connect to the SQL Server instance. Select the target database in 
 3. `002_Verify_Database_Setup.sql`
 
 For a new blank database, running the reset script first is safe and gives you the same repeatable flow.
+
+## Runtime/API Contract Deployment
+
+For an existing server that is at the pre-fix API/database level, stop or drain API instances, take a verified backup, then execute the following against the selected target database in this exact order:
+
+1. `migrations/20260703_hr_employee_resignation_rejoin.sql` if the HR lifecycle migration has not already been applied.
+2. `migrations/20260720_backend_api_frontend_fixes.sql`.
+3. `migrations/20260721_runtime_api_contract_fixes.sql`.
+4. `verify_runtime_api_contracts.sql` and require it to complete without a `THROW` error.
+
+The verification script is read-only. It validates the five-parameter `sp_PurchaseBill_GetListSummary` signature, describes and validates the sixteen-column Party list result contract, and reports procedure definition hashes and any EF migration history if such a table exists. Run it as a required deployment gate before the upgraded API receives traffic.
 
 ## Staging
 

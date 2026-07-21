@@ -4,6 +4,7 @@ using Cosmos.Application.HR;
 using Cosmos.Contracts.Audit;
 using Cosmos.Contracts.Common;
 using Cosmos.Contracts.HR;
+using Cosmos.Domain.HR;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
@@ -135,8 +136,9 @@ public sealed class HrService : IHrService
 
     public async Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(long id, UpdateEmployeeCommand command, CancellationToken ct)
     {
-        await ValidateAsync(command, ct, id);
         var old = await _repository.GetEmployeeAsync(id, ct) ?? throw NotFound("Employee");
+        await ValidateAsync(command, ct, id);
+        EnsureEmployeeStatusTransition(old, command);
         var result = await _repository.UpdateEmployeeAsync(id, command, UserId, ct);
         await AuditAsync("HR.Employees", id, "Update", old, result, ct);
         return ApiResponse<EmployeeDto>.Success(result, "Employee updated.");
@@ -320,6 +322,36 @@ public sealed class HrService : IHrService
             if (routeId.HasValue) context.RootContextData["Id"] = routeId.Value;
         }, ct);
     }
+
+    private static void EnsureEmployeeStatusTransition(EmployeeDto existing, UpdateEmployeeCommand command)
+    {
+        const int resigned = (int)EmployeeStatus.Resigned;
+
+        if (command.ReportingManagerId == existing.Id)
+        {
+            throw ValidationFailure(nameof(command.ReportingManagerId), "Employee cannot report to themselves.");
+        }
+
+        if (existing.Status == resigned && command.Status != resigned)
+        {
+            throw ValidationFailure(nameof(command.Status), "A resigned employee must be rejoined through the rejoin endpoint.");
+        }
+
+        if (existing.Status != resigned && command.Status == resigned)
+        {
+            throw ValidationFailure(nameof(command.Status), "Use the resign endpoint to mark an employee as resigned.");
+        }
+    }
+
+    private static CosmosException ValidationFailure(string field, string message) =>
+        new(
+            "Validation failed.",
+            400,
+            new[] { message },
+            new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
+            {
+                [field] = new[] { message }
+            });
 
     private Task AuditAsync(string entity, long id, string action, object? before, object? after, CancellationToken ct) =>
         _auditRepository.AddAsync(new AuditEntryRequest(entity, id.ToString(), action, before is null ? null : AuditSerializer.Serialize(before), after is null ? null : AuditSerializer.Serialize(after), null), ct);

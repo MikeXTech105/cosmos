@@ -41,7 +41,9 @@ public sealed class EmployeesController : ApiControllerBase
     public async Task<IActionResult> Create(CreateEmployeeCommand command, CancellationToken ct) => FromResponse(await _service.CreateEmployeeAsync(command, ct), StatusCodes.Status201Created);
 
     [HttpPut("{id:long}"), RequirePermission(HrPermissions.Employee, PermissionAction.Edit)]
+    [SwaggerOperation(Summary = "Replace employee details", Description = "PUT is a full replacement of editable employee details. Send all required identity, department, designation, shift, employment type, and status fields; omitted value-type fields are not treated as a partial update. Use the resign and rejoin endpoints for lifecycle transitions.")]
     [ProducesResponseType(typeof(ApiResponse<EmployeeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(long id, UpdateEmployeeCommand command, CancellationToken ct) => FromResponse(await _service.UpdateEmployeeAsync(id, command, ct));
 
     [HttpPut("{id:long}/resign"), RequirePermission(HrPermissions.Employee, PermissionAction.Edit)]

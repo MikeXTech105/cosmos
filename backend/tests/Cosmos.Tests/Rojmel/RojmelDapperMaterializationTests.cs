@@ -1,11 +1,15 @@
 using System.Data;
 using Cosmos.Contracts.Rojmel;
+using Cosmos.Persistence;
 using Dapper;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Cosmos.Tests.Rojmel;
 
 public sealed class RojmelDapperMaterializationTests
 {
+    public RojmelDapperMaterializationTests() => new ServiceCollection().AddPersistence();
+
     [Fact]
     public void Wallet_transaction_contract_materializes_a_stored_procedure_row()
     {

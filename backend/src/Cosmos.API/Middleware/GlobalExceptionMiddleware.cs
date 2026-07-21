@@ -18,6 +18,16 @@ public sealed class GlobalExceptionMiddleware
         }
         catch (CosmosException ex)
         {
+            if (ex.StatusCode == StatusCodes.Status400BadRequest && ex.FieldErrors is { Count: > 0 })
+            {
+                logger.LogWarning(
+                    "Validation failed for {Method} {Path}. Fields: {Fields}. Errors: {Errors}",
+                    context.Request.Method,
+                    context.Request.Path,
+                    string.Join(",", ex.FieldErrors.Keys),
+                    string.Join(" | ", ex.Errors));
+            }
+
             await WriteFailureAsync(context, ex.StatusCode, ex.Message, ex.Errors, ex.FieldErrors, ex.ResponseData);
         }
         catch (BadHttpRequestException ex)
