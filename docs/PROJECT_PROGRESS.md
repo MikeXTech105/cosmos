@@ -1,5 +1,19 @@
 # COSMOS ERP - Project Progress Document
 
+## Runtime/API Contract Repair - 2026-07-21
+
+Status: Implemented; automated build and test verification is recorded with this change.
+
+Completed:
+
+- Fixed party-list Dapper materialization by mapping the SQL-specific `PartyType` column through an internal persistence row model into the unchanged public DTO.
+- Fixed purchase/expense list summaries to use explicit summary-only parameter objects. Paging and sorting parameters can no longer leak into summary stored-procedure calls; purchase-bill totals retain Search, SupplierId, Status, FromDate, and ToDate filters.
+- Completed employee-update validation for field lengths, active foreign keys, optional reporting managers, enum values, date ordering, uniqueness exclusion by route ID, and self-manager prevention.
+- Enforced employee lifecycle integrity in services and SQL: resign/rejoin must use their dedicated routes, resigned records cannot be soft deleted, and `Status` and `IsActive` are written consistently.
+- Added safe field/error-name validation diagnostics, a rerunnable SQL repair migration, and a read-only API/database contract deployment gate.
+
+Deployment order for an existing server: apply `backend/database/migrations/20260720_backend_api_frontend_fixes.sql`, then `backend/database/migrations/20260721_runtime_api_contract_fixes.sql`, then run `backend/database/verify_runtime_api_contracts.sql` before starting the upgraded API.
+
 ## Backend API Frontend Stabilization Update - 2026-07-20
 
 Status: Implemented and locally verified against a disposable SQL Server database. API runtime/browser smoke testing remains a deployment follow-up.

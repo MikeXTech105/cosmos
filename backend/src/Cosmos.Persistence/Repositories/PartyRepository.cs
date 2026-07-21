@@ -41,7 +41,7 @@ public sealed class PartyRepository : IPartyRepository
             commandType: System.Data.CommandType.StoredProcedure,
             cancellationToken: cancellationToken);
         using var results = await connection.QueryMultipleAsync(command);
-        var rows = (await results.ReadAsync<PartyListItemDto>()).AsList();
+        var rows = (await results.ReadAsync<PartyListItemRow>()).Select(MapListItem).ToArray();
         var metadata = await results.ReadSingleAsync<PartyListMetadataDto>();
         var summary = await results.ReadSingleOrDefaultAsync<PartyListSummaryDto>();
 
@@ -148,4 +148,42 @@ public sealed class PartyRepository : IPartyRepository
             "both" => "Both",
             _ => value.Trim()
         });
+
+    internal static PartyListItemDto MapListItem(PartyListItemRow row) => new(
+        row.Id,
+        row.PartyCode,
+        row.PartyName,
+        row.MobileNo,
+        row.Email,
+        row.GSTTreatment,
+        row.GSTIN,
+        row.OpeningBalance,
+        row.OpeningBalanceType,
+        row.CreditLimit,
+        row.CreditPeriodDays,
+        row.IsActive,
+        row.CreatedOn,
+        row.ModifiedOn,
+        row.TotalCount)
+    {
+        PartyType = row.PartyType
+    };
+
+    internal sealed record PartyListItemRow(
+        Guid Id,
+        string PartyCode,
+        string PartyName,
+        string PartyType,
+        string? MobileNo,
+        string? Email,
+        int GSTTreatment,
+        string? GSTIN,
+        decimal OpeningBalance,
+        int OpeningBalanceType,
+        decimal CreditLimit,
+        int CreditPeriodDays,
+        bool IsActive,
+        DateTime CreatedOn,
+        DateTime? ModifiedOn,
+        int TotalCount);
 }

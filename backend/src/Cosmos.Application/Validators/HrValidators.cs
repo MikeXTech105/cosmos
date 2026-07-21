@@ -116,6 +116,8 @@ public sealed class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCo
         RuleFor(x => x.Gender).Must(x => Enum.IsDefined(typeof(Gender), x));
         RuleFor(x => x.EmploymentType).Must(x => Enum.IsDefined(typeof(EmploymentType), x));
         RuleFor(x => x.Status).Must(x => Enum.IsDefined(typeof(EmployeeStatus), x));
+        RuleFor(x => x.Status).NotEqual((int)EmployeeStatus.Resigned)
+            .WithMessage("Use the resign endpoint to mark an employee as resigned.");
         RuleForEach(x => x.Addresses).SetValidator(new EmployeeAddressRequestValidator());
         RuleFor(x => x.BankDetails).SetValidator(new EmployeeBankAccountRequestValidator()!).When(x => x.BankDetails is not null);
     }
@@ -131,18 +133,29 @@ public sealed class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCo
         RuleFor(x => x.EmployeeCode).NotEmpty().MaximumLength(30)
             .MustAsync(async (command, value, context, ct) => !await repository.EmployeeValueExistsAsync("EmployeeCode", value, RouteId(context), ct)).WithMessage("Employee code already exists.");
         RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Email).EmailAddress().When(x => !string.IsNullOrWhiteSpace(x.Email))
+        RuleFor(x => x.LastName).MaximumLength(100);
+        RuleFor(x => x.Email).EmailAddress().MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Email))
             .MustAsync(async (command, value, context, ct) => string.IsNullOrWhiteSpace(value) || !await repository.EmployeeValueExistsAsync("Email", value, RouteId(context), ct)).WithMessage("Email already exists.");
-        RuleFor(x => x.Mobile)
+        RuleFor(x => x.Mobile).MaximumLength(20)
             .MustAsync(async (command, value, context, ct) => string.IsNullOrWhiteSpace(value) || !await repository.EmployeeValueExistsAsync("Mobile", value, RouteId(context), ct)).WithMessage("Mobile already exists.");
-        RuleFor(x => x.DepartmentId).MustAsync((id, ct) => repository.EntityExistsAsync("Department", id, ct)).WithMessage("Department was not found.");
-        RuleFor(x => x.DesignationId).MustAsync((id, ct) => repository.EntityExistsAsync("Designation", id, ct)).WithMessage("Designation was not found.");
-        RuleFor(x => x.ShiftId).MustAsync((id, ct) => repository.EntityExistsAsync("Shift", id, ct)).WithMessage("Shift was not found.");
+        RuleFor(x => x.DateOfBirth).LessThan(x => x.JoiningDate).When(x => x.DateOfBirth.HasValue)
+            .WithMessage("Date of birth must be before joining date.");
+        RuleFor(x => x.JoiningDate).NotEmpty();
+        RuleFor(x => x.DepartmentId).GreaterThan(0).MustAsync((id, ct) => repository.EntityExistsAsync("Department", id, ct)).WithMessage("Department was not found or is inactive.");
+        RuleFor(x => x.DesignationId).GreaterThan(0).MustAsync((id, ct) => repository.EntityExistsAsync("Designation", id, ct)).WithMessage("Designation was not found or is inactive.");
+        RuleFor(x => x.ReportingManagerId)
+            .MustAsync(async (id, ct) => !id.HasValue || await repository.EntityExistsAsync("Employee", id.Value, ct))
+            .WithMessage("Reporting manager was not found or is inactive.");
+        RuleFor(x => x.ShiftId).GreaterThan(0).MustAsync((id, ct) => repository.EntityExistsAsync("Shift", id, ct)).WithMessage("Shift was not found or is inactive.");
+        RuleFor(x => x.Gender).Must(x => Enum.IsDefined(typeof(Gender), x)).WithMessage("Gender must be a valid value.");
+        RuleFor(x => x.EmploymentType).Must(x => Enum.IsDefined(typeof(EmploymentType), x)).WithMessage("Employment type must be a valid value.");
+        RuleFor(x => x.Status).Must(x => Enum.IsDefined(typeof(EmployeeStatus), x)).WithMessage("Status must be a valid value.");
+        RuleFor(x => x.ProfilePhotoUrl).MaximumLength(1000);
         RuleForEach(x => x.Addresses).SetValidator(new EmployeeAddressRequestValidator());
     }
 
     private static long? RouteId(ValidationContext<UpdateEmployeeCommand> context) =>
-        context.RootContextData.TryGetValue("Id", out var value) ? value as long? : null;
+        context.RootContextData.TryGetValue("Id", out var value) && value is long id ? id : null;
 }
 
 public sealed class ResignEmployeeValidator : AbstractValidator<ResignEmployeeCommand>
