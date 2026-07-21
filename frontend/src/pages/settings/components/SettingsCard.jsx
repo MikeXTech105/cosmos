@@ -7,13 +7,8 @@ const SettingsCard = ({
   description,
   icon: Icon,
   title,
-  variant = "brand",
 }) => {
   const hasBody = Boolean(children);
-  const iconClassName =
-    variant === "indigo"
-      ? "bg-gradient-to-br from-indigo-50 via-white to-indigo-100 text-indigo-600 ring-indigo-100"
-      : "bg-gradient-to-br from-brand-light via-white to-brand-mid/30 text-brand ring-brand/10";
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
@@ -27,7 +22,7 @@ const SettingsCard = ({
           <div
             className={[
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ring-1 ring-inset",
-              iconClassName,
+              "bg-brand-light text-brand ring-brand/10",
             ].join(" ")}
           >
             <Icon className="h-5 w-5" />

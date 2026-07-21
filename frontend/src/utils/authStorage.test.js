@@ -6,7 +6,10 @@ import {
   getAuthStorageType,
   saveAuthData,
   updateAuthTokens,
+  updateStoredAuthUser,
 } from "./authStorage";
+
+let dispatchedEvents;
 
 const createStorage = () => {
   const values = new Map();
@@ -28,9 +31,17 @@ const authData = {
 };
 
 beforeEach(() => {
+  dispatchedEvents = [];
   globalThis.window = {
+    dispatchEvent: (event) => dispatchedEvents.push(event),
     localStorage: createStorage(),
     sessionStorage: createStorage(),
+  };
+  globalThis.CustomEvent = class CustomEvent {
+    constructor(type, init) {
+      this.detail = init?.detail;
+      this.type = type;
+    }
   };
 });
 
@@ -60,6 +71,34 @@ describe("auth storage selection", () => {
     expect(window.localStorage.getItem("accessToken")).toBeNull();
   });
 
+  it("updates only the persisted user fields and preserves the auth snapshot", () => {
+    saveAuthData(authData, { rememberMe: true });
+    updateStoredAuthUser({ email: "updated@example.com", fullName: "Updated" });
+
+    expect(getAuthData()).toEqual({
+      ...authData,
+      user: {
+        ...authData.user,
+        email: "updated@example.com",
+        fullName: "Updated",
+      },
+    });
+  });
+
+  it("emits a same-tab snapshot after a mutation", () => {
+    saveAuthData(authData, { rememberMe: true });
+    updateAuthTokens({ accessToken: "access-2", refreshToken: "refresh-2" });
+
+    expect(dispatchedEvents.at(-1)).toMatchObject({
+      detail: {
+        accessToken: "access-2",
+        refreshToken: "refresh-2",
+        user: authData.user,
+      },
+      type: "cosmos:auth-storage-change",
+    });
+  });
+
   it("clears auth keys from both storages", () => {
     window.localStorage.setItem("accessToken", "stale-local");
     window.sessionStorage.setItem("accessToken", "stale-session");
@@ -69,6 +108,16 @@ describe("auth storage selection", () => {
     expect(window.localStorage.getItem("accessToken")).toBeNull();
     expect(window.sessionStorage.getItem("accessToken")).toBeNull();
     expect(getAuthStorageType()).toBeNull();
+    expect(dispatchedEvents.at(-1)).toMatchObject({
+      detail: {
+        accessToken: null,
+        pages: [],
+        refreshToken: null,
+        roles: [],
+        user: null,
+      },
+      type: "cosmos:auth-storage-change",
+    });
   });
 
   it("migrates a legacy localStorage session without logging the user out", () => {

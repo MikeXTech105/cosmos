@@ -7,6 +7,7 @@ import {
 } from "../../../services/purchase/purchaseServiceUtils";
 import {
   extractEntity,
+  getRequestEntityId,
   getThunkError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
@@ -21,6 +22,8 @@ const initialState = {
   pageSize: PURCHASE_DEFAULT_PAGE_SIZE,
   totalCount: 0,
   totalPages: 1,
+  summary: null,
+  summaryScope: "current-page",
   filters: {
     Search: "",
     SupplierId: "all",
@@ -31,6 +34,9 @@ const initialState = {
     SortDirection: "",
   },
   selected: null,
+  listRequestId: null,
+  detailRequestId: null,
+  selectedRequestEntityId: null,
 };
 
 export const fetchPurchaseOrders = createAsyncThunk(
@@ -150,11 +156,13 @@ const purchaseOrderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPurchaseOrders.pending, (state) => {
+      .addCase(fetchPurchaseOrders.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.listRequestId = action.meta.requestId;
       })
       .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         const page = normalizePagedPayload(action.payload.data);
 
         state.loading = false;
@@ -163,23 +171,34 @@ const purchaseOrderSlice = createSlice({
         state.pageSize = page.pageSize;
         state.totalCount = page.totalCount;
         state.totalPages = page.totalPages;
+        state.summary = page.summary;
+        state.summaryScope = page.summaryScope;
+        state.listRequestId = null;
       })
       .addCase(fetchPurchaseOrders.rejected, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
         state.error = action.payload ?? action.error.message;
+        state.listRequestId = null;
       })
-      .addCase(fetchPurchaseOrderById.pending, (state) => {
+      .addCase(fetchPurchaseOrderById.pending, (state, action) => {
         state.detailLoading = true;
         state.detailError = null;
+        state.detailRequestId = action.meta.requestId;
+        state.selectedRequestEntityId = getRequestEntityId(action.meta.arg);
       })
       .addCase(fetchPurchaseOrderById.fulfilled, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId || String(state.selectedRequestEntityId) !== String(getRequestEntityId(action.meta.arg))) return;
         state.detailLoading = false;
         state.selected = extractEntity(action.payload.data, "purchaseOrder");
+        state.detailRequestId = null;
       })
       .addCase(fetchPurchaseOrderById.rejected, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
         state.detailError = action.payload ?? action.error.message;
+        state.detailRequestId = null;
       })
       .addCase(createPurchaseOrder.fulfilled, (state, action) => {
         state.selected = extractEntity(action.payload.data, "purchaseOrder");

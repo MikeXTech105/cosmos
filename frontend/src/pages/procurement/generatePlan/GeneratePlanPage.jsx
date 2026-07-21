@@ -50,7 +50,7 @@ import {
   validateDateRange,
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const DEFAULT_COLUMNS = {
   averageDailyUsage: true,
@@ -99,7 +99,7 @@ const FlowSteps = ({ current }) => {
                   : "text-slate-400"
             }`}
           >
-            <span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-white/20" : complete ? "bg-white" : "bg-slate-100"}`}>
+            <span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-brand-dark" : complete ? "bg-white" : "bg-slate-100"}`}>
               {complete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
             </span>
             <span className="text-xs font-semibold">{step.label}</span>
@@ -375,20 +375,20 @@ const GeneratePlanPage = () => {
           <ProcurementDateRangeFields fromDate={form.fromDate} toDate={form.toDate} error={displayedRangeError} onChange={(patch) => { beginValidationRequest(); beginPreviewRequest(); beginSaveRequest(); setValidationLoading(false); setPreviewLoading(false); setSaving(false); setFormErrors({}); setForm((current) => ({ ...current, ...patch })); setValidation(null); setPreview(null); setSavedRun(null); }} />
           <div><label className="text-xs font-semibold text-slate-700" htmlFor="plan-notes">Planning notes</label><textarea id="plan-notes" rows={3} className={`mt-1.5 w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 ${formErrors.notes ? "border-red-400" : "border-slate-200"}`} placeholder="Context retained with the draft run" value={form.notes} onChange={(event) => { setFormErrors((current) => ({ ...current, notes: "" })); setForm((current) => ({ ...current, notes: event.target.value })); }} />{formErrors.notes && <p className="mt-1 text-xs font-medium text-red-600">{formErrors.notes}</p>}<p className="mt-1 text-xs text-slate-500">{getInclusiveDayCount(form.fromDate, form.toDate)} calendar days of demand.</p></div>
         </div>
-        <div className="flex justify-end border-t border-slate-100 px-5 py-4"><AppButton disabled={Boolean(rangeError) || previewLoading || saving} isLoading={validationLoading} onClick={validate}><ShieldCheck className="h-4 w-4" />Validate prerequisites</AppButton></div>
+        <div className="flex justify-end border-t border-slate-100 px-5 py-4"><AppButton disabled={Boolean(rangeError) || previewLoading || saving} isLoading={validationLoading} loadingText="Validating…" onClick={validate}><ShieldCheck className="h-4 w-4" />Validate prerequisites</AppButton></div>
       </ProcurementSectionCard>
       <ProcurementInlineError message={validationError} title="Validation could not run" />
 
       {(validation || validationLoading) && <ProcurementSectionCard title="2. Resolve validation messages" description="Blocking errors must be fixed. Warnings are visible but do not prevent a preview or draft.">
         <div className="space-y-3 p-5">{validationLoading ? <ProcurementLoadingRows columns={2} rows={4} /> : <MessageGroups messages={messages} />}</div>
-        {!validationLoading && <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">{hasBlocking ? "Fix blocking prerequisites, then validate again." : "Validation is clear enough to calculate the preview."}</p><AppButton disabled={hasBlocking} isLoading={previewLoading} onClick={loadPreview}><Eye className="h-4 w-4" />Calculate preview</AppButton></div>}
+        {!validationLoading && <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">{hasBlocking ? "Fix blocking prerequisites, then validate again." : "Validation is clear enough to calculate the preview."}</p><AppButton disabled={hasBlocking} isLoading={previewLoading} loadingText="Generating…" onClick={loadPreview}><Eye className="h-4 w-4" />Calculate preview</AppButton></div>}
       </ProcurementSectionCard>}
       <ProcurementInlineError message={previewError} title="Preview could not be calculated" />
 
       {(preview || previewLoading) && <ProcurementSectionCard title="3. Review the calculated plan" description="Decision-critical columns stay visible; expand any row for its complete derivation and explanation." actions={<AppButton variant="secondary" onClick={() => setColumnsOpen(true)}><Columns3 className="h-4 w-4" />Columns</AppButton>}>
         <div className="border-b border-slate-100 p-4"><InventoryBasisNote message={preview?.inventoryBasis || undefined} /></div>
         {previewLoading ? <ProcurementLoadingRows columns={8} rows={8} /> : <PreviewTable columns={columns} lines={lines} />}
-        {!previewLoading && <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-slate-500">Saving preserves these values as a draft snapshot. Warnings do not block saving.</p>{capabilities.canCreate && <AppButton disabled={hasBlocking || lines.length === 0 || Boolean(savedRun)} isLoading={saving} onClick={saveDraft}><Save className="h-4 w-4" />Save Draft</AppButton>}</div>}
+        {!previewLoading && <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-slate-500">Saving preserves these values as a draft snapshot. Warnings do not block saving.</p>{capabilities.canCreate && <AppButton disabled={hasBlocking || lines.length === 0 || Boolean(savedRun)} isLoading={saving} loadingText="Saving…" onClick={saveDraft}><Save className="h-4 w-4" />Save Draft</AppButton>}</div>}
       </ProcurementSectionCard>}
       <ProcurementInlineError message={saveError} title={saveConflict ? "Planning prerequisites changed" : "Draft could not be saved"} />
       {savedRun && <ProcurementSuccessBanner title="Draft plan saved"><div className="flex flex-wrap items-center gap-3"><span>{savedRun.runNumber ? `Run ${savedRun.runNumber} is ready in Planning History.` : "The snapshot is ready in Planning History."}</span><Link className="font-semibold underline underline-offset-2" to="/procurement/planning-history">Open Planning History</Link></div></ProcurementSuccessBanner>}

@@ -32,6 +32,21 @@ const authSlice = createSlice({
       state.refreshToken = action.payload.refreshToken ?? state.refreshToken;
     },
 
+    updateCurrentUser: (state, action) => {
+      state.user = {
+        ...(state.user ?? {}),
+        ...(action.payload ?? {}),
+      };
+    },
+
+    replaceAuthSnapshot: (state, action) => {
+      state.user = action.payload?.user ?? null;
+      state.accessToken = action.payload?.accessToken ?? null;
+      state.refreshToken = action.payload?.refreshToken ?? null;
+      state.roles = action.payload?.roles ?? [];
+      state.pages = action.payload?.pages ?? [];
+    },
+
     clearCredentials: () => {
       return { ...emptyAuthState };
     },
@@ -46,7 +61,14 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, setTokens, clearCredentials, logout } =
+export const {
+  setCredentials,
+  setTokens,
+  updateCurrentUser,
+  replaceAuthSnapshot,
+  clearCredentials,
+  logout,
+} =
   authSlice.actions;
 
 export default authSlice.reducer;

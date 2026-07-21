@@ -6,7 +6,10 @@ import { useForm } from "react-hook-form";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { categorySchema } from "../../../utils/validationSchemas";
+
+const CATEGORY_FIELDS = ["name", "description", "isActive"];
 
 const getDefaultValues = (category) => ({
   name: category?.name ?? "",
@@ -28,6 +31,7 @@ const CategoryFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(categorySchema),
@@ -41,11 +45,15 @@ const CategoryFormModal = ({
   }, [category, isOpen, reset]);
 
   const submitForm = async (values) => {
-    await onSubmit({
-      name: values.name.trim(),
-      description: values.description?.trim() ?? "",
-      isActive: values.isActive,
-    });
+    try {
+      await onSubmit({
+        name: values.name.trim(),
+        description: values.description?.trim() ?? "",
+        isActive: values.isActive,
+      });
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: CATEGORY_FIELDS, setError });
+    }
   };
 
   const title = isView
@@ -56,6 +64,7 @@ const CategoryFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -86,6 +95,11 @@ const CategoryFormModal = ({
           className="mt-6 space-y-5"
           onSubmit={handleSubmit(submitForm)}
         >
+          {errors.root?.server?.message && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors.root.server.message}
+            </p>
+          )}
           <AppInput
             id="categoryName"
             label="Category Name"
@@ -143,7 +157,7 @@ const CategoryFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Create Category"}
               </AppButton>
             )}

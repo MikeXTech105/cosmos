@@ -1,6 +1,10 @@
 export const ENDPOINTS = {
   LOGIN: "/api/auth/login",
 
+  AUTH_ME: "/api/auth/me",
+
+  AUTH_ME_UPDATE: "/api/auth/me",
+
   REFRESH_TOKEN: "/api/auth/refresh-token",
 
   LOGOUT: "/api/auth/logout",
@@ -13,6 +17,8 @@ export const ENDPOINTS = {
 
   ROLES: "/api/roles",
 
+  ROLES_EXPORT: "/api/roles/export",
+
   ROLE_BY_ID: (id) => `/api/roles/${id}`,
 
   PAGES: "/api/pages",
@@ -23,6 +29,8 @@ export const ENDPOINTS = {
 
   USERS: "/api/users",
 
+  USERS_EXPORT: "/api/users/export",
+
   USER_BY_ID: (id) => `/api/users/${id}`,
 
   USER_ACTIVATE: (id) => `/api/users/${id}/activate`,
@@ -32,6 +40,10 @@ export const ENDPOINTS = {
   USER_ROLES: (id) => `/api/users/${id}/roles`,
 
   PARTIES: "/api/v1/parties",
+
+  PARTIES_EXPORT: "/api/v1/parties/export",
+
+  REPORT_EXPORT: "/api/v1/reports/export",
 
   PARTY_BY_ID: (id) => `/api/v1/parties/${id}`,
 

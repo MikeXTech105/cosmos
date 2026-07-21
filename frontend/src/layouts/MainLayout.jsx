@@ -2,8 +2,11 @@ import { Outlet } from "react-router-dom";
 
 import Header from "../components/layout/Header";
 import Sidebar from "../components/layout/Sidebar";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const MainLayout = () => {
+  useDocumentTitle();
+
   return (
     <div className="flex h-dvh flex-col bg-slate-50 text-slate-950 lg:flex-row">
       <Sidebar />

@@ -30,6 +30,7 @@ import {
   verifyGstin as verifyGstinThunk,
 } from "../../store/slices/party/gstSlice";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { applyApiErrorsToForm } from "../../utils/formApiErrors";
 import {
   PARTY_COMMAND_FIELDS,
   PARTY_FIELD_SECTIONS,
@@ -366,28 +367,29 @@ const getStatusPillClassName = (status) => {
   return "border-amber-200 bg-amber-100 text-amber-700";
 };
 
-const FieldInput = ({ disabled, field, onChange, value }) => {
+const FieldInput = ({ disabled, error, field, onChange, value }) => {
   const label = getFieldLabel(field.name);
 
   if (field.type === "boolean") {
     return (
-      <label
-        className={[
-          "flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:col-span-2",
-          disabled ? "cursor-default" : "cursor-pointer",
-        ].join(" ")}
-      >
-        <span className="block text-sm font-semibold text-slate-900">
-          {label}
-        </span>
-        <input
-          type="checkbox"
-          checked={Boolean(value)}
-          disabled={disabled}
-          onChange={(event) => onChange(field.name, event.target.checked)}
-          className="h-4 w-4 accent-brand"
-        />
-      </label>
+      <div className="sm:col-span-2">
+        <label
+          className={[
+            "flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3",
+            disabled ? "cursor-default" : "cursor-pointer",
+          ].join(" ")}
+        >
+          <span className="block text-sm font-semibold text-slate-900">{label}</span>
+          <input
+            type="checkbox"
+            checked={Boolean(value)}
+            disabled={disabled}
+            onChange={(event) => onChange(field.name, event.target.checked)}
+            className="h-4 w-4 accent-brand"
+          />
+        </label>
+        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
+      </div>
     );
   }
 
@@ -413,6 +415,7 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
           rows={3}
           className={`${inputClassName} h-auto min-h-24 resize-y py-3`}
         />
+        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
       </div>
     );
   }
@@ -426,6 +429,7 @@ const FieldInput = ({ disabled, field, onChange, value }) => {
         isNumber ? (field.type === "integer" ? "numeric" : "decimal") : undefined
       }
       className="h-10"
+      error={error}
       onFocus={(event) => {
         if (isNumber && String(value) === "0") {
           event.target.select();
@@ -747,6 +751,7 @@ const PartyFormContent = ({
   const [activeSectionId, setActiveSectionId] = useState(firstSectionId);
   const [values, setValues] = useState(() => buildFormValues(fields, source));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiErrors, setApiErrors] = useState({});
   const [verifiedGstinData, setVerifiedGstinData] = useState(null);
   const [gstinError, setGstinError] = useState("");
   const autoFilledValuesRef = useRef({});
@@ -854,6 +859,11 @@ const PartyFormContent = ({
         ...current,
         [fieldName]: nextValue,
       }));
+      setApiErrors((current) => ({
+        ...current,
+        [fieldName]: undefined,
+        "root.server": undefined,
+      }));
 
       if (fieldName !== "gstin") {
         return;
@@ -958,6 +968,14 @@ const PartyFormContent = ({
 
     try {
       await onSubmit(buildApiPayload(fields, values));
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        formFieldNames: fields.map((field) => field.name),
+        setError: (name, detail) => {
+          setApiErrors((current) => ({ ...current, [name]: detail.message }));
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -966,6 +984,11 @@ const PartyFormContent = ({
   return (
     <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+        {apiErrors["root.server"] && (
+          <p role="alert" className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {apiErrors["root.server"]}
+          </p>
+        )}
         <div className="sticky top-0 z-10 -mx-5 mb-5 border-b border-slate-200 bg-white px-5 pb-0 sm:-mx-6 sm:px-6">
           <div className="flex overflow-x-auto">
             {groupedFields.map((section, index) => {
@@ -1055,6 +1078,7 @@ const PartyFormContent = ({
                   <FieldInput
                     key={field.name}
                     disabled={isView}
+                    error={apiErrors[field.name]}
                     field={field}
                     onChange={handleFieldChange}
                     value={values[field.name]}

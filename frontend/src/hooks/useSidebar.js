@@ -12,6 +12,7 @@ import {
   reportRegistry,
 } from "../pages/reports/reportRegistry";
 import { canViewReport } from "../utils/reportPermissions";
+import { markActiveSidebarItems } from "../utils/sidebarRoute";
 import {
   canViewPermission,
   findPermissionPage,
@@ -19,11 +20,14 @@ import {
 } from "./usePermission";
 import {
   closeCommand,
+  closeMobileSidebar,
   expandSidebarGroups,
   openCommand,
+  openMobileSidebar,
   resetSidebarSearch,
   setSidebarSearchQuery,
   toggleSidebarGroup,
+  toggleMobileSidebar,
 } from "../store/slices/sidebarSlice";
 
 const getPageId = (page) => {
@@ -151,27 +155,6 @@ const buildMenuTree = (pages, isSuperAdmin) => {
   return sortMenuItems(rootItems);
 };
 
-const isRouteActive = (pathname, route) => {
-  return Boolean(route && (pathname === route || pathname.startsWith(`${route}/`)));
-};
-
-const markActiveItems = (items, pathname) => {
-  return items.map((item) => {
-    const children = markActiveItems(item.children, pathname);
-    const isActive = isRouteActive(pathname, item.route);
-    const hasActiveChild = children.some(
-      (child) => child.isActive || child.hasActiveChild,
-    );
-
-    return {
-      ...item,
-      children,
-      isActive,
-      hasActiveChild,
-    };
-  });
-};
-
 const filterMenuTree = (items, query) => {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -269,7 +252,7 @@ export const useSidebar = () => {
   );
 
   const activeMenuTree = useMemo(
-    () => markActiveItems(menuTree, location.pathname),
+    () => markActiveSidebarItems(menuTree, location.pathname),
     [location.pathname, menuTree],
   );
 
@@ -310,7 +293,15 @@ export const useSidebar = () => {
   }, [activeTrail, dispatch, sidebar.expandedGroupIds]);
 
   const closeCommandHandler = useCallback(() => dispatch(closeCommand()), [dispatch]);
+  const closeMobileSidebarHandler = useCallback(
+    () => dispatch(closeMobileSidebar()),
+    [dispatch],
+  );
   const openCommandHandler = useCallback(() => dispatch(openCommand()), [dispatch]);
+  const openMobileSidebarHandler = useCallback(
+    () => dispatch(openMobileSidebar()),
+    [dispatch],
+  );
   const resetSearchHandler = useCallback(
     () => dispatch(resetSidebarSearch()),
     [dispatch],
@@ -323,10 +314,15 @@ export const useSidebar = () => {
     (groupId) => dispatch(toggleSidebarGroup(groupId)),
     [dispatch],
   );
+  const toggleMobileSidebarHandler = useCallback(
+    () => dispatch(toggleMobileSidebar()),
+    [dispatch],
+  );
 
   return {
     activeTrail,
     commandOpen: sidebar.commandOpen,
+    mobileOpen: sidebar.mobileOpen,
     expandedGroupIds: sidebar.expandedGroupIds,
     flatMenuItems,
     hasPages: activeMenuTree.length > 0,
@@ -334,9 +330,12 @@ export const useSidebar = () => {
     rawMenuTree: activeMenuTree,
     searchQuery: sidebar.searchQuery,
     closeCommand: closeCommandHandler,
+    closeMobileSidebar: closeMobileSidebarHandler,
     openCommand: openCommandHandler,
+    openMobileSidebar: openMobileSidebarHandler,
     resetSearch: resetSearchHandler,
     setSearchQuery: setSearchQueryHandler,
     toggleGroup: toggleGroupHandler,
+    toggleMobileSidebar: toggleMobileSidebarHandler,
   };
 };

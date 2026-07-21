@@ -12,6 +12,8 @@ import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   createExpenseCategory,
   deleteExpenseCategory,
@@ -52,6 +54,7 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(categorySchema),
@@ -66,6 +69,7 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -75,14 +79,27 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
       </h2>
       <form
         className="mt-5 space-y-4"
-        onSubmit={handleSubmit((values) =>
-          onSubmit({
-            name: values.name.trim(),
-            description: values.description?.trim() || null,
-            isActive: Boolean(values.isActive),
-          }),
-        )}
+        onSubmit={handleSubmit(async (values) => {
+          try {
+            await onSubmit({
+              name: values.name.trim(),
+              description: values.description?.trim() || null,
+              isActive: Boolean(values.isActive),
+            });
+          } catch (error) {
+            applyApiErrorsToForm({
+              error,
+              formFieldNames: ["name", "description", "isActive"],
+              setError,
+            });
+          }
+        })}
       >
+        {errors.root?.server?.message && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {errors.root.server.message}
+          </p>
+        )}
         <AppInput
           id="expenseCategoryName"
           label="Name"
@@ -125,7 +142,7 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Category
           </AppButton>
         </div>
@@ -186,11 +203,16 @@ const ExpenseCategoriesPage = () => {
 
   const stats = useMemo(
     () => ({
-      active: state.list.filter(isActiveRecord).length,
-      inactive: state.list.filter((item) => !isActiveRecord(item)).length,
-      total: state.totalCount,
+      active:
+        state.summary?.activeCount ?? state.list.filter(isActiveRecord).length,
+      inactive:
+        state.summary?.inactiveCount ??
+        state.list.filter((item) => !isActiveRecord(item)).length,
+      total: state.summary?.totalCount ?? state.totalCount,
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     }),
-    [state.list, state.totalCount],
+    [state.list, state.summary, state.summaryScope, state.totalCount],
   );
 
   const submitCategory = async (payload) => {
@@ -213,6 +235,12 @@ const ExpenseCategoriesPage = () => {
       setModal((current) => ({ ...current, isOpen: false }));
       await loadCategories();
     } catch (error) {
+      if (modal.mode === "edit" && getApiStatus(error) === 404) {
+        toast.error("This expense category no longer exists. The list was refreshed.");
+        setModal((current) => ({ ...current, isOpen: false }));
+        await loadCategories();
+        return;
+      }
       toast.error(getActionError(error, "Unable to save category."));
       throw error;
     }
@@ -285,18 +313,21 @@ const ExpenseCategoriesPage = () => {
           icon={FolderKanban}
           label="Total"
           value={stats.total}
+          scope={stats.totalScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={FolderKanban}
           label="Active"
           value={stats.active}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <PurchaseStatCard
           icon={FolderKanban}
           label="Inactive"
           value={stats.inactive}
+          scope={stats.metricScope}
           colorClass="bg-red-50 text-red-600"
         />
       </div>
@@ -349,6 +380,9 @@ const ExpenseCategoriesPage = () => {
           <table className="w-full min-w-[720px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
+                <th className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
                 <th className="w-[28%] border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Name
                 </th>
@@ -367,7 +401,7 @@ const ExpenseCategoriesPage = () => {
               {state.loading ? (
                 Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={4} className="px-4 py-3">
+                    <td colSpan={5} className="px-4 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -375,15 +409,18 @@ const ExpenseCategoriesPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No expense categories found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((category) => (
+                state.list.map((category, index) => (
                   <tr key={category.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
                       {category.name}
                     </td>
@@ -407,7 +444,7 @@ const ExpenseCategoriesPage = () => {
                       />
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-right">
-                      <div className="inline-flex gap-2">
+                      <div className="flex items-center justify-end gap-0.5">
                         {capabilities.canUpdate && (
                           <AppButton
                             variant="secondary"

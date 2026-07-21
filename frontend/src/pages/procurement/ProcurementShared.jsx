@@ -30,7 +30,7 @@ import {
   INVENTORY_BASIS_MESSAGE,
   PROCUREMENT_PAGE_SIZE_OPTIONS,
 } from "./procurementHelpers";
-import useLatestRequest from "./useLatestRequest";
+import useLatestRequest from "../../hooks/useLatestRequest";
 
 export const ProcurementSectionCard = ({
   actions,
@@ -223,7 +223,7 @@ export const ProcurementTabs = ({ active, onChange, tabs }) => (
           <span
             className={`rounded-full px-1.5 py-0.5 text-[10px] ${
               active === tab.id
-                ? "bg-white/20 text-white"
+                ? "bg-brand-dark text-white"
                 : "bg-slate-100 text-slate-600"
             }`}
           >
@@ -368,7 +368,7 @@ export const ProcurementMessageGroup = ({ messages, severity }) => {
         {messages.map((message, index) => (
           <div
             key={message.id ?? message.code ?? index}
-            className="rounded-lg bg-white/70 px-3 py-2"
+            className="rounded-lg bg-white px-3 py-2"
           >
             <p className={`text-xs font-semibold ${meta.text}`}>
               {message.title ?? message.code ?? meta.title}

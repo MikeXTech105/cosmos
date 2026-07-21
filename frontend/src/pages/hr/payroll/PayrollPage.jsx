@@ -137,6 +137,7 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -172,7 +173,7 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Generating…">
             Process Payroll
           </AppButton>
         </div>
@@ -208,6 +209,7 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -230,7 +232,7 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Finalizing…">
             Approve Payroll
           </AppButton>
         </div>

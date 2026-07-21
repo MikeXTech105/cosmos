@@ -122,7 +122,7 @@ const getTitleFromData = (data) => {
   return normalizeMessage(data.title) || normalizeMessage(getNestedData(data)?.title);
 };
 
-const getCorrelationId = (data) => {
+const getCorrelationIdFromData = (data) => {
   if (!isPlainObject(data)) {
     return "";
   }
@@ -186,6 +186,68 @@ export const getApiErrorList = (error) => {
   return uniqueMessages(messages);
 };
 
+const normalizeFieldPath = (key) => {
+  const segments = String(key ?? "")
+    .replace(/\[(\d+)\]/g, ".$1")
+    .split(".")
+    .filter(Boolean);
+
+  if (["model", "payload", "request"].includes(segments[0]?.toLowerCase())) {
+    segments.shift();
+  }
+
+  return segments
+    .map((segment) =>
+      /^\d+$/.test(segment)
+        ? segment
+        : `${segment.charAt(0).toLowerCase()}${segment.slice(1)}`,
+    )
+    .join(".");
+};
+
+const getErrorMapCandidates = (error) => [
+  error?.apiError?.errors,
+  error?.response?.data?.errors,
+  error?.response?.data?.data?.errors,
+  error?.data?.errors,
+  error?.data?.data?.errors,
+  error?.errors,
+];
+
+export const getApiStatus = (error) => {
+  return getStatus(error, getResponseData(error));
+};
+
+export const getApiFieldErrors = (error) => {
+  const source = getErrorMapCandidates(error).find(isPlainObject);
+
+  if (!source) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(source)
+      .map(([key, value]) => {
+        const fieldPath = normalizeFieldPath(key);
+        const message = uniqueMessages(flattenErrorValue(value)).join(" ");
+
+        return fieldPath && message ? [fieldPath, message] : null;
+      })
+      .filter(Boolean),
+  );
+};
+
+export const getApiCorrelationId = (error) => {
+  return getCorrelationIdFromData(getResponseData(error));
+};
+
+export const isConflictError = (error) => getApiStatus(error) === 409;
+
+export const isValidationError = (error) =>
+  [400, 422].includes(getApiStatus(error));
+
+export const isNotFoundError = (error) => getApiStatus(error) === 404;
+
 export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
   const details = getApiErrorList(error);
 
@@ -209,7 +271,7 @@ export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
     return message;
   }
 
-  const statusMessage = getStatusMessage(status, getCorrelationId(data));
+  const statusMessage = getStatusMessage(status, getCorrelationIdFromData(data));
 
   if (statusMessage) {
     return statusMessage;

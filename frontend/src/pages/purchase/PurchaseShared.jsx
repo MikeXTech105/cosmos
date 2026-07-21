@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import AppButton from "../../components/common/AppButton";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
+import StatScopeBadge from "../../components/common/StatScopeBadge";
 import { PAGE_SIZE_OPTIONS } from "./purchaseHelpers";
 
 export const PurchaseStatusPill = ({ meta }) => {
@@ -23,6 +24,7 @@ export const PurchaseStatCard = ({
   colorClass,
   icon: Icon,
   label,
+  scope,
   value,
 }) => {
   return (
@@ -40,6 +42,7 @@ export const PurchaseStatCard = ({
           <p className="mt-0.5 truncate text-xl font-bold text-slate-900">
             {value}
           </p>
+          <StatScopeBadge className="mt-1" scope={scope} />
         </div>
       </div>
     </div>
@@ -122,6 +125,7 @@ export const PurchaseConfirmDialog = ({
 }) => {
   return (
     <AppModal
+      isBusy={isLoading}
       isOpen={isOpen}
       maxWidth="max-w-md"
       onClose={isLoading ? undefined : onCancel}
@@ -149,6 +153,7 @@ export const PurchaseConfirmDialog = ({
         <AppButton
           variant={tone === "danger" ? "danger" : "primary"}
           isLoading={isLoading}
+          loadingText={`${confirmLabel}…`}
           onClick={onConfirm}
         >
           {confirmLabel}

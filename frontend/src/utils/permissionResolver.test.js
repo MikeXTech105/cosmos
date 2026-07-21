@@ -120,7 +120,6 @@ describe("isSuperAdminAuth", () => {
     "system_owner",
     "SYSTEM-OWNER",
     "systemowner",
-    "Owner",
   ])(
     "accepts exact normalized value %s",
     (role) => {
@@ -134,6 +133,8 @@ describe("isSuperAdminAuth", () => {
     "Former Super Admin",
     "Owner Relations Manager",
     "Former System Owner",
+    "Owner",
+    "System Owner Assistant",
     "Admin",
   ])("rejects non-exact value %s", (role) => {
     expect(isSuperAdminAuth({ roles: [role] })).toBe(false);

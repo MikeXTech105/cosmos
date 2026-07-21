@@ -9,6 +9,7 @@ import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
+import StatScopeBadge from "../../components/common/StatScopeBadge";
 import {
   normalizeOeeNumberBlurValue,
   normalizeOeeNumberInput,
@@ -92,6 +93,7 @@ export const OeeStatCard = ({
   icon: Icon,
   label,
   meta,
+  scope,
   value,
 }) => {
   return (
@@ -114,6 +116,7 @@ export const OeeStatCard = ({
               {meta}
             </p>
           )}
+          <StatScopeBadge className="mt-1" scope={scope} />
         </div>
       </div>
     </div>
@@ -228,6 +231,7 @@ export const OeeConfirmDialog = ({
 }) => {
   return (
     <AppModal
+      isBusy={isLoading}
       isOpen={isOpen}
       maxWidth="max-w-md"
       onClose={isLoading ? undefined : onCancel}
@@ -248,6 +252,7 @@ export const OeeConfirmDialog = ({
         <AppButton
           variant="danger"
           isLoading={isLoading}
+          loadingText="Deleting…"
           onClick={onConfirm}
         >
           Delete

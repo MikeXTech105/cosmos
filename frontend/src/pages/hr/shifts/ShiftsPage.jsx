@@ -1,10 +1,12 @@
 import { Clock, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   createHrShift,
   deleteHrShift,
@@ -45,6 +47,12 @@ const ShiftsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -80,33 +88,41 @@ const ShiftsPage = () => {
 
   const stats = useMemo(
     () => ({
-      day: shiftsState.list.filter(
-        (shift) => !getHrBoolean(shift.isNightShift, false),
-      ).length,
-      night: shiftsState.list.filter((shift) =>
-        getHrBoolean(shift.isNightShift, false),
-      ).length,
-      total: shiftsState.totalCount,
+      active:
+        shiftsState.summary?.activeCount ??
+        shiftsState.list.filter((shift) => getHrBoolean(shift.isActive)).length,
+      inactive:
+        shiftsState.summary?.inactiveCount ??
+        shiftsState.list.filter((shift) => !getHrBoolean(shift.isActive)).length,
+      total: shiftsState.summary?.totalCount ?? shiftsState.totalCount,
+      metricScope: shiftsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [shiftsState.list, shiftsState.totalCount],
+    [shiftsState.list, shiftsState.summary, shiftsState.summaryScope, shiftsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, shift) => {
@@ -125,9 +141,14 @@ const ShiftsPage = () => {
       }
 
       setModal({ entity: shift, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchHrShiftById(id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchHrShiftById(id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: extractHrEntity(response.data, "shift"),
           isLoading: false,
@@ -135,11 +156,36 @@ const ShiftsPage = () => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This shift no longer exists. The list was refreshed.");
+          closeModal();
+          await loadShifts();
+          return;
+        }
         toast.error(getHrActionError(error, "Unable to load shift details."));
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(getHrRecordId(current.entity, "shift")) === String(id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [capabilities.canUpdate, capabilities.canView, dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadShifts,
+    ],
   );
 
   const submitShift = useCallback(
@@ -175,6 +221,12 @@ const ShiftsPage = () => {
         closeModal();
         await loadShifts();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This shift no longer exists. The list was refreshed.");
+          closeModal();
+          await loadShifts();
+          return;
+        }
         toast.error(getHrActionError(error, "Unable to save shift."));
         throw error;
       }

@@ -3,12 +3,21 @@ import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../../services/apiServiceUtils";
 
 export const partyService = {
-  getParties: async (params) => {
+  getParties: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.PARTIES, {
       params: normalizeParams(params),
+      signal,
     });
 
     return unwrapResponse(response);
+  },
+
+  exportParties: async (params, { signal } = {}) => {
+    return axiosInstance.get(ENDPOINTS.PARTIES_EXPORT, {
+      params: normalizeParams(params),
+      responseType: "blob",
+      signal,
+    });
   },
 
   createParty: async (payload) => {
@@ -17,8 +26,10 @@ export const partyService = {
     return unwrapResponse(response);
   },
 
-  getPartyById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.PARTY_BY_ID(id));
+  getPartyById: async (id, { signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.PARTY_BY_ID(id), {
+      signal,
+    });
 
     return unwrapResponse(response);
   },
@@ -41,8 +52,10 @@ export const partyService = {
     return unwrapResponse(response);
   },
 
-  getPartySettings: async () => {
-    const response = await axiosInstance.get(ENDPOINTS.PARTY_SETTINGS);
+  getPartySettings: async ({ signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.PARTY_SETTINGS, {
+      signal,
+    });
 
     return unwrapResponse(response);
   },

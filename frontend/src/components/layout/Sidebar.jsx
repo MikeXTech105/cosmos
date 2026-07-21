@@ -1,5 +1,8 @@
-import { Command, Search, ShieldCheck } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Command, Search, ShieldCheck, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
 import { useSidebar } from "../../hooks/useSidebar";
 import useSidebarTheme from "../../hooks/useSidebarTheme";
@@ -7,7 +10,7 @@ import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay
 import SidebarGroup from "./SidebarGroup";
 import SidebarItem from "./SidebarItem";
 
-const SidebarContent = ({ sidebarTheme }) => {
+const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
   const { roles, user } = useSelector((state) => state.auth);
   const {
     expandedGroupIds,
@@ -54,6 +57,7 @@ const SidebarContent = ({ sidebarTheme }) => {
               Enterprise Resource Platform
             </p>
           </div>
+          {closeAction}
         </div>
       </div>
 
@@ -108,6 +112,7 @@ const SidebarContent = ({ sidebarTheme }) => {
                 item={item}
                 expandedGroupIds={expandedGroupIds}
                 forceOpen={forceOpen}
+                onNavigate={onNavigate}
                 onToggle={toggleGroup}
                 themeClasses={classes}
               />
@@ -115,6 +120,7 @@ const SidebarContent = ({ sidebarTheme }) => {
               <SidebarItem
                 key={item.id}
                 item={item}
+                onNavigate={onNavigate}
                 themeClasses={classes}
               />
             ),
@@ -184,17 +190,135 @@ const SidebarContent = ({ sidebarTheme }) => {
 
 const Sidebar = () => {
   const { sidebarTheme } = useSidebarTheme();
+  const { closeMobileSidebar, mobileOpen } = useSidebar();
+  const location = useLocation();
+  const drawerRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    closeMobileSidebar();
+  }, [closeMobileSidebar, location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) {
+      return undefined;
+    }
+
+    previousFocusRef.current = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      drawerRef.current
+        ?.querySelector("button, input, a[href]")
+        ?.focus();
+    });
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeMobileSidebar();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusable = Array.from(
+        drawerRef.current?.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const handleDesktopChange = (event) => {
+      if (event.matches) closeMobileSidebar();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    desktopQuery.addEventListener("change", handleDesktopChange);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      desktopQuery.removeEventListener("change", handleDesktopChange);
+      document.body.style.overflow = previousOverflow;
+      previousFocusRef.current?.focus?.();
+    };
+  }, [closeMobileSidebar, mobileOpen]);
 
   return (
-    <aside
-      data-sidebar-theme={sidebarTheme.id}
-      className={[
-        "h-auto max-h-[42dvh] w-full shrink-0 overflow-hidden border-b lg:h-dvh lg:max-h-none lg:w-[280px] lg:border-b-0 lg:border-r",
-        sidebarTheme.classes.root,
-      ].join(" ")}
-    >
-      <SidebarContent sidebarTheme={sidebarTheme} />
-    </aside>
+    <>
+      <aside
+        aria-label="Primary sidebar"
+        data-sidebar-theme={sidebarTheme.id}
+        className={[
+          "hidden h-dvh w-[280px] shrink-0 overflow-hidden border-r lg:block",
+          sidebarTheme.classes.root,
+        ].join(" ")}
+      >
+        <SidebarContent sidebarTheme={sidebarTheme} />
+      </aside>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.button
+              type="button"
+              aria-label="Close navigation menu"
+              className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1px]"
+              onClick={closeMobileSidebar}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.aside
+              ref={drawerRef}
+              id="mobile-sidebar"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
+              data-sidebar-theme={sidebarTheme.id}
+              className={[
+                "relative h-dvh w-[min(88vw,320px)] overflow-hidden border-r shadow-2xl",
+                sidebarTheme.classes.root,
+              ].join(" ")}
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <SidebarContent
+                sidebarTheme={sidebarTheme}
+                onNavigate={closeMobileSidebar}
+                closeAction={
+                  <button
+                    type="button"
+                    onClick={closeMobileSidebar}
+                    className={[
+                      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/40",
+                      sidebarTheme.classes.navInactive,
+                    ].join(" ")}
+                    aria-label="Close navigation menu"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                }
+              />
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

@@ -3,7 +3,12 @@ import { memo } from "react";
 
 import AppTooltip from "../../../components/common/AppTooltip";
 
-const ActionButton = ({ className, disabled, icon: Icon, label, onClick }) => {
+const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }) => {
+  const buttonClass =
+    tone === "danger"
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <AppTooltip label={label}>
       <button
@@ -11,11 +16,7 @@ const ActionButton = ({ className, disabled, icon: Icon, label, onClick }) => {
         onClick={onClick}
         aria-label={label}
         disabled={disabled}
-        className={[
-          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30",
-          disabled ? "cursor-not-allowed opacity-40" : "",
-          className,
-        ].join(" ")}
+        className={buttonClass}
       >
         <Icon className="h-4 w-4" />
       </button>
@@ -45,7 +46,6 @@ const PageActions = ({
           icon={Eye}
           label="View Page"
           onClick={() => onView(page)}
-          className="hover:text-brand"
         />
       )}
       {canAddChild && onAddChild && (
@@ -53,7 +53,6 @@ const PageActions = ({
           icon={Plus}
           label="Add Child Page"
           onClick={() => onAddChild(page)}
-          className="hover:text-brand"
         />
       )}
       {canEdit && onEdit && (
@@ -61,7 +60,6 @@ const PageActions = ({
           icon={Pencil}
           label="Edit Page"
           onClick={() => onEdit(page)}
-          className="hover:text-brand"
         />
       )}
       {canDelete && onDelete && (
@@ -69,7 +67,7 @@ const PageActions = ({
           icon={Trash2}
           label="Delete Page"
           onClick={() => onDelete(page)}
-          className="hover:bg-red-50 hover:text-red-700"
+          tone="danger"
         />
       )}
     </div>

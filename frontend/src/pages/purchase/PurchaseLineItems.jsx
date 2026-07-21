@@ -253,15 +253,17 @@ const PurchaseLineItems = ({
                     {formatCurrency(lineTotal)}
                   </td>
                   <td className="px-2 py-3 text-right align-middle">
-                    <button
-                      type="button"
-                      aria-label="Remove line item"
-                      disabled={fields.length === 1}
-                      onClick={() => remove(index)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-0.5">
+                      <button
+                        type="button"
+                        aria-label="Remove line item"
+                        disabled={fields.length === 1}
+                        onClick={() => remove(index)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

@@ -12,6 +12,7 @@ import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { itemSchema } from "../../../utils/validationSchemas";
 import {
   buildItemPayload,
@@ -21,6 +22,13 @@ import {
   ITEM_TYPE_OPTIONS,
   GST_RATE_OPTIONS,
 } from "./itemHelpers";
+
+const ITEM_FIELDS = [
+  "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
+  "purchasePrice", "salesPrice", "hsnCode", "gstRate", "trackInventory",
+  "openingStock", "openingStockValue", "currentStock", "reservedStock",
+  "minimumStock", "description", "isActive", "imageFile",
+];
 
 const ToggleRow = ({
   checked,
@@ -173,6 +181,7 @@ const ItemFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -195,7 +204,17 @@ const ItemFormModal = ({
       : activeTab;
 
   const submitForm = async (values, saveAndNew = false) => {
-    await onSubmit(buildItemPayload(values), saveAndNew);
+    try {
+      await onSubmit(buildItemPayload(values), saveAndNew);
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        fieldAliases: { gstRate: "GSTRate", hsnCode: "HSNCode" },
+        formFieldNames: ITEM_FIELDS,
+        setError,
+      });
+      return;
+    }
 
     if (saveAndNew) {
       reset(getItemDefaultValues(null));
@@ -207,6 +226,7 @@ const ItemFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-6xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -238,6 +258,11 @@ const ItemFormModal = ({
           onSubmit={handleSubmit((values) => submitForm(values, false))}
         >
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
+            {errors.root?.server?.message && (
+              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {errors.root.server.message}
+              </p>
+            )}
             <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
               {ITEM_TYPE_OPTIONS.map((option) => {
                 const type = option.value;
@@ -589,7 +614,7 @@ const ItemFormModal = ({
                 Save & New
               </AppButton>
             )}
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               {isEdit ? (
                 <>
                   <Check className="h-4 w-4" />

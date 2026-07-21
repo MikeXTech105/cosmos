@@ -1,11 +1,13 @@
 import { BadgeCheck, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import {
   createHrDesignation,
@@ -69,6 +71,12 @@ const DesignationsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [departmentCreateOpen, setDepartmentCreateOpen] = useState(false);
   const [confirmation, setConfirmation] = useState({
     entity: null,
@@ -145,33 +153,46 @@ const DesignationsPage = () => {
 
   const stats = useMemo(
     () => ({
-      active: designationsState.list.filter((designation) =>
-        getHrBoolean(designation.isActive),
-      ).length,
-      inactive: designationsState.list.filter(
-        (designation) => !getHrBoolean(designation.isActive),
-      ).length,
-      total: designationsState.totalCount,
+      active:
+        designationsState.summary?.activeCount ??
+        designationsState.list.filter((designation) =>
+          getHrBoolean(designation.isActive),
+        ).length,
+      inactive:
+        designationsState.summary?.inactiveCount ??
+        designationsState.list.filter(
+          (designation) => !getHrBoolean(designation.isActive),
+        ).length,
+      total:
+        designationsState.summary?.totalCount ?? designationsState.totalCount,
+      metricScope: designationsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [designationsState.list, designationsState.totalCount],
+    [designationsState.list, designationsState.summary, designationsState.summaryScope, designationsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, designation) => {
@@ -190,9 +211,14 @@ const DesignationsPage = () => {
       }
 
       setModal({ entity: designation, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchHrDesignationById(id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchHrDesignationById(id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: extractHrEntity(response.data, "designation"),
           isLoading: false,
@@ -200,13 +226,38 @@ const DesignationsPage = () => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This designation no longer exists. The list was refreshed.");
+          closeModal();
+          await loadDesignations();
+          return;
+        }
         toast.error(
           getHrActionError(error, "Unable to load designation details."),
         );
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(getHrRecordId(current.entity, "designation")) === String(id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [capabilities.canUpdate, capabilities.canView, dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadDesignations,
+    ],
   );
 
   const submitDesignation = useCallback(
@@ -242,6 +293,12 @@ const DesignationsPage = () => {
         closeModal();
         await loadDesignations();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This designation no longer exists. The list was refreshed.");
+          closeModal();
+          await loadDesignations();
+          return;
+        }
         toast.error(getHrActionError(error, "Unable to save designation."));
         throw error;
       }

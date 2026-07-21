@@ -14,8 +14,14 @@ import { toast } from "sonner";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import useCapabilities from "../../../hooks/useCapabilities";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 import { roleService } from "../../../services/rbac/roleService";
-import { getApiErrorMessage } from "../../../utils/apiError";
+import { getApiErrorMessage, getApiStatus } from "../../../utils/apiError";
+import { downloadCsv } from "../../../utils/csv";
+import {
+  downloadResponseBlob,
+  getDownloadErrorMessage,
+} from "../../../utils/fileDownload";
 import RoleFilters from "./RoleFilters";
 import RoleModal from "./RoleModal";
 import RoleStats from "./RoleStats";
@@ -27,6 +33,13 @@ const DEFAULT_FILTERS = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
+const ROLE_EXPORT_COLUMNS = [
+  { header: "Role Name", getValue: (role) => role.name },
+  { header: "Description", getValue: (role) => role.description },
+  { header: "Status", getValue: (role) => (role.isActive ? "Active" : "Inactive") },
+  { header: "Created Date", getValue: (role) => role.createdAt ?? "" },
+  { header: "Updated Date", getValue: (role) => role.updatedAt ?? "" },
+];
 
 const LIST_KEYS = ["items", "roles", "records", "results", "content"];
 
@@ -115,6 +128,7 @@ const normalizeRole = (role) => {
 
   return {
     createdAt: role.createdAt ?? role.createdDate ?? role.createdOn,
+    updatedAt: role.updatedAt ?? role.updatedDate ?? role.updatedOn,
     description: role.description ?? role.summary ?? "",
     id,
     isActive: normalizeActiveState(role),
@@ -251,6 +265,7 @@ const Roles = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [modalState, setModalState] = useState({
     isLoading: false,
@@ -264,6 +279,15 @@ const Roles = () => {
     role: null,
     type: null,
   });
+  const {
+    beginAbortableRequest: beginExportRequest,
+    isLatestRequest: isLatestExportRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
 
   const capabilities = useCapabilities({
     actions: [
@@ -354,12 +378,13 @@ const Roles = () => {
   }, [roles]);
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
     setModalState((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreateModal = useCallback(() => {
     if (!capabilities.canCreate) {
@@ -367,13 +392,14 @@ const Roles = () => {
       return;
     }
 
+    cancelDetailRequests();
     setModalState({
       isLoading: false,
       isOpen: true,
       mode: "create",
       role: null,
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openRoleModal = useCallback(async (mode, role) => {
     const allowed = mode === "edit" ? capabilities.canUpdate : capabilities.canView;
@@ -389,9 +415,11 @@ const Roles = () => {
       mode,
       role,
     });
+    const { requestId, signal } = beginDetailRequest();
 
     try {
-      const response = await roleService.getRoleById(role.id);
+      const response = await roleService.getRoleById(role.id, { signal });
+      if (!isLatestDetailRequest(requestId)) return;
       setModalState({
         isLoading: false,
         isOpen: true,
@@ -399,6 +427,13 @@ const Roles = () => {
         role: normalizeRole(extractSingleRole(response.data)),
       });
     } catch (error) {
+      if (!isLatestDetailRequest(requestId)) return;
+      if (getApiStatus(error) === 404) {
+        toast.error("This role no longer exists. The list was refreshed.");
+        closeModal();
+        await loadRoles();
+        return;
+      }
       toast.error(
         getErrorMessage(error, "Unable to load the latest role details."),
       );
@@ -407,7 +442,14 @@ const Roles = () => {
         isLoading: false,
       }));
     }
-  }, [capabilities.canUpdate, capabilities.canView]);
+  }, [
+    beginDetailRequest,
+    capabilities.canUpdate,
+    capabilities.canView,
+    closeModal,
+    isLatestDetailRequest,
+    loadRoles,
+  ]);
 
   const submitRole = useCallback(async (payload) => {
     const allowed =
@@ -432,14 +474,21 @@ const Roles = () => {
       closeModal();
       await loadRoles();
     } catch (error) {
+      if (modalState.mode === "edit" && getApiStatus(error) === 404) {
+        toast.error("This role no longer exists. The list was refreshed.");
+        closeModal();
+        await loadRoles();
+        return;
+      }
       toast.error(
         getErrorMessage(
           error,
           modalState.mode === "edit"
             ? "Unable to update role."
             : "Unable to create role.",
-        ),
+          ),
       );
+      throw error;
     }
   }, [
     capabilities.canCreate,
@@ -576,14 +625,48 @@ const Roles = () => {
     setPage(1);
   }, []);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     if (!capabilities.canExport) {
       toast.error("You don't have permission to export roles.");
       return;
     }
 
-    toast.info("Export is available as a UI action and will connect to reporting.");
-  }, [capabilities.canExport]);
+    const { requestId, signal } = beginExportRequest();
+    const exportParams = {
+      IsActive:
+        filters.status === "all" ? undefined : filters.status === "active",
+      Search: filters.search.trim() || undefined,
+    };
+    setIsExporting(true);
+
+    try {
+      const response = await roleService.exportRoles(exportParams, { signal });
+
+      if (!isLatestExportRequest(requestId)) return;
+      await downloadResponseBlob(response, "roles.csv");
+      toast.success("Roles export downloaded");
+    } catch (error) {
+      if (signal.aborted || !isLatestExportRequest(requestId)) return;
+      if ([404, 405, 501].includes(getApiStatus(error))) {
+        await downloadCsv({
+          columns: ROLE_EXPORT_COLUMNS,
+          filename: "roles.csv",
+          rows: filteredRoles,
+        });
+        toast.success(`Exported ${filteredRoles.length} roles`);
+      } else {
+        toast.error(await getDownloadErrorMessage(error, "Unable to export roles."));
+      }
+    } finally {
+      if (isLatestExportRequest(requestId)) setIsExporting(false);
+    }
+  }, [
+    beginExportRequest,
+    capabilities.canExport,
+    filteredRoles,
+    filters,
+    isLatestExportRequest,
+  ]);
 
   const tableActions = useMemo(
     () => ({
@@ -645,11 +728,13 @@ const Roles = () => {
               <button
                 type="button"
                 onClick={handleExport}
+                disabled={isExporting}
+                aria-busy={isExporting || undefined}
                 aria-label="Export Roles"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
                 <Download className="h-4 w-4" />
-                Export
+                {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
           )}

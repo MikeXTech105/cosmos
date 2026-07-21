@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import {
   extractEntity,
+  getRequestEntityId,
   getThunkError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
@@ -27,8 +28,13 @@ export const createPurchaseCrudSlice = ({
     pageSize: PURCHASE_DEFAULT_PAGE_SIZE,
     totalCount: 0,
     totalPages: 1,
+    summary: null,
+    summaryScope: "current-page",
     filters: initialFilters,
     selected: null,
+    listRequestId: null,
+    detailRequestId: null,
+    selectedRequestEntityId: null,
   };
 
   const fetchList = createAsyncThunk(
@@ -114,11 +120,13 @@ export const createPurchaseCrudSlice = ({
     },
     extraReducers: (builder) => {
       builder
-        .addCase(fetchList.pending, (state) => {
+        .addCase(fetchList.pending, (state, action) => {
           state.loading = true;
           state.error = null;
+          state.listRequestId = action.meta.requestId;
         })
         .addCase(fetchList.fulfilled, (state, action) => {
+          if (state.listRequestId !== action.meta.requestId) return;
           const page = normalizePagedPayload(action.payload.data);
 
           state.loading = false;
@@ -127,23 +135,37 @@ export const createPurchaseCrudSlice = ({
           state.pageSize = page.pageSize;
           state.totalCount = page.totalCount;
           state.totalPages = page.totalPages;
+          state.summary = page.summary;
+          state.summaryScope = page.summaryScope;
+          state.listRequestId = null;
         })
         .addCase(fetchList.rejected, (state, action) => {
+          if (state.listRequestId !== action.meta.requestId) return;
           state.loading = false;
           state.list = [];
           state.error = action.payload ?? action.error.message;
+          state.listRequestId = null;
         })
-        .addCase(fetchById.pending, (state) => {
+        .addCase(fetchById.pending, (state, action) => {
           state.detailLoading = true;
           state.detailError = null;
+          state.detailRequestId = action.meta.requestId;
+          state.selectedRequestEntityId = getRequestEntityId(action.meta.arg);
         })
         .addCase(fetchById.fulfilled, (state, action) => {
+          if (
+            state.detailRequestId !== action.meta.requestId ||
+            String(state.selectedRequestEntityId) !== String(getRequestEntityId(action.meta.arg))
+          ) return;
           state.detailLoading = false;
           state.selected = extractEntity(action.payload.data, entityKey);
+          state.detailRequestId = null;
         })
         .addCase(fetchById.rejected, (state, action) => {
+          if (state.detailRequestId !== action.meta.requestId) return;
           state.detailLoading = false;
           state.detailError = action.payload ?? action.error.message;
+          state.detailRequestId = null;
         })
         .addCase(createRecord.fulfilled, (state, action) => {
           state.selected = extractEntity(action.payload.data, entityKey);

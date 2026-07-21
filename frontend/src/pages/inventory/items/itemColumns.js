@@ -1,4 +1,5 @@
 export const itemColumns = [
+  { key: "serialNumber", label: "#" },
   { key: "name", label: "Item" },
   { key: "itemType", label: "Type" },
   { key: "currentStock", label: "Stock", align: "right" },
