@@ -138,6 +138,9 @@ const ReportTable = ({
         <table className="w-full min-w-[920px] table-fixed text-left">
           <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
+              <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                #
+              </th>
               {columns.map((column) => {
                 const sortKey = column.sortKey ?? column.key;
                 const isSortable = report.paginated && column.sortable !== false;
@@ -188,7 +191,7 @@ const ReportTable = ({
             {isLoading
               ? Array.from({ length: 8 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={columns.length} className="px-3 py-3">
+                    <td colSpan={columns.length + 1} className="px-3 py-3">
                       <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -198,6 +201,9 @@ const ReportTable = ({
                     key={row?.id ?? row?.sourceId ?? `${report.id}-${rowIndex}`}
                     className="transition-colors hover:bg-slate-50"
                   >
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(pageNumber - 1) * pageSize + rowIndex + 1}
+                    </td>
                     {columns.map((column) => {
                       const value = getReportValue(row, column.key);
                       const isNegativeTone =

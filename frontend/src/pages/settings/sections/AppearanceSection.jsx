@@ -16,7 +16,7 @@ const AUTH_THEME_OPTIONS = [
     value: AUTH_THEME.LIGHT,
   },
   {
-    activeIconClassName: "text-indigo-500",
+    activeIconClassName: "text-slate-600",
     icon: Moon,
     label: "Dark",
     value: AUTH_THEME.DARK,
@@ -33,7 +33,6 @@ const AppearanceSection = () => {
         icon={MonitorCog}
         title="Login screen"
         description="Theme for the public sign-in page."
-        variant="indigo"
         action={
           <div
             className="inline-flex w-fit shrink-0 gap-0.5 rounded-xl bg-slate-100 p-0.5"

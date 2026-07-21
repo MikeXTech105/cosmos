@@ -141,6 +141,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -208,7 +209,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Submit Leave
           </AppButton>
         </div>
@@ -261,6 +262,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -295,7 +297,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             {labels[action]}
           </AppButton>
         </div>
@@ -524,10 +526,10 @@ const LeavesPage = () => {
       />
 
       <div className="grid gap-3 md:grid-cols-4">
-        <HrStatCard icon={Clock3} label="Pending" value={stats.pending} colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} colorClass="bg-emerald-50 text-emerald-600" />
-        <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} colorClass="bg-brand-light text-brand" />
+        <HrStatCard icon={Clock3} label="Pending" value={stats.pending} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
+        <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
+        <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} scope="current-page" colorClass="bg-red-50 text-red-600" />
+        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -609,7 +611,7 @@ const LeavesPage = () => {
             <table className="w-full min-w-[980px] text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  {["Employee", "Type", "Dates", "Days", "Status", "Actions"].map((heading) => (
+                  {["#", "Employee", "Type", "Dates", "Days", "Status", "Actions"].map((heading) => (
                     <th
                       key={heading}
                       className={[
@@ -626,13 +628,16 @@ const LeavesPage = () => {
                 {leaveState.loading
                   ? Array.from({ length: 6 }, (_, index) => (
                       <tr key={index}>
-                        <td colSpan={6} className="px-4 py-3">
+                        <td colSpan={7} className="px-4 py-3">
                           <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                         </td>
                       </tr>
                     ))
-                  : leaveState.list.map((leave) => (
+                  : leaveState.list.map((leave, index) => (
                       <tr key={getHrRecordId(leave, "leaveApplication") ?? leave.leaveApplicationId} className="hover:bg-slate-50">
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                          {(leaveState.pageNumber - 1) * leaveState.pageSize + index + 1}
+                        </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
                           {leave.employeeName ?? getLookupLabel(employeeOptions, leave.employeeId)}
                         </td>
@@ -649,7 +654,7 @@ const LeavesPage = () => {
                           <LeaveStatusPill status={leave.status} />
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex items-center justify-end gap-0.5">
                             {capabilities.canApprove && (
                               <>
                                 <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>

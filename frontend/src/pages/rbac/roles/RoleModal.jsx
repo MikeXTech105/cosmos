@@ -5,6 +5,8 @@ import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+
 const inputClassName =
   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
@@ -19,6 +21,7 @@ const getDefaultValues = (role) => ({
   description: role?.description ?? "",
   isActive: role?.isActive ?? true,
 });
+const ROLE_FIELDS = Object.keys(getDefaultValues());
 
 const FieldError = ({ error }) => {
   if (!error) {
@@ -43,6 +46,7 @@ const RoleModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(roleSchema),
@@ -55,12 +59,16 @@ const RoleModal = ({
     }
   }, [isOpen, reset, role]);
 
-  const submitForm = (values) => {
-    return onSubmit({
-      description: values.description ?? "",
-      isActive: values.isActive,
-      name: values.name,
-    });
+  const submitForm = async (values) => {
+    try {
+      await onSubmit({
+        description: values.description ?? "",
+        isActive: values.isActive,
+        name: values.name,
+      });
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: ROLE_FIELDS, setError });
+    }
   };
 
   const title = isView ? "View Role" : isEdit ? "Edit Role" : "Create Role";
@@ -132,6 +140,11 @@ const RoleModal = ({
                 onSubmit={handleSubmit(submitForm)}
               >
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
+                  {errors.root?.server?.message && (
+                    <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {errors.root.server.message}
+                    </p>
+                  )}
                   <div>
                     <label
                       htmlFor="roleName"

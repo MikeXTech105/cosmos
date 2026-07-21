@@ -14,6 +14,13 @@ import { toast } from "sonner";
 import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
 import useCapabilities from "../../hooks/useCapabilities";
+import useLatestRequest from "../../hooks/useLatestRequest";
+import { getApiStatus } from "../../utils/apiError";
+import { downloadCsv } from "../../utils/csv";
+import {
+  downloadResponseBlob,
+  getDownloadErrorMessage,
+} from "../../utils/fileDownload";
 import {
   PARTY_SETTINGS_COMMAND_FIELDS,
   PARTY_SETTINGS_SECTIONS,
@@ -21,12 +28,20 @@ import {
 import PartyFilters from "./PartyFilters";
 import {
   buildPartyQueryParams,
+  buildClientPartyView,
   extractEntity,
   extractPagedParties,
   filterPartiesForBusinessView,
+  formatBalance,
   getErrorMessage,
   getPartyGroupCounts,
+  getPartyGroupCountsFromSummary,
   getPartyDisplayName,
+  getPartyCity,
+  getPartyState,
+  getPartyTypeLabel,
+  isPartySummary,
+  loadPartyFallbackCollection,
 } from "./partyHelpers";
 import PartyDetailsModal from "./PartyDetailsModal";
 import PartyFormModal from "./PartyFormModal";
@@ -48,6 +63,20 @@ const DEFAULT_SORT = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
+const PARTY_FALLBACK_PAGE_SIZE = 200;
+const PARTY_FALLBACK_MAX_RECORDS = 5000;
+const PARTY_EXPORT_COLUMNS = [
+  { header: "Party Name", getValue: getPartyDisplayName },
+  { header: "Type", getValue: getPartyTypeLabel },
+  { header: "GSTIN", getValue: (party) => party.gstin ?? "" },
+  { header: "Mobile", getValue: (party) => party.mobileNo ?? party.mobile ?? "" },
+  { header: "Email", getValue: (party) => party.email ?? "" },
+  { header: "City", getValue: getPartyCity },
+  { header: "State", getValue: getPartyState },
+  { header: "Credit Limit", getValue: (party) => Number(party.creditLimit) || 0 },
+  { header: "Opening Balance", getValue: formatBalance },
+  { header: "Status", getValue: (party) => (party.isActive ? "Active" : "Inactive") },
+];
 
 const buildPaginationMeta = ({ page, pageSize, pagedResult }) => {
   return {
@@ -137,7 +166,12 @@ const PartyPage = () => {
     totalPages: 1,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [dataMode, setDataMode] = useState("unknown");
+  const [partySummary, setPartySummary] = useState(null);
+  const [fallbackBaseKey, setFallbackBaseKey] = useState("");
+  const [compatibilityNotice, setCompatibilityNotice] = useState("");
   const [formModal, setFormModal] = useState({
     isLoading: false,
     isOpen: false,
@@ -159,6 +193,29 @@ const PartyPage = () => {
     isSubmitting: false,
     party: null,
   });
+  const {
+    beginAbortableRequest: beginListRequest,
+    isLatestRequest: isLatestListRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginEditRequest,
+    cancelAllRequests: cancelEditRequests,
+    isLatestRequest: isLatestEditRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginDetailsRequest,
+    cancelAllRequests: cancelDetailsRequests,
+    isLatestRequest: isLatestDetailsRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginSettingsRequest,
+    cancelAllRequests: cancelSettingsRequests,
+    isLatestRequest: isLatestSettingsRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginExportRequest,
+    isLatestRequest: isLatestExportRequest,
+  } = useLatestRequest();
 
   const capabilities = useCapabilities({
     actions: [
@@ -176,35 +233,142 @@ const PartyPage = () => {
     route: "/party",
   });
 
-  const loadParties = useCallback(async () => {
+  const baseQueryKey = useMemo(
+    () => JSON.stringify([filters.Search.trim(), filters.IsActive]),
+    [filters.IsActive, filters.Search],
+  );
+
+  const loadParties = useCallback(async ({ force = false } = {}) => {
+    if (!force && dataMode === "client" && fallbackBaseKey === baseQueryKey) {
+      return;
+    }
+
+    const { requestId, signal } = beginListRequest();
     setIsLoading(true);
     setErrorMessage(null);
 
     try {
+      const baseFilters = {
+        ...DEFAULT_FILTERS,
+        IsActive: filters.IsActive,
+        Search: filters.Search,
+      };
+
+      if (!force && dataMode === "capped" && fallbackBaseKey === baseQueryKey) {
+        const baseResponse = await partyService.getParties(
+          buildPartyQueryParams({
+            filters: baseFilters,
+            group: "all",
+            page,
+            pageSize,
+            sort: DEFAULT_SORT,
+          }),
+          { signal },
+        );
+        const basePage = extractPagedParties(baseResponse.data);
+
+        if (!isLatestListRequest(requestId)) return;
+        setParties(basePage.items);
+        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult: basePage }));
+        return;
+      }
+
       const response = await partyService.getParties(
         buildPartyQueryParams({
-          filters: {
-            IsActive: filters.IsActive,
-            Search: filters.Search,
-          },
+          filters,
+          group: activeGroup,
           page,
           pageSize,
           sort: DEFAULT_SORT,
         }),
+        { signal },
       );
       const pagedResult = extractPagedParties(response.data);
 
-      setParties(pagedResult.items);
-      setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult }));
+      if (isPartySummary(pagedResult.summary)) {
+        if (!isLatestListRequest(requestId)) return;
+        setDataMode("server");
+        setFallbackBaseKey("");
+        setCompatibilityNotice("");
+        setPartySummary(pagedResult.summary);
+        setParties(pagedResult.items);
+        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult }));
+        return;
+      }
+
+      const fallback = await loadPartyFallbackCollection({
+        fetchPage: async (pageNumber, fallbackPageSize) => {
+          const fallbackResponse = await partyService.getParties(
+            buildPartyQueryParams({
+              filters: baseFilters,
+              group: "all",
+              page: pageNumber,
+              pageSize: fallbackPageSize,
+              sort: DEFAULT_SORT,
+            }),
+            { signal },
+          );
+
+          return fallbackResponse.data;
+        },
+        maxRecords: PARTY_FALLBACK_MAX_RECORDS,
+        pageSize: PARTY_FALLBACK_PAGE_SIZE,
+        signal,
+      });
+
+      if (!isLatestListRequest(requestId)) return;
+      setPartySummary(null);
+      setFallbackBaseKey(baseQueryKey);
+
+      if (fallback.capped) {
+        const baseResponse = await partyService.getParties(
+          buildPartyQueryParams({
+            filters: baseFilters,
+            group: "all",
+            page,
+            pageSize,
+            sort: DEFAULT_SORT,
+          }),
+          { signal },
+        );
+        const basePage = extractPagedParties(baseResponse.data);
+
+        if (!isLatestListRequest(requestId)) return;
+        setDataMode("capped");
+        setParties(basePage.items);
+        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult: basePage }));
+        setCompatibilityNotice(
+          `Advanced Party Type, GSTIN, and credit-limit filters require server summary support for datasets above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} records. Search and status results remain available.`,
+        );
+        return;
+      }
+
+      setDataMode("client");
+      setParties(fallback.items);
+      setCompatibilityNotice(
+        "Client-filtered across the complete matching collection while server summary support is unavailable.",
+      );
     } catch (error) {
+      if (signal.aborted || !isLatestListRequest(requestId)) return;
       setParties([]);
+      setPartySummary(null);
       setErrorMessage(
         getErrorMessage(error, "Unable to load parties. Please try again."),
       );
     } finally {
-      setIsLoading(false);
+      if (isLatestListRequest(requestId)) setIsLoading(false);
     }
-  }, [filters.IsActive, filters.Search, page, pageSize]);
+  }, [
+    activeGroup,
+    baseQueryKey,
+    beginListRequest,
+    dataMode,
+    fallbackBaseKey,
+    filters,
+    isLatestListRequest,
+    page,
+    pageSize,
+  ]);
 
   useEffect(() => {
     void Promise.resolve().then(loadParties);
@@ -228,24 +392,70 @@ const PartyPage = () => {
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
-  const totalItems = paginationMeta.total;
-  const totalPages = Math.max(1, paginationMeta.totalPages);
+  const clientView = useMemo(
+    () =>
+      buildClientPartyView({
+        creditFilter: filters.creditLimit,
+        group: activeGroup,
+        gstFilter: filters.gst,
+        page,
+        pageSize,
+        parties,
+      }),
+    [activeGroup, filters.creditLimit, filters.gst, page, pageSize, parties],
+  );
+  const displayParties = dataMode === "client" ? clientView.items : parties;
+  const effectivePage = dataMode === "client" ? clientView.page : page;
+  const totalItems = dataMode === "client" ? clientView.totalCount : paginationMeta.total;
+  const totalPages = dataMode === "client"
+    ? clientView.totalPages
+    : Math.max(1, paginationMeta.totalPages);
   const filterControls = useMemo(() => {
     return {
       ...filters,
       Search: searchInput,
     };
   }, [filters, searchInput]);
-  const groupCounts = useMemo(() => getPartyGroupCounts(parties), [parties]);
-  const displayParties = useMemo(() => {
-    return filterPartiesForBusinessView({
-      creditFilter: filters.creditLimit,
-      group: activeGroup,
-      gstFilter: filters.gst,
-      parties,
-    });
-  }, [activeGroup, filters.creditLimit, filters.gst, parties]);
+  const groupCounts = useMemo(() => {
+    if (dataMode === "server") {
+      return getPartyGroupCountsFromSummary(partySummary);
+    }
+
+    if (dataMode === "client") {
+      return clientView.groupCounts;
+    }
+
+    if (dataMode === "capped") {
+      return { all: paginationMeta.total, both: "—", customers: "—", suppliers: "—" };
+    }
+
+    return getPartyGroupCounts(parties);
+  }, [clientView.groupCounts, dataMode, paginationMeta.total, parties, partySummary]);
   const stats = useMemo(() => {
+    if (dataMode === "server") {
+      return {
+        creditLimitTotal: Number(partySummary.totalCreditLimit) || 0,
+        customerCount: Number(partySummary.customerCount) || 0,
+        inactive: Number(partySummary.inactiveCount) || 0,
+        supplierCount: Number(partySummary.supplierCount) || 0,
+        total: Number(partySummary.allCount) || 0,
+        metricScope: "all-matching",
+        totalScope: "all-matching",
+      };
+    }
+
+    if (dataMode === "client") {
+      return {
+        creditLimitTotal: clientView.stats.totalCreditLimit,
+        customerCount: clientView.stats.customerCount,
+        inactive: clientView.stats.inactiveCount,
+        supplierCount: clientView.stats.supplierCount,
+        total: clientView.stats.allCount,
+        metricScope: "all-matching",
+        totalScope: "all-matching",
+      };
+    }
+
     return {
       creditLimitTotal: parties.reduce((total, party) => {
         return total + (Number(party.creditLimit) || 0);
@@ -254,32 +464,37 @@ const PartyPage = () => {
       inactive: parties.filter((party) => !party.isActive).length,
       supplierCount: groupCounts.suppliers,
       total: totalItems,
+      metricScope: "current-page",
+      totalScope: "all-matching",
     };
-  }, [groupCounts.customers, groupCounts.suppliers, parties, totalItems]);
+  }, [clientView.stats, dataMode, groupCounts.customers, groupCounts.suppliers, parties, partySummary, totalItems]);
 
   const closeFormModal = useCallback(() => {
+    cancelEditRequests();
     setFormModal((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  }, []);
+  }, [cancelEditRequests]);
 
   const closeDetailsModal = useCallback(() => {
+    cancelDetailsRequests();
     setDetailsModal((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  }, []);
+  }, [cancelDetailsRequests]);
 
   const closeSettingsModal = useCallback(() => {
+    cancelSettingsRequests();
     setSettingsModal((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  }, []);
+  }, [cancelSettingsRequests]);
 
   const openCreateModal = useCallback(() => {
     if (!capabilities.canCreate) {
@@ -307,10 +522,12 @@ const PartyPage = () => {
       mode: "edit",
       party,
     });
+    const { requestId, signal } = beginEditRequest();
 
     try {
-      const response = await partyService.getPartyById(party.id);
+      const response = await partyService.getPartyById(party.id, { signal });
 
+      if (!isLatestEditRequest(requestId)) return;
       setFormModal({
         isLoading: false,
         isOpen: true,
@@ -318,13 +535,26 @@ const PartyPage = () => {
         party: extractEntity(response.data),
       });
     } catch (error) {
+      if (signal.aborted || !isLatestEditRequest(requestId)) return;
+      if (getApiStatus(error) === 404) {
+        toast.error("This party no longer exists. The list was refreshed.");
+        closeFormModal();
+        await loadParties({ force: true });
+        return;
+      }
       toast.error(getErrorMessage(error, "Unable to load party details."));
       setFormModal((current) => ({
         ...current,
         isLoading: false,
       }));
     }
-  }, [capabilities.canUpdate]);
+  }, [
+    beginEditRequest,
+    capabilities.canUpdate,
+    closeFormModal,
+    isLatestEditRequest,
+    loadParties,
+  ]);
 
   const openDetailsModal = useCallback(async (party) => {
     if (!capabilities.canView) {
@@ -337,23 +567,38 @@ const PartyPage = () => {
       isOpen: true,
       party,
     });
+    const { requestId, signal } = beginDetailsRequest();
 
     try {
-      const response = await partyService.getPartyById(party.id);
+      const response = await partyService.getPartyById(party.id, { signal });
 
+      if (!isLatestDetailsRequest(requestId)) return;
       setDetailsModal({
         isLoading: false,
         isOpen: true,
         party: extractEntity(response.data),
       });
     } catch (error) {
+      if (signal.aborted || !isLatestDetailsRequest(requestId)) return;
+      if (getApiStatus(error) === 404) {
+        toast.error("This party no longer exists. The list was refreshed.");
+        closeDetailsModal();
+        await loadParties({ force: true });
+        return;
+      }
       toast.error(getErrorMessage(error, "Unable to load party details."));
       setDetailsModal((current) => ({
         ...current,
         isLoading: false,
       }));
     }
-  }, [capabilities.canView]);
+  }, [
+    beginDetailsRequest,
+    capabilities.canView,
+    closeDetailsModal,
+    isLatestDetailsRequest,
+    loadParties,
+  ]);
 
   const openSettingsModal = useCallback(async () => {
     if (!capabilities.canSettings) {
@@ -366,23 +611,26 @@ const PartyPage = () => {
       isOpen: true,
       settings: null,
     });
+    const { requestId, signal } = beginSettingsRequest();
 
     try {
-      const response = await partyService.getPartySettings();
+      const response = await partyService.getPartySettings({ signal });
 
+      if (!isLatestSettingsRequest(requestId)) return;
       setSettingsModal({
         isLoading: false,
         isOpen: true,
         settings: response.data,
       });
     } catch (error) {
+      if (signal.aborted || !isLatestSettingsRequest(requestId)) return;
       toast.error(getErrorMessage(error, "Unable to load party settings."));
       setSettingsModal((current) => ({
         ...current,
         isLoading: false,
       }));
     }
-  }, [capabilities.canSettings]);
+  }, [beginSettingsRequest, capabilities.canSettings, isLatestSettingsRequest]);
 
   const submitParty = useCallback(async (payload) => {
     const allowed =
@@ -405,8 +653,14 @@ const PartyPage = () => {
       }
 
       closeFormModal();
-      await loadParties();
+      await loadParties({ force: true });
     } catch (error) {
+      if (formModal.mode === "edit" && getApiStatus(error) === 404) {
+        toast.error("This party no longer exists. The list was refreshed.");
+        closeFormModal();
+        await loadParties({ force: true });
+        return;
+      }
       toast.error(
         getErrorMessage(
           error,
@@ -477,7 +731,7 @@ const PartyPage = () => {
           ? "Party activated successfully"
           : "Party deactivated successfully",
       );
-      await loadParties();
+      await loadParties({ force: true });
     } catch (error) {
       setParties(previousParties);
       toast.error(getErrorMessage(error, "Unable to update party status."));
@@ -530,7 +784,7 @@ const PartyPage = () => {
       await partyService.deleteParty(confirmation.party.id);
       toast.success("Party deleted successfully");
       closeConfirmation();
-      await loadParties();
+      await loadParties({ force: true });
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to delete party."));
       setConfirmation((current) => ({
@@ -546,8 +800,7 @@ const PartyPage = () => {
   ]);
 
   const handleFilterChange = useCallback((patch) => {
-    const shouldResetPage =
-      Object.hasOwn(patch, "Search") || Object.hasOwn(patch, "IsActive");
+    setPage(1);
 
     if (Object.hasOwn(patch, "Search")) {
       setSearchInput(patch.Search);
@@ -561,10 +814,12 @@ const PartyPage = () => {
         ...current,
         ...filterPatch,
       }));
-      if (shouldResetPage) {
-        setPage(1);
-      }
     }
+  }, []);
+
+  const handleGroupChange = useCallback((group) => {
+    setActiveGroup(group);
+    setPage(1);
   }, []);
 
   const clearFilters = useCallback(() => {
@@ -579,14 +834,100 @@ const PartyPage = () => {
     setPage(1);
   }, []);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     if (!capabilities.canExport) {
       toast.error("You don't have permission to export parties.");
       return;
     }
 
-    toast.info("Export is available as a UI action and will connect to reporting.");
-  }, [capabilities.canExport]);
+    const { requestId, signal } = beginExportRequest();
+    const exportParams = buildPartyQueryParams({
+      filters,
+      group: activeGroup,
+      page: undefined,
+      pageSize: undefined,
+      sort: DEFAULT_SORT,
+    });
+    setIsExporting(true);
+
+    try {
+      const response = await partyService.exportParties(exportParams, { signal });
+
+      if (!isLatestExportRequest(requestId)) return;
+      await downloadResponseBlob(response, "parties.csv");
+      toast.success("Parties export downloaded");
+    } catch (error) {
+      if (signal.aborted || !isLatestExportRequest(requestId)) return;
+
+      if (![404, 405, 501].includes(getApiStatus(error))) {
+        toast.error(await getDownloadErrorMessage(error, "Unable to export parties."));
+        return;
+      }
+
+      try {
+        let exportRows;
+
+        if (dataMode === "client") {
+          exportRows = filterPartiesForBusinessView({
+            creditFilter: filters.creditLimit,
+            group: activeGroup,
+            gstFilter: filters.gst,
+            parties,
+          });
+        } else {
+          const fallback = await loadPartyFallbackCollection({
+            fetchPage: async (pageNumber, fallbackPageSize) => {
+              const pageResponse = await partyService.getParties(
+                buildPartyQueryParams({
+                  filters,
+                  group: activeGroup,
+                  page: pageNumber,
+                  pageSize: fallbackPageSize,
+                  sort: DEFAULT_SORT,
+                }),
+                { signal },
+              );
+
+              return pageResponse.data;
+            },
+            maxRecords: PARTY_FALLBACK_MAX_RECORDS,
+            pageSize: PARTY_FALLBACK_PAGE_SIZE,
+            signal,
+          });
+
+          if (fallback.capped) {
+            throw new Error(
+              `Backend Party export is required above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} matching records.`,
+              { cause: error },
+            );
+          }
+          exportRows = fallback.items;
+        }
+
+        if (!isLatestExportRequest(requestId)) return;
+        await downloadCsv({
+          columns: PARTY_EXPORT_COLUMNS,
+          filename: "parties.csv",
+          rows: exportRows,
+        });
+        toast.success(`Exported ${exportRows.length} parties`);
+      } catch (fallbackError) {
+        if (!signal.aborted && isLatestExportRequest(requestId)) {
+          toast.error(getErrorMessage(fallbackError, "Unable to export parties."));
+        }
+      }
+    } finally {
+      if (isLatestExportRequest(requestId)) setIsExporting(false);
+    }
+  }, [
+    activeGroup,
+    beginExportRequest,
+    capabilities.canExport,
+    dataMode,
+    filters,
+    isLatestExportRequest,
+    parties,
+  ]);
 
   const tableActions = useMemo(
     () => ({
@@ -634,7 +975,7 @@ const PartyPage = () => {
           <AppTooltip label="Refresh Parties">
             <button
               type="button"
-              onClick={loadParties}
+              onClick={() => loadParties({ force: true })}
               disabled={isLoading}
               aria-label="Refresh Parties"
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
@@ -663,11 +1004,13 @@ const PartyPage = () => {
               <button
                 type="button"
                 onClick={handleExport}
+                disabled={isExporting}
+                aria-busy={isExporting || undefined}
                 aria-label="Export Parties"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
                 <Download className="h-4 w-4" />
-                Export
+                {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
           )}
@@ -691,42 +1034,56 @@ const PartyPage = () => {
         creditLimitTotal={stats.creditLimitTotal}
         customerCount={stats.customerCount}
         inactive={stats.inactive}
+        metricScope={stats.metricScope}
         supplierCount={stats.supplierCount}
         total={stats.total}
+        totalScope={stats.totalScope}
       />
 
       <PartyGroups
         activeGroup={activeGroup}
         counts={groupCounts}
-        onChange={setActiveGroup}
+        onChange={handleGroupChange}
       />
 
       <PartyFilters
         filters={filterControls}
-        resultCount={displayParties.length}
+        resultCount={totalItems}
         onChange={handleFilterChange}
         onClear={clearFilters}
       />
 
+      {compatibilityNotice && (
+        <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+          {compatibilityNotice}
+        </p>
+      )}
+
       <PartyTable
         actions={tableActions}
-        currentPage={page}
+        currentPage={effectivePage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
         onCreate={capabilities.canCreate ? openCreateModal : undefined}
-        onRetry={loadParties}
+        onRetry={() => loadParties({ force: true })}
         pageSize={pageSize}
         parties={displayParties}
       />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <p>
+          Showing <span className="font-semibold text-slate-900">
+            {displayParties.length ? (effectivePage - 1) * pageSize + 1 : 0}
+          </span>
+          {"–"}
           <span className="font-semibold text-slate-900">
-            {displayParties.length}
+            {displayParties.length
+              ? (effectivePage - 1) * pageSize + displayParties.length
+              : 0}
           </span>{" "}
-          matching parties on this page
-          <span className="text-slate-400"> / {totalItems} total</span>
+          of <span className="font-semibold text-slate-900">{totalItems}</span>{" "}
+          matching parties
         </p>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -745,20 +1102,20 @@ const PartyPage = () => {
             <button
               type="button"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={isLoading || page <= 1}
+              disabled={isLoading || effectivePage <= 1}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
             </button>
             <span className="min-w-20 text-center text-xs font-semibold text-slate-500">
-              Page {page} / {totalPages}
+              Page {effectivePage} / {totalPages}
             </span>
             <button
               type="button"
               onClick={() =>
                 setPage((current) => Math.min(totalPages, current + 1))
               }
-              disabled={isLoading || page >= totalPages}
+              disabled={isLoading || effectivePage >= totalPages}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next

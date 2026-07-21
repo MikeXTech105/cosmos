@@ -113,6 +113,7 @@ const PaymentModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -199,7 +200,7 @@ const PaymentModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             <Check className="h-4 w-4" />
             Record Payment
           </AppButton>

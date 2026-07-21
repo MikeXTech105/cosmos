@@ -75,7 +75,7 @@ const PartyFilters = ({ filters, onChange, onClear, resultCount }) => {
 
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
         <Filter className="h-3.5 w-3.5" />
-        {resultCount} parties match current filters
+        {resultCount} matching parties across all pages
       </div>
     </div>
   );

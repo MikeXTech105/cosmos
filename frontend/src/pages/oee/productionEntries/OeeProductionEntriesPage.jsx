@@ -126,6 +126,7 @@ const QuickCreateModal = ({
 
   return (
     <AppModal
+      isBusy={isSaving}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSaving ? undefined : onClose}
@@ -189,7 +190,7 @@ const QuickCreateModal = ({
           <AppButton variant="secondary" disabled={isSaving} onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSaving}>
+          <AppButton type="submit" isLoading={isSaving} loadingText="Saving…">
             Create
           </AppButton>
         </div>
@@ -266,6 +267,7 @@ const EditEntryModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-3xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -367,7 +369,7 @@ const EditEntryModal = ({
             <AppButton variant="secondary" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </AppButton>
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               Save Changes
             </AppButton>
           </div>
@@ -423,6 +425,7 @@ const HistoryTable = ({
         <table className="w-full min-w-[1100px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               <th className="px-4 py-3 font-semibold">Date</th>
               <th className="px-4 py-3 font-semibold">Machine</th>
               <th className="px-4 py-3 font-semibold">Mould</th>
@@ -436,8 +439,11 @@ const HistoryTable = ({
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry) => (
+            {entries.map((entry, index) => (
               <tr key={getOeeRecordId(entry)} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {(pageNumber - 1) * pageSize + index + 1}
+                </td>
                 <td className="px-4 py-3 text-slate-700">
                   {formatOeeDate(entry.productionDate)}
                 </td>
@@ -478,14 +484,14 @@ const HistoryTable = ({
                   {entry.remarks || "-"}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex items-center justify-end gap-0.5">
                     {actions.canEdit && (
                       <button
                         type="button"
                         aria-label="Edit entry"
                         title="Edit entry"
                         onClick={() => actions.onEdit(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand/30 hover:bg-brand-light hover:text-brand"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
@@ -496,7 +502,7 @@ const HistoryTable = ({
                         aria-label="Delete entry"
                         title="Delete entry"
                         onClick={() => actions.onDelete(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -930,6 +936,7 @@ const OeeProductionEntriesPage = () => {
               <AppButton
                 className="h-10"
                 isLoading={production.bulkSaving}
+                loadingText="Saving…"
                 onClick={saveAll}
               >
                 <Save className="h-4 w-4" />

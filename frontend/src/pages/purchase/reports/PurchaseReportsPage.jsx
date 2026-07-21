@@ -136,6 +136,7 @@ const ReportTable = ({ emptyLabel, payload }) => {
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               {columns.map((column) => (
                 <th key={column} className="px-4 py-3 font-semibold">
                   {humanize(column)}
@@ -146,6 +147,9 @@ const ReportTable = ({ emptyLabel, payload }) => {
           <tbody>
             {rows.map((row, index) => (
               <tr key={index} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {index + 1}
+                </td>
                 {columns.map((column) => (
                   <td key={column} className="px-4 py-3 text-slate-700">
                     {formatCell(column, row[column])}

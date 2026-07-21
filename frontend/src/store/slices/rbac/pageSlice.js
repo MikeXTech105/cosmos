@@ -15,6 +15,9 @@ const initialState = {
   error: null,
   detailError: null,
   selected: null,
+  listRequestId: null,
+  detailRequestId: null,
+  selectedRequestEntityId: null,
   filters: {
     parentPageId: "all",
     search: "",
@@ -148,33 +151,49 @@ const pageSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchRbacPages.pending, (state) => {
+      .addCase(fetchRbacPages.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.listRequestId = action.meta.requestId;
       })
       .addCase(fetchRbacPages.fulfilled, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = normalizePageListPayload(
           action.payload.data,
           action.payload.meta,
         );
+        state.listRequestId = null;
       })
       .addCase(fetchRbacPages.rejected, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
         state.error = action.payload ?? action.error.message;
+        state.listRequestId = null;
       })
-      .addCase(fetchRbacPageById.pending, (state) => {
+      .addCase(fetchRbacPageById.pending, (state, action) => {
         state.detailLoading = true;
         state.detailError = null;
+        state.detailRequestId = action.meta.requestId;
+        state.selectedRequestEntityId = action.meta.arg;
       })
       .addCase(fetchRbacPageById.fulfilled, (state, action) => {
+        if (
+          state.detailRequestId !== action.meta.requestId ||
+          String(state.selectedRequestEntityId) !== String(action.meta.arg)
+        ) {
+          return;
+        }
         state.detailLoading = false;
         state.selected = normalizePage(extractSinglePage(action.payload.data));
+        state.detailRequestId = null;
       })
       .addCase(fetchRbacPageById.rejected, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
         state.detailError = action.payload ?? action.error.message;
+        state.detailRequestId = null;
       })
       .addCase(createRbacPage.fulfilled, (state, action) => {
         state.selected = normalizePage(extractSinglePage(action.payload.data));

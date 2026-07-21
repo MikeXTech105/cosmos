@@ -65,17 +65,19 @@ const PartyStatusBadge = ({ isActive }) => {
   );
 };
 
-const ActionButton = ({ className, icon: Icon, label, onClick }) => {
+const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
+  const buttonClass =
+    tone === "danger"
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <AppTooltip label={label}>
       <button
         type="button"
         onClick={onClick}
         aria-label={label}
-        className={[
-          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30",
-          className,
-        ].join(" ")}
+        className={buttonClass}
       >
         <Icon className="h-4 w-4" />
       </button>
@@ -103,7 +105,6 @@ const PartyActions = ({
           icon={Eye}
           label="View Party"
           onClick={() => onView(party)}
-          className="hover:text-brand"
         />
       )}
 
@@ -112,7 +113,6 @@ const PartyActions = ({
           icon={Pencil}
           label="Edit Party"
           onClick={() => onEdit(party)}
-          className="hover:text-brand"
         />
       )}
 
@@ -122,7 +122,6 @@ const PartyActions = ({
             icon={Ban}
             label="Deactivate Party"
             onClick={() => onDeactivate(party)}
-            className="hover:bg-amber-50 hover:text-amber-700"
           />
         )
       ) : (
@@ -131,7 +130,6 @@ const PartyActions = ({
             icon={CheckCircle2}
             label="Activate Party"
             onClick={() => onActivate(party)}
-            className="hover:bg-emerald-50 hover:text-emerald-700"
           />
         )
       )}
@@ -141,7 +139,7 @@ const PartyActions = ({
           icon={Trash2}
           label="Delete Party"
           onClick={() => onDelete(party)}
-          className="hover:bg-red-50 hover:text-red-700"
+          tone="danger"
         />
       )}
     </div>
@@ -308,7 +306,6 @@ const PartyTable = ({
                     key={heading}
                     className={[
                       "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
-                      heading === "SR No" ? "text-center" : "",
                       heading === "Actions" ? "text-right" : "",
                     ].join(" ")}
                   >
@@ -326,7 +323,7 @@ const PartyTable = ({
                     key={party.id}
                     className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                   >
-                    <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5">

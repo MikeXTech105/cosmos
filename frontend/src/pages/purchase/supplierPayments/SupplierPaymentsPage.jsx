@@ -163,6 +163,7 @@ const PaymentModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-5xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -321,14 +322,16 @@ const PaymentModal = ({
                         />
                       </td>
                       <td className="px-2 py-3 text-right">
-                        <button
-                          type="button"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                          onClick={() => remove(index)}
-                          aria-label="Remove allocation"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-0.5">
+                          <button
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() => remove(index)}
+                            aria-label="Remove allocation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -379,7 +382,7 @@ const PaymentModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Payment
           </AppButton>
         </div>
@@ -523,10 +526,12 @@ const SupplierPaymentsPage = () => {
     );
 
     return {
-      count: state.totalCount,
-      totalPaid: formatCurrency(totalPaid),
+      count: state.summary?.totalCount ?? state.totalCount,
+      totalPaid: formatCurrency(state.summary?.totalPaidAmount ?? totalPaid),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const submitSupplier = useCallback(
     async (payload) => {
@@ -677,12 +682,14 @@ const SupplierPaymentsPage = () => {
           icon={CreditCard}
           label="Total Paid"
           value={stats.totalPaid}
+          scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={CreditCard}
           label="Payments"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
       </div>
@@ -767,6 +774,9 @@ const SupplierPaymentsPage = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
+                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Payment #
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -793,7 +803,7 @@ const SupplierPaymentsPage = () => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={7} className="px-3 py-3">
+                    <td colSpan={8} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -801,15 +811,18 @@ const SupplierPaymentsPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No supplier payments found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((payment) => (
+                state.list.map((payment, index) => (
                   <tr key={payment.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm font-semibold text-slate-900">
                       {payment.paymentNo ?? payment.paymentNumber ?? `PAY-${payment.id}`}
                     </td>
@@ -829,7 +842,7 @@ const SupplierPaymentsPage = () => {
                       {payment.referenceNo || "-"}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
-                      <div className="inline-flex gap-2">
+                      <div className="flex items-center justify-end gap-0.5">
                         {capabilities.canUpdate && (
                           <AppButton
                             variant="secondary"

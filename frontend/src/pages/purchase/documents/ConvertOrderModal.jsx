@@ -57,6 +57,7 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -144,7 +145,7 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Converting…">
             Convert
           </AppButton>
         </div>

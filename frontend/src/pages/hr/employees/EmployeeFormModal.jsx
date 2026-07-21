@@ -100,6 +100,7 @@ const EmployeeFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-5xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -494,7 +495,7 @@ const EmployeeFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Create Employee"}
               </AppButton>
             )}

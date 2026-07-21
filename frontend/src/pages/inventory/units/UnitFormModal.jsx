@@ -6,7 +6,10 @@ import { useForm } from "react-hook-form";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { unitSchema } from "../../../utils/validationSchemas";
+
+const UNIT_FIELDS = ["name", "shortName", "description", "isActive"];
 
 const getDefaultValues = (unit) => ({
   name: unit?.name ?? "",
@@ -29,6 +32,7 @@ const UnitFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(unitSchema),
@@ -42,15 +46,20 @@ const UnitFormModal = ({
   }, [isOpen, reset, unit]);
 
   const submitForm = async (values, saveAndNew = false) => {
-    await onSubmit(
-      {
-        name: values.name.trim(),
-        shortName: values.shortName.trim(),
-        description: values.description?.trim() ?? "",
-        isActive: values.isActive,
-      },
-      saveAndNew,
-    );
+    try {
+      await onSubmit(
+        {
+          name: values.name.trim(),
+          shortName: values.shortName.trim(),
+          description: values.description?.trim() ?? "",
+          isActive: values.isActive,
+        },
+        saveAndNew,
+      );
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: UNIT_FIELDS, setError });
+      return;
+    }
 
     if (saveAndNew) {
       reset(getDefaultValues(null));
@@ -61,6 +70,7 @@ const UnitFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -91,6 +101,11 @@ const UnitFormModal = ({
           className="mt-6 space-y-5"
           onSubmit={handleSubmit((values) => submitForm(values, false))}
         >
+          {errors.root?.server?.message && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors.root.server.message}
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <AppInput
               id="unitName"
@@ -168,7 +183,7 @@ const UnitFormModal = ({
               </AppButton>
             )}
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Save"}
               </AppButton>
             )}

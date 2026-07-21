@@ -5,6 +5,7 @@ import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
+import StatScopeBadge from "../../components/common/StatScopeBadge";
 import { HR_PAGE_SIZE_OPTIONS } from "./hrHelpers";
 import {
   normalizeHrNumberBlurValue,
@@ -86,6 +87,7 @@ export const HrStatCard = ({
   colorClass = "bg-brand-light text-brand",
   icon: Icon,
   label,
+  scope,
   value,
 }) => {
   return (
@@ -101,6 +103,7 @@ export const HrStatCard = ({
             {label}
           </p>
           <p className="mt-0.5 text-xl font-bold text-slate-900">{value}</p>
+          <StatScopeBadge className="mt-1" scope={scope} />
         </div>
       </div>
     </div>
@@ -213,6 +216,7 @@ export const HrConfirmDialog = ({
 }) => {
   return (
     <AppModal
+      isBusy={isLoading}
       isOpen={isOpen}
       maxWidth="max-w-md"
       onClose={isLoading ? undefined : onCancel}
@@ -233,6 +237,7 @@ export const HrConfirmDialog = ({
         <AppButton
           variant="danger"
           isLoading={isLoading}
+          loadingText="Deleting…"
           onClick={onConfirm}
         >
           Delete

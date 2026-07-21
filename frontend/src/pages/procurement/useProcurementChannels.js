@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { salesChannelService } from "../../services/procurement/salesChannelService";
 import { getCollection } from "./procurementHelpers";
-import useLatestRequest from "./useLatestRequest";
+import useLatestRequest from "../../hooks/useLatestRequest";
 
 const useActiveSalesChannels = () => {
   const [state, setState] = useState({

@@ -14,6 +14,7 @@ import {
 import InvoiceActions from "./InvoiceActions";
 
 const columns = [
+  { key: "serialNumber", label: "#" },
   { key: "number", label: "Invoice #" },
   { key: "customer", label: "Customer" },
   { key: "date", label: "Date" },
@@ -101,7 +102,7 @@ const InvoiceTable = ({
                     </td>
                   </tr>
                 ))
-              : invoices.map((invoice) => (
+              : invoices.map((invoice, index) => (
                   <tr
                     key={invoice.id}
                     tabIndex={0}
@@ -114,6 +115,9 @@ const InvoiceTable = ({
                     }}
                     className="cursor-pointer transition-colors hover:bg-slate-50"
                   >
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(pageNumber - 1) * pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3">
                       <div>
                         <p className="truncate text-sm font-semibold text-slate-900">

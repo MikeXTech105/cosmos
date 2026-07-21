@@ -1,10 +1,12 @@
 import { Building2, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   createHrDepartment,
   deleteHrDepartment,
@@ -47,6 +49,12 @@ const DepartmentsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -86,33 +94,46 @@ const DepartmentsPage = () => {
 
   const stats = useMemo(
     () => ({
-      active: departmentsState.list.filter((department) =>
-        getHrBoolean(department.isActive),
-      ).length,
-      inactive: departmentsState.list.filter(
-        (department) => !getHrBoolean(department.isActive),
-      ).length,
-      total: departmentsState.totalCount,
+      active:
+        departmentsState.summary?.activeCount ??
+        departmentsState.list.filter((department) =>
+          getHrBoolean(department.isActive),
+        ).length,
+      inactive:
+        departmentsState.summary?.inactiveCount ??
+        departmentsState.list.filter(
+          (department) => !getHrBoolean(department.isActive),
+        ).length,
+      total:
+        departmentsState.summary?.totalCount ?? departmentsState.totalCount,
+      metricScope: departmentsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [departmentsState.list, departmentsState.totalCount],
+    [departmentsState.list, departmentsState.summary, departmentsState.summaryScope, departmentsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, department) => {
@@ -131,9 +152,14 @@ const DepartmentsPage = () => {
       }
 
       setModal({ entity: department, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchHrDepartmentById(id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchHrDepartmentById(id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: extractHrEntity(response.data, "department"),
           isLoading: false,
@@ -141,13 +167,38 @@ const DepartmentsPage = () => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This department no longer exists. The list was refreshed.");
+          closeModal();
+          await loadDepartments();
+          return;
+        }
         toast.error(
           getHrActionError(error, "Unable to load department details."),
         );
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(getHrRecordId(current.entity, "department")) === String(id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [capabilities.canUpdate, capabilities.canView, dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadDepartments,
+    ],
   );
 
   const submitDepartment = useCallback(
@@ -183,6 +234,12 @@ const DepartmentsPage = () => {
         closeModal();
         await loadDepartments();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This department no longer exists. The list was refreshed.");
+          closeModal();
+          await loadDepartments();
+          return;
+        }
         toast.error(getHrActionError(error, "Unable to save department."));
         throw error;
       }

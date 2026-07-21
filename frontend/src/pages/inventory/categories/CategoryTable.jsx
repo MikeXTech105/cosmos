@@ -62,8 +62,14 @@ const CategoryTable = ({
         <table className="w-full min-w-[760px] table-fixed text-left">
           <thead className="bg-slate-50">
             <tr>
-              {["Name", "Description", "Status", "Created Date", "Actions"].map(
-                (heading) => (
+              {[
+                "#",
+                "Name",
+                "Description",
+                "Status",
+                "Created Date",
+                "Actions",
+              ].map((heading) => (
                   <th
                     key={heading}
                     className={[
@@ -73,24 +79,26 @@ const CategoryTable = ({
                   >
                     {heading}
                   </th>
-                ),
-              )}
+                ))}
             </tr>
           </thead>
           <tbody>
             {isLoading
               ? Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={5} className="px-4 py-3">
+                    <td colSpan={6} className="px-4 py-3">
                       <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
                 ))
-              : categories.map((category) => (
+              : categories.map((category, index) => (
                   <tr
                     key={category.id}
                     className="transition-colors hover:bg-slate-50"
                   >
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(pageNumber - 1) * pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
                       {category.name}
                     </td>

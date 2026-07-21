@@ -15,9 +15,15 @@ import { toast } from "sonner";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import useCapabilities from "../../../hooks/useCapabilities";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 import { roleService } from "../../../services/rbac/roleService";
 import { userService } from "../../../services/rbac/userService";
-import { getApiErrorMessage } from "../../../utils/apiError";
+import { getApiErrorMessage, getApiStatus } from "../../../utils/apiError";
+import { downloadCsv } from "../../../utils/csv";
+import {
+  downloadResponseBlob,
+  getDownloadErrorMessage,
+} from "../../../utils/fileDownload";
 import UserFilters from "./UserFilters";
 import UserModal from "./UserModal";
 import UserStats from "./UserStats";
@@ -30,6 +36,16 @@ const DEFAULT_FILTERS = {
 };
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
+const USER_EXPORT_COLUMNS = [
+  { header: "Full Name", getValue: (user) => user.fullName },
+  { header: "Username", getValue: (user) => user.username },
+  { header: "Email", getValue: (user) => user.email },
+  {
+    header: "Role",
+    getValue: (user) => user.roles.map((role) => role.name).filter(Boolean).join("; "),
+  },
+  { header: "Status", getValue: (user) => (user.isActive ? "Active" : "Inactive") },
+];
 
 const LIST_KEYS = ["items", "users", "roles", "records", "results", "content"];
 
@@ -400,6 +416,7 @@ const Users = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [rolesError, setRolesError] = useState(null);
@@ -415,6 +432,15 @@ const Users = () => {
     type: null,
     user: null,
   });
+  const {
+    beginAbortableRequest: beginExportRequest,
+    isLatestRequest: isLatestExportRequest,
+  } = useLatestRequest();
+  const {
+    beginAbortableRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
 
   const capabilities = useCapabilities({
     actions: [
@@ -534,12 +560,13 @@ const Users = () => {
   }, [users]);
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
     setModalState((current) => ({
       ...current,
       isLoading: false,
       isOpen: false,
     }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreateModal = useCallback(() => {
     if (!capabilities.canCreate || !capabilities.canAssignRole) {
@@ -547,6 +574,7 @@ const Users = () => {
       return;
     }
 
+    cancelDetailRequests();
     loadRoles();
     setModalState({
       isLoading: false,
@@ -554,7 +582,7 @@ const Users = () => {
       mode: "create",
       user: null,
     });
-  }, [capabilities.canAssignRole, capabilities.canCreate, loadRoles]);
+  }, [cancelDetailRequests, capabilities.canAssignRole, capabilities.canCreate, loadRoles]);
 
   const openEditModal = useCallback(async (user) => {
     if (!capabilities.canUpdate || !capabilities.canAssignRole) {
@@ -563,6 +591,7 @@ const Users = () => {
     }
 
     const rolesPromise = loadRoles();
+    const { requestId, signal } = beginDetailRequest();
 
     setModalState({
       isLoading: true,
@@ -573,9 +602,10 @@ const Users = () => {
 
     try {
       const [response, latestRoleOptions] = await Promise.all([
-        userService.getUserById(user.id),
+        userService.getUserById(user.id, { signal }),
         rolesPromise,
       ]);
+      if (!isLatestDetailRequest(requestId)) return;
 
       setModalState({
         isLoading: false,
@@ -588,6 +618,13 @@ const Users = () => {
         ),
       });
     } catch (error) {
+      if (!isLatestDetailRequest(requestId)) return;
+      if (getApiStatus(error) === 404) {
+        toast.error("This user no longer exists. The list was refreshed.");
+        closeModal();
+        await loadUsers();
+        return;
+      }
       toast.error(
         getErrorMessage(error, "Unable to load the latest user details."),
       );
@@ -599,7 +636,11 @@ const Users = () => {
   }, [
     capabilities.canAssignRole,
     capabilities.canUpdate,
+    beginDetailRequest,
+    closeModal,
+    isLatestDetailRequest,
     loadRoles,
+    loadUsers,
     roleOptions,
   ]);
 
@@ -654,14 +695,21 @@ const Users = () => {
       closeModal();
       await Promise.all([loadUsers(), loadRoles()]);
     } catch (error) {
+      if (modalState.mode === "edit" && getApiStatus(error) === 404) {
+        toast.error("This user no longer exists. The list was refreshed.");
+        closeModal();
+        await loadUsers();
+        return;
+      }
       toast.error(
         getErrorMessage(
           error,
           modalState.mode === "edit"
             ? "Unable to update user."
             : "Unable to create user with role.",
-        ),
+          ),
       );
+      throw error;
     }
   }, [
     capabilities.canAssignRole,
@@ -792,14 +840,49 @@ const Users = () => {
     setPage(1);
   }, []);
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     if (!capabilities.canExport) {
       toast.error("You don't have permission to export users.");
       return;
     }
 
-    toast.info("Export is available as a UI action and will connect to reporting.");
-  }, [capabilities.canExport]);
+    const { requestId, signal } = beginExportRequest();
+    const exportParams = {
+      IsActive:
+        filters.status === "all" ? undefined : filters.status === "active",
+      RoleId: filters.roleId === "all" ? undefined : filters.roleId,
+      Search: filters.search.trim() || undefined,
+    };
+    setIsExporting(true);
+
+    try {
+      const response = await userService.exportUsers(exportParams, { signal });
+
+      if (!isLatestExportRequest(requestId)) return;
+      await downloadResponseBlob(response, "users.csv");
+      toast.success("Users export downloaded");
+    } catch (error) {
+      if (signal.aborted || !isLatestExportRequest(requestId)) return;
+      if ([404, 405, 501].includes(getApiStatus(error))) {
+        await downloadCsv({
+          columns: USER_EXPORT_COLUMNS,
+          filename: "users.csv",
+          rows: filteredUsers,
+        });
+        toast.success(`Exported ${filteredUsers.length} users`);
+      } else {
+        toast.error(await getDownloadErrorMessage(error, "Unable to export users."));
+      }
+    } finally {
+      if (isLatestExportRequest(requestId)) setIsExporting(false);
+    }
+  }, [
+    beginExportRequest,
+    capabilities.canExport,
+    filteredUsers,
+    filters,
+    isLatestExportRequest,
+  ]);
 
   const tableActions = useMemo(
     () => ({
@@ -859,11 +942,13 @@ const Users = () => {
               <button
                 type="button"
                 onClick={handleExport}
+                disabled={isExporting}
+                aria-busy={isExporting || undefined}
                 aria-label="Export Users"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
                 <Download className="h-4 w-4" />
-                Export
+                {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
           )}

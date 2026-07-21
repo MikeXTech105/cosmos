@@ -1,12 +1,23 @@
 import { Download, FileSearch, RefreshCw, TrendingUp } from "lucide-react";
-import { createElement, useEffect, useMemo, useRef } from "react";
+import { createElement, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import AppButton from "../../components/common/AppButton";
 import PageHeader from "../../components/common/PageHeader";
 import { getIconComponent } from "../../config/iconMap";
-import { escapeCsvValue } from "../../utils/csv";
+import useLatestRequest from "../../hooks/useLatestRequest";
+import {
+  exportReport,
+  loadReportFallbackRows,
+} from "../../services/reports/reportExportService";
+import { downloadCsv } from "../../utils/csv";
+import { getApiStatus } from "../../utils/apiError";
+import {
+  downloadResponseBlob,
+  getDownloadErrorMessage,
+} from "../../utils/fileDownload";
 import { canPerformAction } from "../../utils/permissionResolver";
 import {
   runReportThunk,
@@ -34,26 +45,6 @@ const toRows = (data) => {
   }
 
   return data ? [data] : [];
-};
-
-const downloadCsv = ({ columns, filename, rows }) => {
-  const headers = columns.map((column) => column.header ?? column.label);
-  const body = rows.map((row) => {
-    return columns
-      .map((column) =>
-        escapeCsvValue(formatCell(getReportValue(row, column.key), column)),
-      )
-      .join(",");
-  });
-  const csv = [headers.map(escapeCsvValue).join(","), ...body].join("\n");
-  const blob = new Blob([`\ufeff${csv}`], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
 };
 
 const getExportColumns = (report) => {
@@ -183,6 +174,11 @@ const ReportView = ({ report }) => {
     [report, searchParams],
   );
   const requestRef = useRef(null);
+  const [exportProgress, setExportProgress] = useState("");
+  const {
+    beginAbortableRequest: beginExportRequest,
+    isLatestRequest: isLatestExportRequest,
+  } = useLatestRequest();
   const reportState = useSelector(
     (state) => state.reports.byReport[report.id],
   );
@@ -242,6 +238,12 @@ const ReportView = ({ report }) => {
     };
   }, [dispatch, isMissingRequiredParam, params, report.id]);
 
+  useEffect(() => {
+    return () => {
+      dispatch(setReportExporting({ reportId: report.id, value: false }));
+    };
+  }, [dispatch, report.id]);
+
   const updateFilters = (patch) => {
     const next = { ...filters, ...patch };
 
@@ -270,7 +272,7 @@ const ReportView = ({ report }) => {
     );
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!canExport || rows.length === 0 || exporting) {
       return;
     }
@@ -278,14 +280,63 @@ const ReportView = ({ report }) => {
     const columns = getExportColumns(report);
     const from = filters.FromDate || "from";
     const to = filters.ToDate || "to";
+    const filename = `${report.id}_${from}_${to}.csv`;
+    const { requestId, signal } = beginExportRequest();
 
     dispatch(setReportExporting({ reportId: report.id, value: true }));
-    downloadCsv({
-      columns,
-      filename: `${report.id}_${from}_${to}.csv`,
-      rows,
-    });
-    dispatch(setReportExporting({ reportId: report.id, value: false }));
+    setExportProgress("Exporting…");
+
+    try {
+      const response = await exportReport(
+        { filters: params, reportId: report.id },
+        { signal },
+      );
+
+      if (!isLatestExportRequest(requestId)) return;
+      await downloadResponseBlob(response, filename);
+      toast.success("Report export downloaded");
+    } catch (error) {
+      if (signal.aborted || !isLatestExportRequest(requestId)) return;
+
+      if (![404, 405, 501].includes(getApiStatus(error))) {
+        toast.error(await getDownloadErrorMessage(error, "Unable to export report."));
+        return;
+      }
+
+      try {
+        const fallbackRows = await loadReportFallbackRows({
+          currentRows: rows,
+          onProgress: ({ completed, total }) => {
+            if (isLatestExportRequest(requestId)) {
+              setExportProgress(
+                `Exporting ${completed.toLocaleString()} of ${total.toLocaleString()}…`,
+              );
+            }
+          },
+          params,
+          report,
+          signal,
+        });
+        const exportColumns = columns.map((column) => ({
+          ...column,
+          getValue: (row) =>
+            formatCell(getReportValue(row, column.key), column),
+        }));
+
+        if (!isLatestExportRequest(requestId)) return;
+        await downloadCsv({ columns: exportColumns, filename, rows: fallbackRows });
+        toast.success(`Exported ${fallbackRows.length.toLocaleString()} report rows`);
+      } catch (fallbackError) {
+        if (!signal.aborted && isLatestExportRequest(requestId)) {
+          toast.error(await getDownloadErrorMessage(fallbackError, "Unable to export report."));
+        }
+      }
+    } finally {
+      if (isLatestExportRequest(requestId)) {
+        setExportProgress("");
+        dispatch(setReportExporting({ reportId: report.id, value: false }));
+      }
+    }
   };
 
   const isLoading =
@@ -326,6 +377,8 @@ const ReportView = ({ report }) => {
               <AppButton
                 className="h-10"
                 disabled={isLoading || rows.length === 0 || exporting}
+                isLoading={exporting}
+                loadingText={exportProgress || "Exporting…"}
                 onClick={handleExport}
               >
                 <Download className="h-4 w-4" />

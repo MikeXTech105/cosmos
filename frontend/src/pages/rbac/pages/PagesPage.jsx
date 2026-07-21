@@ -1,5 +1,5 @@
 import { AlertTriangle, FolderTree, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -8,6 +8,8 @@ import AppModal from "../../../components/common/AppModal";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   clearRbacPageFilters,
   createRbacPage,
@@ -63,6 +65,7 @@ const DeleteConfirmDialog = ({
 
   return (
     <AppModal
+      isBusy={confirmation.isSubmitting}
       isOpen={confirmation.isOpen}
       maxWidth="max-w-md"
       onClose={confirmation.isSubmitting ? undefined : onCancel}
@@ -101,6 +104,7 @@ const DeleteConfirmDialog = ({
           <AppButton
             className="bg-red-600 hover:bg-red-700"
             isLoading={confirmation.isSubmitting}
+            loadingText="Deleting…"
             onClick={onConfirm}
           >
             Delete
@@ -124,6 +128,12 @@ const PagesPage = () => {
   } = useSelector((state) => state.rbacPages);
   const [modalState, setModalState] = useState(initialModalState);
   const [confirmation, setConfirmation] = useState(initialConfirmationState);
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
 
   const capabilities = useCapabilities({
     label: "Pages",
@@ -166,8 +176,11 @@ const PagesPage = () => {
   }, [confirmation.page, list]);
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModalState(initialModalState);
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreateModal = useCallback((initialParentId = "") => {
     if (!capabilities.canCreate) {
@@ -175,6 +188,9 @@ const PagesPage = () => {
       return;
     }
 
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModalState({
       initialParentId,
       isLoading: false,
@@ -182,7 +198,7 @@ const PagesPage = () => {
       mode: "create",
       page: null,
     });
-  }, [capabilities.canCreate]);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openPageModal = useCallback(async (mode, page) => {
     const allowed = mode === "edit" ? capabilities.canUpdate : capabilities.canView;
@@ -199,9 +215,14 @@ const PagesPage = () => {
       mode,
       page,
     });
+    detailPromiseRef.current?.abort?.();
+    const requestId = beginDetailRequest();
+    const detailPromise = dispatch(fetchRbacPageById(page.id));
+    detailPromiseRef.current = detailPromise;
 
     try {
-      const response = await dispatch(fetchRbacPageById(page.id)).unwrap();
+      const response = await detailPromise.unwrap();
+      if (!isLatestDetailRequest(requestId)) return;
       const latestPage = normalizePage(extractSinglePage(response.data));
 
       setModalState({
@@ -212,15 +233,37 @@ const PagesPage = () => {
         page: latestPage ?? page,
       });
     } catch (detailError) {
+      if (!isLatestDetailRequest(requestId)) return;
+      if (getApiStatus(detailError) === 404) {
+        toast.error("This page no longer exists. The list was refreshed.");
+        closeModal();
+        await loadPages();
+        return;
+      }
       toast.error(
         getPageErrorMessage(detailError, "Unable to load page details."),
       );
-      setModalState((current) => ({
-        ...current,
-        isLoading: false,
-      }));
+      setModalState((current) =>
+        current.isOpen &&
+        current.mode === mode &&
+        String(current.page?.id) === String(page.id)
+          ? { ...current, isLoading: false }
+          : current,
+      );
+    } finally {
+      if (detailPromiseRef.current === detailPromise) {
+        detailPromiseRef.current = null;
+      }
     }
-  }, [capabilities.canUpdate, capabilities.canView, dispatch]);
+  }, [
+    beginDetailRequest,
+    capabilities.canUpdate,
+    capabilities.canView,
+    closeModal,
+    dispatch,
+    isLatestDetailRequest,
+    loadPages,
+  ]);
 
   const submitPage = useCallback(async (values) => {
     const allowed =
@@ -250,20 +293,28 @@ const PagesPage = () => {
       closeModal();
       await dispatch(fetchRbacPages()).unwrap();
     } catch (submitError) {
+      if (modalState.mode === "edit" && getApiStatus(submitError) === 404) {
+        toast.error("This page no longer exists. The list was refreshed.");
+        closeModal();
+        await loadPages();
+        return;
+      }
       toast.error(
         getPageErrorMessage(
           submitError,
           modalState.mode === "edit"
             ? "Unable to update page."
             : "Unable to create page.",
-        ),
+          ),
       );
+      throw submitError;
     }
   }, [
     capabilities.canCreate,
     capabilities.canUpdate,
     closeModal,
     dispatch,
+    loadPages,
     modalState.mode,
     modalState.page,
   ]);

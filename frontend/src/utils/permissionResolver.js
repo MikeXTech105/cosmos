@@ -24,7 +24,6 @@ const ACTION_BOOLEAN_KEYS = {
 };
 
 const PRIVILEGED_ROLE_ALIASES = new Set([
-  "owner",
   "super admin",
   "superadmin",
   "system owner",

@@ -1,4 +1,4 @@
-const AUTH_STORAGE_KEYS = {
+export const AUTH_STORAGE_KEYS = {
   accessToken: "accessToken",
   refreshToken: "refreshToken",
   user: "user",
@@ -6,7 +6,8 @@ const AUTH_STORAGE_KEYS = {
   pages: "pages",
 };
 
-const AUTH_STORAGE_OWNER_KEY = "cosmos_auth_storage";
+export const AUTH_STORAGE_OWNER_KEY = "cosmos_auth_storage";
+export const AUTH_STORAGE_EVENT = "cosmos:auth-storage-change";
 const LOCAL_OWNER = "local";
 const SESSION_OWNER = "session";
 
@@ -106,6 +107,20 @@ const clearStorageAuthKeys = (storage) => {
   });
 };
 
+const emitAuthStorageChange = () => {
+  if (
+    typeof window === "undefined" ||
+    typeof window.dispatchEvent !== "function" ||
+    typeof CustomEvent !== "function"
+  ) {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(AUTH_STORAGE_EVENT, { detail: getAuthData() }),
+  );
+};
+
 export const getAuthStorageType = () => {
   return resolveAuthStorage().owner;
 };
@@ -127,6 +142,7 @@ export const saveAuthData = (data, { rememberMe = true } = {}) => {
   storage.setItem(AUTH_STORAGE_KEYS.user, JSON.stringify(data.user ?? null));
   storage.setItem(AUTH_STORAGE_KEYS.roles, JSON.stringify(data.roles ?? []));
   storage.setItem(AUTH_STORAGE_KEYS.pages, JSON.stringify(data.pages ?? []));
+  emitAuthStorageChange();
 };
 
 export const updateAuthTokens = ({ accessToken, refreshToken }) => {
@@ -138,6 +154,22 @@ export const updateAuthTokens = ({ accessToken, refreshToken }) => {
 
   setNullableItem(storage, AUTH_STORAGE_KEYS.accessToken, accessToken);
   setNullableItem(storage, AUTH_STORAGE_KEYS.refreshToken, refreshToken);
+  emitAuthStorageChange();
+};
+
+export const updateStoredAuthUser = (user) => {
+  const { storage } = resolveAuthStorage();
+
+  if (!storage) {
+    return;
+  }
+
+  const currentUser = parseStoredJson(storage, AUTH_STORAGE_KEYS.user, null);
+  storage.setItem(
+    AUTH_STORAGE_KEYS.user,
+    JSON.stringify({ ...(currentUser ?? {}), ...(user ?? {}) }),
+  );
+  emitAuthStorageChange();
 };
 
 export const getAuthData = () => {
@@ -158,4 +190,5 @@ export const clearAuthData = () => {
   clearStorageAuthKeys(storages.local);
   clearStorageAuthKeys(storages.session);
   setOwnerMarker(storages.local, null);
+  emitAuthStorageChange();
 };

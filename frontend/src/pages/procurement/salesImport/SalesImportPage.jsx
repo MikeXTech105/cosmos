@@ -62,7 +62,7 @@ import {
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import useActiveSalesChannels from "../useProcurementChannels";
-import useLatestRequest from "../useLatestRequest";
+import useLatestRequest from "../../../hooks/useLatestRequest";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ["csv", "xlsx"];
@@ -402,6 +402,7 @@ const ImportTab = ({ canCreate, canExport }) => {
               <AppButton
                 className="w-full"
                 isLoading={downloadLoading}
+                loadingText="Downloading…"
                 variant="secondary"
                 onClick={async () => {
                   setDownloadLoading(true);
@@ -554,6 +555,7 @@ const ImportTab = ({ canCreate, canExport }) => {
                 <AppButton
                   disabled={counts.invalid > 0}
                   isLoading={confirmLoading}
+                  loadingText="Confirming…"
                   onClick={() => {
                     if (duplicateFile) {
                       setCorrectionReason("");
@@ -581,6 +583,7 @@ const ImportTab = ({ canCreate, canExport }) => {
       )}
 
       <AppModal
+        isBusy={confirmLoading}
         isOpen={correctionOpen}
         title="Confirm duplicate file as a correction"
         onClose={() => !confirmLoading && setCorrectionOpen(false)}
@@ -614,6 +617,7 @@ const ImportTab = ({ canCreate, canExport }) => {
           </AppButton>
           <AppButton
             isLoading={confirmLoading}
+            loadingText="Confirming…"
             onClick={() => {
               if (!correctionReason.trim()) {
                 setCorrectionError("A correction reason is required.");
@@ -735,6 +739,7 @@ const ManualSaleModal = ({
 
   return (
     <AppModal
+      isBusy={saving}
       isOpen={isOpen}
       maxWidth="max-w-3xl"
       title={record ? "Edit manual sales entry" : "Add manual sales entry"}
@@ -803,7 +808,7 @@ const ManualSaleModal = ({
       </div>
       <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
-        <AppButton isLoading={saving} onClick={submit}>Save manual entry</AppButton>
+        <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>Save manual entry</AppButton>
       </div>
     </AppModal>
   );
@@ -959,7 +964,7 @@ const HistoryTab = ({
           </div>
         </div>
         {loading ? (
-          <ProcurementLoadingRows columns={7} />
+          <ProcurementLoadingRows columns={8} />
         ) : error ? (
           <ProcurementErrorState error={error} onRetry={load} />
         ) : rows.length === 0 ? (
@@ -969,6 +974,7 @@ const HistoryTab = ({
             <table className="min-w-[1000px] w-full text-left">
               <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
                 <tr>
+                  <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Date</th><th className="px-4 py-3">Channel</th>
                   <th className="px-4 py-3">Channel SKU</th><th className="px-4 py-3">Item</th>
                   <th className="px-4 py-3 text-right">Quantity</th><th className="px-4 py-3">Source</th>
@@ -976,19 +982,20 @@ const HistoryTab = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {rows.map((row) => {
+                {rows.map((row, index) => {
                   const manual = isManualSalesRow(row);
                   return (
                     <tr key={getRecordId(row, ["salesHistoryId", "manualSalesId"])} className="hover:bg-slate-50/70">
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td>
                       <td className="px-4 py-3 text-slate-600">{formatProcurementDate(row.salesDate)}</td>
                       <td className="px-4 py-3 text-slate-700">{row.channelCode ?? row.channelName ?? "-"}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{row.channelSku ?? "-"}</td>
                       <td className="px-4 py-3"><p className="font-medium text-slate-800">{row.itemCode ?? "Unmapped"}</p><p className="text-xs text-slate-500">{row.itemName}</p></td>
                       <td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(row.quantity)}</td>
                       <td className="px-4 py-3"><ProcurementPill tone={manual ? "brand" : "slate"}>{manual ? "Manual" : "Imported"}</ProcurementPill></td>
-                      <td className="px-4 py-3"><div className="flex justify-end gap-1">
-                        {manual && canEdit && <AppButton className="h-8 px-2.5" variant="ghost" onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" /></AppButton>}
-                        {manual && canDelete && <AppButton className="h-8 px-2.5 text-red-600" variant="ghost" onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 className="h-4 w-4" /></AppButton>}
+                      <td className="px-4 py-3"><div className="flex items-center justify-end gap-0.5">
+                        {manual && canEdit && <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" /></button>}
+                        {manual && canDelete && <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40" onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 className="h-4 w-4" /></button>}
                       </div></td>
                     </tr>
                   );
@@ -1014,12 +1021,12 @@ const HistoryTab = ({
         onClose={() => setModal({ open: false, record: null })}
         onSaved={load}
       />
-      <AppModal isOpen={Boolean(deleteRecord)} title="Delete manual sales entry?" onClose={() => !deleteLoading && setDeleteRecord(null)}>
+      <AppModal isBusy={deleteLoading} isOpen={Boolean(deleteRecord)} title="Delete manual sales entry?" onClose={() => !deleteLoading && setDeleteRecord(null)}>
         <p className="text-sm leading-6 text-slate-600">This removes only the selected manual entry. Imported batch rows are never deleted here.</p>
         <div className="mt-4"><ProcurementInlineError message={deleteError} title="Entry could not be deleted" /></div>
         <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setDeleteRecord(null)}>Keep entry</AppButton>
-          <AppButton variant="danger" isLoading={deleteLoading} onClick={async () => {
+          <AppButton variant="danger" isLoading={deleteLoading} loadingText="Deleting…" onClick={async () => {
             setDeleteLoading(true);
             try {
               await salesImportService.deleteManual(getRecordId(deleteRecord, ["salesHistoryId", "manualSalesId"]));
@@ -1095,20 +1102,20 @@ const BatchesTab = ({ canEdit }) => {
   return (
     <ProcurementSectionCard title="Import batches" description="Open a batch to inspect its retained source rows and audit status." actions={<AppButton variant="secondary" disabled={loading} onClick={load}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh</AppButton>}>
       {cancelError && <div className="p-4 pb-0"><ProcurementInlineError title="Batch conflict" message={cancelError} /></div>}
-      {loading ? <ProcurementLoadingRows columns={6} /> : error ? <ProcurementErrorState error={error} onRetry={load} /> : rows.length === 0 ? <ProcurementEmptyState title="No import batches yet" /> : (
-        <div className="overflow-x-auto"><table className="min-w-[900px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">File</th><th className="px-4 py-3">Imported</th><th className="px-4 py-3 text-right">Rows</th><th className="px-4 py-3 text-right">Unmapped</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Actions</th></tr></thead>
-        <tbody className="divide-y divide-slate-100 text-sm">{rows.map((batch) => { const cancelled = Number(batch.status) === SalesImportBatchStatus.Cancelled || String(batch.status).toLowerCase().includes("cancel"); return <tr key={getRecordId(batch, ["importBatchId"])}><td className="px-4 py-3"><button type="button" className="font-semibold text-brand hover:underline" onClick={() => void openDetail(batch)}>{batch.fileName ?? batch.originalFileName ?? "Import batch"}</button><p className="text-xs text-slate-500">{batch.batchNumber ?? getRecordId(batch, ["importBatchId"])}</p></td><td className="px-4 py-3 text-slate-600">{formatProcurementDateTime(batch.importedAt ?? batch.createdAt)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.totalRows ?? batch.rowCount)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.unmappedRows ?? batch.unmappedCount, "0")}</td><td className="px-4 py-3"><ProcurementPill tone={cancelled ? "red" : "emerald"}>{cancelled ? "Cancelled" : "Completed"}</ProcurementPill></td><td className="px-4 py-3"><div className="flex justify-end gap-2"><AppButton className="h-8 px-3" variant="secondary" onClick={() => void openDetail(batch)}>View</AppButton>{canEdit && <AppButton className="h-8 px-3" variant="ghost" disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}>Cancel</AppButton>}</div></td></tr>; })}</tbody></table></div>
+      {loading ? <ProcurementLoadingRows columns={7} /> : error ? <ProcurementErrorState error={error} onRetry={load} /> : rows.length === 0 ? <ProcurementEmptyState title="No import batches yet" /> : (
+        <div className="overflow-x-auto"><table className="min-w-[900px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">#</th><th className="px-4 py-3">File</th><th className="px-4 py-3">Imported</th><th className="px-4 py-3 text-right">Rows</th><th className="px-4 py-3 text-right">Unmapped</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Actions</th></tr></thead>
+        <tbody className="divide-y divide-slate-100 text-sm">{rows.map((batch, index) => { const cancelled = Number(batch.status) === SalesImportBatchStatus.Cancelled || String(batch.status).toLowerCase().includes("cancel"); return <tr key={getRecordId(batch, ["importBatchId"])}><td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td><td className="px-4 py-3"><button type="button" className="font-semibold text-brand hover:underline" onClick={() => void openDetail(batch)}>{batch.fileName ?? batch.originalFileName ?? "Import batch"}</button><p className="text-xs text-slate-500">{batch.batchNumber ?? getRecordId(batch, ["importBatchId"])}</p></td><td className="px-4 py-3 text-slate-600">{formatProcurementDateTime(batch.importedAt ?? batch.createdAt)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.totalRows ?? batch.rowCount)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementInteger(batch.unmappedRows ?? batch.unmappedCount, "0")}</td><td className="px-4 py-3"><ProcurementPill tone={cancelled ? "red" : "emerald"}>{cancelled ? "Cancelled" : "Completed"}</ProcurementPill></td><td className="px-4 py-3"><div className="flex items-center justify-end gap-0.5"><AppButton className="h-8 px-3" variant="secondary" onClick={() => void openDetail(batch)}>View</AppButton>{canEdit && <AppButton className="h-8 px-3" variant="ghost" disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}>Cancel</AppButton>}</div></td></tr>; })}</tbody></table></div>
       )}
       <ProcurementPagination disabled={loading} {...pagination} onPageChange={setPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setPage(1); }} />
 
       <AppModal isOpen={Boolean(detail)} maxWidth="max-w-5xl" title="Import batch detail" onClose={() => { setDetail(null); setDetailError(null); }}>
         {detailLoading ? <ProcurementLoadingRows columns={5} rows={4} /> : detailError ? <ProcurementErrorState error={detailError} onRetry={() => void openDetail(detail)} /> : detail && <div className="space-y-4"><div className="grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-4"><div><p className="text-[11px] uppercase text-slate-500">File</p><p className="mt-1 text-sm font-semibold text-slate-800">{detail.fileName ?? detail.originalFileName ?? "-"}</p></div><div><p className="text-[11px] uppercase text-slate-500">Imported</p><p className="mt-1 text-sm text-slate-700">{formatProcurementDateTime(detail.importedAt ?? detail.createdAt)}</p></div><div><p className="text-[11px] uppercase text-slate-500">Rows</p><p className="mt-1 text-sm font-semibold">{formatProcurementInteger(detail.totalRows ?? detail.rowCount)}</p></div><div><p className="text-[11px] uppercase text-slate-500">Status</p><p className="mt-1 text-sm">{detail.statusName ?? detail.status ?? "-"}</p></div></div>{getCollection(detail, ["salesRows", "retainedRows"]).length === 0 ? <ProcurementEmptyState title="No retained batch rows" /> : <div className="max-h-[50vh] overflow-auto rounded-xl border border-slate-200"><table className="min-w-[760px] w-full text-left"><thead className="sticky top-0 bg-slate-50 text-[11px] uppercase text-slate-500"><tr><th className="px-3 py-2">Row</th><th className="px-3 py-2">Date</th><th className="px-3 py-2">Channel SKU</th><th className="px-3 py-2">Item</th><th className="px-3 py-2 text-right">Quantity</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{getCollection(detail, ["salesRows", "retainedRows"]).map((row, index) => <tr key={row.id ?? index}><td className="px-3 py-2">{row.rowNumber ?? index + 1}</td><td className="px-3 py-2">{formatProcurementDate(row.salesDate)}</td><td className="px-3 py-2 font-medium">{row.channelSku}</td><td className="px-3 py-2">{row.itemCode ?? "Unmapped"}</td><td className="px-3 py-2 text-right">{formatProcurementDecimal(row.quantity)}</td></tr>)}</tbody></table></div>}</div>}
       </AppModal>
-      <AppModal isOpen={Boolean(cancelTarget)} title="Cancel import batch" onClose={() => !cancelLoading && setCancelTarget(null)}>
+      <AppModal isBusy={cancelLoading} isOpen={Boolean(cancelTarget)} title="Cancel import batch" onClose={() => !cancelLoading && setCancelTarget(null)}>
         <p className="text-sm leading-6 text-slate-600">Cancelling removes this batch from planning inputs while preserving its audit trail. Provide a reason.</p>
         <label className="mt-4 block text-xs font-semibold text-slate-700" htmlFor="batch-cancel-reason">Cancellation reason <span className="text-red-500">*</span></label><textarea id="batch-cancel-reason" rows={4} value={cancelReason} onChange={(event) => { setCancelReason(event.target.value); setCancelError(""); }} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" />
         <ProcurementInlineError message={cancelError} title="Batch conflict" />
-        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton><AppButton variant="danger" isLoading={cancelLoading} onClick={async () => { if (!cancelReason.trim()) { setCancelError("A cancellation reason is required."); return; } setCancelLoading(true); try { await salesImportService.cancelBatch(getRecordId(cancelTarget, ["importBatchId"]), cancelReason.trim()); toast.success("Import batch cancelled."); setCancelTarget(null); await load(); } catch (cancelRequestError) { const message = getProcurementError(cancelRequestError, "Unable to cancel the batch."); setCancelError(message); if (getApiStatus(cancelRequestError) !== 409) toast.error(message); } finally { setCancelLoading(false); } }}>Cancel batch</AppButton></div>
+        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton><AppButton variant="danger" isLoading={cancelLoading} loadingText="Cancelling…" onClick={async () => { if (!cancelReason.trim()) { setCancelError("A cancellation reason is required."); return; } setCancelLoading(true); try { await salesImportService.cancelBatch(getRecordId(cancelTarget, ["importBatchId"]), cancelReason.trim()); toast.success("Import batch cancelled."); setCancelTarget(null); await load(); } catch (cancelRequestError) { const message = getProcurementError(cancelRequestError, "Unable to cancel the batch."); setCancelError(message); if (getApiStatus(cancelRequestError) !== 409) toast.error(message); } finally { setCancelLoading(false); } }}>Cancel batch</AppButton></div>
       </AppModal>
     </ProcurementSectionCard>
   );

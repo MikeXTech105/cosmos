@@ -50,6 +50,7 @@ const EmployeeBankModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -113,7 +114,7 @@ const EmployeeBankModal = ({
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Bank Details
           </AppButton>
         </div>

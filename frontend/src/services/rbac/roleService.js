@@ -11,8 +11,18 @@ export const roleService = {
     return unwrapResponse(response);
   },
 
-  getRoleById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.ROLE_BY_ID(id));
+  exportRoles: async (params, { signal } = {}) => {
+    return axiosInstance.get(ENDPOINTS.ROLES_EXPORT, {
+      params: normalizeParams(params),
+      responseType: "blob",
+      signal,
+    });
+  },
+
+  getRoleById: async (id, { signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.ROLE_BY_ID(id), {
+      signal,
+    });
 
     return unwrapResponse(response);
   },
