@@ -43,6 +43,12 @@ public abstract class RojmelServiceBase
 
     protected static T Found<T>(T? value, string name) where T : class => value ?? throw new NotFoundException($"{name} was not found or is not available to the current user.");
 
+    protected static T RequireMyWallet<T>(T? value) where T : class => value ?? throw new CosmosException(
+        "Your Rojmel wallet has not been provisioned.",
+        404,
+        new[] { "Ask an administrator to create and link an active user wallet." },
+        data: new { code = "ROJMEL_MY_WALLET_NOT_PROVISIONED" });
+
     protected Task AuditAsync(string table, long id, string action, object? before, object? after, int userId, CancellationToken ct) =>
         _audit.AddAsync(new AuditEntryRequest(table, id.ToString(), action, before is null ? null : AuditSerializer.Serialize(before), after is null ? null : AuditSerializer.Serialize(after), userId), ct);
 
@@ -127,7 +133,7 @@ public sealed class RojmelWalletService : RojmelServiceBase, IRojmelWalletServic
     public async Task<ApiResponse<RojmelWalletDto>> GetMyWalletAsync(CancellationToken ct)
     {
         var scope = await GetScopeAsync(ct);
-        return ApiResponse<RojmelWalletDto>.Success(Found(await Repository.GetMyWalletAsync(scope.UserId, ct), "Primary wallet"));
+        return ApiResponse<RojmelWalletDto>.Success(RequireMyWallet(await Repository.GetMyWalletAsync(scope.UserId, ct)));
     }
 }
 
@@ -171,7 +177,7 @@ public sealed class RojmelTransactionService : RojmelServiceBase, IRojmelTransac
     {
         await ValidationRunner.ValidateAsync(_myTransactionValidator, request, ct);
         var scope = await GetScopeAsync(ct);
-        var wallet = Found(await Repository.GetMyWalletAsync(scope.UserId, ct), "Primary wallet");
+        var wallet = RequireMyWallet(await Repository.GetMyWalletAsync(scope.UserId, ct));
         return await CreateAsync(type, ToWalletRequest(wallet.Id, request), ct, scope);
     }
 

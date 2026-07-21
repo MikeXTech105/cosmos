@@ -7,8 +7,8 @@ namespace Cosmos.Tests.Rojmel;
 public sealed class RojmelControllerPermissionTests
 {
     [Theory]
-    [InlineData(typeof(RojmelMyWalletController), "Income", RojmelPermissions.MyWallet, PermissionAction.View)]
-    [InlineData(typeof(RojmelMyWalletController), "Income", RojmelPermissions.Transactions, PermissionAction.Create)]
+    [InlineData(typeof(RojmelMyWalletController), "Income", RojmelPermissions.MyWallet, PermissionAction.Create)]
+    [InlineData(typeof(RojmelMyWalletController), "Expense", RojmelPermissions.MyWallet, PermissionAction.Create)]
     [InlineData(typeof(RojmelWalletsController), "Create", RojmelPermissions.Wallets, PermissionAction.Create)]
     [InlineData(typeof(RojmelTransactionsController), "List", RojmelPermissions.Transactions, PermissionAction.View)]
     [InlineData(typeof(RojmelTransfersController), "Create", RojmelPermissions.Transfers, PermissionAction.Create)]
@@ -19,5 +19,17 @@ public sealed class RojmelControllerPermissionTests
         var attributes = method.GetCustomAttributes(typeof(RequirePermissionAttribute), inherit: true).Cast<RequirePermissionAttribute>();
 
         Assert.Contains(attributes, attribute => attribute.Arguments is [string actualPage, PermissionAction actualAction] && actualPage == page && actualAction == action);
+    }
+
+    [Theory]
+    [InlineData("Income")]
+    [InlineData("Expense")]
+    public void My_wallet_posts_do_not_require_general_transaction_permission(string methodName)
+    {
+        var method = typeof(RojmelMyWalletController).GetMethods().Single(x => x.Name == methodName);
+        var attributes = method.GetCustomAttributes(typeof(RequirePermissionAttribute), inherit: true).Cast<RequirePermissionAttribute>().ToArray();
+
+        var permission = Assert.Single(attributes);
+        Assert.Equal(new object[] { RojmelPermissions.MyWallet, PermissionAction.Create }, permission.Arguments);
     }
 }

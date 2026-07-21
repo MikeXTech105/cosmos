@@ -1,5 +1,19 @@
 # COSMOS ERP - Project Progress Document
 
+## Rojmel My Wallet 403 Authorization Fix - 2026-07-21
+
+Status: Implemented; focused authorization/service/SQL contract tests added. Target database verification remains a deployment step.
+
+Completed:
+
+- Corrected `POST /api/v1/rojmel/my-wallet/income` and `/expense` to require only `Rojmel.MyWallet/Create`; the general `/api/v1/rojmel/transactions` endpoints retain `Rojmel.Transactions/Create`.
+- Preserved JWT actor scoping and stored-procedure ownership checks. Self-service routes still resolve the caller's linked wallet internally and cannot target another wallet.
+- Added an explicit, safe missing-wallet HTTP 404 response with `ROJMEL_MY_WALLET_NOT_PROVISIONED`, plus structured permission-denial logging without tokens, request bodies, or credentials.
+- Added `backend/database/verify_rojmel_my_wallet_403.sql`, a read-only target-environment report for User 2's status, roles, effective Rojmel permissions, wallet links, duplicate/orphan detection, and required Rojmel objects.
+- Updated frontend and Rojmel module integration guidance, including the fact that personal wallets are administrator-provisioned rather than automatically created by the current migration.
+
+Deployment: deploy the API change, then run `backend/database/verify_rojmel_my_wallet_403.sql` against the selected target database. A user with `Rojmel.MyWallet/View = 1`, `Rojmel.MyWallet/Create = 1`, and `Rojmel.Transactions/Create = 0` must be able to post income/expense to their linked wallet and remain unable to use general transaction creation.
+
 ## Runtime/API Contract Repair - 2026-07-21
 
 Status: Implemented; automated build and test verification is recorded with this change.

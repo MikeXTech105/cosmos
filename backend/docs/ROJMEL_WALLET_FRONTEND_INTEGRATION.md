@@ -6,9 +6,9 @@ Create a Rojmel parent menu with Dashboard, My Wallet, Wallets, Transactions, Tr
 
 | Page permission | Normal-user experience | Administrator experience |
 |---|---|---|
-| `Rojmel.MyWallet` | Own balance, transactions, ledger, income/expense forms. | Optional own-wallet shortcut. |
+| `Rojmel.MyWallet` | `View` opens own balance, transactions, ledger, and categories; `Create` enables own income/expense forms. | Optional own-wallet shortcut. |
 | `Rojmel.Wallets` | Not shown. | Create/edit/deactivate user and external wallets; company wallet is protected. |
-| `Rojmel.Transactions` | Own ledger and own income/expense only. | Any accessible wallet, adjustments, cancellation. |
+| `Rojmel.Transactions` | Not required for My Wallet. Do not show the general transaction workspace unless explicitly granted. | Any accessible wallet, adjustments, cancellation. |
 | `Rojmel.Transfers` | Only explicitly granted own-to-own transfers. | Company/user/external wallet transfers and reversals. |
 | `Rojmel.Dashboard`, `Rojmel.Reports` | Own-wallet scoped results. | Global data when `Rojmel.Admin/View` is granted. |
 
@@ -28,6 +28,8 @@ Actions use the standard `View`, `Create`, `Edit`, `Delete`, `Approve`, and `Exp
 | Reports | `GET /api/v1/rojmel/reports/{wallet-ledger|all-transactions|income-expense|category-wise-expense|transfers|daily-cash-flow|user-wallet-balances}` |
 
 `GET /api/v1/rojmel/my-wallet/categories?categoryType=1|2` provides active income/expense categories.
+
+Self-service posts require `Rojmel.MyWallet/Create`; they do not require `Rojmel.Transactions/Create`. Do not send a wallet ID to either My Wallet post endpoint. If the user has not been linked to an active user wallet, the GET or post responds with HTTP 404 and `data.code = "ROJMEL_MY_WALLET_NOT_PROVISIONED"`; show the setup message rather than treating it as a permissions error.
 
 ## Filters and widgets
 
