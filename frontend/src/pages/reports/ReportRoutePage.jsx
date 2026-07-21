@@ -34,8 +34,9 @@ const ReportNotFound = () => {
   );
 };
 
-const ReportRoutePage = () => {
-  const { group, reportId } = useParams();
+const ReportRoutePage = ({ forcedGroup }) => {
+  const { group: routeGroup, reportId } = useParams();
+  const group = routeGroup ?? forcedGroup;
   const report = findReportByRouteParams(group, reportId);
 
   if (!report) {
@@ -43,7 +44,10 @@ const ReportRoutePage = () => {
   }
 
   return (
-    <PermissionGuard route={report.route} pageName={report.permission}>
+    <PermissionGuard
+      route={report.permissionRoute ?? report.route}
+      pageName={report.permission}
+    >
       <ReportView report={report} />
     </PermissionGuard>
   );

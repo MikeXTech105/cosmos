@@ -21,6 +21,27 @@ const Users = lazy(() => import("../pages/rbac/users/index.js"));
 const Items = lazy(() => import("../pages/inventory/items/index.js"));
 const Categories = lazy(() => import("../pages/inventory/categories/index.js"));
 const Units = lazy(() => import("../pages/inventory/units/index.js"));
+const RojmelDashboard = lazy(
+  () => import("../pages/rojmel/dashboard/index.js"),
+);
+const RojmelMyWallet = lazy(
+  () => import("../pages/rojmel/myWallet/index.js"),
+);
+const RojmelWallets = lazy(
+  () => import("../pages/rojmel/wallets/index.js"),
+);
+const RojmelTransactions = lazy(
+  () => import("../pages/rojmel/transactions/index.js"),
+);
+const RojmelTransfers = lazy(
+  () => import("../pages/rojmel/transfers/index.js"),
+);
+const RojmelReports = lazy(
+  () => import("../pages/rojmel/reports/index.js"),
+);
+const RojmelReportRoute = lazy(
+  () => import("../pages/rojmel/reports/RojmelReportRoutePage.jsx"),
+);
 const HrDashboard = lazy(() => import("../pages/hr/dashboard/index.js"));
 const HrEmployees = lazy(() => import("../pages/hr/employees/index.js"));
 const HrDepartments = lazy(() => import("../pages/hr/departments/index.js"));
@@ -205,6 +226,76 @@ const AppRoutes = () => {
                 <Units />
               </PermissionGuard>
             }
+          />
+          <Route
+            path="/rojmel/dashboard"
+            element={
+              <PermissionGuard
+                route="/rojmel/dashboard"
+                pageName="Rojmel.Dashboard"
+              >
+                <RojmelDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/my-wallet"
+            element={
+              <PermissionGuard
+                route="/rojmel/my-wallet"
+                pageName="Rojmel.MyWallet"
+              >
+                <RojmelMyWallet />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/wallets"
+            element={
+              <PermissionGuard
+                route="/rojmel/wallets"
+                pageName="Rojmel.Wallets"
+              >
+                <RojmelWallets />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/transactions"
+            element={
+              <PermissionGuard
+                route="/rojmel/transactions"
+                pageName="Rojmel.Transactions"
+              >
+                <RojmelTransactions />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/transfers"
+            element={
+              <PermissionGuard
+                route="/rojmel/transfers"
+                pageName="Rojmel.Transfers"
+              >
+                <RojmelTransfers />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/reports"
+            element={
+              <PermissionGuard
+                route="/rojmel/reports"
+                pageName="Rojmel.Reports"
+              >
+                <RojmelReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rojmel/reports/:reportId"
+            element={<RojmelReportRoute />}
           />
           <Route
             path="/hr/dashboard"

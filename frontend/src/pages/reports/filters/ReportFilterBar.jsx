@@ -10,6 +10,10 @@ import { itemService } from "../../../services/inventory/itemService";
 import { unitService } from "../../../services/inventory/unitService";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
 import { partyService } from "../../party/partyService";
+import { myWalletService } from "../../../services/rojmel/myWalletService";
+import { walletService } from "../../../services/rojmel/walletService";
+import { RojmelCategoryType } from "../../../constants/rojmelEnums";
+import useRojmelCapabilities from "../../rojmel/useRojmelCapabilities";
 import {
   DATE_PRESETS,
   filterRegistry,
@@ -71,6 +75,12 @@ const getUnitOption = (unit) => {
   );
 };
 
+const getWalletOption = (wallet) =>
+  compactOption(
+    wallet?.id ?? wallet?.walletId,
+    [wallet?.walletName, wallet?.walletCode].filter(Boolean).join(" · "),
+  );
+
 const trimLeadingZeroes = (value) => {
   return String(value).replace(/^0+(?=\d)/, "");
 };
@@ -106,6 +116,16 @@ const lookupRequestMap = {
       PageNumber: 1,
       PageSize: 200,
     }),
+  rojmelWallets: () =>
+    walletService.getWallets({
+      IsActive: true,
+      PageNumber: 1,
+      PageSize: 200,
+      SortBy: "walletName",
+      SortDirection: "asc",
+    }),
+  rojmelCategories: () =>
+    myWalletService.getCategories(RojmelCategoryType.Both),
 };
 
 const getNeededLookups = (report) => {
@@ -122,6 +142,10 @@ const getNeededLookups = (report) => {
       needs.add("units");
     } else if (config.key === "category") {
       needs.add(config.source === "expense" ? "expenseCategories" : "categories");
+    } else if (config.key === "rojmelWallet") {
+      needs.add("rojmelWallets");
+    } else if (config.key === "rojmelCategory") {
+      needs.add("rojmelCategories");
     }
   });
 
@@ -136,16 +160,29 @@ const ReportFilterBar = ({
   report,
   resultCount = 0,
 }) => {
+  const rojmelCapabilities = useRojmelCapabilities({
+    label: "Rojmel.Reports",
+    resource: "rojmel.reports",
+    route: "/rojmel/reports",
+  });
   const [lookups, setLookups] = useState({
     categories: [],
     expenseCategories: [],
     items: [],
     parties: [],
     units: [],
+    rojmelCategories: [],
+    rojmelWallets: [],
   });
   const [loadingLookups, setLoadingLookups] = useState({});
   const [loadedLookups, setLoadedLookups] = useState({});
-  const neededLookups = useMemo(() => getNeededLookups(report), [report]);
+  const neededLookups = useMemo(
+    () =>
+      getNeededLookups(report).filter(
+        (key) => key !== "rojmelWallets" || rojmelCapabilities.isAdmin,
+      ),
+    [report, rojmelCapabilities.isAdmin],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -170,6 +207,8 @@ const ReportFilterBar = ({
                 ? getItemOption
                 : key === "units"
                   ? getUnitOption
+                  : key === "rojmelWallets"
+                    ? getWalletOption
                   : getCategoryOption;
           const options = extractList(response).map(mapper).filter(Boolean);
 
@@ -361,6 +400,52 @@ const ReportFilterBar = ({
       );
     }
 
+    if (config.key === "rojmelWallet") {
+      if (!rojmelCapabilities.isAdmin) return null;
+
+      return (
+        <AppSelect
+          key="WalletId"
+          value={filters.WalletId ?? "all"}
+          onChange={(value) => onChange({ PageNumber: 1, WalletId: value })}
+          options={withAll("All wallets", lookups.rojmelWallets)}
+          className="min-w-[190px]"
+          disabled={disabled || loadingLookups.rojmelWallets}
+          aria-label="Filter by wallet"
+        />
+      );
+    }
+
+    if (config.key === "rojmelCategory") {
+      return (
+        <AppSelect
+          key="RojmelCategoryId"
+          value={filters.CategoryId ?? "all"}
+          onChange={(value) => onChange({ CategoryId: value, PageNumber: 1 })}
+          options={withAll("All categories", lookups.rojmelCategories)}
+          className="min-w-[180px]"
+          disabled={disabled || loadingLookups.rojmelCategories}
+          aria-label="Filter by Rojmel category"
+        />
+      );
+    }
+
+    if (
+      config.key === "rojmelTransactionType" ||
+      config.key === "rojmelStatus"
+    ) {
+      return (
+        <AppSelect
+          key={param}
+          value={filters[param] ?? "all"}
+          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
+          options={withAll(`All ${definition.label.toLowerCase()}`, definition.options)}
+          className="min-w-[170px]"
+          aria-label={`Filter by ${definition.label.toLowerCase()}`}
+        />
+      );
+    }
+
     if (config.key === "asOfDate") {
       return (
         <div key="AsOfDate" className="min-w-[150px]">
@@ -501,6 +586,11 @@ const ReportFilterBar = ({
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
         <Filter className="h-3.5 w-3.5" />
         {resultCount} rows on this page
+        {report.group === "rojmel" && (
+          <span className="ml-auto rounded-full bg-brand-light px-2.5 py-1 font-semibold text-brand">
+            {rojmelCapabilities.isAdmin ? "All wallets" : "Your wallet"}
+          </span>
+        )}
       </div>
     </div>
   );

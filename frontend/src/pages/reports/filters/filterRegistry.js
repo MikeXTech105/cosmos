@@ -2,11 +2,23 @@ import {
   REPORT_PAYMENT_STATUS_OPTIONS,
   REPORT_STATUS_OPTIONS,
 } from "../../../constants/reportEnums";
+import {
+  ROJMEL_TRANSACTION_STATUS_LABELS,
+  ROJMEL_TRANSACTION_TYPE_LABELS,
+} from "../../../constants/rojmelEnums";
 
 export const REPORT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 export const DEFAULT_REPORT_PAGE_SIZE = 20;
 export const MAX_REPORT_PAGE_SIZE = 200;
 export const REPORT_TOP_OPTIONS = [5, 10, 20, 50];
+
+export const REPORT_ROJMEL_TRANSACTION_TYPE_OPTIONS = Object.entries(
+  ROJMEL_TRANSACTION_TYPE_LABELS,
+).map(([value, label]) => ({ label, value: Number(value) }));
+
+export const REPORT_ROJMEL_STATUS_OPTIONS = Object.entries(
+  ROJMEL_TRANSACTION_STATUS_LABELS,
+).map(([value, label]) => ({ label, value: Number(value) }));
 
 export const REPORT_INVENTORY_MOVEMENT_TYPE_OPTIONS = [
   { label: "In", value: "In" },
@@ -137,6 +149,24 @@ export const filterRegistry = {
   party: {
     label: "Party",
     param: "PartyId",
+  },
+  rojmelWallet: {
+    label: "Wallet",
+    param: "WalletId",
+  },
+  rojmelCategory: {
+    label: "Category",
+    param: "CategoryId",
+  },
+  rojmelTransactionType: {
+    label: "Transaction type",
+    options: REPORT_ROJMEL_TRANSACTION_TYPE_OPTIONS,
+    param: "TransactionType",
+  },
+  rojmelStatus: {
+    label: "Status",
+    options: REPORT_ROJMEL_STATUS_OPTIONS,
+    param: "Status",
   },
   paymentStatus: {
     options: REPORT_PAYMENT_STATUS_OPTIONS,
