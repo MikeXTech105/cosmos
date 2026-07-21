@@ -1,3 +1,4 @@
+using Cosmos.API.Middleware;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Domain.Security;
 using Cosmos.Shared.Responses;
@@ -11,12 +12,14 @@ public sealed class RequirePermissionFilter : IAsyncAuthorizationFilter
     private readonly string _pageName;
     private readonly PermissionAction _action;
     private readonly IPermissionService _permissionService;
+    private readonly ILogger<RequirePermissionFilter> _logger;
 
-    public RequirePermissionFilter(string pageName, PermissionAction action, IPermissionService permissionService)
+    public RequirePermissionFilter(string pageName, PermissionAction action, IPermissionService permissionService, ILogger<RequirePermissionFilter> logger)
     {
         _pageName = pageName;
         _action = action;
         _permissionService = permissionService;
+        _logger = logger;
     }
 
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -37,15 +40,25 @@ public sealed class RequirePermissionFilter : IAsyncAuthorizationFilter
         var allowed = await _permissionService.UserHasPermissionAsync(userId, _pageName, _action, context.HttpContext.RequestAborted);
         if (!allowed)
         {
+            _logger.LogWarning(
+                "Permission denied. CorrelationId: {CorrelationId}; UserId: {UserId}; Method: {Method}; Path: {Path}; Page: {Page}; Action: {Action}",
+                GetCorrelationId(context),
+                userId,
+                context.HttpContext.Request.Method,
+                context.HttpContext.Request.Path,
+                _pageName,
+                _action);
             context.Result = Failure(context, StatusCodes.Status403Forbidden, "Forbidden");
         }
     }
 
-    private static ObjectResult Failure(AuthorizationFilterContext context, int statusCode, string message)
-    {
-        var correlationId = context.HttpContext.Items.TryGetValue("X-Correlation-Id", out var value)
+    private static string? GetCorrelationId(AuthorizationFilterContext context) =>
+        context.HttpContext.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value)
             ? value?.ToString()
             : null;
-        return new ObjectResult(ApiResponse.Failure(message, new[] { message }, correlationId)) { StatusCode = statusCode };
+
+    private static ObjectResult Failure(AuthorizationFilterContext context, int statusCode, string message)
+    {
+        return new ObjectResult(ApiResponse.Failure(message, new[] { message }, GetCorrelationId(context))) { StatusCode = statusCode };
     }
 }

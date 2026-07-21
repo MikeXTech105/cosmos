@@ -13,6 +13,8 @@ This folder contains the clean SQL Server deployment package for the current Dap
 7. `verify_runtime_api_contracts.sql` - read-only pre-deployment verification for the Party list and purchase-bill summary contracts.
 8. `migrations/20260716_system_owner.sql` - upgrades an existing security schema with the protected System Owner flags, constraints, procedures, and guards.
 9. `verify_system_owner.sql` - verifies owner uniqueness, linkage, protected-role independence, indexes, and bootstrap objects after first API startup.
+10. `migrations/20260720_rojmel_wallet_module.sql` - adds the Rojmel wallet ledger schema, permissions, procedures, and company-wallet seed.
+11. `verify_rojmel_my_wallet_403.sql` - read-only verification for the My Wallet permission mapping, User 2's linked wallet, duplicate/orphan checks, and required Rojmel objects.
 
 ## SSMS Run Order
 
@@ -34,6 +36,10 @@ For an existing server that is at the pre-fix API/database level, stop or drain 
 4. `verify_runtime_api_contracts.sql` and require it to complete without a `THROW` error.
 
 The verification script is read-only. It validates the five-parameter `sp_PurchaseBill_GetListSummary` signature, describes and validates the sixteen-column Party list result contract, and reports procedure definition hashes and any EF migration history if such a table exists. Run it as a required deployment gate before the upgraded API receives traffic.
+
+## Rojmel My Wallet 403 Deployment
+
+For the self-service My Wallet authorization fix, no data migration is needed when `Rojmel.MyWallet/Create` is already granted to the intended role. Apply `migrations/20260720_rojmel_wallet_module.sql` first if Rojmel is not installed, deploy the API, then run `verify_rojmel_my_wallet_403.sql` against staging/production before enabling traffic. The verification script is read-only and reports whether User 2 has the expected effective My Wallet permission and exactly one active linked user wallet. See `../docs/ROJMEL_MY_WALLET_403_FIX.md` for the role matrix and remediation steps.
 
 ## Staging
 
