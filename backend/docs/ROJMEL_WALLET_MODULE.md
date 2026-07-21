@@ -7,7 +7,7 @@ Rojmel is the cash-wallet ledger for operational cash movements. It is separate 
 ## Wallets and entries
 
 - `Company`: exactly one protected master company wallet, seeded by the migration.
-- `User`: a wallet linked to a COSMOS login user. Phase 1 permits one active default wallet per user.
+- `User`: a wallet linked to a COSMOS login user. Operationally, every My Wallet-enabled user must have exactly one active user wallet; the migration enforces one active default wallet and the deployment verification script reports additional active user-wallet duplicates.
 - `External`, `PettyCash`, and `BankCash`: administrator-managed wallets with no login-user link.
 - `Income` and `Expense`: affect the wallet balance and income/expense reporting.
 - `TransferIn` and `TransferOut`: linked balance movements only; they never contribute to income or expense totals.
@@ -19,11 +19,11 @@ Negative balances are blocked. Posted transactions and transfers are never physi
 
 Every endpoint uses a page/action `RequirePermission` check. Service calls additionally evaluate `Rojmel.Admin/View`; without it, SQL procedures accept only wallets whose `LinkedUserId` equals the authenticated user ID. The SQL procedures receive both the actor ID and all-wallet flag, so query-string filters cannot bypass ownership.
 
-Normal users can view their primary wallet and its ledger, and may create own-wallet income/expense entries when granted `Rojmel.Transactions/Create`. Transfers require `Rojmel.Transfers/Create`; without all-wallet access both source and destination must belong to the current user. Wallet creation, adjustment, status changes, and cancellation are administrator operations.
+Normal users can view their primary wallet and its ledger with `Rojmel.MyWallet/View`, and may create own-wallet income/expense entries with `Rojmel.MyWallet/Create`. The self-service endpoints do not require `Rojmel.Transactions/Create`; that permission remains for the general transaction workspace. Transfers require `Rojmel.Transfers/Create`; without all-wallet access both source and destination must belong to the current user. Wallet creation, adjustment, status changes, and cancellation are administrator operations.
 
 ## Database
 
-Migration: `backend/database/migrations/20260720_rojmel_wallet_module.sql`.
+Migration: `backend/database/migrations/20260720_rojmel_wallet_module.sql`. The migration automatically seeds the company wallet only. An administrator must create and link each active user wallet before granting My Wallet access. Use `backend/database/verify_rojmel_my_wallet_403.sql` to report missing, duplicate, and orphaned wallet links before deployment.
 
 Tables: `Wallets`, `WalletCategories`, `WalletTransactions`, and `WalletTransfers`. The migration provides filtered unique indexes for wallet code, the single company wallet, and each active user’s default wallet. Transaction and transfer procedures use `UPDLOCK, HOLDLOCK`, explicit transactions, and consistent wallet lock ordering for balance-changing transfers.
 

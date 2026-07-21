@@ -39,14 +39,12 @@ public sealed class RojmelMyWalletController(IRojmelWalletService wallets, IRojm
     public async Task<IActionResult> Categories([FromQuery] WalletCategoryType? categoryType, CancellationToken ct) => FromResponse(await wallets.GetCategoriesAsync(categoryType, ct));
 
     [HttpPost("income")]
-    [RequirePermission(RojmelPermissions.MyWallet, PermissionAction.View)]
-    [RequirePermission(RojmelPermissions.Transactions, PermissionAction.Create)]
+    [RequirePermission(RojmelPermissions.MyWallet, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<RojmelTransactionDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Income([FromBody] CreateMyWalletTransactionRequest request, CancellationToken ct) => FromResponse(await transactions.CreateMyIncomeAsync(request, ct), StatusCodes.Status201Created);
 
     [HttpPost("expense")]
-    [RequirePermission(RojmelPermissions.MyWallet, PermissionAction.View)]
-    [RequirePermission(RojmelPermissions.Transactions, PermissionAction.Create)]
+    [RequirePermission(RojmelPermissions.MyWallet, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<RojmelTransactionDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Expense([FromBody] CreateMyWalletTransactionRequest request, CancellationToken ct) => FromResponse(await transactions.CreateMyExpenseAsync(request, ct), StatusCodes.Status201Created);
 }
