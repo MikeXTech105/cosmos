@@ -41,8 +41,9 @@ const ReportCard = ({ report }) => {
   );
 };
 
-const ReportsHome = () => {
-  const { group } = useParams();
+const ReportsHome = ({ forcedGroup }) => {
+  const { group: routeGroup } = useParams();
+  const group = routeGroup ?? forcedGroup;
   const pages = useSelector((state) => state.auth.pages ?? []);
   const roles = useSelector((state) => state.auth.roles);
   const user = useSelector((state) => state.auth.user);

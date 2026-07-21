@@ -366,6 +366,56 @@ export const ENDPOINTS = {
   OEE_REPORT_DOWNTIME: "/api/v1/oee/reports/downtime",
 
   OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
+
+  // --- Rojmel (Daily Cash Book) ---
+  // My Wallet (current user)
+  ROJMEL_MY_WALLET: "/api/v1/rojmel/my-wallet",
+  ROJMEL_MY_WALLET_TRANSACTIONS: "/api/v1/rojmel/my-wallet/transactions",
+  ROJMEL_MY_WALLET_LEDGER: "/api/v1/rojmel/my-wallet/ledger",
+  ROJMEL_MY_WALLET_INCOME: "/api/v1/rojmel/my-wallet/income",
+  ROJMEL_MY_WALLET_EXPENSE: "/api/v1/rojmel/my-wallet/expense",
+  ROJMEL_MY_WALLET_CATEGORIES: "/api/v1/rojmel/my-wallet/categories",
+
+  // Wallets (admin)
+  ROJMEL_WALLETS: "/api/v1/rojmel/wallets",
+  ROJMEL_WALLET_BY_ID: (id) => `/api/v1/rojmel/wallets/${id}`,
+  ROJMEL_WALLET_BALANCE: (id) => `/api/v1/rojmel/wallets/${id}/balance`,
+  ROJMEL_WALLET_STATUS: (id) => `/api/v1/rojmel/wallets/${id}/status`,
+
+  // Transactions / ledger
+  ROJMEL_TRANSACTIONS: "/api/v1/rojmel/transactions",
+  ROJMEL_TRANSACTION_BY_ID: (id) => `/api/v1/rojmel/transactions/${id}`,
+  ROJMEL_TRANSACTION_INCOME: "/api/v1/rojmel/transactions/income",
+  ROJMEL_TRANSACTION_EXPENSE: "/api/v1/rojmel/transactions/expense",
+  ROJMEL_TRANSACTION_ADJUSTMENT: "/api/v1/rojmel/transactions/adjustment",
+  ROJMEL_TRANSACTION_CANCEL: (id) =>
+    `/api/v1/rojmel/transactions/${id}/cancel`,
+
+  // Transfers
+  ROJMEL_TRANSFERS: "/api/v1/rojmel/transfers",
+  ROJMEL_TRANSFER_BY_ID: (id) => `/api/v1/rojmel/transfers/${id}`,
+  ROJMEL_TRANSFER_CANCEL: (id) => `/api/v1/rojmel/transfers/${id}/cancel`,
+
+  // Dashboard
+  ROJMEL_DASHBOARD_SUMMARY: "/api/v1/rojmel/dashboard/summary",
+  ROJMEL_DASHBOARD_WALLET_BALANCES:
+    "/api/v1/rojmel/dashboard/wallet-balances",
+  ROJMEL_DASHBOARD_RECENT:
+    "/api/v1/rojmel/dashboard/recent-transactions",
+
+  // Reports
+  ROJMEL_REPORT_WALLET_LEDGER: "/api/v1/rojmel/reports/wallet-ledger",
+  ROJMEL_REPORT_ALL_TRANSACTIONS:
+    "/api/v1/rojmel/reports/all-transactions",
+  ROJMEL_REPORT_INCOME_EXPENSE:
+    "/api/v1/rojmel/reports/income-expense",
+  ROJMEL_REPORT_CATEGORY_EXPENSE:
+    "/api/v1/rojmel/reports/category-wise-expense",
+  ROJMEL_REPORT_TRANSFERS: "/api/v1/rojmel/reports/transfers",
+  ROJMEL_REPORT_DAILY_CASH_FLOW:
+    "/api/v1/rojmel/reports/daily-cash-flow",
+  ROJMEL_REPORT_USER_WALLET_BALANCES:
+    "/api/v1/rojmel/reports/user-wallet-balances",
 };
 
 const PARTY_REPORTS = {

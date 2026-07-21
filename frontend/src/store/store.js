@@ -31,6 +31,11 @@ import purchaseReturnReducer from "./slices/purchase/purchaseReturnSlice";
 import partyGstReducer from "./slices/party/gstSlice";
 import rbacPageReducer from "./slices/rbac/pageSlice";
 import reportsReducer from "./slices/reports/reportsSlice";
+import myRojmelWalletReducer from "./slices/rojmel/myWalletSlice";
+import rojmelDashboardReducer from "./slices/rojmel/rojmelDashboardSlice";
+import rojmelTransactionReducer from "./slices/rojmel/transactionSlice";
+import rojmelTransferReducer from "./slices/rojmel/transferSlice";
+import rojmelWalletReducer from "./slices/rojmel/walletSlice";
 import salesInvoiceReducer from "./slices/sales/invoiceSlice";
 import sidebarReducer from "./slices/sidebarSlice";
 import supplierPaymentReducer from "./slices/purchase/supplierPaymentSlice";
@@ -70,6 +75,11 @@ export const store = configureStore({
     purchaseReturns: purchaseReturnReducer,
     rbacPages: rbacPageReducer,
     reports: reportsReducer,
+    myRojmelWallet: myRojmelWalletReducer,
+    rojmelDashboard: rojmelDashboardReducer,
+    rojmelTransactions: rojmelTransactionReducer,
+    rojmelTransfers: rojmelTransferReducer,
+    rojmelWallets: rojmelWalletReducer,
     salesInvoices: salesInvoiceReducer,
     sidebar: sidebarReducer,
     supplierPayments: supplierPaymentReducer,
