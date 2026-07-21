@@ -11,7 +11,7 @@ export const canViewReport = ({ pages = [], report, roles = [], user = null }) =
     roles,
     target: {
       label: report.permission,
-      route: report.route,
+      route: report.permissionRoute ?? report.route,
     },
     user,
   });

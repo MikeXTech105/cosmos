@@ -3,6 +3,7 @@ import { inventoryReportsService } from "../../services/reports/inventoryReports
 import { partyReportsService } from "../../services/reports/partyReportsService";
 import { purchaseReportsService } from "../../services/reports/purchaseReportsService";
 import { salesReportsService } from "../../services/reports/salesReportsService";
+import { rojmelReportService } from "../../services/rojmel/reportService";
 import {
   expenseByCategoryColumns,
   expenseByPartyColumns,
@@ -43,6 +44,14 @@ import {
   salesReceivableColumns,
   salesTaxSummaryColumns,
 } from "./columns/salesColumns";
+import {
+  rojmelAllTransactionColumns,
+  rojmelCategoryExpenseColumns,
+  rojmelDailyCashFlowColumns,
+  rojmelTransferColumns,
+  rojmelUserWalletBalanceColumns,
+  rojmelWalletLedgerColumns,
+} from "./columns/rojmelColumns";
 
 export const reportGroups = [
   {
@@ -80,6 +89,13 @@ export const reportGroups = [
     label: "Expense",
     route: "/reports/expense",
   },
+  {
+    description: "Cash books, wallet balances, transfers and daily cash flow.",
+    icon: "wallet",
+    id: "rojmel",
+    label: "Rojmel",
+    route: "/rojmel/reports",
+  },
 ];
 
 const dateRange = "dateRange";
@@ -114,6 +130,10 @@ const status = (statusType) => ({
   statusType,
 });
 const paymentStatus = "paymentStatus";
+const rojmelWallet = "rojmelWallet";
+const rojmelCategory = "rojmelCategory";
+const rojmelTransactionType = "rojmelTransactionType";
+const rojmelStatus = "rojmelStatus";
 
 const salesKpis = [
   { format: "number", key: "totalInvoices", label: "Invoices" },
@@ -776,6 +796,130 @@ export const reportRegistry = [
     route: "/reports/expense/monthly-summary",
     slug: "monthly-summary",
     title: "Monthly Expense Summary",
+  },
+  {
+    columns: rojmelWalletLedgerColumns,
+    defaultSort: { by: "transactionDate", dir: "desc" },
+    description: "Running balance ledger for an accessible wallet and period.",
+    exportable: true,
+    fetcher: rojmelReportService.getWalletLedger,
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelTransactionType, rojmelStatus, search],
+    group: "rojmel",
+    icon: "ledger",
+    id: "rojmel-wallet-ledger",
+    kind: "table",
+    paginated: true,
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/wallet-ledger",
+    slug: "wallet-ledger",
+    title: "Wallet Ledger",
+  },
+  {
+    columns: rojmelAllTransactionColumns,
+    defaultSort: { by: "transactionDate", dir: "desc" },
+    description: "Income, expense, transfers and adjustments with clear type labels.",
+    exportable: true,
+    fetcher: rojmelReportService.getAllTransactions,
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelTransactionType, rojmelStatus, search],
+    group: "rojmel",
+    icon: "receipt",
+    id: "rojmel-all-transactions",
+    kind: "table",
+    paginated: true,
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/all-transactions",
+    slug: "all-transactions",
+    title: "All Transactions",
+  },
+  {
+    description: "Income, expense and net result with all non-P&L movements excluded.",
+    exportable: true,
+    fetcher: rojmelReportService.getIncomeExpense,
+    filters: [dateRange, rojmelWallet],
+    group: "rojmel",
+    icon: "chartBar",
+    id: "rojmel-income-expense",
+    kind: "summary",
+    kpis: [
+      { format: "currency", key: "income", label: "Income" },
+      { format: "currency", key: "expense", label: "Expense" },
+      { format: "currency", key: "netIncomeExpense", label: "Net" },
+      { format: "currency", key: "transfersExcluded", label: "Transfers Excluded" },
+      { format: "currency", key: "adjustmentsExcluded", label: "Adjustments Excluded" },
+      { format: "currency", key: "openingBalancesExcluded", label: "Openings Excluded" },
+    ],
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/income-expense",
+    slug: "income-expense",
+    title: "Income vs Expense",
+  },
+  {
+    columns: rojmelCategoryExpenseColumns,
+    description: "Expense totals and counts grouped by cash-book category.",
+    exportable: true,
+    fetcher: rojmelReportService.getCategoryExpense,
+    filters: [dateRange, rojmelWallet, rojmelCategory],
+    group: "rojmel",
+    icon: "chartPie",
+    id: "rojmel-category-expense",
+    kind: "table",
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/category-expense",
+    slug: "category-expense",
+    title: "Category-wise Expense",
+  },
+  {
+    columns: rojmelTransferColumns,
+    description: "Neutral wallet-to-wallet movements and reversal status.",
+    exportable: true,
+    fetcher: rojmelReportService.getTransfers,
+    filters: [dateRange, rojmelWallet, rojmelStatus, search],
+    group: "rojmel",
+    icon: "transfer",
+    id: "rojmel-transfers",
+    kind: "table",
+    paginated: true,
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/transfers",
+    slug: "transfers",
+    title: "Transfers",
+  },
+  {
+    columns: rojmelDailyCashFlowColumns,
+    description: "Daily income, expense and net cash result for the period.",
+    exportable: true,
+    fetcher: rojmelReportService.getDailyCashFlow,
+    filters: [dateRange, rojmelWallet],
+    group: "rojmel",
+    icon: "chartBar",
+    id: "rojmel-daily-cash-flow",
+    kind: "table",
+    permission: "Rojmel.Reports",
+    permissionRoute: "/rojmel/reports",
+    route: "/rojmel/reports/daily-cash-flow",
+    slug: "daily-cash-flow",
+    title: "Daily Cash Flow",
+  },
+  {
+    columns: rojmelUserWalletBalanceColumns,
+    description: "Current balances for wallets linked to users.",
+    exportable: true,
+    fetcher: rojmelReportService.getUserWalletBalances,
+    filters: [search],
+    group: "rojmel",
+    icon: "wallets",
+    id: "rojmel-user-wallet-balances",
+    kind: "table",
+    permission: "Rojmel.Admin/View",
+    permissionRoute: "/rojmel/admin",
+    route: "/rojmel/reports/user-wallet-balances",
+    slug: "user-wallet-balances",
+    title: "User Wallet Balances",
   },
 ];
 
