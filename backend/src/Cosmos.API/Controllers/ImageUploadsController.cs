@@ -18,8 +18,9 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
     [Consumes("multipart/form-data")]
     [RequirePermission("Items", PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<ImageUploadDto>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> UploadImage([FromForm] IFormFile? file, [FromForm] string? folder, CancellationToken cancellationToken)
+    public async Task<IActionResult> UploadImage([FromForm] ImageUploadRequest request, CancellationToken cancellationToken)
     {
+        var file = request.File;
         if (file is null || file.Length == 0)
         {
             throw InvalidFile("An image file is required.");
@@ -30,7 +31,7 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
             throw InvalidFile("Image size must be 5 MB or less.");
         }
 
-        var uploadFolder = string.IsNullOrWhiteSpace(folder) ? "items" : folder.Trim().ToLowerInvariant();
+        var uploadFolder = string.IsNullOrWhiteSpace(request.Folder) ? "items" : request.Folder.Trim().ToLowerInvariant();
         if (!string.Equals(uploadFolder, "items", StringComparison.Ordinal))
         {
             throw InvalidFile("Only the items upload folder is allowed.");
@@ -97,3 +98,4 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
 }
 
 public sealed record ImageUploadDto(string Url, string FileName, string ContentType, long SizeBytes);
+public sealed record ImageUploadRequest(IFormFile? File, string? Folder);
