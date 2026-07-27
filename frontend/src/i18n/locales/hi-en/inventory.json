@@ -1,0 +1,8 @@
+{
+  "items": {
+    "materialType": "Material type",
+    "allMaterialTypes": "Sabhi material types",
+    "notClassified": "Classified nahi hai",
+    "materialTypeHelper": "Procurement planning mein kya kharidna hai, yeh decide karne ke liye use hota hai."
+  }
+}

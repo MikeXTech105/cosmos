@@ -18,6 +18,7 @@ import {
   buildItemPayload,
   generateItemCode,
   getItemDefaultValues,
+  ITEM_CLASSIFICATION_OPTIONS,
   ITEM_TYPE,
   ITEM_TYPE_OPTIONS,
   GST_RATE_OPTIONS,
@@ -25,9 +26,10 @@ import {
 
 const ITEM_FIELDS = [
   "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
-  "purchasePrice", "salesPrice", "hsnCode", "gstRate", "trackInventory",
-  "openingStock", "openingStockValue", "currentStock", "reservedStock",
-  "minimumStock", "description", "isActive", "imageFile",
+  "procurementClassification", "purchasePrice", "salesPrice", "hsnCode",
+  "gstRate", "trackInventory", "openingStock", "openingStockValue",
+  "currentStock", "reservedStock", "minimumStock", "description", "isActive",
+  "imageFile",
 ];
 
 const ToggleRow = ({
@@ -292,6 +294,34 @@ const ItemFormModal = ({
                   </button>
                 );
               })}
+            </div>
+
+            <div className="max-w-sm">
+              <Controller
+                control={control}
+                name="procurementClassification"
+                render={({ field }) => (
+                  <AppSelect
+                    id="itemMaterialType"
+                    label="Material type"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    options={[
+                      { value: "", label: "Not classified" },
+                      ...ITEM_CLASSIFICATION_OPTIONS,
+                    ]}
+                    error={errors.procurementClassification?.message}
+                    aria-describedby="itemMaterialTypeHelp"
+                  />
+                )}
+              />
+              <p
+                id="itemMaterialTypeHelp"
+                className="mt-1.5 text-xs text-slate-500"
+              >
+                Used by procurement planning to decide what to buy.
+              </p>
             </div>
 
             <section>

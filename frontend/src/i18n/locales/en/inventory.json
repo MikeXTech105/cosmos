@@ -1,0 +1,8 @@
+{
+  "items": {
+    "materialType": "Material type",
+    "allMaterialTypes": "All material types",
+    "notClassified": "Not classified",
+    "materialTypeHelper": "Used by procurement planning to decide what to buy."
+  }
+}
