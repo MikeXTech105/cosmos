@@ -305,6 +305,11 @@ public sealed class ProcurementPlansController(IProcurementPlanningService servi
     [ProducesResponseType(typeof(ApiResponse<PlanningRunDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Finalize(long id, CancellationToken ct) => FromResponse(await service.FinalizePlanningRunAsync(id, ct));
 
+    [HttpPost("runs/{id:long}/cancel")]
+    [RequirePermission(ProcurementPlanningPermissions.PlanningHistory, PermissionAction.Delete)]
+    [ProducesResponseType(typeof(ApiResponse<PlanningRunDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Cancel(long id, [FromBody] CancelPlanningRunRequest request, CancellationToken ct) => FromResponse(await service.CancelPlanningRunAsync(id, request, ct));
+
     [HttpGet("runs/{id:long}/export")]
     [RequirePermission(ProcurementPlanningPermissions.PlanningHistory, PermissionAction.Export)]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]

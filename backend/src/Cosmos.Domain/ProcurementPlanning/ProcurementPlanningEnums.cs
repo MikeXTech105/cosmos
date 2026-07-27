@@ -3,7 +3,10 @@ namespace Cosmos.Domain.ProcurementPlanning;
 public enum PlanningRunStatus
 {
     Draft = 1,
-    Finalized = 2
+    Finalized = 2,
+    Calculated = 3,
+    Reviewed = 4,
+    Cancelled = 5
 }
 
 public enum PlanningRoundingRule

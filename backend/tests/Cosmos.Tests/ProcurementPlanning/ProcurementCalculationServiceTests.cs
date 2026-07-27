@@ -156,6 +156,17 @@ public sealed class ProcurementCalculationServiceTests
         Assert.Equal("Override", line.LeadTimeSource);
     }
 
+    [Fact]
+    public void Calculate_UsesValidInboundStockInProjectedAvailability()
+    {
+        var line = Assert.Single(Calculate([Sale(1, 10m)], [Bom(1, 101, 2m, stock: 20m, safety: 1m, moq: 10m) with { ValidInboundQuantity = 15m }]).Lines);
+
+        Assert.Equal(15m, line.InboundStock);
+        Assert.Equal(35m, line.ProjectedAvailableStock);
+        Assert.Equal(5m, line.Shortage);
+        Assert.Equal(10m, line.CalculatedSuggestedQuantity);
+    }
+
     private ProcurementCalculationResult Calculate(IReadOnlyCollection<ProductSalesInput> sales, IReadOnlyCollection<BomCalculationInput> bom) =>
         _service.Calculate(new ProcurementCalculationData(sales, bom, []), From, To);
 

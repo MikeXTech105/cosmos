@@ -474,3 +474,8 @@ const procurementPages = {
 ```
 
 Use the existing page actions: `View`, `Create`, `Edit`, `Delete`, `Export`, `Approve`.
+# Shared Supply Chain API addition — 2026-07-27
+
+No frontend screens were added. A future frontend should use the permission-driven shared endpoints for channels, warehouses, Item mappings, packaging profiles, and staged imports. It must show row-level import errors and never offer automatic Item/Warehouse creation. See `PROCUREMENT_PLANNING.md` for routes, status behavior, and smoke-test sequence.
+
+The full implementation guide is `SUPPLY_CHAIN_FRONTEND_IMPLEMENTATION_GUIDE.md`.
