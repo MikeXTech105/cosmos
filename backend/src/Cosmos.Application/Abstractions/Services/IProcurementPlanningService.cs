@@ -56,5 +56,6 @@ public interface IProcurementPlanningService
     Task<ApiResponse<IReadOnlyCollection<PlanningRunLineDto>>> GetPlanningRunLinesAsync(long id, PlanningRunLineQuery query, CancellationToken ct);
     Task<ApiResponse<PlanningRunLineDto>> UpdatePlanningLineAsync(long runId, long lineId, UpdatePlanningLineRequest request, CancellationToken ct);
     Task<ApiResponse<PlanningRunDto>> FinalizePlanningRunAsync(long id, CancellationToken ct);
+    Task<ApiResponse<PlanningRunDto>> CancelPlanningRunAsync(long id, CancelPlanningRunRequest request, CancellationToken ct);
     Task<ProcurementExportFileDto> ExportPlanningRunAsync(long id, CancellationToken ct);
 }

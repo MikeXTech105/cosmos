@@ -8,8 +8,8 @@ namespace Cosmos.Application.Services;
 
 public sealed class ProcurementCalculationService : IProcurementCalculationService
 {
-    public const string CalculationVersion = "workbook-compatible-v1";
-    public const string InventoryBasis = "Items.CurrentStock (global on-hand; inbound/open orders/reservations excluded)";
+    public const string CalculationVersion = "workbook-compatible-v2-inbound";
+    public const string InventoryBasis = "Items.CurrentStock (global on-hand) + latest valid ProcurementInboundStockSnapshot; reservations are excluded";
     private const int QuantityScale = 6;
 
     public ProcurementCalculationResult Calculate(ProcurementCalculationData data, DateOnly fromDate, DateOnly toDate)
@@ -168,7 +168,9 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
             var safetyStock = Q(rawMaterialRequirement * input.SafetyFactor.Value);
             var reorderPoint = Q((rawAverageDailyUsage * effectiveLeadTime) + (rawMaterialRequirement * input.SafetyFactor.Value));
             var physicalStock = Q(input.CurrentStock);
-            var shortage = Q(Math.Max(0m, reorderPoint - physicalStock));
+            var inboundStock = Q(input.ValidInboundQuantity);
+            var projectedAvailableStock = Q(physicalStock + inboundStock);
+            var shortage = Q(Math.Max(0m, reorderPoint - projectedAvailableStock));
             var minimumOrderQuantity = Q(input.MinimumOrderQuantity.Value);
             var suggested = 0m;
 
@@ -176,7 +178,7 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
             {
                 // The workbook uses a strict greater-than comparison. Therefore stock equal
                 // to the reorder point still applies the MOQ rule.
-                suggested = physicalStock > reorderPoint ? 0m : Math.Max(shortage, minimumOrderQuantity);
+                suggested = projectedAvailableStock > reorderPoint ? 0m : Math.Max(shortage, minimumOrderQuantity);
                 if (input.OrderMultiple is > 0m && input.RoundingRule == (int)PlanningRoundingRule.UpToOrderMultiple)
                 {
                     suggested = decimal.Ceiling(suggested / input.OrderMultiple.Value) * input.OrderMultiple.Value;
@@ -189,7 +191,8 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
                 $"Requirement {materialRequirement} / {numberOfDays} days = ADU {averageDailyUsage}; " +
                 $"ADU {averageDailyUsage} x lead time {effectiveLeadTime} = lead-time demand {leadTimeDemand}; " +
                 $"requirement {materialRequirement} x safety factor {input.SafetyFactor.Value} = safety stock {safetyStock}; " +
-                $"reorder point {reorderPoint} - physical stock {physicalStock} = shortage {shortage}; " +
+                $"physical stock {physicalStock} + valid inbound {inboundStock} = projected available {projectedAvailableStock}; " +
+                $"reorder point {reorderPoint} - projected available stock {projectedAvailableStock} = shortage {shortage}; " +
                 $"MOQ/workbook EOQ {minimumOrderQuantity}" +
                 (input.OrderMultiple is > 0m ? $", order multiple {input.OrderMultiple.Value}" : string.Empty) +
                 $"; suggested quantity {suggested}.";
@@ -220,7 +223,9 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
                 suggested,
                 null,
                 lineWarnings,
-                explanation));
+                explanation,
+                inboundStock,
+                projectedAvailableStock));
         }
 
         if (lines.Count > 0)

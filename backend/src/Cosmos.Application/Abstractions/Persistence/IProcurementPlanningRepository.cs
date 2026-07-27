@@ -50,4 +50,5 @@ public interface IProcurementPlanningRepository
     Task<IReadOnlyCollection<PlanningRunLineDto>> GetPlanningRunLinesAsync(long id, PlanningRunLineQuery query, CancellationToken ct);
     Task<PlanningRunLineDto> UpdatePlanningLineAsync(long runId, long lineId, UpdatePlanningLineRequest request, long? userId, CancellationToken ct);
     Task<PlanningRunDto> FinalizePlanningRunAsync(long id, long? userId, CancellationToken ct);
+    Task<PlanningRunDto> CancelPlanningRunAsync(long id, string reason, long? userId, CancellationToken ct);
 }

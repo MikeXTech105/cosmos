@@ -45,3 +45,16 @@ Client data migration: Awaiting explicit Item and channel-SKU matching. No workb
 6. Confirm lead times for workbook rows whose lead-time cells are blank.
 7. Confirm manual-planning materials and physical stock for blank workbook stock cells.
 8. Confirm that global `Items.CurrentStock` is acceptable until a warehouse stock model exists.
+# Supply Chain Common Foundation Alignment — 2026-07-27
+
+| Work item | Status | Evidence |
+| --- | --- | --- |
+| Reuse Item master, Channels, SKU mappings, parser, audit, response/paging patterns | Implemented | `SalesChannels` and `ChannelSkuMappings` extended in place; no `Channels`, `Products`, or `ChannelItemMappings` duplicate table. |
+| Channel Warehouse master | Implemented | Record-based `ChannelWarehouses`, secured `/api/v1/supply-chain/warehouses` API, filtered unique code. |
+| Packaging profile | Implemented | `ItemPackagingProfiles`, unit/weight rules, persisted volumetric calculation, default-profile filters. |
+| Shared import staging | Implemented for ProcurementSales | File hash, staged validation/errors, transactional commit into compatible Procurement history. Other reserved import types are intentionally non-operational. |
+| Procurement inbound availability | Implemented | `ProcurementInboundStockSnapshots`; calculation v2 adds the latest valid inbound quantity. |
+| Existing Procurement route compatibility | Preserved | Existing controllers/procedures remain; shared APIs are additive. |
+| Source Dispatch/Work List workbook analysis | Blocked by missing source files | See `SUPPLY_CHAIN_WORKBOOK_MAPPING.md`. |
+| SQL execution against disposable SQL Server | Pending | Migrations and verification script added; no confirmed local SQL Server execution in this run. |
+| Build and full automated suite | Passed | `dotnet build Cosmos.slnx --no-restore` and `dotnet test Cosmos.slnx --no-build`: 144/144 tests passed on 2026-07-27. |

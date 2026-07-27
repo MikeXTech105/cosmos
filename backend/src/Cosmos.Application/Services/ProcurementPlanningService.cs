@@ -37,6 +37,7 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
     private readonly IValidator<PlanningRunQuery> _runListValidator;
     private readonly IValidator<PlanningRunLineQuery> _runLineListValidator;
     private readonly IValidator<UpdatePlanningLineRequest> _lineValidator;
+    private readonly IValidator<CancelPlanningRunRequest> _cancelRunValidator;
 
     public ProcurementPlanningService(
         IProcurementPlanningRepository repository,
@@ -59,7 +60,8 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
         IValidator<PlanningRequest> planningValidator,
         IValidator<PlanningRunQuery> runListValidator,
         IValidator<PlanningRunLineQuery> runLineListValidator,
-        IValidator<UpdatePlanningLineRequest> lineValidator)
+        IValidator<UpdatePlanningLineRequest> lineValidator,
+        IValidator<CancelPlanningRunRequest> cancelRunValidator)
     {
         _repository = repository;
         _calculator = calculator;
@@ -82,6 +84,7 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
         _runListValidator = runListValidator;
         _runLineListValidator = runLineListValidator;
         _lineValidator = lineValidator;
+        _cancelRunValidator = cancelRunValidator;
     }
 
     private long? UserId => _currentUser.UserId;
@@ -387,6 +390,15 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
         var saved = await _repository.FinalizePlanningRunAsync(id, UserId, ct);
         await AuditAsync("ProcurementPlanningRuns", id, "Finalize", before, saved, ct);
         return ApiResponse<PlanningRunDto>.Success(saved, "Planning run finalized.");
+    }
+
+    public async Task<ApiResponse<PlanningRunDto>> CancelPlanningRunAsync(long id, CancelPlanningRunRequest request, CancellationToken ct)
+    {
+        await ValidationRunner.ValidateAsync(_cancelRunValidator, request, ct);
+        var before = Found(await _repository.GetPlanningRunAsync(id, ct), "Planning run");
+        var saved = await _repository.CancelPlanningRunAsync(id, request.Reason.Trim(), UserId, ct);
+        await AuditAsync("ProcurementPlanningRuns", id, "Cancel", before, new { Saved = saved, request.Reason }, ct);
+        return ApiResponse<PlanningRunDto>.Success(saved, "Planning run cancelled.");
     }
 
     public async Task<ProcurementExportFileDto> ExportPlanningRunAsync(long id, CancellationToken ct)

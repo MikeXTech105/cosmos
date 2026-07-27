@@ -328,7 +328,9 @@ public sealed record PlanningCalculationLineDto(
     decimal FinalQuantity,
     string? AdjustmentReason,
     IReadOnlyCollection<string> Warnings,
-    string CalculationExplanation);
+    string CalculationExplanation,
+    decimal InboundStock = 0m,
+    decimal ProjectedAvailableStock = 0m);
 
 public sealed record PlanningPreviewDto(
     DateOnly FromDate,
@@ -384,7 +386,9 @@ public sealed record PlanningRunLineDto(
     string? WarningState,
     string CalculationExplanation,
     DateTime? ModifiedAt,
-    long? ModifiedBy);
+    long? ModifiedBy,
+    decimal InboundStock = 0m,
+    decimal ProjectedAvailableStock = 0m);
 
 public sealed record PlanningRunDto(
     long Id,
@@ -417,4 +421,5 @@ public sealed record PlanningRunLineQuery(
     bool? ManualPlanning = null);
 
 public sealed record UpdatePlanningLineRequest(decimal FinalQuantity, string? AdjustmentReason);
+public sealed record CancelPlanningRunRequest(string Reason);
 public sealed record ProcurementExportFileDto(string FileName, string ContentType, byte[] Content);

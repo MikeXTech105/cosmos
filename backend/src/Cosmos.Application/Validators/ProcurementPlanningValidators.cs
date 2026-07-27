@@ -175,6 +175,11 @@ public sealed class UpdatePlanningLineRequestValidator : AbstractValidator<Updat
     }
 }
 
+public sealed class CancelPlanningRunRequestValidator : AbstractValidator<CancelPlanningRunRequest>
+{
+    public CancelPlanningRunRequestValidator() => RuleFor(x => x.Reason).NotEmpty().MaximumLength(1000);
+}
+
 public sealed class PlanningRunLineQueryValidator : AbstractValidator<PlanningRunLineQuery>
 {
     public PlanningRunLineQueryValidator() => RuleFor(x => x.Search).MaximumLength(200);

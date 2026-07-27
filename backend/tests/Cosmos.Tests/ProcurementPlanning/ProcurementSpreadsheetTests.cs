@@ -53,4 +53,10 @@ public sealed class ProcurementSpreadsheetTests
         var row = Assert.Single(ProcurementSalesImportParser.Parse("formula.xlsx", stream.ToArray()));
         Assert.Contains("Formula cells are not allowed", Assert.Single(row.Errors), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void ImportParser_RejectsForgedXlsxSignature()
+    {
+        Assert.Throws<InvalidDataException>(() => ProcurementSalesImportParser.Parse("forged.xlsx", "not a zip file"u8.ToArray()));
+    }
 }
