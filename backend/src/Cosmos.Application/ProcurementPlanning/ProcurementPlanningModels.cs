@@ -54,7 +54,8 @@ public sealed record BomCalculationInput(
     bool? AutomaticCalculationEnabled,
     bool? ManualPlanning,
     int? RoundingRule,
-    bool? SettingIsActive);
+    bool? SettingIsActive,
+    decimal ValidInboundQuantity = 0m);
 
 public sealed record UnmappedSalesInput(string ChannelCode, string ChannelSku, int OccurrenceCount);
 
@@ -78,4 +79,3 @@ public sealed record PlanningRunSaveModel(
     string CalculationVersion,
     string InventoryBasis,
     IReadOnlyCollection<PlanningCalculationLineDto> Lines);
-

@@ -164,7 +164,8 @@ public sealed class ProcurementPlanningRepository : IProcurementPlanningReposito
             x.SafetyFactor, x.SafetyStock, x.ReorderPoint, x.PhysicalStock, x.Shortage, x.MinimumOrderQuantity,
             x.OrderMultiple, x.RoundingRule, x.AutomaticCalculationEnabled, x.ManualPlanning,
             x.CalculatedSuggestedQuantity, x.FinalQuantity, x.AdjustmentReason,
-            WarningState = x.Warnings.Count == 0 ? null : string.Join("; ", x.Warnings), x.CalculationExplanation
+            WarningState = x.Warnings.Count == 0 ? null : string.Join("; ", x.Warnings), x.CalculationExplanation,
+            x.InboundStock, x.ProjectedAvailableStock
         });
         return PlanningRunWithStatusAsync("sp_ProcurementPlanning_Run_Save", new
         {
@@ -185,6 +186,8 @@ public sealed class ProcurementPlanningRepository : IProcurementPlanningReposito
     public Task<PlanningRunLineDto> UpdatePlanningLineAsync(long runId, long lineId, UpdatePlanningLineRequest request, long? userId, CancellationToken ct) =>
         QueryWithStatusAsync<PlanningRunLineDto>("sp_ProcurementPlanning_RunLine_Update", new { RunId = runId, LineId = lineId, request.FinalQuantity, request.AdjustmentReason, UserId = userId }, ct);
     public Task<PlanningRunDto> FinalizePlanningRunAsync(long id, long? userId, CancellationToken ct) => PlanningRunWithStatusAsync("sp_ProcurementPlanning_Run_Finalize", new { Id = id, UserId = userId }, ct);
+    public Task<PlanningRunDto> CancelPlanningRunAsync(long id, string reason, long? userId, CancellationToken ct) =>
+        PlanningRunWithStatusAsync("usp_ProcurementPlanning_Run_Cancel", new { Id = id, Reason = reason, UserId = userId }, ct);
 
     private async Task<PlanningRunDto?> PlanningRunAsync(string procedure, object parameters, CancellationToken ct)
     {

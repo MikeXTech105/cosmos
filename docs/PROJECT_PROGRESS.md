@@ -1396,3 +1396,14 @@ All endpoints use Swagger group `dashboard`, JWT auth, and `Dashboard.View`.
 - Recent activity is pending until a common activity/audit source exists.
 - Dashboard caching is pending until a shared cache abstraction exists.
 - Export and drill-down endpoints are future work.
+# Supply Chain Common Foundation Update — 2026-07-27
+
+Status: Implemented / Build Verified / Tests Verified (144/144) / Live SQL and runtime Swagger verification pending.
+
+- Reused `Items`, `SalesChannels`, `ChannelSkuMappings`, the Procurement parser, audit logging, permissions, Dapper conventions, and standard envelopes; no duplicate Item, Product, Channel, or SKU master was introduced.
+- Added record-based channel warehouses, channel-aware Item packaging profiles, staged shared import batches/rows, and procurement inbound stock snapshots through two rerunnable migrations.
+- Added JWT/permission-protected `/api/v1/supply-chain` APIs in Swagger group `supply-chain`; legacy Procurement APIs remain unchanged.
+- Procurement calculation version is now `workbook-compatible-v2-inbound`, adding the latest valid inbound snapshot to projected availability while preserving legacy physical-stock behavior and MOQ/order-multiple tests.
+- Added `backend/database/verify_supply_chain_common_foundation.sql`. It was created but not run against a disposable SQL Server during this update.
+- `dotnet build Cosmos.slnx --no-restore` succeeded; `dotnet test Cosmos.slnx --no-build` passed 144/144 tests. Existing dependency warnings remain: Microsoft.OpenApi `NU1903` and two Infrastructure package-pruning `NU1510` warnings.
+- The original Dispatch and Work List workbooks were not available; the available Procurement migration-report workbook confirms missing channel SKU identity and explicit mapping requirements. See `backend/docs/SUPPLY_CHAIN_WORKBOOK_MAPPING.md`.

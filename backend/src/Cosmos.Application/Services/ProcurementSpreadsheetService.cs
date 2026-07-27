@@ -9,7 +9,7 @@ using Cosmos.Contracts.ProcurementPlanning;
 
 namespace Cosmos.Application.Services;
 
-internal static class ProcurementSalesImportParser
+public static class ProcurementSalesImportParser
 {
     private const int MaximumRows = 50_000;
     private const int MaximumArchiveEntries = 200;
@@ -280,7 +280,7 @@ internal static class ProcurementXlsxWriter
                 "Material code", "Material name", "Unit", "Material requirement", "Average daily usage",
                 "Lead-time days", "Lead-time source", "Lead-time demand", "Safety factor", "Safety stock",
                 "Reorder point", "Current physical stock", "Shortage", "MOQ / workbook EOQ", "Order multiple",
-                "Calculated suggested quantity", "Final quantity", "Adjustment reason", "Warnings", "Explanation"
+                "Valid inbound stock", "Projected available stock", "Calculated suggested quantity", "Final quantity", "Adjustment reason", "Warnings", "Explanation"
             }
         };
         results.AddRange(run.Lines.Select(line => (IReadOnlyList<object?>)new object?[]
@@ -288,7 +288,7 @@ internal static class ProcurementXlsxWriter
             line.MaterialItemCode, line.MaterialItemName, line.UnitShortName, line.MaterialRequirement, line.AverageDailyUsage,
             line.LeadTimeDays, line.LeadTimeSource, line.LeadTimeDemand, line.SafetyFactor, line.SafetyStock,
             line.ReorderPoint, line.PhysicalStock, line.Shortage, line.MinimumOrderQuantity, line.OrderMultiple,
-            line.CalculatedSuggestedQuantity, line.FinalQuantity, line.AdjustmentReason, line.WarningState, line.CalculationExplanation
+            line.InboundStock, line.ProjectedAvailableStock, line.CalculatedSuggestedQuantity, line.FinalQuantity, line.AdjustmentReason, line.WarningState, line.CalculationExplanation
         }));
         return CreateWorkbook([new SheetModel("Run Details", details, 0), new SheetModel("Results", results, 1)]);
     }
