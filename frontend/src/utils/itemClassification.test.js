@@ -19,6 +19,7 @@ describe("item classification helpers", () => {
 
   it("normalizes an unsupported value to null", () => {
     expect(normalizeItemClassification(9)).toBeNull();
+    expect(normalizeItemClassification(0)).toBeNull();
   });
 
   it("labels an unclassified value consistently", () => {

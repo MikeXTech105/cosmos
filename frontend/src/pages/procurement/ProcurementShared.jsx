@@ -14,10 +14,8 @@ import { useEffect, useRef, useState } from "react";
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppSelect from "../../components/common/AppSelect";
-import {
-  ProcurementItemClassification,
-  PROCUREMENT_ITEM_CLASSIFICATION_LABELS,
-} from "../../constants/procurementEnums";
+import MaterialTypePill from "../../components/common/MaterialTypePill";
+import { ProcurementItemClassification } from "../../constants/procurementEnums";
 import { itemService } from "../../services/inventory/itemService";
 import {
   formatProcurementInteger,
@@ -288,7 +286,17 @@ export const ProcurementPagination = ({
 }) => (
   <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
     <p className="text-xs text-slate-500">
-      {formatProcurementInteger(totalCount, "0")} total records
+      Showing{" "}
+      {formatProcurementInteger(
+        totalCount > 0 ? (pageNumber - 1) * pageSize + 1 : 0,
+        "0",
+      )}{" "}
+      to{" "}
+      {formatProcurementInteger(
+        Math.min(pageNumber * pageSize, totalCount),
+        "0",
+      )}{" "}
+      of {formatProcurementInteger(totalCount, "0")}
     </p>
     <div className="flex items-center gap-2">
       <AppSelect
@@ -296,7 +304,7 @@ export const ProcurementPagination = ({
         className="w-24"
         disabled={disabled}
         options={PROCUREMENT_PAGE_SIZE_OPTIONS.map((value) => ({
-          label: `${value} / page`,
+          label: `${value} rows`,
           value,
         }))}
         value={pageSize}
@@ -309,9 +317,10 @@ export const ProcurementPagination = ({
         onClick={() => onPageChange(pageNumber - 1)}
       >
         <ChevronLeft className="h-4 w-4" />
+        Previous
       </AppButton>
       <span className="min-w-20 text-center text-xs font-medium text-slate-600">
-        {pageNumber} / {Math.max(1, totalPages)}
+        Page {pageNumber} / {Math.max(1, totalPages)}
       </span>
       <AppButton
         className="h-10 px-3"
@@ -319,6 +328,7 @@ export const ProcurementPagination = ({
         variant="secondary"
         onClick={() => onPageChange(pageNumber + 1)}
       >
+        Next
         <ChevronRight className="h-4 w-4" />
       </AppButton>
     </div>
@@ -570,7 +580,6 @@ export const ProcurementItemAutocomplete = ({
             items.map((item) => {
               const id = getRecordId(item, ["itemId"]);
               const classification = getClassification(item);
-              const isLegacy = classification === null;
               const isActive = item?.isActive !== false;
 
               return (
@@ -589,17 +598,12 @@ export const ProcurementItemAutocomplete = ({
                       {getItemLabel(item)}
                     </span>
                     <span className="mt-0.5 block text-[11px] text-slate-500">
-                      {PROCUREMENT_ITEM_CLASSIFICATION_LABELS[classification] ??
-                        "Legacy / unclassified"}
-                      {" · "}
                       {isActive ? "Active" : "Inactive"}
                       {" · "}
                       {item?.unitName ?? item?.unit?.name ?? "Unit not supplied"}
                     </span>
                   </span>
-                  {isLegacy && (
-                    <ProcurementPill tone="amber">Legacy classification</ProcurementPill>
-                  )}
+                  <MaterialTypePill value={classification} />
                 </button>
               );
             })

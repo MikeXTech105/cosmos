@@ -1,5 +1,6 @@
 import axiosInstance from "../../api/axios";
 import { ENDPOINTS } from "../../api/endpoints";
+import { normalizeItemClassification } from "../../utils/itemClassification";
 import { sanitizeInventoryListParams } from "../../utils/inventoryQuery";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
@@ -65,8 +66,10 @@ const buildItemCreateFormData = (payload) => {
 const buildItemCommandBody = (payload) => {
   const commandBody = {
     ...payload,
-    procurementClassification:
-      payload?.procurementClassification ?? null,
+    // Unlike create, update must send null so clearing does not preserve the old value.
+    procurementClassification: normalizeItemClassification(
+      payload?.procurementClassification,
+    ),
   };
 
   delete commandBody.imageFile;
@@ -76,7 +79,13 @@ const buildItemCommandBody = (payload) => {
 
 const getItemListParams = (params = {}) => {
   return Object.fromEntries(
-    ITEM_LIST_PARAM_KEYS.map((key) => [key, params[key]]),
+    ITEM_LIST_PARAM_KEYS.map((key) => [
+      key,
+      key === "ProcurementClassification" &&
+      params[key] === "all"
+        ? undefined
+        : params[key],
+    ]),
   );
 };
 

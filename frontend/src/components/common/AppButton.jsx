@@ -1,3 +1,6 @@
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
 const variants = {
   primary:
     "bg-brand text-white hover:bg-brand-dark shadow-sm active:scale-[0.98]",
@@ -30,14 +33,14 @@ const AppButton = ({
       disabled={isDisabled}
       aria-busy={isLoading || undefined}
       aria-disabled={isDisabled || undefined}
-      className={[
-        "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
-        variants[variant] ?? variants.primary,
-        isDisabled ? "cursor-not-allowed opacity-60" : "",
+      className={twMerge(
+        clsx(
+          "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
+          variants[variant] ?? variants.primary,
+          isDisabled && "cursor-not-allowed opacity-60",
+        ),
         className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       {isLoading ? (
         <>

@@ -3,21 +3,28 @@ import {
   ArrowLeft,
   CheckCircle2,
   Download,
+  Eye,
   FileClock,
+  FileCheck2,
   History,
+  Info,
   Pencil,
-  RefreshCw,
+  Plus,
+  RotateCw,
   Save,
   Search,
   ShieldCheck,
+  XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import {
   PlanningRunStatus,
@@ -28,7 +35,6 @@ import { planningService } from "../../../services/procurement/planningService";
 import {
   InventoryBasisNote,
   ProcurementDateRangeFields,
-  ProcurementEmptyState,
   ProcurementErrorState,
   ProcurementInlineError,
   ProcurementLoadingRows,
@@ -58,6 +64,11 @@ import {
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import useLatestRequest from "../../../hooks/useLatestRequest";
+import ProcurementStatCards from "../ProcurementStatCards";
+import ProcurementTable, {
+  PROCUREMENT_ROW_ACTION_CLASS,
+  PROCUREMENT_TABLE_HEADER_CLASS,
+} from "../ProcurementTable";
 
 const getRunStatus = (run) => run?.status ?? run?.planningRunStatus;
 
@@ -70,26 +81,39 @@ const isFinalizedRun = (run) => {
   );
 };
 
+const isCancelledRun = (run) => {
+  const status = getRunStatus(run);
+
+  return (
+    Number(status) === PlanningRunStatus.Cancelled ||
+    String(run?.statusName ?? status).toLowerCase() === "cancelled" ||
+    Boolean(run?.cancelledAtUtc ?? run?.cancelledAt)
+  );
+};
+
 const runStatusMeta = (run) => {
   const finalized = isFinalizedRun(run);
+  const cancelled = isCancelledRun(run);
 
   return {
     label:
       run?.statusName ??
       PLANNING_RUN_STATUS_LABELS[getRunStatus(run)] ??
-      (finalized ? "Finalized" : "Draft"),
-    tone: finalized ? "emerald" : "amber",
+      (cancelled ? "Cancelled" : finalized ? "Finalized" : "Draft"),
+    tone: cancelled ? "red" : finalized ? "emerald" : "amber",
   };
 };
 
 const getRunLines = (payload) => getCollection(payload, ["planningLines", "lines"]);
 
 const RunList = ({
+  canCancel,
   data,
   error,
   filters,
   loading,
   onChangeFilters,
+  onCancel,
   onOpen,
   onPageChange,
   onPageSizeChange,
@@ -100,19 +124,20 @@ const RunList = ({
   const rangeError = validateDateRange(filters.fromDate, filters.toDate);
   const runs = getCollection(data, ["runs", "planningRuns"]);
   const pagination = getPagination(data, runs.length);
+  const defaultRange = useMemo(() => getDefaultProcurementRange(), []);
+  const activeFilterCount = [
+    filters.fromDate !== defaultRange.fromDate ||
+      filters.toDate !== defaultRange.toDate,
+    Boolean(filters.status),
+  ].filter(Boolean).length;
 
   return (
     <ProcurementSectionCard
-      title="Planning runs"
-      description="Each saved run is a versioned snapshot. Opening one never recalculates its material values."
-      actions={
-        <AppButton disabled={loading} variant="secondary" onClick={onRetry}>
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </AppButton>
-      }
+      title="Saved plans"
+      description="Each saved plan is a versioned snapshot. Opening one never recalculates its material values."
     >
-      <div className="grid gap-4 border-b border-slate-100 p-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
         <ProcurementDateRangeFields
           fromDate={filters.fromDate}
           toDate={filters.toDate}
@@ -120,39 +145,29 @@ const RunList = ({
           onChange={(patch) => onChangeFilters(patch)}
         />
         <AppSelect
-          label="Run status"
+          label="Plan status"
           options={[{ label: "All statuses", value: "" }, ...PLANNING_RUN_STATUS_OPTIONS]}
           value={filters.status}
           onChange={(status) => onChangeFilters({ status })}
         />
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+          <p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p>
+          {activeFilterCount > 0 && <AppButton variant="ghost" onClick={() => onChangeFilters({ ...defaultRange, status: "" })}>Clear</AppButton>}
+        </div>
       </div>
-      {loading ? (
-        <ProcurementLoadingRows columns={7} />
-      ) : error ? (
+      {error ? (
         <ProcurementErrorState error={error} onRetry={onRetry} />
-      ) : runs.length === 0 ? (
-        <ProcurementEmptyState
-          icon={FileClock}
-          title="No planning runs in this range"
-          description="Saved draft and finalized plan snapshots will appear here."
-        />
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-[1000px] w-full text-left">
-            <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">Run</th>
-                <th className="px-4 py-3">Demand range</th>
-                <th className="px-4 py-3 text-right">Days</th>
-                <th className="px-4 py-3 text-right">Lines</th>
-                <th className="px-4 py-3 text-right">Purchase lines</th>
-                <th className="px-4 py-3">Calculated</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+        <ProcurementTable
+          columnCount={9}
+          emptyIcon={FileClock}
+          emptyHint="Saved draft, finalized, and cancelled plan snapshots will appear here."
+          emptyTitle={!loading && runs.length === 0 ? "No plans yet" : undefined}
+          head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Plan</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Demand range</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Days</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Lines</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Purchase lines</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Calculated</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+          loading={loading}
+          minWidth="min-w-[1000px]"
+        >
               {runs.map((run, index) => {
                 const status = runStatusMeta(run);
                 const days =
@@ -198,21 +213,29 @@ const RunList = ({
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-0.5">
-                        <AppButton
-                          className="h-8 px-3"
-                          variant="secondary"
-                          onClick={() => onOpen(run)}
-                        >
-                          Open snapshot
-                        </AppButton>
+                        <AppTooltip label="Open plan">
+                          <button type="button" aria-label="Open plan" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpen(run)}>
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        </AppTooltip>
+                        {canCancel && !isFinalizedRun(run) && !isCancelledRun(run) ? (
+                          <AppTooltip label="Cancel plan">
+                            <button
+                              type="button"
+                              aria-label="Cancel plan"
+                              className={`${PROCUREMENT_ROW_ACTION_CLASS} hover:bg-red-50 hover:text-red-600`}
+                              onClick={() => onCancel(run)}
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </AppTooltip>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+        </ProcurementTable>
       )}
       <ProcurementPagination
         disabled={loading}
@@ -243,13 +266,13 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
   const submit = async () => {
     const validation = {};
     if (final === null || final < 0) {
-      validation.finalQuantity = "Final quantity must be zero or greater.";
+      validation.finalQuantity = "To order must be zero or greater.";
     } else if (!hasDecimalPrecision(finalQuantity)) {
       validation.finalQuantity = "Use no more than 6 decimal places.";
     }
     if (differs && !reason.trim()) {
       validation.adjustmentReason =
-        "Explain why final quantity differs from the calculated suggestion.";
+        "Explain why To order differs from the system suggestion.";
     }
     if (Object.keys(validation).length > 0) {
       setErrors(validation);
@@ -276,7 +299,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
         setErrors({
           form: getProcurementError(
             error,
-            "This run was finalized and can no longer be adjusted.",
+            "This plan was finalized and can no longer be adjusted.",
           ),
         });
       } else if ([400, 422].includes(status)) {
@@ -309,13 +332,13 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-200 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Calculated</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">System suggestion</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
                 {formatProcurementDecimal(calculated)}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Final</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">To order</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
                 {formatProcurementDecimal(final)}
               </p>
@@ -329,7 +352,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
           </div>
           <AppInput
             error={errors.finalQuantity}
-            label="Final quantity"
+            label="To order"
             min="0"
             required
             step="any"
@@ -350,8 +373,8 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
               disabled={!differs}
               placeholder={
                 differs
-                  ? "Required whenever the final quantity differs"
-                  : "Cleared automatically when final equals calculated"
+                  ? "Required whenever To order differs"
+                  : "Cleared automatically when To order matches the system suggestion"
               }
               value={differs ? reason : ""}
               onChange={(event) => setReason(event.target.value)}
@@ -376,12 +399,13 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
 
 const RunDetail = ({
   canApprove,
+  canCancel,
   canEdit,
-  canExport,
   linesData,
   linesError,
   linesLoading,
   onBack,
+  onCancel,
   onFinalize,
   onLoadLines,
   onOpenAdjustment,
@@ -391,56 +415,41 @@ const RunDetail = ({
   finalizeError,
   finalizing,
 }) => {
-  const [exportError, setExportError] = useState("");
-  const [exporting, setExporting] = useState(false);
   const finalized = isFinalizedRun(run);
+  const cancelled = isCancelledRun(run);
+  const immutable = finalized || cancelled;
   const runStatus = runStatusMeta(run);
   const lines = getRunLines(linesData);
   const pagination = getPagination(linesData, lines.length);
   const days =
     Number(run.numberOfDays) || getInclusiveDayCount(run.fromDate, run.toDate);
+  const activeLineFilterCount = [
+    Boolean(lineFilters.search.trim()),
+    lineFilters.purchaseOnly !== "all",
+    lineFilters.hasWarnings !== "all",
+    lineFilters.manualPlanning !== "all",
+  ].filter(Boolean).length;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <AppButton variant="secondary" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />All planning runs
+          <ArrowLeft className="h-4 w-4" />All plans
         </AppButton>
         <div className="flex flex-wrap gap-2">
-          {canExport && (
-          <AppButton
-            isLoading={exporting}
-            loadingText="Exporting…"
-            variant="secondary"
-              onClick={async () => {
-                setExporting(true);
-                setExportError("");
-                try {
-                  await planningService.exportRun(getRecordId(run, ["planningRunId"]));
-                } catch (error) {
-                  const message = getProcurementError(
-                    error,
-                    "Unable to export this run.",
-                  );
-                  setExportError(message);
-                  if (getApiStatus(error) !== 409) toast.error(message);
-                } finally {
-                  setExporting(false);
-                }
-              }}
-            >
-              <Download className="h-4 w-4" />Export XLSX
+          {canCancel && !immutable ? (
+            <AppButton variant="danger" onClick={onCancel}>
+              <XCircle className="h-4 w-4" />Cancel plan
             </AppButton>
-          )}
-          {canApprove && !finalized && (
+          ) : null}
+          {canApprove && !immutable && (
             <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={onFinalize}>
-              <ShieldCheck className="h-4 w-4" />Finalize run
+              <ShieldCheck className="h-4 w-4" />Finalize plan
             </AppButton>
           )}
         </div>
       </div>
-      <ProcurementInlineError message={exportError} title="Export could not be downloaded" />
-      <ProcurementInlineError message={finalizeError} title="Run conflict" />
+      <ProcurementInlineError message={finalizeError} title="Plan conflict" />
       <ProcurementSectionCard>
         <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(120px,1fr))]">
           <div>
@@ -458,7 +467,7 @@ const RunDetail = ({
           {[
             ["Days", formatProcurementInteger(days)],
             ["Lines", formatProcurementInteger(run.lineCount ?? run.totalLineCount)],
-            ["Calculated", formatProcurementDateTime(run.calculatedAt ?? run.createdAt)],
+            ["Generated", formatProcurementDateTime(run.calculatedAt ?? run.createdAt)],
             ["Calculation version", run.calculationVersion ?? "-"],
           ].map(([label, value]) => (
             <div key={label}>
@@ -470,15 +479,16 @@ const RunDetail = ({
         <div className="border-t border-slate-100 p-4">
           <InventoryBasisNote message={run.inventoryBasis || undefined} />
         </div>
-        {finalized && (
+        {immutable && (
           <div className="flex items-start gap-3 border-t border-emerald-100 bg-emerald-50 px-5 py-3 text-emerald-800">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-            <p className="text-xs leading-5"><strong>This run is finalized.</strong> Its snapshot and every line are immutable.</p>
+            <p className="text-xs leading-5"><strong>This plan is {cancelled ? "cancelled" : "finalized"}.</strong> Its snapshot and every line are immutable.</p>
           </div>
         )}
       </ProcurementSectionCard>
-      <ProcurementSectionCard title="Snapshot lines" description="Values below are preserved from this planning run and are never recalculated in history.">
-        <div className="grid gap-3 border-b border-slate-100 p-4 lg:grid-cols-[minmax(0,1fr)_180px_180px_180px]">
+      <ProcurementSectionCard title="Snapshot lines" description="Values below are preserved from this plan and are never recalculated in history.">
+        <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_180px]">
           <div className="relative">
             <AppInput
               label="Search materials"
@@ -506,9 +516,26 @@ const RunDetail = ({
             value={lineFilters.manualPlanning}
             onChange={(manualPlanning) => onUpdateLineFilters({ manualPlanning })}
           />
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+            <p className="text-xs text-slate-500">{activeLineFilterCount} active filter{activeLineFilterCount === 1 ? "" : "s"}</p>
+            {activeLineFilterCount > 0 && <AppButton variant="ghost" onClick={() => onUpdateLineFilters({ hasWarnings: "all", manualPlanning: "all", page: 1, purchaseOnly: "all", search: "" })}>Clear</AppButton>}
+          </div>
         </div>
-        {linesLoading ? <ProcurementLoadingRows columns={8} rows={6} /> : linesError ? <ProcurementErrorState error={linesError} onRetry={onLoadLines} /> : lines.length === 0 ? <ProcurementEmptyState title="No snapshot lines match the filters" /> : (
-          <div className="max-h-[60vh] overflow-auto"><table className="min-w-[1180px] w-full text-left"><thead className="sticky top-0 z-10 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="sticky left-0 z-20 min-w-64 border-b border-r border-slate-200 bg-slate-50 px-4 py-3">Material</th><th className="border-b border-slate-200 px-4 py-3 text-right">Suggested</th><th className="border-b border-slate-200 px-4 py-3 text-right">Final</th><th className="border-b border-slate-200 px-4 py-3 text-right">Delta</th><th className="border-b border-slate-200 px-4 py-3 text-right">Shortage</th><th className="border-b border-slate-200 px-4 py-3 text-right">Stock</th><th className="border-b border-slate-200 px-4 py-3">Warnings / flags</th><th className="border-b border-slate-200 px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`px-4 py-3 text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`px-4 py-3 text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="px-4 py-3 text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="px-4 py-3"><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-0.5">{canEdit && !finalized ? <AppButton className="h-8 px-3" variant="secondary" onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" />Adjust</AppButton> : <span className="text-xs text-slate-400">{finalized ? "Locked" : "Read only"}</span>}</div></td></tr>; })}</tbody></table></div>
+        {linesError ? <ProcurementErrorState error={linesError} onRetry={onLoadLines} /> : (
+          <ProcurementTable
+            columnCount={10}
+            emptyHint="Clear line filters or open another saved plan."
+            emptyTitle={!linesLoading && lines.length === 0 ? "No snapshot lines match the filters" : undefined}
+            head={<><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-20 min-w-64 border-r bg-slate-50`}>Material</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>System suggestion</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>To order</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Delta</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Shortfall</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Physical stock<AppTooltip label="Global Items.CurrentStock supplied by the saved planning snapshot."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Inbound</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Projected available<AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Warnings / flags</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            headClassName="sticky top-0 z-10"
+            loading={linesLoading}
+            minWidth="min-w-[1460px]"
+            scrollerClassName="max-h-[60vh]"
+            rows={5}
+          >
+            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
+          </ProcurementTable>
         )}
         <ProcurementPagination disabled={linesLoading} {...pagination} onPageChange={(value) => onUpdateLineFilters({ page: value })} onPageSizeChange={(value) => onUpdateLineFilters({ page: 1, pageSize: Number(value) })} />
       </ProcurementSectionCard>
@@ -541,6 +568,12 @@ const PlanningHistoryPage = () => {
   const [finalizeOpen, setFinalizeOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState("");
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelError, setCancelError] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const {
     beginRequest: beginRunsRequest,
     isLatestRequest: isLatestRunsRequest,
@@ -558,6 +591,19 @@ const PlanningHistoryPage = () => {
     resource: "ProcurementPlanning.PlanningHistory",
     route: "/procurement/planning-history",
   });
+  const listedRuns = getCollection(data, ["runs", "planningRuns"]);
+  const totalPlans = Number(data?.totalCount) || listedRuns.length;
+  const draftPlans =
+    data?.draftCount ??
+    data?.summary?.draftCount ??
+    listedRuns.filter(
+      (listedRun) =>
+        !isFinalizedRun(listedRun) && !isCancelledRun(listedRun),
+    ).length;
+  const finalizedPlans =
+    data?.finalizedCount ??
+    data?.summary?.finalizedCount ??
+    listedRuns.filter(isFinalizedRun).length;
 
   const loadRuns = useCallback(async () => {
     const requestId = beginRunsRequest();
@@ -666,9 +712,9 @@ const PlanningHistoryPage = () => {
     } catch (openError) {
       if (!isLatestDetailRequest(requestId)) return;
       if (getApiStatus(openError) === 404) {
-        toast.error("This planning run no longer exists.");
+        toast.error("This saved plan no longer exists.");
       } else {
-        toast.error(getProcurementError(openError, "Unable to open this run."));
+        toast.error(getProcurementError(openError, "Unable to open this plan."));
       }
     } finally {
       if (isLatestDetailRequest(requestId)) setDetailLoading(false);
@@ -689,7 +735,7 @@ const PlanningHistoryPage = () => {
       }
     } catch (refreshError) {
       if (isLatestDetailRequest(requestId)) {
-        toast.error(getProcurementError(refreshError, "Unable to refresh the run."));
+        toast.error(getProcurementError(refreshError, "Unable to refresh the plan."));
       }
     }
   };
@@ -710,13 +756,13 @@ const PlanningHistoryPage = () => {
       const response = await planningService.finalize(
         getRecordId(run, ["planningRunId"]),
       );
-      toast.success(response.message || "Planning run finalized.");
+      toast.success(response.message || "Plan finalized.");
       setFinalizeOpen(false);
       await refreshCurrentRun();
     } catch (finalizeRequestError) {
       const message = getProcurementError(
         finalizeRequestError,
-        "Unable to finalize this planning run.",
+        "Unable to finalize this plan.",
       );
       setFinalizeError(message);
       if (getApiStatus(finalizeRequestError) !== 409) {
@@ -727,13 +773,122 @@ const PlanningHistoryPage = () => {
     }
   };
 
+  const cancelPlan = async () => {
+    const reason = cancelReason.trim();
+
+    if (!cancelTarget || !reason) {
+      setCancelError("A cancellation reason is required.");
+      return;
+    }
+
+    setCancelling(true);
+    setCancelError("");
+
+    try {
+      const response = await planningService.cancel(
+        getRecordId(cancelTarget, ["planningRunId"]),
+        reason,
+      );
+      toast.success(response.message || "Plan cancelled.");
+      const cancelledCurrentRun =
+        String(getRecordId(run, ["planningRunId"])) ===
+        String(getRecordId(cancelTarget, ["planningRunId"]));
+      setCancelTarget(null);
+      setCancelReason("");
+
+      if (cancelledCurrentRun) {
+        await refreshCurrentRun();
+      } else {
+        await loadRuns();
+      }
+    } catch (error) {
+      const message = getProcurementError(
+        error,
+        "Unable to cancel this plan.",
+      );
+      setCancelError(message);
+      toast.error(message);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const exportCurrentPlan = async () => {
+    if (!run) return;
+    setExporting(true);
+    setExportError("");
+    try {
+      await planningService.exportRun(
+        getRecordId(run, ["planningRunId"]),
+      );
+    } catch (error) {
+      const message = getProcurementError(
+        error,
+        "Unable to export this plan.",
+      );
+      setExportError(message);
+      toast.error(message);
+    } finally {
+      setExporting(false);
+    }
+  };
+  const exportButton = (
+    <AppButton
+      disabled={!run}
+      isLoading={exporting}
+      loadingText="Exporting…"
+      variant="secondary"
+      onClick={exportCurrentPlan}
+    >
+      <Download className="h-4 w-4" />
+      Export
+    </AppButton>
+  );
+
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={<><History className="h-3.5 w-3.5" />Procurement Planning</>}
-        title="Planning History"
-        description="Open retained plan snapshots, make traceable draft adjustments, finalize for immutability, and export the approved result."
+        title="Plans"
+        description="Open saved plan snapshots, make traceable draft adjustments, finalize for immutability, and export the approved result."
+        actions={
+          <>
+            <AppButton
+              disabled={run ? detailLoading || linesLoading : loading}
+              variant="secondary"
+              onClick={() => run ? void refreshCurrentRun() : void loadRuns()}
+            >
+              <RotateCw className={`h-4 w-4 ${run ? detailLoading || linesLoading ? "animate-spin" : "" : loading ? "animate-spin" : ""}`} />
+              Refresh
+            </AppButton>
+            {capabilities.canExport && (
+              run
+                ? exportButton
+                : (
+                    <AppTooltip label="Open a plan to enable export">
+                      {exportButton}
+                    </AppTooltip>
+                  )
+            )}
+            <Link to="/procurement/generate-plan"><AppButton><Plus className="h-4 w-4" />New plan</AppButton></Link>
+          </>
+        }
       />
+      <ProcurementStatCards
+        cards={[
+          loading || data !== null
+            ? { icon: History, label: "Total plans", value: totalPlans }
+            : null,
+          loading || data !== null
+            ? { icon: FileClock, label: "Drafts", value: draftPlans, hint: data?.draftCount === undefined ? "On this page" : undefined }
+            : null,
+          loading || data !== null
+            ? { icon: FileCheck2, label: "Finalized", value: finalizedPlans, hint: data?.finalizedCount === undefined ? "On this page" : undefined }
+            : null,
+        ]}
+        loading={loading && data === null}
+      />
+      <ProcurementInlineError message={exportError} title="Export could not be downloaded" />
       {detailLoading ? (
         <ProcurementSectionCard title="Opening snapshot">
           <ProcurementLoadingRows columns={5} rows={6} />
@@ -741,8 +896,8 @@ const PlanningHistoryPage = () => {
       ) : run ? (
         <RunDetail
           canApprove={capabilities.canApprove}
+          canCancel={capabilities.canDelete}
           canEdit={capabilities.canEdit}
-          canExport={capabilities.canExport}
           finalizeError={finalizeError}
           finalizing={finalizing}
           lineFilters={lineFilters}
@@ -757,6 +912,11 @@ const PlanningHistoryPage = () => {
             setLineData(null);
             setFinalizeError("");
           }}
+          onCancel={() => {
+            setCancelError("");
+            setCancelReason("");
+            setCancelTarget(run);
+          }}
           onFinalize={() => {
             setFinalizeError("");
             setFinalizeOpen(true);
@@ -767,6 +927,7 @@ const PlanningHistoryPage = () => {
         />
       ) : (
         <RunList
+          canCancel={capabilities.canDelete}
           data={data}
           error={error}
           filters={filters}
@@ -776,6 +937,11 @@ const PlanningHistoryPage = () => {
           onChangeFilters={(patch) => {
             setFilters((current) => ({ ...current, ...patch }));
             setPage(1);
+          }}
+          onCancel={(target) => {
+            setCancelError("");
+            setCancelReason("");
+            setCancelTarget(target);
           }}
           onOpen={openRun}
           onPageChange={setPage}
@@ -795,7 +961,7 @@ const PlanningHistoryPage = () => {
       />
       <AppModal
         isOpen={finalizeOpen}
-        title="Finalize planning run?"
+        title="Finalize plan?"
         onClose={() => !finalizing && setFinalizeOpen(false)}
       >
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
@@ -807,12 +973,59 @@ const PlanningHistoryPage = () => {
             </p>
           </div>
         </div>
-        <ProcurementInlineError message={finalizeError} title="Run conflict" />
+        <ProcurementInlineError message={finalizeError} title="Plan conflict" />
         <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setFinalizeOpen(false)}>Keep draft</AppButton>
           <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={finalize}>
             <ShieldCheck className="h-4 w-4" />Finalize snapshot
           </AppButton>
+        </div>
+      </AppModal>
+      <AppModal
+        isBusy={cancelling}
+        isOpen={Boolean(cancelTarget)}
+        title="Cancel plan"
+        onClose={cancelling ? undefined : () => setCancelTarget(null)}
+      >
+        <p className="text-sm leading-6 text-slate-600">
+          This records an auditable cancellation. It does not delete the plan.
+        </p>
+        <div className="mt-4">
+          <AppInput
+            error={cancelError}
+            label="Cancellation reason"
+            required
+            value={cancelReason}
+            onChange={(event) => {
+              setCancelReason(event.target.value);
+              setCancelError("");
+            }}
+          />
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <AppButton
+            variant="secondary"
+            onClick={() => setCancelTarget(null)}
+          >
+            Keep plan
+          </AppButton>
+          {!cancelReason.trim() ? (
+            <AppTooltip label="Enter a cancellation reason to continue.">
+              <AppButton disabled variant="danger">
+                Cancel plan
+              </AppButton>
+            </AppTooltip>
+          ) : (
+            <AppButton
+              isLoading={cancelling}
+              loadingText="Cancelling…"
+              variant="danger"
+              onClick={cancelPlan}
+            >
+              <XCircle className="h-4 w-4" />
+              Cancel plan
+            </AppButton>
+          )}
         </div>
       </AppModal>
     </section>

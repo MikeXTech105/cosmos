@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import { getItemClassificationLabel } from "../../../utils/itemClassification";
+import MaterialTypePill from "../../../components/common/MaterialTypePill";
 import { InventoryStatusPill } from "../InventoryShared";
 import { formatDate } from "../inventoryHelpers";
 import {
@@ -119,11 +119,14 @@ const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
           Item details
         </p>
         <div className="mt-2">
+          <DetailRow label="Item type" value={itemType} />
           <DetailRow
             label="Material type"
-            value={getItemClassificationLabel(
-              item.procurementClassification,
-            )}
+            value={
+              <MaterialTypePill
+                value={item.procurementClassification}
+              />
+            }
           />
           <DetailRow label="Category" value={item.categoryName} />
           <DetailRow

@@ -22,6 +22,11 @@ import procurementSalesChannelsReducer from "./slices/procurement/salesChannelSl
 import procurementSalesImportReducer from "./slices/procurement/salesImportSlice";
 import procurementSettingsReducer from "./slices/procurement/procurementSettingSlice";
 import procurementSkuMappingsReducer from "./slices/procurement/skuMappingSlice";
+import supplyChainChannelsReducer from "./slices/supplyChain/channelSlice";
+import supplyChainImportsReducer from "./slices/supplyChain/importSlice";
+import supplyChainItemMappingsReducer from "./slices/supplyChain/itemMappingSlice";
+import supplyChainPackagingProfilesReducer from "./slices/supplyChain/packagingProfileSlice";
+import supplyChainWarehousesReducer from "./slices/supplyChain/warehouseSlice";
 import expenseCategoryReducer from "./slices/purchase/expenseCategorySlice";
 import expenseReducer from "./slices/purchase/expenseSlice";
 import purchaseBillReducer from "./slices/purchase/purchaseBillSlice";
@@ -83,6 +88,11 @@ export const store = configureStore({
     salesInvoices: salesInvoiceReducer,
     sidebar: sidebarReducer,
     supplierPayments: supplierPaymentReducer,
+    supplyChainChannels: supplyChainChannelsReducer,
+    supplyChainImports: supplyChainImportsReducer,
+    supplyChainItemMappings: supplyChainItemMappingsReducer,
+    supplyChainPackagingProfiles: supplyChainPackagingProfilesReducer,
+    supplyChainWarehouses: supplyChainWarehousesReducer,
     units: unitReducer,
   },
 });

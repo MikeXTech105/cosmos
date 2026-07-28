@@ -1,10 +1,7 @@
 import { Boxes, Plus, RefreshCw } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import {
-  getItemClassificationLabel,
-  normalizeItemClassification,
-} from "../../../utils/itemClassification";
+import MaterialTypePill from "../../../components/common/MaterialTypePill";
 import {
   InventoryPagination,
   InventoryStatusPill,
@@ -70,6 +67,11 @@ const ItemTable = ({
     <div className="flex h-full min-h-[420px] flex-col">
       <div className="min-h-0 flex-1 overflow-x-auto">
         <table className="w-full min-w-[860px] table-fixed text-left">
+          <colgroup>
+            {itemColumns.map((column) => (
+              <col key={column.key} className={column.width} />
+            ))}
+          </colgroup>
           <thead className="bg-slate-50">
             <tr>
               {itemColumns.map((column) => (
@@ -78,12 +80,6 @@ const ItemTable = ({
                   className={[
                     "border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500",
                     column.align === "right" ? "text-right" : "",
-                    column.key === "serialNumber" ? "w-[52px]" : "",
-                    column.key === "name" ? "w-[30%]" : "",
-                    column.key === "procurementClassification"
-                      ? "w-[148px]"
-                      : "",
-                    column.key === "actions" ? "w-[112px]" : "",
                   ].join(" ")}
                 >
                   {column.label}
@@ -104,11 +100,6 @@ const ItemTable = ({
                   const lowStock = isLowStock(item);
                   const isSelected = String(selectedId) === String(item.id);
                   const itemType = getItemTypeLabel(item.itemType);
-                  const itemClassification = normalizeItemClassification(
-                    item.procurementClassification,
-                  );
-                  const itemClassificationLabel =
-                    getItemClassificationLabel(itemClassification);
 
                   return (
                     <tr
@@ -159,17 +150,10 @@ const ItemTable = ({
                           {itemType}
                         </span>
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3">
-                        <span
-                          className={[
-                            "inline-flex rounded-full px-2 py-1 text-[11px] font-semibold",
-                            itemClassification === null
-                              ? "bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200"
-                              : "bg-slate-100 text-slate-700",
-                          ].join(" ")}
-                        >
-                          {itemClassificationLabel}
-                        </span>
+                      <td className="border-b border-slate-100 px-4 py-3.5">
+                        <MaterialTypePill
+                          value={item.procurementClassification}
+                        />
                       </td>
                       <td
                         className={[

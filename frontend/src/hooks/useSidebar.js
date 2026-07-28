@@ -81,18 +81,22 @@ const sortMenuItems = (items) => {
 
 const createItem = ({ module, page }) => {
   const iconName = page?.icon ?? page?.iconName ?? page?.moduleIcon ?? module.icon;
+  const preservePresentation = Boolean(module.preservePresentation);
 
   return {
     raw: page ?? module,
-    id: String(page ? getPageId(page) : module.id),
-    parentId: page ? getParentId(page) : null,
-    label: page ? getPageLabel(page) : module.label,
+    id: String(page && !preservePresentation ? getPageId(page) : module.id),
+    parentId: page && !preservePresentation ? getParentId(page) : null,
+    label: page && !preservePresentation ? getPageLabel(page) : module.label,
     route: module.route,
     iconName,
     Icon: getIconComponent(iconName),
     description:
       page?.description ?? page?.moduleName ?? page?.categoryName ?? module.description ?? "",
-    sortOrder: page ? getSortOrder(page) || module.sortOrder : module.sortOrder,
+    sortOrder:
+      page && !preservePresentation
+        ? getSortOrder(page) || module.sortOrder
+        : module.sortOrder,
     children: [],
   };
 };
@@ -115,13 +119,18 @@ const buildMenuTree = (pages, isSuperAdmin) => {
   const enabledModules = getEnabledSidebarModules();
 
   enabledModules.forEach((module) => {
+    const permissionTargets = module.permissionTargets ?? [
+      {
+        id: module.id,
+        label: module.label,
+        route: module.route,
+      },
+    ];
     const page = isSuperAdmin
       ? null
-      : findPermissionPage(pages, {
-          id: module.id,
-          label: module.label,
-          route: module.route,
-        });
+      : permissionTargets
+          .map((target) => findPermissionPage(pages, target))
+          .find((candidate) => candidate && canViewPermission(candidate));
 
     if (!isSuperAdmin && (!page || !canViewPermission(page))) {
       return;

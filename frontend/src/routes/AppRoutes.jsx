@@ -91,20 +91,32 @@ const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
 const ProcurementSalesImport = lazy(
   () => import("../pages/procurement/salesImport/index.js"),
 );
-const ProcurementSkuMapping = lazy(
-  () => import("../pages/procurement/skuMapping/index.js"),
+const ProcurementHome = lazy(
+  () => import("../pages/procurement/home/index.js"),
 );
-const ProcurementBomMapping = lazy(
-  () => import("../pages/procurement/bomMapping/index.js"),
-);
-const ProcurementSettings = lazy(
-  () => import("../pages/procurement/settings/index.js"),
+const ProcurementSetup = lazy(
+  () => import("../pages/procurement/setup/index.js"),
 );
 const ProcurementGeneratePlan = lazy(
   () => import("../pages/procurement/generatePlan/index.js"),
 );
 const ProcurementPlanningHistory = lazy(
   () => import("../pages/procurement/planningHistory/index.js"),
+);
+const SupplyChainChannels = lazy(
+  () => import("../pages/supplyChain/channels/index.js"),
+);
+const SupplyChainWarehouses = lazy(
+  () => import("../pages/supplyChain/warehouses/index.js"),
+);
+const SupplyChainItemMappings = lazy(
+  () => import("../pages/supplyChain/itemMappings/index.js"),
+);
+const SupplyChainPackagingProfiles = lazy(
+  () => import("../pages/supplyChain/packagingProfiles/index.js"),
+);
+const SupplyChainImports = lazy(
+  () => import("../pages/supplyChain/imports/index.js"),
 );
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
@@ -564,6 +576,72 @@ const AppRoutes = () => {
             }
           />
           <Route
+            path="/supply-chain/channels"
+            element={
+              <PermissionGuard
+                route="/supply-chain/channels"
+                pageName="SupplyChain.Channels"
+              >
+                <SupplyChainChannels />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/warehouses"
+            element={
+              <PermissionGuard
+                route="/supply-chain/warehouses"
+                pageName="SupplyChain.Warehouses"
+              >
+                <SupplyChainWarehouses />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/item-mappings"
+            element={
+              <PermissionGuard
+                route="/supply-chain/item-mappings"
+                pageName="SupplyChain.ItemMappings"
+              >
+                <SupplyChainItemMappings />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/packaging-profiles"
+            element={
+              <PermissionGuard
+                route="/supply-chain/packaging-profiles"
+                pageName="SupplyChain.PackagingProfiles"
+              >
+                <SupplyChainPackagingProfiles />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/imports"
+            element={
+              <PermissionGuard
+                route="/supply-chain/imports"
+                pageName="SupplyChain.Imports"
+              >
+                <SupplyChainImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement"
+            element={
+              <PermissionGuard
+                route="/procurement/generate-plan"
+                pageName="ProcurementPlanning.GeneratePlan"
+              >
+                <ProcurementHome />
+              </PermissionGuard>
+            }
+          />
+          <Route
             path="/procurement/sales-import"
             element={
               <PermissionGuard
@@ -581,7 +659,7 @@ const AppRoutes = () => {
                 route="/procurement/sku-mapping"
                 pageName="ProcurementPlanning.SkuMapping"
               >
-                <ProcurementSkuMapping />
+                <Navigate replace to="/procurement/setup?tab=sku" />
               </PermissionGuard>
             }
           />
@@ -592,7 +670,7 @@ const AppRoutes = () => {
                 route="/procurement/bom-mapping"
                 pageName="ProcurementPlanning.BomMapping"
               >
-                <ProcurementBomMapping />
+                <Navigate replace to="/procurement/setup?tab=bom" />
               </PermissionGuard>
             }
           />
@@ -603,9 +681,13 @@ const AppRoutes = () => {
                 route="/procurement/settings"
                 pageName="ProcurementPlanning.Settings"
               >
-                <ProcurementSettings />
+                <Navigate replace to="/procurement/setup?tab=settings" />
               </PermissionGuard>
             }
+          />
+          <Route
+            path="/procurement/setup"
+            element={<ProcurementSetup />}
           />
           <Route
             path="/procurement/generate-plan"

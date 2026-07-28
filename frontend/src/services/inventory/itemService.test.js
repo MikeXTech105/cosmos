@@ -89,4 +89,23 @@ describe("item service procurement classification contract", () => {
       false,
     );
   });
+
+  it("omits the material type list filter when it is all", async () => {
+    axiosInstance.get.mockResolvedValue(successResponse);
+
+    await itemService.getItems({
+      PageNumber: 1,
+      PageSize: 20,
+      ProcurementClassification: "all",
+    });
+
+    const requestConfig = axiosInstance.get.mock.calls[0][1];
+
+    expect(
+      Object.hasOwn(
+        requestConfig.params,
+        "ProcurementClassification",
+      ),
+    ).toBe(false);
+  });
 });

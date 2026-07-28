@@ -78,12 +78,12 @@ const ItemFilters = ({
         </AppButton>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <Filter className="h-3.5 w-3.5" />
-        {resultCount} items on this page
+        <span>{resultCount} items on this page</span>
         {activeFilterCount > 0 && (
-          <span>
-            · {activeFilterCount} active{" "}
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
+            {activeFilterCount} active{" "}
             {activeFilterCount === 1 ? "filter" : "filters"}
           </span>
         )}

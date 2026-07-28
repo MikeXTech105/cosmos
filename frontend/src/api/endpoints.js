@@ -323,6 +323,59 @@ export const ENDPOINTS = {
   PP_PLAN_RUN_EXPORT: (id) =>
     `/api/v1/procurement-planning/plans/runs/${id}/export`,
 
+  PP_PLAN_RUN_CANCEL: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/cancel`,
+
+  // Supply Chain - shared masters
+  SC_CHANNELS: "/api/v1/supply-chain/channels",
+
+  SC_CHANNEL_BY_ID: (id) => `/api/v1/supply-chain/channels/${id}`,
+
+  SC_CHANNEL_STATUS: (id) => `/api/v1/supply-chain/channels/${id}/status`,
+
+  SC_WAREHOUSES: "/api/v1/supply-chain/warehouses",
+
+  SC_WAREHOUSE_BY_ID: (id) => `/api/v1/supply-chain/warehouses/${id}`,
+
+  SC_WAREHOUSE_STATUS: (id) =>
+    `/api/v1/supply-chain/warehouses/${id}/status`,
+
+  SC_WAREHOUSE_DROPDOWN: "/api/v1/supply-chain/warehouses/dropdown",
+
+  SC_ITEM_MAPPINGS: "/api/v1/supply-chain/item-mappings",
+
+  SC_ITEM_MAPPING_BY_ID: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}`,
+
+  SC_ITEM_MAPPING_STATUS: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}/status`,
+
+  SC_ITEM_MAPPINGS_UNMATCHED:
+    "/api/v1/supply-chain/item-mappings/unmatched",
+
+  SC_PACKAGING_PROFILES: "/api/v1/supply-chain/packaging-profiles",
+
+  SC_PACKAGING_PROFILE_BY_ID: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}`,
+
+  SC_PACKAGING_PROFILE_SET_DEFAULT: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}/set-default`,
+
+  SC_IMPORT_VALIDATE: "/api/v1/supply-chain/imports/validate",
+
+  SC_IMPORTS: "/api/v1/supply-chain/imports",
+
+  SC_IMPORT_BY_ID: (id) => `/api/v1/supply-chain/imports/${id}`,
+
+  SC_IMPORT_ERRORS: (id) => `/api/v1/supply-chain/imports/${id}/errors`,
+
+  SC_IMPORT_ERROR_EXPORT: (id) =>
+    `/api/v1/supply-chain/imports/${id}/error-export`,
+
+  SC_IMPORT_COMMIT: (id) => `/api/v1/supply-chain/imports/${id}/commit`,
+
+  SC_IMPORT_CANCEL: (id) => `/api/v1/supply-chain/imports/${id}/cancel`,
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",

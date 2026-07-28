@@ -8,6 +8,7 @@ export const ProcurementItemClassification = Object.freeze({
 export const PlanningRunStatus = Object.freeze({
   Draft: 1,
   Finalized: 2,
+  Cancelled: 3,
 });
 
 export const PlanningRoundingRule = Object.freeze({
@@ -42,6 +43,7 @@ export const PROCUREMENT_ITEM_CLASSIFICATION_LABELS = Object.freeze({
 export const PLANNING_RUN_STATUS_LABELS = Object.freeze({
   [PlanningRunStatus.Draft]: "Draft",
   [PlanningRunStatus.Finalized]: "Finalized",
+  [PlanningRunStatus.Cancelled]: "Cancelled",
 });
 
 export const PLANNING_ROUNDING_RULE_LABELS = Object.freeze({

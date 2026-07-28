@@ -1,4 +1,6 @@
+import clsx from "clsx";
 import { forwardRef, useId } from "react";
+import { twMerge } from "tailwind-merge";
 
 const AppInput = forwardRef(({
   "aria-describedby": ariaDescribedBy,
@@ -43,15 +45,15 @@ const AppInput = forwardRef(({
         aria-required={required || undefined}
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={describedBy}
-        className={[
-          "h-11 w-full rounded-lg border bg-white px-4 text-sm text-slate-800 placeholder:text-slate-400",
-          "outline-none transition-all",
-          "focus:border-brand focus:ring-2 focus:ring-brand/20",
-          error ? "border-red-400 bg-red-50" : "border-slate-200",
+        className={twMerge(
+          clsx(
+            "h-11 w-full rounded-lg border bg-white px-4 text-sm text-slate-800 placeholder:text-slate-400",
+            "outline-none transition-all",
+            "focus:border-brand focus:ring-2 focus:ring-brand/20",
+            error ? "border-red-400 bg-red-50" : "border-slate-200",
+          ),
           className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        )}
       />
       {helperText && (
         <p id={helperId} className="text-[12px] text-slate-500">
