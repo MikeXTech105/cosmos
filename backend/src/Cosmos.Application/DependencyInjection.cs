@@ -30,6 +30,9 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IProcurementCalculationService, ProcurementCalculationService>();
         services.AddScoped<IProcurementPlanningService, ProcurementPlanningService>();
+        services.AddScoped<DispatchCalculationService>();
+        services.AddScoped<DispatchAllocationService>();
+        services.AddScoped<IDispatchPlanningService, DispatchPlanningService>();
         services.AddScoped<ISupplyChainService, SupplyChainService>();
         services.AddScoped<IRojmelWalletService, RojmelWalletService>();
         services.AddScoped<IRojmelTransactionService, RojmelTransactionService>();
