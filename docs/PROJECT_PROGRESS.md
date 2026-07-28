@@ -1407,3 +1407,19 @@ Status: Implemented / Build Verified / Tests Verified (144/144) / Live SQL and r
 - Added `backend/database/verify_supply_chain_common_foundation.sql`. It was created but not run against a disposable SQL Server during this update.
 - `dotnet build Cosmos.slnx --no-restore` succeeded; `dotnet test Cosmos.slnx --no-build` passed 144/144 tests. Existing dependency warnings remain: Microsoft.OpenApi `NU1903` and two Infrastructure package-pruning `NU1510` warnings.
 - The original Dispatch and Work List workbooks were not available; the available Procurement migration-report workbook confirms missing channel SKU identity and explicit mapping requirements. See `backend/docs/SUPPLY_CHAIN_WORKBOOK_MAPPING.md`.
+
+# Dispatch Planning Module Update — 2026-07-28
+
+Status: Implemented / Build Verified / Tests Verified (148/148) / SQL Verified / Swagger and role smoke tests pending runtime verification.
+
+- Added a generic channel/warehouse Dispatch Planning backend, reusing Items, SalesChannels, ChannelWarehouses, ChannelSkuMappings, ItemPackagingProfiles, shared import batches, auditing, page permissions, response envelopes, and Swagger conventions.
+- Added Dispatch SKU settings, warehouse sales/stock/inbound snapshots, immutable company-stock snapshots, planning runs, recommendations, overrides, pure calculation/allocation engines, finalization/cancellation, reports, CSV export, and verification/documentation assets.
+- Added `backend/database/migrations/20260728_dispatch_planning_module.sql` and `backend/database/verify_dispatch_planning.sql`. Both were applied/run successfully on a temporary local SQL Server database, which was removed after verification.
+- Added Swagger group `dispatch-planning` with JWT and page-action enforcement for settings, imports, planning runs, allocation, reports, and export.
+- The named Dispatch workbook remains unavailable, so all worksheet-specific factor/tier/rounding interpretations are documented as client confirmations rather than claimed matches.
+
+Deployment order: base setup → existing migrations → Supply Chain common foundation → Procurement alignment → Dispatch Planning migration → Dispatch verification script → API deployment → role grants.
+
+Known risks: workbook formula semantics and gross-versus-sellable source-stock interpretation require confirmation; live Swagger and role smoke testing remain pending.
+
+Next recommended module: Shipment Operations / Work List Conversion (not implemented).

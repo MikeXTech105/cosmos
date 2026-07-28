@@ -227,3 +227,9 @@ Known limitations:
 - Export endpoints are pending.
 - Stock valuation remains purchase-price based.
 - Late-arrival count is not calculated yet.
+
+## 2026-07-28 — Dispatch Planning
+
+Requested a complete backend-only Dispatch Planning module after repository-first analysis. The implementation reuses the Supply Chain common foundation and Procurement alignment instead of creating duplicate Item, Channel, Warehouse, mapping, packaging, import, audit, or permission masters. It adds normalized snapshots, planning runs, calculations, allocation, immutable finalization, reports, tests, SQL verification, and frontend integration documentation.
+
+The explicitly named source workbook was not available in the workspace or attachments. The implementation therefore treats the written formula descriptions as requirements and records all workbook-cell-specific rules as pending client confirmation.
