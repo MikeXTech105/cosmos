@@ -10,6 +10,10 @@ import hrLeaveReducer from "./slices/hr/leaveSlice";
 import hrPayrollReducer from "./slices/hr/payrollSlice";
 import hrShiftReducer from "./slices/hr/shiftSlice";
 import itemReducer from "./slices/inventory/itemSlice";
+import dispatchImportsReducer from "./slices/dispatch/importSlice";
+import dispatchReportsReducer from "./slices/dispatch/reportSlice";
+import dispatchRunsReducer from "./slices/dispatch/runSlice";
+import dispatchSettingsReducer from "./slices/dispatch/settingSlice";
 import oeeDashboardReducer from "./slices/oee/oeeDashboardSlice";
 import oeeDowntimeReasonReducer from "./slices/oee/oeeDowntimeReasonSlice";
 import oeeMachineReducer from "./slices/oee/oeeMachineSlice";
@@ -51,6 +55,10 @@ export const store = configureStore({
     auth: authReducer,
     categories: categoryReducer,
     dashboard: dashboardReducer,
+    dispatchImports: dispatchImportsReducer,
+    dispatchReports: dispatchReportsReducer,
+    dispatchRuns: dispatchRunsReducer,
+    dispatchSettings: dispatchSettingsReducer,
     expenseCategories: expenseCategoryReducer,
     expenses: expenseReducer,
     hrAttendance: hrAttendanceReducer,

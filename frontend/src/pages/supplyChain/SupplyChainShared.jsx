@@ -89,38 +89,83 @@ export const SupplyChainPagination = ({
         {formatSupplyChainNumber(totalCount, "0", 0)}
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <AppSelect
-          aria-label="Rows per page"
-          className="w-28"
-          disabled={disabled}
-          options={SUPPLY_CHAIN_PAGE_SIZE_OPTIONS.map((value) => ({
-            label: `${value} rows`,
-            value,
-          }))}
-          value={pageSize}
-          onChange={onPageSizeChange}
-        />
-        <AppButton
-          className="h-10 px-3"
-          disabled={disabled || pageNumber <= 1}
-          variant="secondary"
-          onClick={() => onPageChange(pageNumber - 1)}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </AppButton>
+        {disabled ? (
+          <AppTooltip label="Wait for the current page to finish loading.">
+            <span className="inline-flex w-28">
+              <AppSelect
+                aria-label="Rows per page"
+                className="w-28"
+                disabled
+                options={SUPPLY_CHAIN_PAGE_SIZE_OPTIONS.map((value) => ({
+                  label: `${value} rows`,
+                  value,
+                }))}
+                value={pageSize}
+                onChange={onPageSizeChange}
+              />
+            </span>
+          </AppTooltip>
+        ) : (
+          <AppSelect
+            aria-label="Rows per page"
+            className="w-28"
+            options={SUPPLY_CHAIN_PAGE_SIZE_OPTIONS.map((value) => ({
+              label: `${value} rows`,
+              value,
+            }))}
+            value={pageSize}
+            onChange={onPageSizeChange}
+          />
+        )}
+        {disabled || pageNumber <= 1 ? (
+          <AppTooltip
+            label={
+              disabled
+                ? "Wait for the current page to finish loading."
+                : "You are already on the first page."
+            }
+          >
+            <AppButton className="h-10 px-3" disabled variant="secondary">
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </AppButton>
+          </AppTooltip>
+        ) : (
+          <AppButton
+            className="h-10 px-3"
+            variant="secondary"
+            onClick={() => onPageChange(pageNumber - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </AppButton>
+        )}
         <span className="min-w-20 text-center text-xs font-medium text-slate-600">
           Page {pageNumber} of {Math.max(1, totalPages)}
         </span>
-        <AppButton
-          className="h-10 px-3"
-          disabled={disabled || pageNumber >= totalPages}
-          variant="secondary"
-          onClick={() => onPageChange(pageNumber + 1)}
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </AppButton>
+        {disabled || pageNumber >= totalPages ? (
+          <AppTooltip
+            label={
+              disabled
+                ? "Wait for the current page to finish loading."
+                : "You are already on the last page."
+            }
+          >
+            <AppButton className="h-10 px-3" disabled variant="secondary">
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </AppButton>
+          </AppTooltip>
+        ) : (
+          <AppButton
+            className="h-10 px-3"
+            variant="secondary"
+            onClick={() => onPageChange(pageNumber + 1)}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </AppButton>
+        )}
       </div>
     </div>
   );

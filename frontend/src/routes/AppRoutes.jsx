@@ -118,6 +118,24 @@ const SupplyChainPackagingProfiles = lazy(
 const SupplyChainImports = lazy(
   () => import("../pages/supplyChain/imports/index.js"),
 );
+const DispatchDashboard = lazy(
+  () => import("../pages/dispatch/dashboard/index.js"),
+);
+const DispatchRuns = lazy(
+  () => import("../pages/dispatch/runs/index.js"),
+);
+const DispatchRunDetail = lazy(
+  () => import("../pages/dispatch/runs/DispatchRunDetailPage.jsx"),
+);
+const DispatchImports = lazy(
+  () => import("../pages/dispatch/imports/index.js"),
+);
+const DispatchSettings = lazy(
+  () => import("../pages/dispatch/settings/index.js"),
+);
+const DispatchReports = lazy(
+  () => import("../pages/dispatch/reports/index.js"),
+);
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
 const Preferences = lazy(() => import("../pages/preferences/index.js"));
@@ -708,6 +726,76 @@ const AppRoutes = () => {
                 pageName="ProcurementPlanning.PlanningHistory"
               >
                 <ProcurementPlanningHistory />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch"
+            element={<Navigate replace to="/dispatch/dashboard" />}
+          />
+          <Route
+            path="/dispatch/dashboard"
+            element={
+              <PermissionGuard
+                route="/dispatch/dashboard"
+                pageName="DispatchPlanning.Reports"
+              >
+                <DispatchDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/runs"
+            element={
+              <PermissionGuard
+                route="/dispatch/runs"
+                pageName="DispatchPlanning.PlanningRuns"
+              >
+                <DispatchRuns />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/runs/:id"
+            element={
+              <PermissionGuard
+                route="/dispatch/runs"
+                pageName="DispatchPlanning.PlanningRuns"
+              >
+                <DispatchRunDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/imports"
+            element={
+              <PermissionGuard
+                route="/dispatch/imports"
+                pageName="DispatchPlanning.Imports"
+              >
+                <DispatchImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/settings"
+            element={
+              <PermissionGuard
+                route="/dispatch/settings"
+                pageName="DispatchPlanning.SkuSettings"
+              >
+                <DispatchSettings />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/reports"
+            element={
+              <PermissionGuard
+                route="/dispatch/reports"
+                pageName="DispatchPlanning.Reports"
+              >
+                <DispatchReports />
               </PermissionGuard>
             }
           />

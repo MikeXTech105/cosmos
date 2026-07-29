@@ -20,7 +20,6 @@ import { itemService } from "../../services/inventory/itemService";
 import {
   formatProcurementInteger,
   getChannelLabel,
-  getCollection,
   getInclusiveDayCount,
   getItemLabel,
   getProcurementError,
@@ -467,12 +466,12 @@ export const ProcurementItemAutocomplete = ({
         const baseParams = {
           IsActive: true,
           PageNumber: 1,
-          PageSize: 100,
+          PageSize: 200,
           Search: query.trim() || undefined,
         };
         const primaryRequest = itemService.getItems({
           ...baseParams,
-          procurementClassification:
+          ProcurementClassification:
             mode === "finished"
               ? ProcurementItemClassification.FinishedProduct
               : undefined,
@@ -486,8 +485,8 @@ export const ProcurementItemAutocomplete = ({
           legacyRequest,
         ]);
         let nextItems = mergeItems(
-          getCollection(primary.data),
-          getCollection(legacy.data).filter(
+          Array.isArray(primary.data?.items) ? primary.data.items : [],
+          (Array.isArray(legacy.data?.items) ? legacy.data.items : []).filter(
             (item) => getClassification(item) === null,
           ),
         );

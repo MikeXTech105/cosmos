@@ -376,6 +376,48 @@ export const ENDPOINTS = {
 
   SC_IMPORT_CANCEL: (id) => `/api/v1/supply-chain/imports/${id}/cancel`,
 
+  // Dispatch Planning
+  DP_SETTINGS: "/api/v1/dispatch-planning/settings",
+
+  DP_SETTING_BY_ID: (id) => `/api/v1/dispatch-planning/settings/${id}`,
+
+  DP_IMPORT_VALIDATE: "/api/v1/dispatch-planning/imports/validate",
+
+  DP_IMPORTS: "/api/v1/dispatch-planning/imports",
+
+  DP_IMPORT_COMMIT: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/commit`,
+
+  DP_IMPORT_CANCEL: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/cancel`,
+
+  DP_RUNS: "/api/v1/dispatch-planning/runs",
+
+  DP_RUN_BY_ID: (id) => `/api/v1/dispatch-planning/runs/${id}`,
+
+  DP_RUN_CALCULATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/calculate`,
+
+  DP_RUN_RECOMMENDATIONS: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/recommendations`,
+
+  DP_RUN_RECOMMENDATION: (runId, recommendationId) =>
+    `/api/v1/dispatch-planning/runs/${runId}/recommendations/${recommendationId}`,
+
+  DP_RUN_ALLOCATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/allocate`,
+
+  DP_RUN_FINALIZE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/finalize`,
+
+  DP_RUN_CANCEL: (id) => `/api/v1/dispatch-planning/runs/${id}/cancel`,
+
+  DP_RECOMMENDATION_REPORTS:
+    "/api/v1/dispatch-planning/reports/recommendations",
+
+  DP_RECOMMENDATION_REPORT_EXPORT:
+    "/api/v1/dispatch-planning/reports/recommendations/export",
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",

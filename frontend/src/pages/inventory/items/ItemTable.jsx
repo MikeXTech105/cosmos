@@ -66,7 +66,7 @@ const ItemTable = ({
   return (
     <div className="flex h-full min-h-[420px] flex-col">
       <div className="min-h-0 flex-1 overflow-x-auto">
-        <table className="w-full min-w-[860px] table-fixed text-left">
+        <table className="w-full min-w-[1010px] table-fixed text-left">
           <colgroup>
             {itemColumns.map((column) => (
               <col key={column.key} className={column.width} />

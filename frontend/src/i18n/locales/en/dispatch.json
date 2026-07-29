@@ -1,0 +1,47 @@
+{
+  "category": "Dispatch Planning",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "runs": "Planning Runs",
+    "imports": "Imports",
+    "settings": "SKU Settings",
+    "reports": "Reports"
+  },
+  "dashboard": {
+    "title": "Dispatch dashboard",
+    "description": "Monitor finalized recommendation outcomes by channel, period and warehouse."
+  },
+  "runs": {
+    "title": "Planning runs",
+    "new": "New run",
+    "calculate": "Calculate",
+    "allocate": "Allocate",
+    "finalize": "Finalize",
+    "cancel": "Cancel run",
+    "immutable": "Finalized runs are immutable."
+  },
+  "imports": {
+    "title": "Imports",
+    "csvOnly": "XLSX support is coming. Save your sheet as CSV for now.",
+    "exactMapping": "SKUs resolve only through an exact active channel mapping.",
+    "duplicateAudit": "Duplicate rows stay in the audit preview but are excluded from committed snapshots."
+  },
+  "settings": {
+    "title": "SKU settings",
+    "global": "Global",
+    "allChannels": "All channels (global)",
+    "finishedProductsOnly": "Finished products only",
+    "finishedProductsHelp": "Turn this off when legacy Item classifications are incomplete."
+  },
+  "reports": {
+    "title": "Recommendation reports",
+    "exportCap": "Exports up to 500 rows matching the current filters."
+  },
+  "domain": {
+    "recommendation": "Recommendation",
+    "tier": "Tier",
+    "boxes": "Boxes",
+    "sellableStock": "Sellable stock",
+    "eligibleInbound": "Eligible inbound"
+  }
+}

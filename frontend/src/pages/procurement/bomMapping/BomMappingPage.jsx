@@ -144,7 +144,7 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
         IsActive: true,
         PageNumber: 1,
         PageSize: 200,
-        procurementClassification:
+        ProcurementClassification:
           ProcurementItemClassification.FinishedProduct,
       });
       if (isLatestProductsRequest(requestId)) {
