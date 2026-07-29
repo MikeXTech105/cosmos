@@ -29,5 +29,9 @@ public enum SalesPaymentMode
 public enum StockMovementType
 {
     SalesIssue = 1,
-    SalesCancelReturn = 2
+    SalesCancelReturn = 2,
+    PurchaseReceipt = 3,
+    PurchaseReturn = 4,
+    ShipmentDispatch = 5,
+    ShipmentReturnRestock = 6
 }

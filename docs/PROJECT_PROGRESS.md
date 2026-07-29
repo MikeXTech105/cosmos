@@ -1423,3 +1423,14 @@ Deployment order: base setup → existing migrations → Supply Chain common fou
 Known risks: workbook formula semantics and gross-versus-sellable source-stock interpretation require confirmation; live Swagger and role smoke testing remain pending.
 
 Next recommended module: Shipment Operations / Work List Conversion (not implemented).
+
+# Shipment Operations / Work List Module Update — 2026-07-29
+
+Status: Implemented / Build Verified / Tests Verified / Disposable SQL Verified / Runtime Swagger Verified.
+
+- Added the generic Shipment Operations backend for shipment creation, packing, dockets, appointments, tracking, receipts, returns, freight, transporter roles, reports/export, dashboard, and historical Work List imports.
+- Reused the existing global stock ledger: inventory changes only at confirmed dispatch and restockable return receipt. Historical imports never alter stock.
+- Added `backend/database/migrations/20260729_shipment_operations_module.sql`, `backend/database/verify_shipment_operations_module.sql`, and `backend/database/shipment_operations_smoke_tests.sql`.
+- Added JWT/page-action protected `/api/v1/shipment-operations` endpoints in Swagger group `shipment-operations` plus contracts, validators, Dapper repository/service flow, audit events, and focused tests.
+- The referenced `Copy of WORK LIST.xlsx` was not present in the workspace or attachment payload. Workbook-specific mapping/formula/status assumptions are documented as confirmations, not claimed as implemented facts.
+- Local LocalDB verification completed for the dependency migration chain, structural verification, and transactional operational smoke paths. The locally served Swagger document contained all 30 expected module paths, Bearer security, and named string shipment-status values. No shared staging or production database was changed.
