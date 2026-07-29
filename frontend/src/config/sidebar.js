@@ -1,5 +1,8 @@
+import { ACTION_CENTRE_PERMISSION_TARGETS } from "../pages/actionCentre/actionCentrePermissions";
+
 export const enabledModules = [
   "dashboard",
+  "actionCentre",
   "users",
   "roles",
   "permissions",
@@ -141,6 +144,15 @@ export const sidebarModules = {
     route: "/dashboard",
     icon: "dashboard",
     sortOrder: 10,
+  },
+  actionCentre: {
+    id: "actionCentre",
+    label: "Action centre",
+    route: "/action-centre",
+    icon: "bell",
+    sortOrder: 20,
+    preservePresentation: true,
+    permissionTargets: ACTION_CENTRE_PERMISSION_TARGETS,
   },
   users: {
     id: "users",

@@ -1,0 +1,55 @@
+{
+  "page": {
+    "badge": "Operations",
+    "title": "Action centre",
+    "description": "Har operational signal dekhein jise attention chahiye aur seedha fix par jaayein.",
+    "attentionLabel": "Aapka attention chahiye"
+  },
+  "actions": {
+    "refresh": "Refresh",
+    "retry": "Dobara try karein",
+    "fix": "Fix karein"
+  },
+  "filters": {
+    "label": "Action signals filter karein",
+    "all": "Sab",
+    "blocking": "Blocking",
+    "waiting": "Waiting"
+  },
+  "groups": {
+    "blocking": "Blocking kaam",
+    "waiting": "Aapka wait kar raha hai",
+    "watch": "Ek nazar daalein"
+  },
+  "signals": {
+    "unmatchedChannelSkus": {
+      "label": "Unmatched channel SKUs",
+      "hint": "Planning se pehle channel products ko item se map karna zaroori hai."
+    },
+    "productsMissingBom": {
+      "label": "BOM ke bina products",
+      "hint": "Sold finished products ko active material recipe chahiye."
+    },
+    "materialsMissingSettings": {
+      "label": "Settings ke bina materials",
+      "hint": "Calculation se pehle purchased materials ko planning defaults chahiye."
+    },
+    "dispatchMissingPackaging": {
+      "label": "Packaging ke bina dispatch SKUs",
+      "hint": "Active dispatch settings ko matching packaging profile chahiye."
+    },
+    "draftPlansNotFinalized": {
+      "label": "Finalize na hue draft plans",
+      "hint": "Saved procurement plans review aur finalization ka wait kar rahe hain."
+    },
+    "itemsBelowMinimumStock": {
+      "label": "Minimum stock se neeche items",
+      "hint": "Inventory alerts configured minimum ke paas ya neeche stock dikhate hain."
+    }
+  },
+  "states": {
+    "couldntLoad": "Load nahi hua",
+    "allClearTitle": "Sab clear hai",
+    "allClearHint": "Abhi kisi cheez ko attention nahi chahiye."
+  }
+}
