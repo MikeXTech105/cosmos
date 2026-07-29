@@ -1,8 +1,22 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, Plus } from "lucide-react";
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { twMerge } from "tailwind-merge";
+
+const sizes = {
+  sm: "h-9 px-3",
+  md: "h-10 px-3",
+};
 
 const normalizeOptions = (options) => {
   return options.map((option) => {
@@ -17,7 +31,7 @@ const normalizeOptions = (options) => {
   });
 };
 
-const AppSelect = ({
+const AppSelect = forwardRef(({
   "aria-describedby": ariaDescribedBy,
   "aria-label": ariaLabel,
   className = "",
@@ -26,7 +40,9 @@ const AppSelect = ({
   disabled = false,
   emptyMessage = "No options available",
   error,
+  hint,
   id,
+  isDisabled = false,
   label,
   name,
   onBlur,
@@ -35,12 +51,14 @@ const AppSelect = ({
   options = [],
   placeholder = "Select an option",
   required = false,
+  size = "md",
   value,
-}) => {
+}, ref) => {
   const generatedId = useId();
   const selectId = id ?? `app-select-${generatedId}`;
   const listboxId = `${selectId}-listbox`;
   const errorId = `${selectId}-error`;
+  const hintId = `${selectId}-hint`;
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
@@ -49,6 +67,8 @@ const AppSelect = ({
   const [menuPosition, setMenuPosition] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [highlightedValueKey, setHighlightedValueKey] = useState("");
+  const normalizedValue = value ?? "";
+  const resolvedDisabled = Boolean(disabled || isDisabled);
   const normalizedOptions = useMemo(
     () => normalizeOptions(options),
     [options],
@@ -71,10 +91,10 @@ const AppSelect = ({
     return indexes;
   }, [canCreate, normalizedOptions]);
   const selectedIndex = normalizedOptions.findIndex((option) => {
-    return String(option.value) === String(value);
+    return String(option.value) === String(normalizedValue);
   });
   const selectedOption = selectedIndex >= 0 ? normalizedOptions[selectedIndex] : null;
-  const currentValueKey = String(value ?? "");
+  const currentValueKey = String(normalizedValue);
   const activeHighlightedIndex =
     highlightedValueKey === currentValueKey &&
     navigableIndexes.includes(highlightedIndex)
@@ -88,6 +108,16 @@ const AppSelect = ({
         ? `${listboxId}-create`
         : `${listboxId}-option-${activeHighlightedIndex}`
       : undefined;
+
+  const setTriggerRef = useCallback((element) => {
+    triggerRef.current = element;
+
+    if (typeof ref === "function") {
+      ref(element);
+    } else if (ref) {
+      ref.current = element;
+    }
+  }, [ref]);
 
   const updateMenuPosition = useCallback(() => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -280,8 +310,10 @@ const AppSelect = ({
     <div
       ref={rootRef}
       className={twMerge(
-        "relative min-w-0",
-        isOpen ? "z-30" : "",
+        clsx(
+          "relative min-w-0",
+          isOpen && "z-30",
+        ),
         className,
       )}
     >
@@ -297,12 +329,13 @@ const AppSelect = ({
       )}
 
       <button
-        ref={triggerRef}
+        ref={setTriggerRef}
         id={selectId}
         name={name}
         type="button"
         role="combobox"
-        disabled={disabled}
+        value={normalizedValue}
+        disabled={resolvedDisabled}
         aria-activedescendant={highlightedOptionId}
         aria-controls={listboxId}
         aria-expanded={isOpen}
@@ -310,7 +343,9 @@ const AppSelect = ({
         aria-invalid={Boolean(error) || undefined}
         aria-required={required || undefined}
         aria-describedby={
-          [ariaDescribedBy, error ? errorId : ""].filter(Boolean).join(" ") ||
+          [ariaDescribedBy, hint ? hintId : "", error ? errorId : ""]
+            .filter(Boolean)
+            .join(" ") ||
           undefined
         }
         aria-label={label ? undefined : ariaLabel}
@@ -329,31 +364,31 @@ const AppSelect = ({
           }
         }}
         onKeyDown={handleTriggerKeyDown}
-        className={[
-          "flex h-10 w-full items-center justify-between gap-3 rounded-lg border bg-white px-3 text-left text-sm text-slate-700 outline-none transition-all",
+        className={clsx(
+          "flex w-full items-center justify-between gap-3 rounded-lg border bg-white text-left text-sm text-slate-700 outline-none transition-all",
+          sizes[size] ?? sizes.md,
           isOpen
             ? "border-brand/40 ring-2 ring-brand/15"
             : error
               ? "border-red-400"
               : "border-slate-200 hover:border-slate-300",
-          disabled
-            ? "cursor-not-allowed bg-slate-50 text-slate-400 opacity-60"
-            : "",
-        ].join(" ")}
+          resolvedDisabled &&
+            "cursor-not-allowed bg-slate-50 text-slate-400 opacity-60",
+        )}
       >
         <span
-          className={[
+          className={clsx(
             "min-w-0 flex-1 truncate",
-            selectedOption ? "" : "text-slate-400",
-          ].join(" ")}
+            !selectedOption && "text-slate-400",
+          )}
         >
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronDown
-          className={[
+          className={clsx(
             "h-4 w-4 shrink-0 text-slate-400 transition-transform",
-            isOpen ? "rotate-180" : "",
-          ].join(" ")}
+            isOpen && "rotate-180",
+          )}
         />
       </button>
 
@@ -399,7 +434,8 @@ const AppSelect = ({
                 </p>
               ) : (
                 normalizedOptions.map((option, index) => {
-                  const isSelected = String(option.value) === String(value);
+                  const isSelected =
+                    String(option.value) === String(normalizedValue);
                   const isHighlighted = activeHighlightedIndex === index;
 
                   return (
@@ -422,15 +458,14 @@ const AppSelect = ({
                           setHighlightedIndex(index);
                         }
                       }}
-                      className={[
+                      className={clsx(
                         "flex h-9 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 text-left text-sm transition-colors",
                         isSelected || isHighlighted
                           ? "bg-brand-light text-slate-900"
                           : "text-slate-600 hover:bg-slate-50",
-                        option.disabled
-                          ? "cursor-not-allowed opacity-45 hover:bg-transparent"
-                          : "",
-                      ].join(" ")}
+                        option.disabled &&
+                          "cursor-not-allowed opacity-45 hover:bg-transparent",
+                      )}
                     >
                       <span className="min-w-0 flex-1 truncate">
                         {option.label}
@@ -454,12 +489,12 @@ const AppSelect = ({
                 role="option"
                 tabIndex={-1}
                 aria-selected="false"
-                className={[
+                className={clsx(
                   "flex h-10 w-full items-center gap-2 border-t border-slate-100 px-3 text-left text-sm font-semibold text-brand transition-colors",
                   activeHighlightedIndex === createIndex
                     ? "bg-brand-light"
                     : "bg-white hover:bg-brand-light",
-                ].join(" ")}
+                )}
                 onClick={handleCreateClick}
                 onMouseEnter={() => {
                   setHighlightedValueKey(currentValueKey);
@@ -481,8 +516,15 @@ const AppSelect = ({
           {error}
         </p>
       )}
+      {hint && (
+        <p id={hintId} className="mt-1.5 text-xs text-slate-500">
+          {hint}
+        </p>
+      )}
     </div>
   );
-};
+});
+
+AppSelect.displayName = "AppSelect";
 
 export default AppSelect;

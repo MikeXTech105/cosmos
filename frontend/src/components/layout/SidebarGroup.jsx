@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
@@ -25,28 +26,28 @@ const SidebarGroup = ({
         aria-label={item.label}
         aria-expanded={Boolean(open)}
         onClick={() => onToggle(item.id)}
-        className={[
+        className={clsx(
           "group relative flex h-10 w-full items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
           `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
           active ? themeClasses.navGroupActive : themeClasses.navInactive,
           "focus-visible:ring-2 focus-visible:ring-brand/40",
-        ].join(" ")}
+        )}
       >
         <span
-          className={[
+          className={clsx(
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors",
             active ? themeClasses.iconActive : themeClasses.iconInactive,
-          ].join(" ")}
+          )}
         >
           <Icon className="h-4 w-4" />
         </span>
 
         <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
         <ChevronDown
-          className={[
+          className={clsx(
             "h-4 w-4 text-current transition-transform duration-200",
-            open ? "rotate-180" : "",
-          ].join(" ")}
+            open && "rotate-180",
+          )}
         />
       </button>
 

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -17,33 +18,31 @@ const SidebarItem = ({ item, depth = 0, onNavigate, themeClasses }) => {
       aria-label={item.label}
       aria-current={item.isActive ? "page" : undefined}
       onClick={onNavigate}
-      className={
-        [
-          "group relative flex h-10 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
-          `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
-          item.isActive
-            ? themeClasses.navActive
-            : themeClasses.navInactive,
-          "focus-visible:ring-2 focus-visible:ring-brand/40",
-        ].join(" ")
-      }
+      className={clsx(
+        "group relative flex h-10 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
+        `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
+        item.isActive
+          ? themeClasses.navActive
+          : themeClasses.navInactive,
+        "focus-visible:ring-2 focus-visible:ring-brand/40",
+      )}
     >
       {active && (
         <motion.span
           layoutId="sidebar-active"
-          className={[
+          className={clsx(
             "absolute inset-0 rounded-lg",
             themeClasses.activePill,
-          ].join(" ")}
+          )}
           transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
         />
       )}
 
       <span
-        className={[
+        className={clsx(
           "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors",
           active ? themeClasses.iconActive : themeClasses.iconInactive,
-        ].join(" ")}
+        )}
       >
         <Icon className="h-4 w-4" />
       </span>

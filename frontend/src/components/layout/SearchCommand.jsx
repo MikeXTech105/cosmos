@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Command, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -230,10 +231,10 @@ const SearchCommand = () => {
                     onMouseEnter={() =>
                       setHighlightedIndex(clampCommandHighlight(index, results.length))
                     }
-                    className={[
+                    className={clsx(
                       "group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20",
                       isHighlighted ? "bg-slate-100" : "hover:bg-slate-100",
-                    ].join(" ")}
+                    )}
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
                       <Icon className="h-4 w-4" />

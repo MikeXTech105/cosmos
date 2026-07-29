@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   cloneElement,
@@ -9,8 +10,9 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { twMerge } from "tailwind-merge";
 
-const AppTooltip = ({ children, label }) => {
+const AppTooltip = ({ children, className = "", label }) => {
   const id = useId();
   const triggerRef = useRef(null);
   const childIsDisabled =
@@ -90,7 +92,7 @@ const AppTooltip = ({ children, label }) => {
       <span
         ref={triggerRef}
         aria-describedby={childIsDisabled && open ? id : undefined}
-        className="inline-flex"
+        className={twMerge(clsx("inline-flex"), className)}
         tabIndex={childIsDisabled ? 0 : undefined}
         onMouseEnter={showTooltip}
         onMouseLeave={closeTooltip}
@@ -113,7 +115,9 @@ const AppTooltip = ({ children, label }) => {
           : children}
       </span>
 
-      {createPortal(tooltip, document.body)}
+      {typeof document !== "undefined"
+        ? createPortal(tooltip, document.body)
+        : tooltip}
     </>
   );
 };

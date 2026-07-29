@@ -409,18 +409,18 @@ const ProcurementHomePage = () => {
             <AppButton className="border-white/20 bg-white text-brand hover:bg-brand-light" variant="secondary" onClick={() => { setDraftRange(range); setAssumptionsOpen(true); }}>
               <Settings2 className="h-4 w-4" />Adjust assumptions
             </AppButton>
-            <AppButton className="border-white/25 bg-white/10 text-white hover:bg-white/20" disabled={loading || allLines.length === 0} variant="secondary" onClick={() => downloadPlanningCsv(allLines, range)}>
+            <AppButton className="border-white/25 bg-white/10 text-white hover:bg-white/20 disabled:opacity-90" disabled={loading || allLines.length === 0} variant="secondary" onClick={() => downloadPlanningCsv(allLines, range)}>
               <Download className="h-4 w-4" />Export CSV
             </AppButton>
             {capabilities.canCreate && (
               saveDisabled ? (
                 <AppTooltip label={saveDisabledReason}>
-                  <AppButton className="bg-white text-brand hover:bg-white/90" disabled variant="secondary">
+                  <AppButton className="bg-white text-brand hover:bg-white/90 disabled:opacity-80" disabled variant="secondary">
                     <Save className="h-4 w-4" />Save draft
                   </AppButton>
                 </AppTooltip>
               ) : (
-                <AppButton className="bg-white text-brand hover:bg-white/90" isLoading={saving} variant="secondary" onClick={saveDraft}>
+                <AppButton className="bg-white text-brand hover:bg-white/90 disabled:opacity-80" isLoading={saving} variant="secondary" onClick={saveDraft}>
                   <Save className="h-4 w-4" />Save draft
                 </AppButton>
               )

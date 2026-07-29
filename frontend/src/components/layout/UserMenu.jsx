@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, KeyRound, LogOut, Settings, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -113,10 +114,10 @@ const UserMenu = () => {
           <span className="block text-[11px] text-slate-500">{roleName}</span>
         </span>
         <ChevronDown
-          className={[
+          className={clsx(
             "hidden h-4 w-4 shrink-0 text-slate-400 transition-transform lg:block",
-            open ? "rotate-180" : "",
-          ].join(" ")}
+            open && "rotate-180",
+          )}
         />
       </button>
 

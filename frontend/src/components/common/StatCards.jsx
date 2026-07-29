@@ -16,7 +16,7 @@ const renderValue = (card) => {
   return String(card.value);
 };
 
-const StatCards = ({ cards = [], loading = false }) => {
+const StatCards = ({ cards = [], className = "", loading = false }) => {
   const visibleCards = cards.filter(Boolean);
   const gridClass =
     visibleCards.length === 2
@@ -26,7 +26,7 @@ const StatCards = ({ cards = [], loading = false }) => {
         : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
-    <div className={gridClass}>
+    <div className={twMerge(clsx(gridClass), className)}>
       {visibleCards.map((card) => {
         const Icon = card.icon;
         const isLoading = card.loading ?? loading;
@@ -73,3 +73,5 @@ const StatCards = ({ cards = [], loading = false }) => {
 };
 
 export default StatCards;
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";

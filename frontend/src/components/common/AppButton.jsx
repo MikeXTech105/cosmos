@@ -1,5 +1,8 @@
 import clsx from "clsx";
+import { forwardRef } from "react";
 import { twMerge } from "tailwind-merge";
+
+import AppTooltip from "./AppTooltip";
 
 const variants = {
   primary:
@@ -12,32 +15,42 @@ const variants = {
     "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]",
 };
 
-const AppButton = ({
+const sizes = {
+  sm: "h-8 px-3",
+  md: "h-9 px-5",
+};
+
+const AppButton = forwardRef(({
   children,
   className = "",
   disabled = false,
+  disabledReason,
+  isDisabled = false,
   isLoading = false,
   loadingText = "Working…",
   onClick,
+  size = "md",
   type = "button",
   variant = "primary",
   ...buttonProps
-}) => {
-  const isDisabled = Boolean(disabled || isLoading);
+}, ref) => {
+  const resolvedDisabled = Boolean(disabled || isDisabled || isLoading);
 
-  return (
+  const button = (
     <button
       {...buttonProps}
+      ref={ref}
       type={type}
       onClick={onClick}
-      disabled={isDisabled}
+      disabled={resolvedDisabled}
       aria-busy={isLoading || undefined}
-      aria-disabled={isDisabled || undefined}
+      aria-disabled={resolvedDisabled || undefined}
       className={twMerge(
         clsx(
-          "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
+          "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all",
           variants[variant] ?? variants.primary,
-          isDisabled && "cursor-not-allowed opacity-60",
+          sizes[size] ?? sizes.md,
+          resolvedDisabled && "cursor-not-allowed disabled:opacity-60",
         ),
         className,
       )}
@@ -71,6 +84,14 @@ const AppButton = ({
       )}
     </button>
   );
-};
+
+  if (disabledReason && resolvedDisabled) {
+    return <AppTooltip label={disabledReason}>{button}</AppTooltip>;
+  }
+
+  return button;
+});
+
+AppButton.displayName = "AppButton";
 
 export default AppButton;

@@ -1,6 +1,8 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
+import { twMerge } from "tailwind-merge";
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -19,6 +21,7 @@ const getFocusableElements = (container) => {
 
 const AppModal = ({
   children,
+  className = "",
   closeOnBackdrop = true,
   closeOnEscape = true,
   isBusy = false,
@@ -131,10 +134,13 @@ const AppModal = ({
             aria-modal="true"
             aria-busy={isBusy || undefined}
             tabIndex={-1}
-            className={[
-              "flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-visible rounded-2xl border border-slate-200 bg-white shadow-xl outline-none sm:max-h-[calc(100dvh-3rem)]",
-              maxWidth,
-            ].join(" ")}
+            className={twMerge(
+              clsx(
+                "flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-visible rounded-2xl border border-slate-200 bg-white shadow-xl outline-none sm:max-h-[calc(100dvh-3rem)]",
+                maxWidth,
+              ),
+              className,
+            )}
             initial={{ opacity: 0, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}

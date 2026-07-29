@@ -2,24 +2,41 @@ import clsx from "clsx";
 import { forwardRef, useId } from "react";
 import { twMerge } from "tailwind-merge";
 
-const AppInput = forwardRef(({
-  "aria-describedby": ariaDescribedBy,
-  className = "",
-  error,
-  helperText,
-  id,
-  label,
-  required,
-  type = "text",
-  ...props
-}, ref) => {
+const sizes = {
+  sm: "h-9 px-3",
+  md: "h-11 px-4",
+};
+
+const AppInput = forwardRef((componentProps, ref) => {
+  const {
+    "aria-describedby": ariaDescribedBy,
+    className = "",
+    disabled = false,
+    error,
+    helperText,
+    hint,
+    id,
+    isDisabled = false,
+    label,
+    required,
+    size = "md",
+    type = "text",
+    value,
+    ...props
+  } = componentProps;
   const generatedId = useId();
   const inputId = id ?? `app-input-${generatedId}`;
   const errorId = `${inputId}-error`;
-  const helperId = `${inputId}-helper`;
+  const hintId = `${inputId}-hint`;
+  const resolvedDisabled = Boolean(disabled || isDisabled);
+  const resolvedHint = hint ?? helperText;
+  const hasValueProp = Object.prototype.hasOwnProperty.call(
+    componentProps,
+    "value",
+  );
   const describedBy = [
     ariaDescribedBy,
-    helperText ? helperId : "",
+    resolvedHint ? hintId : "",
     error ? errorId : "",
   ]
     .filter(Boolean)
@@ -41,23 +58,26 @@ const AppInput = forwardRef(({
         ref={ref}
         id={inputId}
         type={type}
+        disabled={resolvedDisabled}
         required={required}
         aria-required={required || undefined}
         aria-invalid={Boolean(error) || undefined}
         aria-describedby={describedBy}
+        {...(hasValueProp ? { value: value ?? "" } : {})}
         className={twMerge(
           clsx(
-            "h-11 w-full rounded-lg border bg-white px-4 text-sm text-slate-800 placeholder:text-slate-400",
+            "w-full rounded-lg border bg-white text-sm text-slate-800 placeholder:text-slate-400",
             "outline-none transition-all",
             "focus:border-brand focus:ring-2 focus:ring-brand/20",
+            sizes[size] ?? sizes.md,
             error ? "border-red-400 bg-red-50" : "border-slate-200",
           ),
           className,
         )}
       />
-      {helperText && (
-        <p id={helperId} className="text-[12px] text-slate-500">
-          {helperText}
+      {resolvedHint && (
+        <p id={hintId} className="text-xs text-slate-500">
+          {resolvedHint}
         </p>
       )}
       {error && (
