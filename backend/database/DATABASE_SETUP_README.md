@@ -121,3 +121,17 @@ The clean `001_Full_Database_Setup.sql` package predates Procurement Planning. A
 The module migration is idempotent, does not contain `USE`, and must be executed against the database selected by the operator. The smoke script creates realistic mapping/BOM/settings/sales/run data inside a transaction, verifies snapshot preservation and adjustment/finalization behavior, then rolls back.
 
 Do not import the client workbook directly into `Items`. Review `docs/PROCUREMENT_PLANNING_WORKBOOK_MIGRATION_REPORT.xlsx`, confirm all Item and channel-SKU mappings, and use the module APIs for configuration/import.
+
+## Shipment Operations Additive Migration
+
+Shipment Operations requires the existing Procurement Planning, Rojmel wallet, Supply Chain common foundation, and Dispatch Planning schema. After the base setup and earlier additive migrations, apply in this order:
+
+1. `migrations/20260715_procurement_planning_module.sql`.
+2. `migrations/20260720_rojmel_wallet_module.sql` when Rojmel has not already been installed.
+3. `migrations/20260727_procurement_shared_foundation_alignment.sql`.
+4. `migrations/20260727_supply_chain_common_foundation.sql`.
+5. `migrations/20260728_dispatch_planning_module.sql`.
+6. `migrations/20260729_shipment_operations_module.sql`.
+7. `verify_shipment_operations_module.sql` as a required read-only deployment gate.
+
+`shipment_operations_smoke_tests.sql` is transactional and rolls back its fixture data. Use it only against a disposable or approved non-production database. The migration is rerunnable and has no `USE` statement; run it against the selected target database. Deploy the matching API after the SQL gate, then verify `/swagger/shipment-operations/swagger.json` and intended role grants. See `../docs/SHIPMENT_OPERATIONS_IMPLEMENTATION.md` for inventory, Rojmel, import, and workbook constraints.

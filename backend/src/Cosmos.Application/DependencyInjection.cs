@@ -1,5 +1,6 @@
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Application.Services;
+using Cosmos.Application.ShipmentOperations;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<DispatchCalculationService>();
         services.AddScoped<DispatchAllocationService>();
         services.AddScoped<IDispatchPlanningService, DispatchPlanningService>();
+        services.AddScoped<IShipmentOperationsService, ShipmentOperationsService>();
+        services.AddScoped<IShipmentPackingSuggestionService, ShipmentPackingSuggestionService>();
+        services.AddScoped<ShipmentStatusTransitionService>();
         services.AddScoped<ISupplyChainService, SupplyChainService>();
         services.AddScoped<IRojmelWalletService, RojmelWalletService>();
         services.AddScoped<IRojmelTransactionService, RojmelTransactionService>();

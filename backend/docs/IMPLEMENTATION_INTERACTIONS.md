@@ -233,3 +233,11 @@ Known limitations:
 Requested a complete backend-only Dispatch Planning module after repository-first analysis. The implementation reuses the Supply Chain common foundation and Procurement alignment instead of creating duplicate Item, Channel, Warehouse, mapping, packaging, import, audit, or permission masters. It adds normalized snapshots, planning runs, calculations, allocation, immutable finalization, reports, tests, SQL verification, and frontend integration documentation.
 
 The explicitly named source workbook was not available in the workspace or attachments. The implementation therefore treats the written formula descriptions as requirements and records all workbook-cell-specific rules as pending client confirmation.
+
+## 2026-07-29 — Shipment Operations / Work List
+
+Shipment Operations is an additive backend module over Dispatch Planning and the Supply Chain foundation. It reuses existing Item, channel, channel-warehouse, channel-SKU mapping, packaging-profile, Party, global inventory, audit, permission, response, Rojmel, and staged-import records. It does not introduce duplicate masters.
+
+Inventory changes occur only when dispatch is confirmed and when a return is physically received as restockable. Dispatch Planning allocation is treated as a bounded operational allocation, not a stock reservation; the dispatch transaction validates current stock again. Docket and appointment history are retained, tracking is append-only, receipt/return quantities are constrained against dispatched quantities, and approved freight requires a separate explicit action before a Rojmel expense can be created.
+
+The named Work List workbook was absent, so the historical-import contract is normalized and audit-first rather than asserted to reproduce specific worksheet cells. See `SHIPMENT_OPERATIONS_IMPLEMENTATION.md` and `SHIPMENT_OPERATIONS_FRONTEND_INTEGRATION.md`.
