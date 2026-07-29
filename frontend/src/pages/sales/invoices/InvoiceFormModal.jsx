@@ -17,6 +17,7 @@ import { itemService } from "../../../services/inventory/itemService";
 import {
   buildInvoicePayload,
   formatCurrency,
+  formatNumber,
   getDefaultInvoiceLine,
   getInvoiceDefaultValues,
   getInvoiceTotals,
@@ -354,7 +355,7 @@ const InvoiceFormModal = ({
                         GST %
                       </th>
                       <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Line Total
+                        Line Total (₹)
                       </th>
                       <th className="w-12 px-2 py-2" />
                     </tr>
@@ -441,14 +442,15 @@ const InvoiceFormModal = ({
                               }
                             />
                           </td>
-                          <td className="px-3 py-3 text-right align-middle text-sm font-semibold text-slate-900">
-                            {formatCurrency(lineTotal)}
+                          <td className="px-3 py-3 text-right align-middle text-sm font-semibold tabular-nums text-slate-900">
+                            {formatNumber(lineTotal)}
                           </td>
                           <td className="px-2 py-3 text-right align-middle">
                             <button
                               type="button"
                               aria-label="Remove line item"
-                              disabled={fields.length === 1}
+                                  disabled={fields.length === 1}
+                                  title={fields.length === 1 ? "An invoice requires at least one line" : undefined}
                               onClick={() => remove(index)}
                               className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                             >

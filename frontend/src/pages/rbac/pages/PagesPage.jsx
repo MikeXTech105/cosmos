@@ -69,7 +69,7 @@ const DeleteConfirmDialog = ({
       isOpen={confirmation.isOpen}
       maxWidth="max-w-md"
       onClose={confirmation.isSubmitting ? undefined : onCancel}
-      title="Delete Page?"
+      title="Delete 1 page?"
     >
       <div className="space-y-4">
         <div className="flex items-start gap-3">
@@ -434,6 +434,7 @@ const PagesPage = () => {
       <PageStats
         active={stats.active}
         inactive={stats.inactive}
+        loading={loading}
         topLevel={stats.topLevel}
         total={stats.total}
       />

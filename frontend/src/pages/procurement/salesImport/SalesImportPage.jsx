@@ -405,7 +405,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
         title="Import sales workbook"
         description="Use the retained file to preview row-level validation before confirming the import."
       >
-        <div className="grid gap-5 p-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="grid gap-5 p-6 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div className="space-y-4">
             <ProcurementDateRangeFields
               {...range}
@@ -444,7 +444,8 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
           <div>
             <button
               type="button"
-              disabled={!canCreate}
+          disabled={!canCreate}
+          title={!canCreate ? "Importing sales requires create permission" : undefined}
               className="flex min-h-48 w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center transition-colors hover:border-brand hover:bg-brand-light disabled:cursor-not-allowed disabled:opacity-60"
               onClick={() => inputRef.current?.click()}
               onDragOver={(event) => event.preventDefault()}
@@ -1066,7 +1067,7 @@ const HistoryTab = ({
         onClose={() => setModal({ open: false, record: null })}
         onSaved={load}
       />
-      <AppModal isBusy={deleteLoading} isOpen={Boolean(deleteRecord)} title="Delete manual sales entry?" onClose={() => !deleteLoading && setDeleteRecord(null)}>
+      <AppModal isBusy={deleteLoading} isOpen={Boolean(deleteRecord)} title="Delete 1 manual sales entry?" onClose={() => !deleteLoading && setDeleteRecord(null)}>
         <p className="text-sm leading-6 text-slate-600">This removes only the selected manual entry. Imported batch rows are never deleted here.</p>
         <div className="mt-4"><ProcurementInlineError message={deleteError} title="Entry could not be deleted" /></div>
         <div className="mt-5 flex justify-end gap-2">
@@ -1182,7 +1183,7 @@ const BatchesTab = ({ canEdit }) => {
                 <td>
                   <div className="flex items-center justify-end gap-0.5">
                     <AppTooltip label="View batch"><button type="button" aria-label="View batch" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => void openDetail(batch)}><Eye className="h-4 w-4" /></button></AppTooltip>
-                    {canEdit && <AppTooltip label="Cancel batch"><button type="button" aria-label="Cancel batch" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}><Ban className="h-4 w-4" /></button></AppTooltip>}
+                    {canEdit && <AppTooltip label={cancelled ? "This batch is already cancelled" : "Cancel batch"}><button type="button" aria-label="Cancel batch" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}><Ban className="h-4 w-4" /></button></AppTooltip>}
                   </div>
                 </td>
               </tr>
@@ -1193,7 +1194,7 @@ const BatchesTab = ({ canEdit }) => {
       <ProcurementPagination disabled={loading} {...pagination} onPageChange={setPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setPage(1); }} />
 
       <AppModal isOpen={Boolean(detail)} maxWidth="max-w-5xl" title="Import batch detail" onClose={() => { setDetail(null); setDetailError(null); }}>
-        {detailLoading ? <ProcurementLoadingRows columns={5} rows={4} /> : detailError ? <ProcurementErrorState error={detailError} onRetry={() => void openDetail(detail)} /> : detail && (
+        {detailLoading ? <ProcurementLoadingRows columns={5} rows={5} /> : detailError ? <ProcurementErrorState error={detailError} onRetry={() => void openDetail(detail)} /> : detail && (
           <div className="space-y-4">
             <div className="grid gap-3 rounded-xl bg-slate-50 p-4 sm:grid-cols-4">
               <div><p className="text-[11px] uppercase text-slate-500">File</p><p className="mt-1 text-sm font-semibold text-slate-800">{detail.fileName ?? detail.originalFileName ?? "-"}</p></div>

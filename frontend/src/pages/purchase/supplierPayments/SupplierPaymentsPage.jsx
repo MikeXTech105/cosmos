@@ -43,6 +43,7 @@ import {
   cleanNullableString,
   formatCurrency,
   formatDate,
+  formatNumber,
   getActionError,
   getBalanceAmount,
   getDocumentNumber,
@@ -274,7 +275,7 @@ const PaymentModal = ({
               <thead className="text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Purchase Bill</th>
-                  <th className="px-4 py-3 text-right font-semibold">Amount</th>
+                  <th className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
                   <th className="w-14 px-2 py-3" />
                 </tr>
               </thead>
@@ -677,10 +678,11 @@ const SupplierPaymentsPage = () => {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         <PurchaseStatCard
           icon={CreditCard}
           label="Total Paid"
+          loading={state.loading}
           value={stats.totalPaid}
           scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
@@ -688,6 +690,7 @@ const SupplierPaymentsPage = () => {
         <PurchaseStatCard
           icon={CreditCard}
           label="Payments"
+          loading={state.loading}
           value={stats.count}
           scope={stats.totalScope}
           colorClass="bg-emerald-50 text-emerald-600"
@@ -786,7 +789,7 @@ const SupplierPaymentsPage = () => {
                   Date
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Amount
+                  Amount (₹)
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Mode
@@ -801,10 +804,10 @@ const SupplierPaymentsPage = () => {
             </thead>
             <tbody>
               {state.loading ? (
-                Array.from({ length: 6 }, (_, index) => (
+                Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={8} className="px-3 py-3">
-                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                      <div className="h-4 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -832,8 +835,8 @@ const SupplierPaymentsPage = () => {
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {formatDate(payment.paymentDate)}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold text-slate-900">
-                      {formatCurrency(payment.amount)}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">
+                      {formatNumber(payment.amount)}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {getPaymentModeLabel(payment.paymentMode)}
@@ -923,7 +926,7 @@ const SupplierPaymentsPage = () => {
         description="This supplier payment will be deleted."
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Supplier Payment?"
+        title="Delete 1 supplier payment?"
         tone="danger"
         onCancel={() =>
           setConfirmation({

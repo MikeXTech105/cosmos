@@ -112,6 +112,7 @@ const UnitFormModal = ({
               label="Unit Name"
               required
               disabled={isView}
+              title={isView ? "Open edit mode to change the description" : undefined}
               error={errors.name?.message}
               {...register("name")}
             />
@@ -120,6 +121,7 @@ const UnitFormModal = ({
               label="Short Name"
               required
               disabled={isView}
+              title={isView ? "Open edit mode to change unit status" : undefined}
               error={errors.shortName?.message}
               {...register("shortName")}
             />
@@ -136,6 +138,7 @@ const UnitFormModal = ({
               id="unitDescription"
               rows={4}
               disabled={isView}
+              title={isView ? "Open edit mode to change the description" : undefined}
               className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-slate-50"
               {...register("description")}
             />
@@ -163,6 +166,7 @@ const UnitFormModal = ({
             <input
               type="checkbox"
               disabled={isView}
+              title={isView ? "Open edit mode to change unit status" : undefined}
               className="h-4 w-4 accent-brand"
               {...register("isActive")}
             />

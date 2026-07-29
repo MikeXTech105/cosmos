@@ -630,7 +630,7 @@ const ItemsPage = () => {
         }
       />
 
-      <ItemStats {...stats} />
+      <ItemStats {...stats} loading={itemsState.loading} />
       <ItemFilters
         activeFilterCount={activeCount}
         canCreateCategory={canCreateCategory}
@@ -756,7 +756,7 @@ const ItemsPage = () => {
       <InventoryConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Item?"
+        title="Delete 1 item?"
         description={`${confirmation.entity?.name ?? "This item"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

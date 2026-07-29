@@ -147,10 +147,10 @@ const PartyActions = ({
 };
 
 const TableSkeleton = () => {
-  return Array.from({ length: 6 }, (_, index) => (
+  return Array.from({ length: 5 }, (_, index) => (
     <tr key={index}>
       <td colSpan={10} className="px-4 py-3.5">
-        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
+        <div className="h-4 animate-pulse rounded bg-slate-100" />
       </td>
     </tr>
   ));
@@ -257,7 +257,7 @@ const PartyTable = ({
     <div>
       <div className="grid gap-3 lg:hidden">
         {isLoading
-          ? Array.from({ length: 4 }, (_, index) => (
+          ? Array.from({ length: 5 }, (_, index) => (
               <div
                 key={index}
                 className="h-40 animate-pulse rounded-2xl bg-slate-100"

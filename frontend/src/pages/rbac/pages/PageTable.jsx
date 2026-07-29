@@ -47,10 +47,10 @@ export const IconPreview = ({ iconName }) => {
 };
 
 const TableSkeleton = () => {
-  return Array.from({ length: 6 }, (_, index) => (
+  return Array.from({ length: 5 }, (_, index) => (
     <tr key={index}>
       <td colSpan={7} className="px-4 py-3.5">
-        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
+        <div className="h-4 animate-pulse rounded bg-slate-100" />
       </td>
     </tr>
   ));
@@ -373,7 +373,7 @@ const PageTable = ({
 
       <div className="grid gap-3 xl:hidden">
         {isLoading
-          ? Array.from({ length: 4 }, (_, index) => (
+          ? Array.from({ length: 5 }, (_, index) => (
               <div
                 key={index}
                 className="h-48 animate-pulse rounded-2xl bg-slate-100"

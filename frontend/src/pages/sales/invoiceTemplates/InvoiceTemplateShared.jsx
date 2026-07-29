@@ -111,10 +111,10 @@ export const ItemsTable = ({
           <th className="w-10 px-2 py-2 font-semibold">#</th>
           <th className="px-2 py-2 font-semibold">Item</th>
           <th className="w-20 px-2 py-2 text-right font-semibold">Qty</th>
-          <th className="w-24 px-2 py-2 text-right font-semibold">Rate</th>
+          <th className="w-24 px-2 py-2 text-right font-semibold">Rate (₹)</th>
           <th className="w-24 px-2 py-2 text-right font-semibold">Disc</th>
           <th className="w-20 px-2 py-2 text-right font-semibold">GST</th>
-          <th className="w-28 px-2 py-2 text-right font-semibold">Amount</th>
+          <th className="w-28 px-2 py-2 text-right font-semibold">Amount (₹)</th>
         </tr>
       </thead>
       <tbody>
@@ -131,22 +131,22 @@ export const ItemsTable = ({
                   .join(" | ")}
               </p>
             </td>
-            <td className="px-2 py-2 text-right align-top text-slate-700">
+            <td className="px-2 py-2 text-right align-top tabular-nums text-slate-700">
               {formatNumber(item.quantity)}
             </td>
-            <td className="px-2 py-2 text-right align-top text-slate-700">
-              {formatCurrency(item.rate)}
+            <td className="px-2 py-2 text-right align-top tabular-nums text-slate-700">
+              {formatNumber(item.rate)}
             </td>
-            <td className="px-2 py-2 text-right align-top text-slate-700">
+            <td className="px-2 py-2 text-right align-top tabular-nums text-slate-700">
               {item.discountPercentage > 0
                 ? `${formatNumber(item.discountPercentage)}%`
-                : formatCurrency(item.discountAmount)}
+                : formatNumber(item.discountAmount)}
             </td>
-            <td className="px-2 py-2 text-right align-top text-slate-700">
+            <td className="px-2 py-2 text-right align-top tabular-nums text-slate-700">
               {formatNumber(item.taxPercentage)}%
             </td>
-            <td className="px-2 py-2 text-right align-top font-semibold text-slate-900">
-              {formatCurrency(item.lineTotal)}
+            <td className="px-2 py-2 text-right align-top font-semibold tabular-nums text-slate-900">
+              {formatNumber(item.lineTotal)}
             </td>
           </tr>
         ))}
@@ -208,11 +208,11 @@ export const TaxBreakup = ({ invoice }) => {
           {invoice.taxBreakup.map((tax) => (
             <tr key={tax.rate} className="border-b border-slate-100">
               <td className="py-1">{formatNumber(tax.rate)}%</td>
-              <td className="py-1 text-right">
-                {formatCurrency(tax.taxableAmount)}
+              <td className="py-1 text-right tabular-nums">
+                {formatNumber(tax.taxableAmount)}
               </td>
-              <td className="py-1 text-right">
-                {formatCurrency(tax.taxAmount)}
+              <td className="py-1 text-right tabular-nums">
+                {formatNumber(tax.taxAmount)}
               </td>
             </tr>
           ))}

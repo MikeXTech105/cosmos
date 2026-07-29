@@ -2,8 +2,8 @@ import { FileText, Plus, RefreshCw } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
 import {
-  formatCurrency,
   formatDate,
+  formatNumber,
   getInvoiceStatusMeta,
   getPaymentStatusMeta,
 } from "./invoiceHelpers";
@@ -19,7 +19,7 @@ const columns = [
   { key: "customer", label: "Customer" },
   { key: "date", label: "Date" },
   { key: "dueDate", label: "Due Date" },
-  { key: "amount", label: "Amount", align: "right" },
+  { key: "amount", label: "Amount (₹)", align: "right" },
   { key: "status", label: "Status" },
   { key: "payment", label: "Payment" },
   { key: "actions", label: "", align: "right" },
@@ -95,10 +95,10 @@ const InvoiceTable = ({
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: 7 }, (_, index) => (
+              ? Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={columns.length} className="px-3 py-3">
-                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                      <div className="h-4 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -142,8 +142,8 @@ const InvoiceTable = ({
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {formatDate(invoice.dueDate)}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold text-slate-900">
-                      {formatCurrency(invoice.grandTotal)}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">
+                      {formatNumber(invoice.grandTotal)}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3">
                       <InvoiceStatusPill

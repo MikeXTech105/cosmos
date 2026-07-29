@@ -32,6 +32,7 @@ import {
   downloadResponseBlob,
   getDownloadErrorMessage,
 } from "../../../utils/fileDownload";
+import { formatDateInput, formatNumber } from "../../../utils/format";
 import {
   SupplyChainFilterBar,
   SupplyChainInlineError,
@@ -51,13 +52,7 @@ const getDefaultPeriod = () => {
   const to = new Date();
   const from = new Date();
   from.setDate(from.getDate() - 29);
-  const formatLocal = (date) => {
-    const offset = date.getTimezoneOffset();
-    return new Date(date.getTime() - offset * 60_000)
-      .toISOString()
-      .slice(0, 10);
-  };
-  return { FromDate: formatLocal(from), ToDate: formatLocal(to) };
+  return { FromDate: formatDateInput(from), ToDate: formatDateInput(to) };
 };
 
 const QuantityTooltip = ({ active, label, payload }) => {
@@ -417,9 +412,7 @@ const DispatchDashboardPage = () => {
                     axisLine={false}
                     tick={{ fill: "var(--color-slate-500)", fontSize: 11 }}
                     tickFormatter={(value) =>
-                      Number(value).toLocaleString("en-IN", {
-                        notation: "compact",
-                      })
+                      formatNumber(value, { notation: "compact" })
                     }
                     tickLine={false}
                     width={56}

@@ -1,3 +1,12 @@
+import {
+  EMPTY_VALUE,
+  formatCurrency as formatDisplayCurrency,
+  formatDate as formatDisplayDate,
+  formatDateInput,
+  formatNumber as formatDisplayNumber,
+  formatPercent as formatDisplayPercent,
+} from "../../utils/format";
+
 export const DASHBOARD_TOP_OPTIONS = [5, 10, 20];
 export const DASHBOARD_PREVIEW_OPTIONS = [3, 5, 10];
 
@@ -23,27 +32,11 @@ export const DASHBOARD_COMPARISON_OPTIONS = COMPARISON_PERIODS;
 export const DASHBOARD_GROUP_BY_OPTIONS = GROUP_BY_OPTIONS;
 export const DASHBOARD_PARTY_TYPE_OPTIONS = PARTY_TYPE_OPTIONS;
 
-export const dashboardEmptyValue = "-";
+export const dashboardEmptyValue = EMPTY_VALUE;
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  currency: "INR",
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-  style: "currency",
-});
-
-const numberFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 2,
-});
-
-const percentFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 1,
-});
-
-const pad = (value) => String(value).padStart(2, "0");
-
-export const toInputDate = (date) => {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+export const toInputDate = (value) => {
+  const formatted = formatDateInput(value);
+  return formatted === EMPTY_VALUE ? "" : formatted;
 };
 
 export const getTodayInputValue = () => toInputDate(new Date());
@@ -337,11 +330,7 @@ export const toDashboardNumber = (value) => {
 };
 
 export const formatCurrency = (value) => {
-  const numericValue = toDashboardNumber(value);
-
-  return numericValue === null
-    ? dashboardEmptyValue
-    : currencyFormatter.format(numericValue);
+  return formatDisplayCurrency(value);
 };
 
 export const formatCompactCurrency = (value) => {
@@ -355,52 +344,30 @@ export const formatCompactCurrency = (value) => {
   const sign = numericValue < 0 ? "-" : "";
 
   if (absValue >= 10000000) {
-    return `${sign}₹${numberFormatter.format(absValue / 10000000)}Cr`;
+    return `${sign}₹${formatDisplayNumber(absValue / 10000000)}Cr`;
   }
 
   if (absValue >= 100000) {
-    return `${sign}₹${numberFormatter.format(absValue / 100000)}L`;
+    return `${sign}₹${formatDisplayNumber(absValue / 100000)}L`;
   }
 
   if (absValue >= 1000) {
-    return `${sign}₹${numberFormatter.format(absValue / 1000)}K`;
+    return `${sign}₹${formatDisplayNumber(absValue / 1000)}K`;
   }
 
-  return `${sign}₹${numberFormatter.format(absValue)}`;
+  return `${sign}₹${formatDisplayNumber(absValue)}`;
 };
 
 export const formatNumber = (value) => {
-  const numericValue = toDashboardNumber(value);
-
-  return numericValue === null
-    ? dashboardEmptyValue
-    : numberFormatter.format(numericValue);
+  return formatDisplayNumber(value);
 };
 
 export const formatPercent = (value) => {
-  const numericValue = toDashboardNumber(value);
-
-  return numericValue === null
-    ? dashboardEmptyValue
-    : `${percentFormatter.format(numericValue)}%`;
+  return formatDisplayPercent(value, 1);
 };
 
 export const formatDate = (value) => {
-  if (!value) {
-    return dashboardEmptyValue;
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDisplayDate(value);
 };
 
 export const formatDashboardValue = (value, format = "number") => {

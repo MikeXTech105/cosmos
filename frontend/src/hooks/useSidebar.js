@@ -132,6 +132,12 @@ const buildMenuTree = (pages, isSuperAdmin) => {
           .map((target) => findPermissionPage(pages, target))
           .find((candidate) => candidate && canViewPermission(candidate));
 
+    if (import.meta.env.DEV && !isSuperAdmin && !page) {
+      console.warn(
+        `[sidebar] module "${module.id}" (${module.route}) dropped: no matching permission page`,
+      );
+    }
+
     if (!isSuperAdmin && (!page || !canViewPermission(page))) {
       return;
     }

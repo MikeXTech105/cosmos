@@ -63,16 +63,16 @@ const SalesPurchaseTrendChart = ({ error, isLoading, onRetry, rows }) => {
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
-              <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="periodLabel"
-                tick={{ fill: "#64748b", fontSize: 12 }}
+                tick={{ fill: "var(--color-muted)", fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
                 tickFormatter={formatCompactCurrency}
-                tick={{ fill: "#64748b", fontSize: 12 }}
+                tick={{ fill: "var(--color-muted)", fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
                 width={76}
@@ -88,7 +88,7 @@ const SalesPurchaseTrendChart = ({ error, isLoading, onRetry, rows }) => {
               <Bar
                 dataKey="purchaseAmount"
                 name="Purchases"
-                fill="#94a3b8"
+                fill="var(--color-slate-400)"
                 radius={[6, 6, 0, 0]}
               />
             </BarChart>

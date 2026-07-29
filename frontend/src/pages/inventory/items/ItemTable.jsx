@@ -89,10 +89,10 @@ const ItemTable = ({
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: 7 }, (_, index) => (
+              ? Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={itemColumns.length} className="px-3 py-3">
-                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                      <div className="h-4 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -157,7 +157,7 @@ const ItemTable = ({
                       </td>
                       <td
                         className={[
-                          "border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold",
+                          "border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold tabular-nums",
                           lowStock ? "text-red-600" : "text-slate-700",
                         ].join(" ")}
                       >

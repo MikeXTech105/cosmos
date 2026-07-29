@@ -1,6 +1,11 @@
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
+import { EMPTY_VALUE, formatNumber } from "../../utils/format";
+
 const renderValue = (card) => {
   if (card.value === null || card.value === undefined || card.value === "") {
-    return "—";
+    return EMPTY_VALUE;
   }
 
   if (card.formatValue) {
@@ -8,9 +13,7 @@ const renderValue = (card) => {
   }
 
   if (typeof card.value === "number") {
-    return card.value.toLocaleString("en-IN", {
-      maximumFractionDigits: 0,
-    });
+    return formatNumber(card.value, 0);
   }
 
   return String(card.value);
@@ -73,5 +76,3 @@ const StatCards = ({ cards = [], className = "", loading = false }) => {
 };
 
 export default StatCards;
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";

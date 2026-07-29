@@ -313,7 +313,7 @@ const ShiftsPage = () => {
         }
       />
 
-      <ShiftStats {...stats} />
+      <ShiftStats {...stats} loading={shiftsState.loading} />
       <ShiftFilters
         filters={filterControls}
         resultCount={shiftsState.list.length}
@@ -369,7 +369,7 @@ const ShiftsPage = () => {
       <HrConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Shift?"
+        title="Delete 1 shift?"
         description={`${confirmation.entity?.shiftName ?? "This shift"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

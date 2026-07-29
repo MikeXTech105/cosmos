@@ -17,6 +17,11 @@ import {
   setPurchaseReportFilters,
 } from "../../../store/slices/purchase/purchaseReportSlice";
 import {
+  EMPTY_VALUE,
+  formatDate,
+  formatNumber,
+} from "../../../utils/format";
+import {
   formatCurrency,
   getActionError,
   getMonthStartInputValue,
@@ -76,29 +81,28 @@ const humanize = (value) => {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
+const isCurrencyColumn = (key) =>
+  /amount|balance|expense|purchase|paid|outstanding/i.test(key);
+
 const formatCell = (key, value) => {
   if (value === null || value === undefined || value === "") {
-    return "-";
+    return EMPTY_VALUE;
   }
 
-  if (/amount|total|balance|expense|purchase|paid|outstanding/i.test(key)) {
-    return formatCurrency(value);
+  if (isCurrencyColumn(key)) {
+    return formatNumber(value);
   }
 
   if (/date/i.test(key)) {
-    const date = new Date(value);
+    const formattedDate = formatDate(value);
 
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
+    if (formattedDate !== EMPTY_VALUE) {
+      return formattedDate;
     }
   }
 
   if (typeof value === "number") {
-    return value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
+    return formatNumber(value);
   }
 
   if (typeof value === "object") {
@@ -138,8 +142,17 @@ const ReportTable = ({ emptyLabel, payload }) => {
             <tr>
               <th className="px-4 py-3 font-semibold">#</th>
               {columns.map((column) => (
-                <th key={column} className="px-4 py-3 font-semibold">
+                <th
+                  key={column}
+                  className={`px-4 py-3 font-semibold ${
+                    isCurrencyColumn(column) ||
+                    rows.some((row) => typeof row?.[column] === "number")
+                      ? "text-right"
+                      : ""
+                  }`}
+                >
                   {humanize(column)}
+                  {isCurrencyColumn(column) ? " (₹)" : ""}
                 </th>
               ))}
             </tr>
@@ -151,7 +164,14 @@ const ReportTable = ({ emptyLabel, payload }) => {
                   {index + 1}
                 </td>
                 {columns.map((column) => (
-                  <td key={column} className="px-4 py-3 text-slate-700">
+                  <td
+                    key={column}
+                    className={`px-4 py-3 text-slate-700 ${
+                      isCurrencyColumn(column) || typeof row[column] === "number"
+                        ? "text-right tabular-nums"
+                        : ""
+                    }`}
+                  >
                     {formatCell(column, row[column])}
                   </td>
                 ))}
@@ -356,12 +376,13 @@ const PurchaseReportsPage = () => {
       </div>
 
       {cards.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
           {cards.map(([key, value]) => (
             <PurchaseStatCard
               key={key}
               icon={BarChart3}
               label={humanize(key)}
+              loading={reports.loading}
               value={
                 /amount|total|balance|expense|purchase|paid|outstanding/i.test(key)
                   ? formatCurrency(value)

@@ -1,7 +1,7 @@
 const SettingsCard = ({
   action,
   bodyAriaLabel,
-  bodyClassName = "p-5",
+  bodyClassName = "p-4",
   bodyRole,
   children,
   description,
@@ -14,7 +14,7 @@ const SettingsCard = ({
     <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
       <div
         className={[
-          "flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between",
+          "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between",
           hasBody ? "border-b border-slate-100" : "",
         ].join(" ")}
       >

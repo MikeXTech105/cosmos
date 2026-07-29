@@ -1,4 +1,11 @@
 import { getApiErrorMessage } from "../../utils/apiError";
+import {
+  EMPTY_VALUE,
+  formatCurrency as formatDisplayCurrency,
+  formatDate as formatDisplayDate,
+  formatDateInput,
+  formatNumber as formatDisplayNumber,
+} from "../../utils/format";
 
 export const PURCHASE_STATUS = {
   DRAFT: 0,
@@ -169,7 +176,7 @@ export const normalizeSignedNumberBlurValue = (value, fallback = "0") => {
   return Number.isFinite(numericValue) ? String(numericValue) : fallback;
 };
 
-export const getTodayInputValue = () => new Date().toISOString().slice(0, 10);
+export const getTodayInputValue = () => formatDateInput(new Date());
 
 export const addDaysToInputDate = (dateValue, days) => {
   const date = dateValue ? new Date(dateValue) : new Date();
@@ -180,53 +187,24 @@ export const addDaysToInputDate = (dateValue, days) => {
 
   date.setDate(date.getDate() + days);
 
-  return date.toISOString().slice(0, 10);
+  return formatDateInput(date);
 };
 
 export const toInputDate = (value) => {
-  if (!value) {
-    return "";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value).slice(0, 10);
-  }
-
-  return date.toISOString().slice(0, 10);
+  const formatted = formatDateInput(value);
+  return formatted === EMPTY_VALUE ? "" : formatted;
 };
 
 export const formatDate = (value) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDisplayDate(value);
 };
 
 export const formatCurrency = (value) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 2,
-  }).format(toNumber(value));
+  return formatDisplayCurrency(value);
 };
 
 export const formatNumber = (value) => {
-  return new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 2,
-  }).format(toNumber(value));
+  return formatDisplayNumber(value);
 };
 
 export const getActionError = (error, fallback) => {
@@ -452,5 +430,5 @@ export const getMonthStartInputValue = () => {
   const date = new Date();
   date.setDate(1);
 
-  return date.toISOString().slice(0, 10);
+  return formatDateInput(date);
 };

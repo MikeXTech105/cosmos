@@ -326,7 +326,7 @@ const DepartmentsPage = () => {
         }
       />
 
-      <DepartmentStats {...stats} />
+      <DepartmentStats {...stats} loading={departmentsState.loading} />
       <DepartmentFilters
         filters={filterControls}
         resultCount={departmentsState.list.length}
@@ -383,7 +383,7 @@ const DepartmentsPage = () => {
       <HrConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Department?"
+        title="Delete 1 department?"
         description={`${confirmation.entity?.departmentName ?? "This department"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

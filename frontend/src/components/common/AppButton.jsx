@@ -35,6 +35,12 @@ const AppButton = forwardRef(({
   ...buttonProps
 }, ref) => {
   const resolvedDisabled = Boolean(disabled || isDisabled || isLoading);
+  const fallbackDisabledReason = resolvedDisabled
+    ? disabledReason ||
+      (isLoading
+        ? loadingText
+        : "This action is unavailable in the current state")
+    : undefined;
 
   const button = (
     <button
@@ -45,6 +51,7 @@ const AppButton = forwardRef(({
       disabled={resolvedDisabled}
       aria-busy={isLoading || undefined}
       aria-disabled={resolvedDisabled || undefined}
+      title={buttonProps.title ?? fallbackDisabledReason}
       className={twMerge(
         clsx(
           "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all",
@@ -85,7 +92,7 @@ const AppButton = forwardRef(({
     </button>
   );
 
-  if (disabledReason && resolvedDisabled) {
+  if (resolvedDisabled && disabledReason) {
     return <AppTooltip label={disabledReason}>{button}</AppTooltip>;
   }
 

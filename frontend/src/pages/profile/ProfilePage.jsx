@@ -178,7 +178,7 @@ const ProfilePage = () => {
       )}
 
       <section className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-        <div className="flex flex-col gap-5 border-b border-slate-100 p-5 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-5 border-b border-slate-100 p-6 sm:flex-row sm:items-center">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm">
             {getInitial(displayName)}
           </div>
@@ -194,7 +194,7 @@ const ProfilePage = () => {
         {isLoading ? (
           <div className="p-6 text-sm text-slate-500" role="status">Loading profile…</div>
         ) : isEditing ? (
-          <form onSubmit={handleSubmit(handleUpdate)} className="space-y-5 p-5 sm:p-6">
+          <form onSubmit={handleSubmit(handleUpdate)} className="space-y-5 p-6">
             <AppInput label="Full name" required autoComplete="name" error={errors.fullName?.message} {...register("fullName")} />
             <AppInput label="Email" type="email" required autoComplete="email" error={errors.email?.message} {...register("email")} />
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -203,7 +203,7 @@ const ProfilePage = () => {
             </div>
           </form>
         ) : (
-          <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+          <div className="grid gap-5 p-6 sm:grid-cols-2">
             <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Username</p><p className="mt-1 text-sm font-medium text-slate-800">{profile?.username ?? profile?.userName ?? "—"}</p></div>
             <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Email</p><p className="mt-1 break-all text-sm font-medium text-slate-800">{profile?.email ?? "—"}</p></div>
             <div className="sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Roles</p><div className="mt-2 flex flex-wrap gap-2">{roleLabels.length > 0 ? roleLabels.map((role) => <span key={role} className="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand"><ShieldCheck className="h-3.5 w-3.5" />{role}</span>) : <span className="text-sm text-slate-500">No roles assigned</span>}</div></div>

@@ -26,6 +26,7 @@ import {
   PLANNING_ROUNDING_RULE_LABELS,
 } from "../../../constants/procurementEnums";
 import { planningService } from "../../../services/procurement/planningService";
+import { EMPTY_VALUE } from "../../../utils/format";
 import {
   ProcurementDateRangeFields,
   ProcurementInlineError,
@@ -42,8 +43,6 @@ import {
   getDefaultProcurementRange,
   getFieldErrorMap,
   getInclusiveDayCount,
-  getItemCode,
-  getItemName,
   getMessageSeverity,
   getPlanningFixRoute,
   getPlanningMessages,
@@ -270,10 +269,10 @@ const PreviewTable = ({ columns, lines, loading }) => {
                       </button>
                     </AppTooltip>
                   </td>
-                  <td className="sticky left-10 z-10 border-b border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="text-sm font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 max-w-52 truncate text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td>
+                  <td className="sticky left-10 z-10 border-b border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="text-sm font-semibold text-slate-900">{line.materialItemCode ?? EMPTY_VALUE}</p><p className="mt-0.5 max-w-52 truncate text-xs text-slate-500">{line.materialItemName ?? EMPTY_VALUE} · {line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</p></td>
                   {columns.materialRequirement && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.materialRequirement)}</td>}
                   {columns.averageDailyUsage && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.averageDailyUsage)}</td>}
-                  {columns.leadTimeDays && <td className="border-b border-slate-100 px-4 py-3 text-right"><p className="text-sm font-semibold tabular-nums">{formatProcurementDecimal(line.leadTimeDays)} days</p><ProcurementPill tone="brand">{line.leadTimeSource ?? "-"}</ProcurementPill><p className="mt-1 text-[10px] leading-4 text-slate-400">override → history average → configured</p></td>}
+                  {columns.leadTimeDays && <td className="border-b border-slate-100 px-4 py-3 text-right tabular-nums"><p className="text-sm font-semibold">{formatProcurementDecimal(line.leadTimeDays)} days</p><ProcurementPill tone="brand">{line.leadTimeSource ?? "-"}</ProcurementPill><p className="mt-1 text-[10px] leading-4 text-slate-400">override → history average → configured</p></td>}
                   {columns.reorderPoint && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.reorderPoint)}</td>}
                   {columns.physicalStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td>}
                   {columns.inboundStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td>}
@@ -295,9 +294,9 @@ const downloadPreviewCsv = (lines) => {
   const rows = [
     ["Material code", "Material name", "Unit", "Physical stock", "Inbound stock", "Projected available stock", "Reorder point", "Shortfall", "System suggestion", "To order"],
     ...lines.map((line) => [
-      getItemCode(line.item) || line.itemCode || line.materialCode,
-      getItemName(line.item) || line.itemName || line.materialName,
-      line.unitName ?? line.unitCode,
+      line.materialItemCode ?? "",
+      line.materialItemName ?? "",
+      line.unitShortName ?? line.unitName ?? "",
       line.physicalStock,
       line.inboundStock,
       line.projectedAvailableStock,
@@ -367,6 +366,25 @@ const GeneratePlanPage = () => {
       Number(line.finalQuantity ?? line.calculatedSuggestedQuantity) > 0,
   ).length;
   const currentStep = savedRun ? "save" : preview ? "save" : validation ? (hasBlocking ? "validate" : "preview") : "range";
+  const refreshDisabledReason = rangeError
+    ? rangeError
+    : validationLoading || previewLoading
+      ? "Planning data is already refreshing"
+      : undefined;
+  const exportDisabledReason = previewLoading
+    ? "Wait for the preview to finish loading"
+    : lines.length === 0
+      ? "There are no planning rows to export"
+      : undefined;
+  const saveDisabledReason = !capabilities.canCreate
+    ? "Saving a draft requires Procurement Planning create permission"
+    : hasBlocking
+      ? "Resolve blocking issues before saving"
+      : lines.length === 0
+        ? "Nothing to save"
+        : savedRun
+          ? "Already saved as a plan"
+          : undefined;
 
   const validationPayload = useMemo(
     () => ({ fromDate: form.fromDate, toDate: form.toDate, notes: null }),
@@ -467,7 +485,8 @@ const GeneratePlanPage = () => {
         actions={
           <>
             <AppButton
-              disabled={Boolean(rangeError) || validationLoading || previewLoading}
+              disabled={Boolean(refreshDisabledReason)}
+              disabledReason={refreshDisabledReason}
               variant="secondary"
               onClick={validate}
             >
@@ -475,24 +494,24 @@ const GeneratePlanPage = () => {
               Refresh
             </AppButton>
             <AppButton
-              disabled={lines.length === 0 || previewLoading}
+              disabled={Boolean(exportDisabledReason)}
+              disabledReason={exportDisabledReason}
               variant="secondary"
               onClick={() => downloadPreviewCsv(lines)}
             >
               <Download className="h-4 w-4" />
               Export
             </AppButton>
-            {capabilities.canCreate && (
-              <AppButton
-                disabled={hasBlocking || lines.length === 0 || Boolean(savedRun)}
-                isLoading={saving}
-                loadingText="Saving…"
-                onClick={saveDraft}
-              >
-                <Save className="h-4 w-4" />
-                Save draft
-              </AppButton>
-            )}
+            <AppButton
+              disabled={Boolean(saveDisabledReason)}
+              disabledReason={saveDisabledReason}
+              isLoading={saving}
+              loadingText="Saving…"
+              onClick={saveDraft}
+            >
+              <Save className="h-4 w-4" />
+              Save draft
+            </AppButton>
           </>
         }
       />
@@ -526,7 +545,7 @@ const GeneratePlanPage = () => {
       />
       <FlowSteps current={currentStep} />
       <ProcurementSectionCard title="1. Choose the demand range" description="The default covers the last 30 calendar days including today.">
-        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,620px)_minmax(260px,1fr)]">
+        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,620px)_minmax(260px,1fr)]">
           <ProcurementDateRangeFields fromDate={form.fromDate} toDate={form.toDate} error={displayedRangeError} onChange={(patch) => { beginValidationRequest(); beginPreviewRequest(); beginSaveRequest(); setValidationLoading(false); setPreviewLoading(false); setSaving(false); setFormErrors({}); setForm((current) => ({ ...current, ...patch })); setValidation(null); setPreview(null); setSavedRun(null); }} />
           <div><label className="text-xs font-semibold text-slate-700" htmlFor="plan-notes">Planning notes</label><textarea id="plan-notes" rows={3} className={`mt-1.5 w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 ${formErrors.notes ? "border-red-400" : "border-slate-200"}`} placeholder="Context retained with the draft run" value={form.notes} onChange={(event) => { setFormErrors((current) => ({ ...current, notes: "" })); setForm((current) => ({ ...current, notes: event.target.value })); }} />{formErrors.notes && <p className="mt-1 text-xs font-medium text-red-600">{formErrors.notes}</p>}<p className="mt-1 text-xs text-slate-500">{getInclusiveDayCount(form.fromDate, form.toDate)} calendar days of demand.</p></div>
         </div>
@@ -535,7 +554,7 @@ const GeneratePlanPage = () => {
       <ProcurementInlineError message={validationError} title="Validation could not run" />
 
       {(validation || validationLoading) && <ProcurementSectionCard title="2. Resolve validation messages" description="Blocking errors must be fixed. Warnings are visible but do not prevent a preview or draft.">
-        <div className="space-y-3 p-5">{validationLoading ? <ProcurementLoadingRows columns={2} rows={4} /> : <MessageGroups messages={messages} />}</div>
+        <div className="space-y-3 p-6">{validationLoading ? <ProcurementLoadingRows columns={2} rows={5} /> : <MessageGroups messages={messages} />}</div>
         {!validationLoading && <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">{hasBlocking ? "Fix blocking prerequisites, then validate again." : "No blockers. The preview calculates automatically; warnings stay visible."}</p><AppButton disabled={hasBlocking} isLoading={previewLoading} loadingText="Generating…" onClick={loadPreview}><Eye className="h-4 w-4" />Preview again</AppButton></div>}
       </ProcurementSectionCard>}
       <ProcurementInlineError message={previewError} title="Preview could not be calculated" />

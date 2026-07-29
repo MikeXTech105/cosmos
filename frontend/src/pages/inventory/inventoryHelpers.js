@@ -3,6 +3,7 @@ import {
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../utils/inventoryQuery";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { formatDate as formatDisplayDate } from "../../utils/format";
 
 export const STATUS_OPTIONS = [
   { value: "all", label: "All status" },
@@ -34,21 +35,7 @@ export const buildInventoryQueryParams = ({
 };
 
 export const formatDate = (value) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDisplayDate(value);
 };
 
 export const getActionError = (error, fallback) => {

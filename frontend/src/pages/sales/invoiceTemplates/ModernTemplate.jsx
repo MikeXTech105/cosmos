@@ -33,7 +33,7 @@ const ModernTemplate = ({ invoice }) => {
         <MetaGrid invoice={invoice} boxed />
       </div>
 
-      <div className="mt-8 rounded-2xl bg-slate-50 p-5">
+      <div className="mt-8 rounded-2xl bg-slate-50 p-6">
         <CustomerBlock invoice={invoice} />
       </div>
 

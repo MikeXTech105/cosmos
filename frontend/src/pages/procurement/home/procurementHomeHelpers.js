@@ -114,6 +114,19 @@ export const sortPlanningLines = (lines) =>
     return getPlanningLineToOrder(second) - getPlanningLineToOrder(first);
   });
 
+export const getPlanningCsvRows = (lines) => lines.map((line) => [
+  line.materialItemCode ?? "",
+  line.materialItemName ?? "",
+  line.unitShortName ?? line.unitName ?? "",
+  getPlanningLineStock(line),
+  getPlanningLineInboundStock(line),
+  getPlanningLineProjectedAvailableStock(line),
+  getPlanningLineReorderPoint(line),
+  getPlanningLineToOrder(line),
+  getPlanningLineCover(line),
+  getPlanningLineStatus(line).label,
+]);
+
 export const getCalculationSteps = (line) => [
   {
     group: "demand",

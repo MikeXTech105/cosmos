@@ -10,7 +10,7 @@ const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }
       : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <AppTooltip label={label}>
+    <AppTooltip label={disabled ? `${label} is unavailable for this page` : label}>
       <button
         type="button"
         onClick={onClick}

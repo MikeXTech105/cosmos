@@ -516,7 +516,15 @@ const Permissions = () => {
         </div>
 
         {capabilities.canUpdate && (
-          <AppTooltip label="Save Permissions">
+          <AppTooltip
+            label={
+              isSaving
+                ? "Permission changes are being saved"
+                : saveDisabled
+                  ? "No permission changes to save"
+                  : "Save Permissions"
+            }
+          >
             <button
               type="button"
               onClick={savePermissions}

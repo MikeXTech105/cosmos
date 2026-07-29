@@ -49,6 +49,7 @@ import {
   buildTemplateInvoice,
   formatCurrency,
   formatDate,
+  formatNumber,
   getActionError,
   getInvoiceStatusMeta,
   getPaymentModeLabel,
@@ -86,7 +87,7 @@ const PaymentHistory = ({ error, isLoading, payments }) => {
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 text-right font-semibold">Amount</th>
+              <th className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
               <th className="px-4 py-3 font-semibold">Mode</th>
               <th className="px-4 py-3 font-semibold">Reference</th>
               <th className="px-4 py-3 font-semibold">Notes</th>
@@ -94,10 +95,10 @@ const PaymentHistory = ({ error, isLoading, payments }) => {
           </thead>
           <tbody>
             {isLoading ? (
-              Array.from({ length: 3 }, (_, index) => (
+              Array.from({ length: 5 }, (_, index) => (
                 <tr key={index}>
                   <td colSpan={5} className="px-4 py-3">
-                    <div className="h-10 animate-pulse rounded-xl bg-slate-100" />
+                    <div className="h-4 animate-pulse rounded bg-slate-100" />
                   </td>
                 </tr>
               ))
@@ -107,8 +108,8 @@ const PaymentHistory = ({ error, isLoading, payments }) => {
                   <td className="px-4 py-3 text-slate-600">
                     {formatDate(payment.paymentDate)}
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-slate-900">
-                    {formatCurrency(payment.amount)}
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900">
+                    {formatNumber(payment.amount)}
                   </td>
                   <td className="px-4 py-3 text-slate-600">
                     {getPaymentModeLabel(payment.paymentMode)}

@@ -2,6 +2,7 @@ import { ArrowLeftRight, Eye, Plus, RefreshCw, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+import { formatNumber } from "../../../utils/format";
 
 import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
@@ -237,8 +238,8 @@ const TransfersPage = () => {
             <table className="w-full min-w-[980px] table-fixed text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  {["#", "Transfer No", "Date", "From Wallet → To Wallet", "Amount", "Status", "Actions"].map((heading) => (
-                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Amount", "Actions"].includes(heading) ? "text-right" : ""}`}>
+                  {["#", "Transfer No", "Date", "From Wallet → To Wallet", "Amount (₹)", "Status", "Actions"].map((heading) => (
+                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Amount (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
                       {heading}
                     </th>
                   ))}
@@ -257,7 +258,7 @@ const TransfersPage = () => {
                           {transfer.fromWalletName} <ArrowLeftRight className="h-3.5 w-3.5" /> {transfer.toWalletName}
                         </span>
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatRojmelCurrency(transfer.amount)}</td>
+                      <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatNumber(transfer.amount)}</td>
                       <td className="border-b border-slate-100 px-3 py-3.5"><RojmelStatusPill value={transfer.status} /></td>
                       <td className="border-b border-slate-100 px-3 py-3.5">
                         <div className="flex items-center justify-end gap-0.5">

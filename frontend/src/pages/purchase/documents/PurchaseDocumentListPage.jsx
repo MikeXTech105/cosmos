@@ -38,6 +38,7 @@ import {
   buildListParams,
   formatCurrency,
   formatDate,
+  formatNumber,
   getActionError,
   getBalanceAmount,
   getDocumentNumber,
@@ -552,9 +553,17 @@ const PurchaseDocumentListPage = ({ config }) => {
       };
       const thunk = actionMap[confirmation.action];
       const response = await dispatch(thunk(confirmation.record.id)).unwrap();
+      const actionLabel = {
+        cancel: "cancelled",
+        confirm: "confirmed",
+        delete: "deleted",
+      }[confirmation.action];
 
       toast.success(
-        getSuccessMessage(response.response ?? response, "Action completed"),
+        getSuccessMessage(
+          response.response ?? response,
+          `${config.singularLabel} ${actionLabel}`,
+        ),
       );
       setConfirmation({
         action: "delete",
@@ -675,10 +684,11 @@ const PurchaseDocumentListPage = ({ config }) => {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         <PurchaseStatCard
           icon={Icon}
           label="Count"
+          loading={state.loading}
           value={stats.count}
           scope={stats.totalScope}
           colorClass="bg-brand-light text-brand"
@@ -686,6 +696,7 @@ const PurchaseDocumentListPage = ({ config }) => {
         <PurchaseStatCard
           icon={Icon}
           label="Total"
+          loading={state.loading}
           value={stats.total}
           scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
@@ -693,6 +704,7 @@ const PurchaseDocumentListPage = ({ config }) => {
         <PurchaseStatCard
           icon={Icon}
           label={config.supportsPaidAmount ? "Unpaid" : "Paid / Balance"}
+          loading={state.loading}
           value={config.supportsPaidAmount ? stats.balance : stats.paid}
           scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
@@ -799,13 +811,13 @@ const PurchaseDocumentListPage = ({ config }) => {
                   Date
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Total
+                  Total (₹)
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Paid
+                  Paid (₹)
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Balance
+                  Balance (₹)
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Status
@@ -817,10 +829,10 @@ const PurchaseDocumentListPage = ({ config }) => {
             </thead>
             <tbody>
               {state.loading ? (
-                Array.from({ length: 6 }, (_, index) => (
+                Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={9} className="px-3 py-3">
-                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                      <div className="h-4 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -848,14 +860,14 @@ const PurchaseDocumentListPage = ({ config }) => {
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {formatDate(record[config.dateField])}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold text-slate-900">
-                      {formatCurrency(getRecordTotal(record))}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">
+                      {formatNumber(getRecordTotal(record))}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm text-slate-600">
-                      {formatCurrency(getPaidAmount(record))}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm tabular-nums text-slate-600">
+                      {formatNumber(getPaidAmount(record))}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm text-slate-600">
-                      {formatCurrency(getBalanceAmount(record))}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm tabular-nums text-slate-600">
+                      {formatNumber(getBalanceAmount(record))}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3">
                       <PurchaseStatusPill meta={getStatusMeta(record.status)} />

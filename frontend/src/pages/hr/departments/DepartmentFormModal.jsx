@@ -108,6 +108,7 @@ const DepartmentFormModal = ({
               label="Department Code"
               required
               disabled={isView}
+              title={isView ? "Open edit mode to change the description" : undefined}
               error={errors.departmentCode?.message}
               {...register("departmentCode")}
             />
@@ -117,6 +118,7 @@ const DepartmentFormModal = ({
               label="Department Name"
               required
               disabled={isView}
+              title={isView ? "Open edit mode to change department status" : undefined}
               error={errors.departmentName?.message}
               {...register("departmentName")}
             />
@@ -133,6 +135,7 @@ const DepartmentFormModal = ({
               id="departmentDescription"
               rows={4}
               disabled={isView}
+              title={isView ? "Open edit mode to change the description" : undefined}
               className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-slate-50"
               {...register("description")}
             />
@@ -160,6 +163,7 @@ const DepartmentFormModal = ({
             <input
               type="checkbox"
               disabled={isView}
+              title={isView ? "Open edit mode to change department status" : undefined}
               className="h-4 w-4 accent-brand"
               {...register("isActive")}
             />

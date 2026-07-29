@@ -19,6 +19,7 @@ import {
   HR_ATTENDANCE_STATUS,
   HR_LEAVE_STATUS,
 } from "../../../utils/hrEnums";
+import { formatDateInput, formatDayMonth } from "../../../utils/format";
 import {
   formatHrDate,
   getEmployeeName,
@@ -27,7 +28,7 @@ import {
 } from "../hrHelpers";
 import { HrStatCard } from "../HrShared";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => formatDateInput(new Date());
 
 const addDays = (date, days) => {
   const next = new Date(date);
@@ -106,7 +107,7 @@ const HrDashboardPage = () => {
 
     try {
       const current = today();
-      const weekStart = addDays(new Date(), -6).toISOString().slice(0, 10);
+      const weekStart = formatDateInput(addDays(new Date(), -6));
       const [employees, departments, attendance, leaves, pendingLeaves] =
         await Promise.all([
           hrEmployeeService.getEmployees({
@@ -188,7 +189,7 @@ const HrDashboardPage = () => {
 
   const trend = useMemo(() => {
     return Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(new Date(), index - 6).toISOString().slice(0, 10);
+      const date = formatDateInput(addDays(new Date(), index - 6));
       const value = state.attendance.filter((row) => {
         return (
           (row.attendanceDate ?? row.date ?? "").slice(0, 10) === date &&
@@ -198,10 +199,7 @@ const HrDashboardPage = () => {
       }).length;
 
       return {
-        label: new Date(date).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-        }),
+        label: formatDayMonth(date),
         value,
       };
     });
@@ -252,27 +250,31 @@ const HrDashboardPage = () => {
         }
       />
 
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         <HrStatCard
           icon={UsersRound}
           label="Total Employees"
+          loading={state.loading}
           value={metrics.totalEmployees}
         />
         <HrStatCard
           icon={CalendarCheck}
           label="Present Today"
+          loading={state.loading}
           value={metrics.presentToday}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <HrStatCard
           icon={CalendarOff}
           label="On Leave"
+          loading={state.loading}
           value={metrics.onLeaveToday}
           colorClass="bg-amber-50 text-amber-600"
         />
         <HrStatCard
           icon={Wallet}
           label="Payroll MTD"
+          loading={state.loading}
           value={metrics.payrollMtd}
           colorClass="bg-brand-light text-brand"
         />
@@ -285,7 +287,7 @@ const HrDashboardPage = () => {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">
@@ -302,7 +304,7 @@ const HrDashboardPage = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-slate-900">
             Pending Approvals
           </h2>
@@ -333,7 +335,7 @@ const HrDashboardPage = () => {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">
           Department Headcount
         </h2>

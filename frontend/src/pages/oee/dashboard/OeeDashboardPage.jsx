@@ -43,7 +43,7 @@ const PanelSkeleton = ({ className = "" }) => {
   return (
     <div
       className={[
-        "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm",
+        "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm",
         className,
       ].join(" ")}
     >
@@ -81,7 +81,7 @@ const MachineGaugeCard = ({ machine, meta }) => {
   const hasNoProduction = totalShot <= 0 && totalTarget <= 0 && oeeValue <= 0;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900">
@@ -228,7 +228,7 @@ const TrendChart = ({ rows }) => {
                 x2={width - padding}
                 y1={y}
                 y2={y}
-                stroke="#e2e8f0"
+                stroke="var(--color-border)"
                 strokeDasharray="4 6"
               />
               <text
@@ -309,7 +309,7 @@ const DashboardPanel = ({ children, error, icon: Icon, loading, subtitle, title 
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>
@@ -503,16 +503,20 @@ const OeeDashboardPage = () => {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:col-span-2 xl:col-span-2">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Average Plant OEE
               </p>
               <div className="mt-2 flex items-end gap-3">
-                <span className="text-4xl font-bold text-slate-900">
-                  {formatOeePercent(summary.averageOeePercentage)}
-                </span>
+                {anyLoading ? (
+                  <span className="h-7 w-20 animate-pulse rounded bg-slate-100" />
+                ) : (
+                  <span className="text-4xl font-bold tabular-nums text-slate-900">
+                    {formatOeePercent(summary.averageOeePercentage)}
+                  </span>
+                )}
                 <OeeRatingPill rating={averageRating} />
               </div>
               <p className="mt-3 text-sm text-slate-500">
@@ -532,6 +536,7 @@ const OeeDashboardPage = () => {
         <OeeStatCard
           icon={Factory}
           label="Machines"
+          loading={anyLoading}
           value={formatOeeNumber(monitored, { maximumFractionDigits: 0 })}
           meta={`${healthy} stable / ${Math.max(0, monitored - healthy)} watch`}
           colorClass="bg-brand-light text-brand"
@@ -539,6 +544,7 @@ const OeeDashboardPage = () => {
         <OeeStatCard
           icon={Hash}
           label="Total Shots"
+          loading={anyLoading}
           value={formatOeeNumber(summary.totalShotCount, {
             maximumFractionDigits: 0,
           })}
@@ -547,12 +553,14 @@ const OeeDashboardPage = () => {
         <OeeStatCard
           icon={Target}
           label="Total Target"
+          loading={anyLoading}
           value={formatOeeNumber(summary.totalTargetShot)}
           colorClass="bg-violet-50 text-violet-600"
         />
         <OeeStatCard
           icon={AlertTriangle}
           label="Downtime Count"
+          loading={anyLoading}
           value={formatOeeNumber(summary.totalDowntimeCount, {
             maximumFractionDigits: 0,
           })}

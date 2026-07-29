@@ -92,6 +92,7 @@ export const OeeStatCard = ({
   colorClass = "bg-brand-light text-brand",
   icon: Icon,
   label,
+  loading = false,
   meta,
   scope,
   value,
@@ -108,9 +109,13 @@ export const OeeStatCard = ({
           <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
             {label}
           </p>
-          <p className="mt-0.5 truncate text-xl font-bold text-slate-900">
-            {value}
-          </p>
+          {loading ? (
+            <div className="mt-1 h-7 w-20 animate-pulse rounded bg-slate-100" />
+          ) : (
+            <p className="mt-0.5 truncate text-xl font-bold tabular-nums text-slate-900">
+              {value}
+            </p>
+          )}
           {meta && (
             <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
               {meta}

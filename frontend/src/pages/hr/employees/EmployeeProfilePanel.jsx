@@ -274,7 +274,7 @@ const EmployeeProfilePanel = ({
 
   return (
     <div className="flex h-full min-h-[560px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
+      <div className="border-b border-slate-200 p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-center gap-4">
             <EmployeeAvatar employee={employee} isSelected size="lg" />
@@ -380,7 +380,7 @@ const EmployeeProfilePanel = ({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-5">
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
         {activeTab === "overview" && (
           <div className="space-y-5">
             <div>

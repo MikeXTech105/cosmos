@@ -129,18 +129,30 @@ export const InventoryBasisNote = ({ message = INVENTORY_BASIS_MESSAGE }) => (
   </div>
 );
 
-export const ProcurementInlineError = ({ message, title = "Unable to continue" }) => {
+export const ProcurementInlineError = ({
+  message,
+  onRetry,
+  title = "Unable to continue",
+}) => {
   if (!message) {
     return null;
   }
 
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-      <div className="min-w-0">
-        <p className="font-semibold">{title}</p>
-        <p className="mt-0.5 whitespace-pre-line text-xs leading-5">{message}</p>
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <div className="flex min-w-0 items-start gap-3">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="min-w-0">
+          <p className="font-semibold">{title}</p>
+          <p className="mt-0.5 whitespace-pre-line text-xs leading-5">{message}</p>
+        </div>
       </div>
+      {onRetry && (
+        <AppButton className="shrink-0" variant="secondary" onClick={onRetry}>
+          <RefreshCw className="h-4 w-4" />
+          Retry
+        </AppButton>
+      )}
     </div>
   );
 };
@@ -163,7 +175,7 @@ export const ProcurementEmptyState = ({
   </div>
 );
 
-export const ProcurementLoadingRows = ({ columns = 5, rows = 6 }) => (
+export const ProcurementLoadingRows = ({ columns = 5, rows = 5 }) => (
   <div className="animate-pulse p-4">
     {Array.from({ length: rows }).map((_, rowIndex) => (
       <div
@@ -173,7 +185,7 @@ export const ProcurementLoadingRows = ({ columns = 5, rows = 6 }) => (
         {Array.from({ length: columns }).map((__, columnIndex) => (
           <div
             key={columnIndex}
-            className="h-3 min-w-0 flex-1 rounded-full bg-slate-100"
+            className="h-4 min-w-0 flex-1 rounded bg-slate-100"
           />
         ))}
       </div>
@@ -654,6 +666,7 @@ export const ProcurementToggle = ({
       className="mt-1 h-4 w-4 rounded border-slate-300 text-brand accent-brand focus:ring-brand"
       checked={checked}
       disabled={disabled}
+      title={disabled ? "This setting is unavailable in the current state" : undefined}
       onChange={(event) => onChange(event.target.checked)}
     />
   </label>

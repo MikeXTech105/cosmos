@@ -249,10 +249,19 @@ export const isValidationError = (error) =>
 export const isNotFoundError = (error) => getApiStatus(error) === 404;
 
 export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
+  const data = getResponseData(error);
+  const status = getStatus(error, data);
+  const correlationId = getCorrelationIdFromData(data);
+  const withConflictReference = (message) =>
+    status === 409 &&
+    correlationId &&
+    !message.includes(correlationId)
+      ? `${message}\nReference: ${correlationId}`
+      : message;
   const details = getApiErrorList(error);
 
   if (details.length > 0) {
-    return details.join("\n");
+    return withConflictReference(details.join("\n"));
   }
 
   if (isTimeoutError(error)) {
@@ -263,15 +272,13 @@ export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
     return "Network error - please check your connection.";
   }
 
-  const data = getResponseData(error);
   const message = getMessageFromData(data);
-  const status = getStatus(error, data);
 
   if (message && !isGenericMessage(message)) {
-    return message;
+    return withConflictReference(message);
   }
 
-  const statusMessage = getStatusMessage(status, getCorrelationIdFromData(data));
+  const statusMessage = getStatusMessage(status, correlationId);
 
   if (statusMessage) {
     return statusMessage;
@@ -280,13 +287,13 @@ export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
   const title = getTitleFromData(data);
 
   if (title && !isGenericMessage(title)) {
-    return title;
+    return withConflictReference(title);
   }
 
   const statusText = normalizeMessage(error?.response?.statusText);
 
   if (statusText && !isGenericMessage(statusText)) {
-    return statusText;
+    return withConflictReference(statusText);
   }
 
   const errorMessage = normalizeMessage(error?.message);
@@ -296,10 +303,10 @@ export const getApiErrorMessage = (error, fallback = DEFAULT_ERROR_MESSAGE) => {
     !isGenericMessage(errorMessage) &&
     !/^request failed with status code \d+$/i.test(errorMessage)
   ) {
-    return errorMessage;
+    return withConflictReference(errorMessage);
   }
 
-  return fallback || DEFAULT_ERROR_MESSAGE;
+  return withConflictReference(fallback || DEFAULT_ERROR_MESSAGE);
 };
 
 export const createApiError = (data, response) => {

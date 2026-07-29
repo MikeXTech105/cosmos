@@ -1,24 +1,13 @@
-const EMPTY_VALUE = "-";
+import {
+  EMPTY_VALUE,
+  formatCurrency,
+  formatDate,
+  formatNumber,
+  formatPercent,
+  formatQuantity,
+} from "./format";
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  currency: "INR",
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-  style: "currency",
-});
-
-const numberFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 2,
-});
-
-const quantityFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 3,
-});
-
-const percentFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 2,
-  style: "percent",
-});
+export { formatCurrency, formatDate, formatNumber, formatPercent };
 
 export const toReportNumber = (value) => {
   if (value === null || value === undefined || value === "") {
@@ -30,53 +19,7 @@ export const toReportNumber = (value) => {
   return Number.isFinite(numericValue) ? numericValue : null;
 };
 
-export const formatCurrency = (value) => {
-  const numericValue = toReportNumber(value);
-
-  return numericValue === null ? EMPTY_VALUE : currencyFormatter.format(numericValue);
-};
-
-export const formatNumber = (value) => {
-  const numericValue = toReportNumber(value);
-
-  return numericValue === null ? EMPTY_VALUE : numberFormatter.format(numericValue);
-};
-
-export const formatQty = (value) => {
-  const numericValue = toReportNumber(value);
-
-  return numericValue === null ? EMPTY_VALUE : quantityFormatter.format(numericValue);
-};
-
-export const formatDate = (value) => {
-  if (!value) {
-    return EMPTY_VALUE;
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-export const formatPercent = (value) => {
-  const numericValue = toReportNumber(value);
-
-  if (numericValue === null) {
-    return EMPTY_VALUE;
-  }
-
-  return percentFormatter.format(
-    Math.abs(numericValue) > 1 ? numericValue / 100 : numericValue,
-  );
-};
+export const formatQty = formatQuantity;
 
 export const getNumericToneClassName = (value) => {
   const numericValue = toReportNumber(value);

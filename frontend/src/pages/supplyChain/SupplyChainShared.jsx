@@ -214,11 +214,11 @@ export const SupplyChainDeleteModal = ({
   <AppModal
     isBusy={loading}
     isOpen={isOpen}
-    title={`Delete ${entityLabel}`}
+    title={`Delete 1 ${entityLabel}?`}
     onClose={loading ? undefined : onClose}
   >
     <p className="text-sm leading-6 text-slate-600">
-      Delete this {entityLabel}? The server will block the action when the
+      Delete 1 {entityLabel}? The server will block the action when the
       record is in use.
     </p>
     <SupplyChainInlineError

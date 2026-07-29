@@ -33,6 +33,7 @@ import {
   PLANNING_RUN_STATUS_OPTIONS,
 } from "../../../constants/procurementEnums";
 import { planningService } from "../../../services/procurement/planningService";
+import { EMPTY_VALUE } from "../../../utils/format";
 import {
   InventoryBasisNote,
   ProcurementDateRangeFields,
@@ -53,8 +54,6 @@ import {
   getDefaultProcurementRange,
   getFieldErrorMap,
   getInclusiveDayCount,
-  getItemCode,
-  getItemName,
   getPagination,
   getProcurementBoolean,
   getProcurementError,
@@ -348,10 +347,10 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
         <div className="space-y-4">
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-900">
-              {getItemCode(line.item) || line.itemCode || line.materialCode}
+              {line.materialItemCode ?? EMPTY_VALUE}
             </p>
             <p className="mt-0.5 text-xs text-slate-500">
-              {getItemName(line.item) || line.itemName || line.materialName}
+              {line.materialItemName ?? EMPTY_VALUE}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -395,6 +394,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
               id="adjustment-reason"
               rows={3}
               disabled={!differs}
+              title={!differs ? "A reason is required only when the quantity differs" : undefined}
               placeholder={
                 differs
                   ? "Required whenever To order differs"
@@ -466,8 +466,14 @@ const RunDetail = ({
               <XCircle className="h-4 w-4" />Cancel plan
             </AppButton>
           ) : null}
-          {canApprove && !immutable && (
-            <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={onFinalize}>
+          {!immutable && (
+            <AppButton
+              disabled={!canApprove}
+              disabledReason="Finalizing requires approval permission"
+              isLoading={finalizing}
+              loadingText="Finalizing…"
+              onClick={onFinalize}
+            >
               <ShieldCheck className="h-4 w-4" />Finalize plan
             </AppButton>
           )}
@@ -475,7 +481,7 @@ const RunDetail = ({
       </div>
       <ProcurementInlineError message={finalizeError} title="Plan conflict" />
       <ProcurementSectionCard>
-        <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(120px,1fr))]">
+        <div className="grid gap-4 p-6 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(120px,1fr))]">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-xl font-semibold text-slate-900">
@@ -558,7 +564,7 @@ const RunDetail = ({
             scrollerClassName="max-h-[60vh]"
             rows={5}
           >
-            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
+            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{line.materialItemCode ?? EMPTY_VALUE}</p><p className="mt-0.5 text-xs text-slate-500">{line.materialItemName ?? EMPTY_VALUE} · {line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
           </ProcurementTable>
         )}
         <ProcurementPagination disabled={linesLoading} {...pagination} onPageChange={(value) => onUpdateLineFilters({ page: value })} onPageSizeChange={(value) => onUpdateLineFilters({ page: 1, pageSize: Number(value) })} />
@@ -883,6 +889,7 @@ const PlanningHistoryPage = () => {
   const exportButton = (
     <AppButton
       disabled={!run}
+      disabledReason="Select a finalized plan to export"
       isLoading={exporting}
       loadingText="Exporting…"
       variant="secondary"
@@ -939,7 +946,7 @@ const PlanningHistoryPage = () => {
       <ProcurementInlineError message={exportError} title="Export could not be downloaded" />
       {detailLoading ? (
         <ProcurementSectionCard title="Opening snapshot">
-          <ProcurementLoadingRows columns={5} rows={6} />
+          <ProcurementLoadingRows columns={5} rows={5} />
         </ProcurementSectionCard>
       ) : run ? (
         <RunDetail

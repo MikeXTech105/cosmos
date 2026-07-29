@@ -1249,7 +1249,7 @@ const OeeProductionEntriesPage = () => {
       <OeeConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Production Entry?"
+        title="Delete 1 production entry?"
         description={`${confirmation.entity?.machineName ?? "This entry"} for ${formatOeeDate(confirmation.entity?.productionDate)} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

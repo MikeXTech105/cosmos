@@ -295,7 +295,7 @@ const UnitsPage = () => {
         }
       />
 
-      <UnitStats {...stats} />
+      <UnitStats {...stats} loading={unitsState.loading} />
       <UnitFilters
         filters={filterControls}
         resultCount={unitsState.list.length}
@@ -347,7 +347,7 @@ const UnitsPage = () => {
       <InventoryConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Unit?"
+        title="Delete 1 unit?"
         description={`${confirmation.entity?.name ?? "This unit"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({ entity: null, isLoading: false, isOpen: false })

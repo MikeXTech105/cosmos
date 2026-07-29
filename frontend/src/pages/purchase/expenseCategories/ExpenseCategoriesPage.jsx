@@ -308,10 +308,11 @@ const ExpenseCategoriesPage = () => {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         <PurchaseStatCard
           icon={FolderKanban}
           label="Total"
+          loading={state.loading}
           value={stats.total}
           scope={stats.totalScope}
           colorClass="bg-brand-light text-brand"
@@ -319,6 +320,7 @@ const ExpenseCategoriesPage = () => {
         <PurchaseStatCard
           icon={FolderKanban}
           label="Active"
+          loading={state.loading}
           value={stats.active}
           scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
@@ -326,6 +328,7 @@ const ExpenseCategoriesPage = () => {
         <PurchaseStatCard
           icon={FolderKanban}
           label="Inactive"
+          loading={state.loading}
           value={stats.inactive}
           scope={stats.metricScope}
           colorClass="bg-red-50 text-red-600"
@@ -402,7 +405,7 @@ const ExpenseCategoriesPage = () => {
                 Array.from({ length: 5 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={5} className="px-4 py-3">
-                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
+                      <div className="h-4 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -512,7 +515,7 @@ const ExpenseCategoriesPage = () => {
         description={`${confirmation.category?.name ?? "This category"} will be deleted.`}
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete Expense Category?"
+        title="Delete 1 expense category?"
         tone="danger"
         onCancel={() =>
           setConfirmation({

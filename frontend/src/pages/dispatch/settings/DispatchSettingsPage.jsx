@@ -266,6 +266,7 @@ const SettingModal = ({
         <div className="sm:col-span-2 lg:col-span-3">
           <ProcurementItemAutocomplete
             disabled={readOnly || saving}
+            title={readOnly ? "This setting is read only" : saving ? "The setting is already saving" : undefined}
             error={errors.itemId}
             label="Existing Item"
             mode={finishedProductsOnly ? "finished" : "any"}
@@ -282,6 +283,7 @@ const SettingModal = ({
             checked={finishedProductsOnly}
             description="Uses ProcurementClassification = 1. Turn this off when legacy Item classifications are incomplete."
             disabled={readOnly || saving}
+            title={readOnly ? "This setting is read only" : saving ? "The setting is already saving" : undefined}
             label="Finished products only"
             onChange={(checked) => {
               setFinishedProductsOnly(checked);
@@ -365,6 +367,7 @@ const SettingModal = ({
             checked={form.allowLooseQuantity}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
+            title={readOnly ? "This setting is read only" : saving ? "The setting is already saving" : undefined}
             type="checkbox"
             onChange={(event) =>
               setField("allowLooseQuantity", event.target.checked)
@@ -377,6 +380,7 @@ const SettingModal = ({
             checked={form.isActive}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
+            title={readOnly ? "This setting is read only" : saving ? "The setting is already saving" : undefined}
             type="checkbox"
             onChange={(event) => setField("isActive", event.target.checked)}
           />

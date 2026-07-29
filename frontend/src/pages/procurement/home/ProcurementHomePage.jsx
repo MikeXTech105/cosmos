@@ -20,18 +20,21 @@ import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import procurementMessages from "../../../i18n/locales/en/procurement.json";
 import { planningService } from "../../../services/procurement/planningService";
+import {
+  EMPTY_VALUE,
+  formatDateRange,
+} from "../../../utils/format";
 import ProcurementCalculationStrip from "../ProcurementCalculationStrip";
 import {
   ProcurementDateRangeFields,
   ProcurementEmptyState,
-  ProcurementInlineError,
+  ProcurementErrorState,
   ProcurementLoadingRows,
   ProcurementPill,
   ProcurementSectionCard,
   ProcurementSuccessBanner,
 } from "../ProcurementShared";
 import {
-  formatProcurementDate,
   formatProcurementDecimal,
   formatProcurementQuantity,
   getCollection,
@@ -43,6 +46,7 @@ import {
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import {
   getPlanningLineCover,
+  getPlanningCsvRows,
   getPlanningLineInboundStock,
   getPlanningLineProjectedAvailableStock,
   getPlanningLineReorderPoint,
@@ -68,18 +72,7 @@ const downloadPlanningCsv = (lines, range) => {
     "Cover days",
     "Status",
   ];
-  const rows = lines.map((line) => [
-    line.materialItemCode ?? line.itemCode ?? "",
-    line.materialItemName ?? line.itemName ?? "",
-    line.unitShortName ?? line.unitName ?? "",
-    getPlanningLineStock(line),
-    getPlanningLineInboundStock(line),
-    getPlanningLineProjectedAvailableStock(line),
-    getPlanningLineReorderPoint(line),
-    getPlanningLineToOrder(line),
-    getPlanningLineCover(line),
-    getPlanningLineStatus(line).label,
-  ]);
+  const rows = getPlanningCsvRows(lines);
   const csv = [header, ...rows]
     .map((row) => row.map(csvCell).join(","))
     .join("\r\n");
@@ -169,7 +162,11 @@ const AssumptionsModal = ({
             <Settings2 className="h-4 w-4" />Manage saved defaults
           </AppButton>
         </Link>
-        <AppButton disabled={Boolean(error)} onClick={onApply}>
+        <AppButton
+          disabled={Boolean(error)}
+          disabledReason={error || undefined}
+          onClick={onApply}
+        >
           <RefreshCw className="h-4 w-4" />Recalculate
         </AppButton>
       </div>
@@ -255,21 +252,21 @@ const BuyList = ({ lines }) => {
                       </button>
                       <div className="min-w-0">
                         <p className="max-w-72 truncate font-semibold text-slate-900">
-                          {line.materialItemName ?? line.itemName ?? "—"}
+                          {line.materialItemName ?? EMPTY_VALUE}
                         </p>
                         <p className="mt-0.5 max-w-72 truncate text-xs text-slate-500">
-                          {line.materialItemCode ?? line.itemCode ?? "—"}
+                          {line.materialItemCode ?? EMPTY_VALUE}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{line.unitShortName ?? line.unitName ?? "-"}</td>
+                  <td className="px-4 py-3 text-slate-600">{line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatProcurementQuantity(getPlanningLineStock(line))}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatProcurementQuantity(getPlanningLineInboundStock(line))}</td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums text-slate-900">{formatProcurementQuantity(getPlanningLineProjectedAvailableStock(line))}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatProcurementQuantity(getPlanningLineReorderPoint(line))}</td>
                   <td className="bg-brand-light/40 px-4 py-3 text-right text-base font-bold tabular-nums text-slate-950">{formatProcurementQuantity(getPlanningLineToOrder(line), "0")}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{cover === null ? "-" : `${formatProcurementQuantity(cover)} days`}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{cover === null || cover === undefined || cover === "" ? EMPTY_VALUE : `${formatProcurementQuantity(cover)} days`}</td>
                   <td className="px-4 py-3"><ProcurementPill tone={status.tone}>{status.label}</ProcurementPill></td>
                 </tr>
                 {isExpanded && (
@@ -351,6 +348,18 @@ const ProcurementHomePage = () => {
     : savedRun
       ? "This draft is already saved"
       : "Nothing to save";
+  const saveUnavailableReason = !capabilities.canCreate
+    ? "Saving a draft requires Procurement Planning create permission"
+    : saveDisabled
+      ? saveDisabledReason
+      : undefined;
+  const exportDisabledReason = !capabilities.canExport
+    ? "Exporting requires Procurement Planning export permission"
+    : loading
+      ? "Wait for the buy list to finish loading"
+      : allLines.length === 0
+        ? "There are no rows to export"
+        : undefined;
 
   const saveDraft = async () => {
     if (!capabilities.canCreate || loading || actionableLines.length === 0) return;
@@ -378,13 +387,13 @@ const ProcurementHomePage = () => {
         description="A decision-ready view of what needs ordering from the latest server calculation."
       />
 
-      <div className="overflow-hidden rounded-2xl bg-brand p-5 text-white shadow-sm sm:p-7">
+      <div className="overflow-hidden rounded-2xl bg-brand p-6 text-white shadow-sm">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-semibold text-white/75">What to buy today</p>
             <div className="mt-2 flex items-end gap-3">
               {loading ? (
-                <span className="text-5xl font-black tabular-nums">—</span>
+                <span className="text-5xl font-black tabular-nums">{EMPTY_VALUE}</span>
               ) : orderSummary.showCount ? (
                 <span className="text-5xl font-black tabular-nums">
                   {orderSummary.count}
@@ -397,34 +406,42 @@ const ProcurementHomePage = () => {
                     : "text-2xl font-bold text-white"
                 }
               >
-                {loading ? "Calculating order needs" : orderSummary.text}
+                {loading
+                  ? "Calculating order needs"
+                  : error
+                    ? "Buy list unavailable"
+                    : orderSummary.text}
               </span>
             </div>
             <p className="mt-3 flex items-center gap-2 text-xs text-white/70">
               <CalendarRange className="h-4 w-4" />
-              Sales from {formatProcurementDate(range.fromDate)} to {formatProcurementDate(range.toDate)}
+              Sales from {formatDateRange(range.fromDate, range.toDate)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <AppButton className="border-white/20 bg-white text-brand hover:bg-brand-light" variant="secondary" onClick={() => { setDraftRange(range); setAssumptionsOpen(true); }}>
               <Settings2 className="h-4 w-4" />Adjust assumptions
             </AppButton>
-            <AppButton className="border-white/25 bg-white/10 text-white hover:bg-white/20 disabled:opacity-90" disabled={loading || allLines.length === 0} variant="secondary" onClick={() => downloadPlanningCsv(allLines, range)}>
+            <AppButton
+              className="border-white/25 bg-white/10 text-white hover:bg-white/20 disabled:opacity-90"
+              disabled={Boolean(exportDisabledReason)}
+              disabledReason={exportDisabledReason}
+              variant="secondary"
+              onClick={() => downloadPlanningCsv(allLines, range)}
+            >
               <Download className="h-4 w-4" />Export CSV
             </AppButton>
-            {capabilities.canCreate && (
-              saveDisabled ? (
-                <AppTooltip label={saveDisabledReason}>
-                  <AppButton className="bg-white text-brand hover:bg-white/90 disabled:opacity-80" disabled variant="secondary">
-                    <Save className="h-4 w-4" />Save draft
-                  </AppButton>
-                </AppTooltip>
-              ) : (
-                <AppButton className="bg-white text-brand hover:bg-white/90 disabled:opacity-80" isLoading={saving} variant="secondary" onClick={saveDraft}>
-                  <Save className="h-4 w-4" />Save draft
-                </AppButton>
-              )
-            )}
+            <AppButton
+              className="bg-white text-brand hover:bg-white/90 disabled:opacity-80"
+              disabled={Boolean(saveUnavailableReason)}
+              disabledReason={saveUnavailableReason}
+              isLoading={saving}
+              loadingText="Saving…"
+              variant="secondary"
+              onClick={saveDraft}
+            >
+              <Save className="h-4 w-4" />Save draft
+            </AppButton>
           </div>
         </div>
       </div>
@@ -441,13 +458,12 @@ const ProcurementHomePage = () => {
               void loadPreview(initialRange);
             }}
           >
-            Range: {formatProcurementDate(range.fromDate)} – {formatProcurementDate(range.toDate)}
+            Range: {formatDateRange(range.fromDate, range.toDate)}
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
-      <ProcurementInlineError message={error} title="Buy list could not be calculated" />
       {savedRun && (
         <ProcurementSuccessBanner title="Draft plan saved">
           <Link className="font-semibold underline underline-offset-2" to="/procurement/planning-history">
@@ -461,7 +477,12 @@ const ProcurementHomePage = () => {
         description="Ordered by urgency and server-reported shortfall. Expand a row to see why."
         actions={
           <div className="flex items-center gap-2">
-            <AppButton variant="secondary" disabled={loading} onClick={() => void loadPreview(range)}>
+            <AppButton
+              variant="secondary"
+              disabled={loading}
+              disabledReason="The buy list is already refreshing"
+              onClick={() => void loadPreview(range)}
+            >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
             <Link to="/procurement/generate-plan">
@@ -471,7 +492,12 @@ const ProcurementHomePage = () => {
         }
       >
         {loading ? (
-          <ProcurementLoadingRows columns={11} rows={8} />
+          <ProcurementLoadingRows columns={11} rows={5} />
+        ) : error ? (
+          <ProcurementErrorState
+            error={error}
+            onRetry={() => void loadPreview(range)}
+          />
         ) : actionableLines.length === 0 ? (
           <ProcurementEmptyState
             title="Nothing needs ordering"

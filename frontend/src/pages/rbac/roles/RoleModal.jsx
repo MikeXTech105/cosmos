@@ -155,6 +155,7 @@ const RoleModal = ({
                     <input
                       id="roleName"
                       disabled={isView}
+                      title={isView ? "Open edit mode to change the role name" : undefined}
                       className={inputClassName}
                       placeholder="Operations Manager"
                       {...register("name")}
@@ -172,6 +173,7 @@ const RoleModal = ({
                     <textarea
                       id="roleDescription"
                       disabled={isView}
+                      title={isView ? "Open edit mode to change the description" : undefined}
                       rows={4}
                       className={`${inputClassName} h-auto min-h-28 resize-y py-3`}
                       placeholder="Describe the responsibilities and access profile."
@@ -197,6 +199,7 @@ const RoleModal = ({
                     <input
                       type="checkbox"
                       disabled={isView}
+                      title={isView ? "Open edit mode to change role status" : undefined}
                       className="h-4 w-4 accent-brand"
                       {...register("isActive")}
                     />
@@ -214,7 +217,8 @@ const RoleModal = ({
                   {!isView && (
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+              disabled={isSubmitting}
+              title={isSubmitting ? "The role is already saving" : undefined}
                       className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {isSubmitting

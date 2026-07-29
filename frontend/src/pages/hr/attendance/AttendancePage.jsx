@@ -49,6 +49,7 @@ import {
   hrAttendanceManualSchema,
   hrAttendanceQuickActionSchema,
 } from "../../../utils/validationSchemas";
+import { formatDateInput } from "../../../utils/format";
 import {
   buildHrQueryParams,
   combineDateAndTime,
@@ -68,7 +69,7 @@ import {
   HrStatCard,
 } from "../HrShared";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => formatDateInput(new Date());
 const nowTime = () => new Date().toTimeString().slice(0, 5);
 
 const extractList = (response) => {
@@ -650,7 +651,7 @@ const AttendancePage = () => {
 
   const loadMonthlyReport = useCallback(async () => {
     try {
-      const response = await dispatch(
+      await dispatch(
         fetchHrAttendanceMonthlyReport({
           EmployeeId: reportFilters.employeeId
             ? Number(reportFilters.employeeId)
@@ -659,7 +660,6 @@ const AttendancePage = () => {
           Year: Number(reportFilters.year),
         }),
       ).unwrap();
-      toast.success(getHrSuccessMessage(response, "Monthly report loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load monthly report."));
     }
@@ -667,7 +667,7 @@ const AttendancePage = () => {
 
   const loadDepartmentReport = useCallback(async () => {
     try {
-      const response = await dispatch(
+      await dispatch(
         fetchHrAttendanceDepartmentReport({
           DepartmentId: reportFilters.departmentId
             ? Number(reportFilters.departmentId)
@@ -675,7 +675,6 @@ const AttendancePage = () => {
           AttendanceDate: reportFilters.attendanceDate || undefined,
         }),
       ).unwrap();
-      toast.success(getHrSuccessMessage(response, "Department report loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load department report."));
     }
@@ -715,11 +714,11 @@ const AttendancePage = () => {
         }
       />
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <HrStatCard icon={UserCheck} label="Present" value={stats.present} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
-        <HrStatCard icon={UserX} label="Absent" value={stats.absent} scope="current-page" colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={Clock} label="Late" value={stats.late} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CalendarCheck} label="On Leave" value={stats.leave} scope="current-page" colorClass="bg-brand-light text-brand" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+        <HrStatCard icon={UserCheck} label="Present" loading={attendanceState.loading} value={stats.present} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
+        <HrStatCard icon={UserX} label="Absent" loading={attendanceState.loading} value={stats.absent} scope="current-page" colorClass="bg-red-50 text-red-600" />
+        <HrStatCard icon={Clock} label="Late" loading={attendanceState.loading} value={stats.late} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
+        <HrStatCard icon={CalendarCheck} label="On Leave" loading={attendanceState.loading} value={stats.leave} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -860,10 +859,10 @@ const AttendancePage = () => {
               </thead>
               <tbody>
                 {attendanceState.loading
-                  ? Array.from({ length: 6 }, (_, index) => (
+                  ? Array.from({ length: 5 }, (_, index) => (
                       <tr key={index}>
                         <td colSpan={7} className="px-4 py-3">
-                          <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
+                          <div className="h-4 animate-pulse rounded bg-slate-100" />
                         </td>
                       </tr>
                     ))

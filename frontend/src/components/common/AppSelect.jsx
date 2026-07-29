@@ -38,6 +38,7 @@ const AppSelect = forwardRef(({
   creatable = false,
   createLabel = "Create new",
   disabled = false,
+  disabledReason,
   emptyMessage = "No options available",
   error,
   hint,
@@ -336,6 +337,11 @@ const AppSelect = forwardRef(({
         role="combobox"
         value={normalizedValue}
         disabled={resolvedDisabled}
+        title={
+          resolvedDisabled
+            ? disabledReason || "This selection is unavailable in the current state"
+            : undefined
+        }
         aria-activedescendant={highlightedOptionId}
         aria-controls={listboxId}
         aria-expanded={isOpen}
@@ -449,6 +455,7 @@ const AppSelect = forwardRef(({
                       role="option"
                       tabIndex={-1}
                       disabled={option.disabled}
+                      title={option.disabled ? option.disabledReason || "This option is unavailable" : undefined}
                       aria-disabled={option.disabled || undefined}
                       aria-selected={isSelected}
                       onClick={() => handleSelect(option.value)}

@@ -1,5 +1,6 @@
 import axiosInstance from "../../api/axios";
 import { ENDPOINTS } from "../../api/endpoints";
+import { formatNumber } from "../../utils/format";
 
 export const REPORT_EXPORT_PAGE_SIZE = 200;
 export const REPORT_EXPORT_MAX_ROWS = 10000;
@@ -86,7 +87,7 @@ export const loadReportFallbackRows = async ({
 
   if (firstPage.totalCount > maxRows) {
     throw new Error(
-      `This export contains ${firstPage.totalCount.toLocaleString()} rows. Backend report export is required above ${maxRows.toLocaleString()} rows.`,
+      `This export contains ${formatNumber(firstPage.totalCount, 0)} rows. Backend report export is required above ${formatNumber(maxRows, 0)} rows.`,
     );
   }
 

@@ -12,6 +12,7 @@ const AppInput = forwardRef((componentProps, ref) => {
     "aria-describedby": ariaDescribedBy,
     className = "",
     disabled = false,
+    disabledReason,
     error,
     helperText,
     hint,
@@ -59,6 +60,11 @@ const AppInput = forwardRef((componentProps, ref) => {
         id={inputId}
         type={type}
         disabled={resolvedDisabled}
+        title={
+          resolvedDisabled
+            ? disabledReason || "This field is unavailable in the current state"
+            : props.title
+        }
         required={required}
         aria-required={required || undefined}
         aria-invalid={Boolean(error) || undefined}

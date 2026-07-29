@@ -3,6 +3,13 @@ import {
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../utils/inventoryQuery";
 import { getApiErrorMessage } from "../../utils/apiError";
+import {
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatTime,
+} from "../../utils/format";
 
 export const HR_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
@@ -68,21 +75,7 @@ export const getHrBoolean = (value, fallback = true) => {
 };
 
 export const formatHrDate = (value) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatDate(value);
 };
 
 export const formatHrTime = (value) => {
@@ -101,40 +94,15 @@ export const formatHrTime = (value) => {
 
   date.setHours(hours, minutes, 0, 0);
 
-  return date.toLocaleTimeString("en-IN", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatTime(date);
 };
 
 export const formatHrDateTime = (value) => {
-  if (!value) {
-    return "-";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value);
-  }
-
-  return date.toLocaleString("en-IN", {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-  });
+  return formatDateTime(value);
 };
 
 export const formatHrCurrency = (value) => {
-  const amount = Number(value) || 0;
-
-  return amount.toLocaleString("en-IN", {
-    currency: "INR",
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: "currency",
-  });
+  return formatCurrency(value);
 };
 
 export const formatHrHours = (value) => {
@@ -144,7 +112,7 @@ export const formatHrHours = (value) => {
     return "-";
   }
 
-  return `${hours.toFixed(hours % 1 === 0 ? 0 : 2)} hrs`;
+  return `${formatNumber(hours, 2)} hrs`;
 };
 
 export const combineDateAndTime = (date, time) => {
