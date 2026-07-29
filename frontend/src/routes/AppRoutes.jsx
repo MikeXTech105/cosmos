@@ -1,5 +1,10 @@
 import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 
 import { ACTION_CENTRE_PERMISSION_TARGETS } from "../pages/actionCentre/actionCentrePermissions";
 import ProtectedRoute from "./ProtectedRoute";
@@ -154,6 +159,21 @@ const RouteFallback = () => {
   );
 };
 
+const SearchPreservingRedirect = ({ to }) => {
+  const location = useLocation();
+
+  return (
+    <Navigate
+      replace
+      to={{
+        hash: location.hash,
+        pathname: to,
+        search: location.search,
+      }}
+    />
+  );
+};
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<RouteFallback />}>
@@ -255,7 +275,7 @@ const AppRoutes = () => {
             path="/inventory/items"
             element={
               <PermissionGuard route="/items" pageName="Items">
-                <Navigate replace to="/items" />
+                <SearchPreservingRedirect to="/items" />
               </PermissionGuard>
             }
           />

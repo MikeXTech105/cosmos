@@ -10,6 +10,7 @@ const STATUS_OPTIONS = [
 ];
 
 const UserFilters = ({
+  activeFilterCount,
   filters,
   isRolesLoading,
   roleOptions,
@@ -18,8 +19,7 @@ const UserFilters = ({
   resultCount,
   rolesError,
 }) => {
-  const hasActiveFilters =
-    filters.search || filters.status !== "all" || filters.roleId !== "all";
+  const hasActiveFilters = activeFilterCount > 0;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -73,9 +73,15 @@ const UserFilters = ({
         </button>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <Filter className="h-3.5 w-3.5" />
-        {resultCount} users match current filters
+        <span>{resultCount} users match current filters</span>
+        {activeFilterCount > 0 && (
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
+            {activeFilterCount} active{" "}
+            {activeFilterCount === 1 ? "filter" : "filters"}
+          </span>
+        )}
       </div>
     </div>
   );

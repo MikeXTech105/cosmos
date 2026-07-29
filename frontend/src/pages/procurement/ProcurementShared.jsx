@@ -282,7 +282,12 @@ export const ProcurementPagination = ({
   pageSize,
   totalCount,
   totalPages,
-}) => (
+}) => {
+  const pageSizeOptions = [
+    ...new Set([...PROCUREMENT_PAGE_SIZE_OPTIONS, pageSize]),
+  ].sort((left, right) => left - right);
+
+  return (
   <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
     <p className="text-xs text-slate-500">
       Showing{" "}
@@ -302,7 +307,7 @@ export const ProcurementPagination = ({
         aria-label="Rows per page"
         className="w-24"
         disabled={disabled}
-        options={PROCUREMENT_PAGE_SIZE_OPTIONS.map((value) => ({
+        options={pageSizeOptions.map((value) => ({
           label: `${value} rows`,
           value,
         }))}
@@ -332,7 +337,8 @@ export const ProcurementPagination = ({
       </AppButton>
     </div>
   </div>
-);
+  );
+};
 
 export const ProcurementMessageGroup = ({ messages, severity }) => {
   const meta = {

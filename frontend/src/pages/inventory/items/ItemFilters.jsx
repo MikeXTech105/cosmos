@@ -6,6 +6,7 @@ import { ITEM_CLASSIFICATION_OPTIONS } from "../../../utils/itemClassification";
 import { STATUS_OPTIONS } from "../inventoryHelpers";
 
 const ItemFilters = ({
+  activeFilterCount,
   canCreateCategory = false,
   categoryOptions,
   filters,
@@ -14,12 +15,6 @@ const ItemFilters = ({
   onClear,
   resultCount,
 }) => {
-  const activeFilterCount = [
-    Boolean(filters.Search?.trim()),
-    filters.IsActive !== "all",
-    filters.CategoryId !== "all",
-    (filters.ProcurementClassification ?? "all") !== "all",
-  ].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0;
 
   return (

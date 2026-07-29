@@ -26,6 +26,7 @@ import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
+import useUrlFilters from "../../../hooks/useUrlFilters";
 import {
   PlanningRunStatus,
   PLANNING_RUN_STATUS_LABELS,
@@ -70,6 +71,33 @@ import ProcurementTable, {
   PROCUREMENT_TABLE_HEADER_CLASS,
 } from "../ProcurementTable";
 
+const createPlanningHistoryUrlSchema = (defaultRange) =>
+  Object.freeze({
+    from: Object.freeze({
+      default: defaultRange.fromDate,
+      type: "date",
+    }),
+    to: Object.freeze({
+      default: defaultRange.toDate,
+      type: "date",
+    }),
+    status: Object.freeze({
+      default: null,
+      options: Object.values(PlanningRunStatus),
+      type: "enum",
+    }),
+    page: Object.freeze({
+      clamp: [1, Number.MAX_SAFE_INTEGER],
+      default: 1,
+      type: "number",
+    }),
+    size: Object.freeze({
+      clamp: [1, 200],
+      default: 20,
+      type: "number",
+    }),
+  });
+
 const getRunStatus = (run) => run?.status ?? run?.planningRunStatus;
 
 const isFinalizedRun = (run) => {
@@ -107,6 +135,7 @@ const runStatusMeta = (run) => {
 const getRunLines = (payload) => getCollection(payload, ["planningLines", "lines"]);
 
 const RunList = ({
+  activeFilterCount,
   canCancel,
   data,
   error,
@@ -114,6 +143,7 @@ const RunList = ({
   loading,
   onChangeFilters,
   onCancel,
+  onClearFilters,
   onOpen,
   onPageChange,
   onPageSizeChange,
@@ -124,12 +154,6 @@ const RunList = ({
   const rangeError = validateDateRange(filters.fromDate, filters.toDate);
   const runs = getCollection(data, ["runs", "planningRuns"]);
   const pagination = getPagination(data, runs.length);
-  const defaultRange = useMemo(() => getDefaultProcurementRange(), []);
-  const activeFilterCount = [
-    filters.fromDate !== defaultRange.fromDate ||
-      filters.toDate !== defaultRange.toDate,
-    Boolean(filters.status),
-  ].filter(Boolean).length;
 
   return (
     <ProcurementSectionCard
@@ -153,7 +177,7 @@ const RunList = ({
         </div>
         <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
           <p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p>
-          {activeFilterCount > 0 && <AppButton variant="ghost" onClick={() => onChangeFilters({ ...defaultRange, status: "" })}>Clear</AppButton>}
+          {activeFilterCount > 0 && <AppButton variant="ghost" onClick={onClearFilters}>Clear</AppButton>}
         </div>
       </div>
       {error ? (
@@ -239,8 +263,8 @@ const RunList = ({
       )}
       <ProcurementPagination
         disabled={loading}
-        pageNumber={pagination.pageNumber || page}
-        pageSize={pagination.pageSize || pageSize}
+        pageNumber={page}
+        pageSize={pageSize}
         totalCount={pagination.totalCount}
         totalPages={pagination.totalPages}
         onPageChange={onPageChange}
@@ -545,9 +569,25 @@ const RunDetail = ({
 
 const PlanningHistoryPage = () => {
   const initialRange = useMemo(() => getDefaultProcurementRange(), []);
-  const [filters, setFilters] = useState({ ...initialRange, status: "" });
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const urlSchema = useMemo(
+    () => createPlanningHistoryUrlSchema(initialRange),
+    [initialRange],
+  );
+  const {
+    activeCount,
+    reset: resetUrlFilters,
+    setValue: setUrlFilter,
+    setValues: setUrlFilters,
+    values: urlFilters,
+  } = useUrlFilters(urlSchema);
+  const filters = useMemo(
+    () => ({
+      fromDate: urlFilters.from,
+      status: urlFilters.status ?? "",
+      toDate: urlFilters.to,
+    }),
+    [urlFilters.from, urlFilters.status, urlFilters.to],
+  );
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -619,9 +659,9 @@ const PlanningHistoryPage = () => {
       const response = await planningService.listRuns({
         FromDate: filters.fromDate,
         ToDate: filters.toDate,
-        Status: filters.status || undefined,
-        PageNumber: page,
-        PageSize: pageSize,
+        Status: urlFilters.status ?? undefined,
+        PageNumber: urlFilters.page,
+        PageSize: urlFilters.size,
       });
       if (isLatestRunsRequest(requestId)) {
         setData(response.data);
@@ -635,7 +675,15 @@ const PlanningHistoryPage = () => {
         setLoading(false);
       }
     }
-  }, [beginRunsRequest, filters, isLatestRunsRequest, page, pageSize]);
+  }, [
+    beginRunsRequest,
+    filters.fromDate,
+    filters.toDate,
+    isLatestRunsRequest,
+    urlFilters.page,
+    urlFilters.size,
+    urlFilters.status,
+  ]);
 
   const loadLines = useCallback(async () => {
     if (!run) return;
@@ -927,28 +975,38 @@ const PlanningHistoryPage = () => {
         />
       ) : (
         <RunList
+          activeFilterCount={activeCount}
           canCancel={capabilities.canDelete}
           data={data}
           error={error}
           filters={filters}
           loading={loading}
-          page={page}
-          pageSize={pageSize}
+          page={urlFilters.page}
+          pageSize={urlFilters.size}
           onChangeFilters={(patch) => {
-            setFilters((current) => ({ ...current, ...patch }));
-            setPage(1);
+            const urlPatch = {};
+
+            if (Object.hasOwn(patch, "fromDate")) {
+              urlPatch.from = patch.fromDate;
+            }
+            if (Object.hasOwn(patch, "toDate")) {
+              urlPatch.to = patch.toDate;
+            }
+            if (Object.hasOwn(patch, "status")) {
+              urlPatch.status = patch.status || null;
+            }
+
+            setUrlFilters(urlPatch);
           }}
           onCancel={(target) => {
             setCancelError("");
             setCancelReason("");
             setCancelTarget(target);
           }}
+          onClearFilters={resetUrlFilters}
           onOpen={openRun}
-          onPageChange={setPage}
-          onPageSizeChange={(value) => {
-            setPageSize(Number(value));
-            setPage(1);
-          }}
+          onPageChange={(value) => setUrlFilter("page", value)}
+          onPageSizeChange={(value) => setUrlFilter("size", value)}
           onRetry={loadRuns}
         />
       )}

@@ -13,6 +13,7 @@ import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import useLatestRequest from "../../../hooks/useLatestRequest";
+import useUrlFilters from "../../../hooks/useUrlFilters";
 import { getApiStatus } from "../../../utils/apiError";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
@@ -21,19 +22,19 @@ import {
   deleteItem,
   fetchItemById,
   fetchItems,
-  setItemFilters,
-  setItemPage,
-  setItemPageSize,
   setSelectedItem,
   updateItem,
 } from "../../../store/slices/inventory/itemSlice";
 import { InventoryConfirmDialog } from "../InventoryShared";
 import {
-  buildInventoryQueryParams,
   getActionError,
   getSuccessMessage,
-  serializeId,
 } from "../inventoryHelpers";
+import {
+  DEFAULT_INVENTORY_PAGE_SIZE,
+  MAX_INVENTORY_PAGE_SIZE,
+} from "../../../utils/inventoryQuery";
+import { ITEM_CLASSIFICATION } from "../../../utils/itemClassification";
 import useInventoryCapabilities from "../useInventoryCapabilities";
 import CategoryFormModal from "../categories/CategoryFormModal";
 import UnitFormModal from "../units/UnitFormModal";
@@ -43,6 +44,42 @@ import ItemFormModal from "./ItemFormModal";
 import ItemStats from "./ItemStats";
 import ItemTable from "./ItemTable";
 import { getItemTypeLabel, isLowStock } from "./itemHelpers";
+
+const ITEM_SORT_FIELDS = Object.freeze(["name", "itemCode", "createdAt"]);
+const ITEM_URL_FILTER_SCHEMA = Object.freeze({
+  q: Object.freeze({ default: "", type: "string" }),
+  category: Object.freeze({
+    default: null,
+    type: "number",
+    validate: (value) => value > 0,
+  }),
+  classification: Object.freeze({
+    default: null,
+    options: Object.values(ITEM_CLASSIFICATION),
+    type: "enum",
+  }),
+  isActive: Object.freeze({ default: null, type: "boolean" }),
+  page: Object.freeze({
+    clamp: [1, Number.MAX_SAFE_INTEGER],
+    default: 1,
+    type: "number",
+  }),
+  size: Object.freeze({
+    clamp: [1, MAX_INVENTORY_PAGE_SIZE],
+    default: DEFAULT_INVENTORY_PAGE_SIZE,
+    type: "number",
+  }),
+  sort: Object.freeze({
+    default: "",
+    options: ITEM_SORT_FIELDS,
+    type: "enum",
+  }),
+  dir: Object.freeze({
+    default: "asc",
+    options: ["asc", "desc"],
+    type: "enum",
+  }),
+});
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -63,6 +100,12 @@ const getResponseItem = (response) => {
 const ItemsPage = () => {
   const dispatch = useDispatch();
   const itemsState = useSelector((state) => state.items);
+  const {
+    activeCount,
+    reset: resetUrlFilters,
+    setValue: setUrlFilter,
+    values: urlFilters,
+  } = useUrlFilters(ITEM_URL_FILTER_SCHEMA);
   const capabilities = useInventoryCapabilities({
     label: "Items",
     resource: "items",
@@ -78,7 +121,6 @@ const ItemsPage = () => {
     resource: "units",
     route: "/units",
   });
-  const [searchInput, setSearchInput] = useState(itemsState.filters.Search);
   const [lookups, setLookups] = useState({
     categories: [],
     categoriesError: null,
@@ -114,27 +156,18 @@ const ItemsPage = () => {
   });
 
   const queryParams = useMemo(
-    () =>
-      buildInventoryQueryParams({
-        filters: itemsState.filters,
-        pageNumber: itemsState.pageNumber,
-        pageSize: itemsState.pageSize,
-        extra: {
-          Barcode: itemsState.filters.Barcode?.trim() || undefined,
-          ItemCode: itemsState.filters.ItemCode?.trim() || undefined,
-          CategoryId:
-            itemsState.filters.CategoryId === "all"
-              ? undefined
-              : serializeId(itemsState.filters.CategoryId),
-          ProcurementClassification:
-            itemsState.filters.ProcurementClassification === "all"
-              ? undefined
-              : serializeId(
-                  itemsState.filters.ProcurementClassification,
-                ),
-        },
-      }),
-    [itemsState.filters, itemsState.pageNumber, itemsState.pageSize],
+    () => ({
+      CategoryId: urlFilters.category ?? undefined,
+      IsActive: urlFilters.isActive ?? undefined,
+      PageNumber: urlFilters.page,
+      PageSize: urlFilters.size,
+      ProcurementClassification:
+        urlFilters.classification ?? undefined,
+      Search: urlFilters.q.trim() || undefined,
+      SortBy: urlFilters.sort || undefined,
+      SortDirection: urlFilters.sort ? urlFilters.dir : undefined,
+    }),
+    [urlFilters],
   );
 
   const loadItems = useCallback(() => {
@@ -233,15 +266,6 @@ const ItemsPage = () => {
   useEffect(() => {
     void Promise.resolve().then(loadItems);
   }, [loadItems]);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      dispatch(setItemFilters({ Search: searchInput }));
-      dispatch(setItemPage(1));
-    }, 350);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [dispatch, searchInput]);
 
   useEffect(() => {
     void loadLookups();
@@ -560,8 +584,16 @@ const ItemsPage = () => {
   }, [capabilities.canDelete, confirmation.entity, dispatch, loadItems]);
 
   const filterControls = {
-    ...itemsState.filters,
-    Search: searchInput,
+    CategoryId: urlFilters.category ?? "all",
+    IsActive:
+      urlFilters.isActive === null
+        ? "all"
+        : urlFilters.isActive
+          ? "active"
+          : "inactive",
+    ProcurementClassification:
+      urlFilters.classification ?? "all",
+    Search: urlFilters.q,
   };
 
   return (
@@ -600,6 +632,7 @@ const ItemsPage = () => {
 
       <ItemStats {...stats} />
       <ItemFilters
+        activeFilterCount={activeCount}
         canCreateCategory={canCreateCategory}
         categoryOptions={categoryOptions}
         filters={filterControls}
@@ -607,26 +640,32 @@ const ItemsPage = () => {
         onCreateCategory={() => openLookupCreate("categories")}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
-            setSearchInput(patch.Search);
-          } else {
-            dispatch(setItemFilters(patch));
-            dispatch(setItemPage(1));
+            setUrlFilter("q", patch.Search);
+          }
+          if (Object.hasOwn(patch, "CategoryId")) {
+            setUrlFilter(
+              "category",
+              patch.CategoryId === "all" ? null : patch.CategoryId,
+            );
+          }
+          if (Object.hasOwn(patch, "ProcurementClassification")) {
+            setUrlFilter(
+              "classification",
+              patch.ProcurementClassification === "all"
+                ? null
+                : patch.ProcurementClassification,
+            );
+          }
+          if (Object.hasOwn(patch, "IsActive")) {
+            setUrlFilter(
+              "isActive",
+              patch.IsActive === "all"
+                ? null
+                : patch.IsActive === "active",
+            );
           }
         }}
-        onClear={() => {
-          setSearchInput("");
-          dispatch(
-            setItemFilters({
-              Search: "",
-              IsActive: "all",
-              CategoryId: "all",
-              ProcurementClassification: "all",
-              Barcode: "",
-              ItemCode: "",
-            }),
-          );
-          dispatch(setItemPage(1));
-        }}
+        onClear={resetUrlFilters}
       />
 
       <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
@@ -647,12 +686,12 @@ const ItemsPage = () => {
             isLoading={itemsState.loading}
             items={itemsState.list}
             onCreate={capabilities.canCreate ? openCreate : undefined}
-            onPageChange={(value) => dispatch(setItemPage(value))}
-            onPageSizeChange={(value) => dispatch(setItemPageSize(value))}
+            onPageChange={(value) => setUrlFilter("page", value)}
+            onPageSizeChange={(value) => setUrlFilter("size", value)}
             onRetry={loadItems}
             onSelect={selectItem}
-            pageNumber={itemsState.pageNumber}
-            pageSize={itemsState.pageSize}
+            pageNumber={urlFilters.page}
+            pageSize={urlFilters.size}
             selectedId={itemsState.selected?.id}
             totalCount={itemsState.totalCount}
             totalPages={itemsState.totalPages}
