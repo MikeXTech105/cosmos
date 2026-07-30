@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { ACTION_CENTRE_PERMISSION_TARGETS } from "../pages/actionCentre/actionCentrePermissions";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
@@ -14,7 +13,6 @@ const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
-const ActionCentre = lazy(() => import("../pages/actionCentre/index.js"));
 const Pages = lazy(() => import("../pages/rbac/pages/index.js"));
 const Permissions = lazy(() => import("../pages/rbac/permissions/index.js"));
 const Party = lazy(() => import("../pages/party/index.js"));
@@ -195,14 +193,6 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/action-centre"
-            element={
-              <PermissionGuard targets={ACTION_CENTRE_PERMISSION_TARGETS}>
-                <ActionCentre />
-              </PermissionGuard>
-            }
-          />
-          <Route
             path="/users"
             element={
               <PermissionGuard route="/users" pageName="Users">
@@ -248,14 +238,6 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/items" pageName="Items">
                 <Items />
-              </PermissionGuard>
-            }
-          />
-          <Route
-            path="/inventory/items"
-            element={
-              <PermissionGuard route="/items" pageName="Items">
-                <Navigate replace to="/items" />
               </PermissionGuard>
             }
           />

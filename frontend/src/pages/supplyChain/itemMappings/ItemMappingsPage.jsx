@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -159,16 +159,10 @@ const MappingModal = ({
               : "",
           );
         }
-      } catch (error) {
+      } catch {
         if (active) {
           setPrimaryWarning(
             "The existing primary mapping could not be checked. The server will validate this choice.",
-          );
-          toast.error(
-            getApiErrorMessage(
-              error,
-              "Unable to check the existing primary mapping.",
-            ),
           );
         }
       }
@@ -347,11 +341,9 @@ const MappingModal = ({
 
 const ItemMappingsPage = () => {
   const dispatch = useDispatch();
-  const [searchParams, setSearchParams] = useSearchParams();
   const state = useSelector((root) => root.supplyChainItemMappings);
   const { channels, error: channelError } = useSupplyChainChannels();
-  const requestedTab = searchParams.get("tab");
-  const tab = requestedTab === "unmatched" ? "unmatched" : "mappings";
+  const [tab, setTab] = useState("mappings");
   const [filterItem, setFilterItem] = useState(null);
   const [modal, setModal] = useState({ mode: "", record: null });
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -368,20 +360,6 @@ const ItemMappingsPage = () => {
     resource: "SupplyChain.ItemMappings",
     route: "/supply-chain/item-mappings",
   });
-
-  const changeTab = (nextTab) => {
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-
-      if (nextTab === "mappings") {
-        next.delete("tab");
-      } else {
-        next.set("tab", nextTab);
-      }
-
-      return next;
-    });
-  };
   const params = useMemo(
     () => ({
       ...state.filters,
@@ -563,7 +541,7 @@ const ItemMappingsPage = () => {
           { id: "mappings", icon: Link2, label: "Mappings" },
           { id: "unmatched", icon: Inbox, label: "Unmatched SKUs", count: unmatched.length },
         ]}
-        onChange={changeTab}
+        onChange={setTab}
       />
 
       {tab === "mappings" ? (

@@ -13,8 +13,6 @@ import { createPortal } from "react-dom";
 const AppTooltip = ({ children, label }) => {
   const id = useId();
   const triggerRef = useRef(null);
-  const childIsDisabled =
-    isValidElement(children) && Boolean(children.props.disabled);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({
     below: false,
@@ -89,9 +87,7 @@ const AppTooltip = ({ children, label }) => {
     <>
       <span
         ref={triggerRef}
-        aria-describedby={childIsDisabled && open ? id : undefined}
         className="inline-flex"
-        tabIndex={childIsDisabled ? 0 : undefined}
         onMouseEnter={showTooltip}
         onMouseLeave={closeTooltip}
         onFocusCapture={showTooltip}
@@ -99,16 +95,7 @@ const AppTooltip = ({ children, label }) => {
       >
         {isValidElement(children)
           ? cloneElement(children, {
-              "aria-describedby":
-                !childIsDisabled && open
-                  ? id
-                  : children.props["aria-describedby"],
-              style: childIsDisabled
-                ? {
-                    ...children.props.style,
-                    pointerEvents: "none",
-                  }
-                : children.props.style,
+              "aria-describedby": open ? id : undefined,
             })
           : children}
       </span>
