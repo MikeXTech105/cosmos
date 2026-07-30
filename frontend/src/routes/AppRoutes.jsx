@@ -136,6 +136,27 @@ const DispatchSettings = lazy(
 const DispatchReports = lazy(
   () => import("../pages/dispatch/reports/index.js"),
 );
+const ShipmentDashboard = lazy(
+  () => import("../pages/shipments/dashboard/index.js"),
+);
+const ShipmentWorkList = lazy(
+  () => import("../pages/shipments/workList/index.js"),
+);
+const ShipmentDetail = lazy(
+  () => import("../pages/shipments/detail/index.js"),
+);
+const ShipmentFreight = lazy(
+  () => import("../pages/shipments/freight/index.js"),
+);
+const ShipmentTransporters = lazy(
+  () => import("../pages/shipments/transporters/index.js"),
+);
+const ShipmentImports = lazy(
+  () => import("../pages/shipments/imports/index.js"),
+);
+const ShipmentReports = lazy(
+  () => import("../pages/shipments/reports/index.js"),
+);
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
 const Preferences = lazy(() => import("../pages/preferences/index.js"));
@@ -796,6 +817,87 @@ const AppRoutes = () => {
                 pageName="DispatchPlanning.Reports"
               >
                 <DispatchReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments"
+            element={<Navigate replace to="/shipments/dashboard" />}
+          />
+          <Route
+            path="/shipments/dashboard"
+            element={
+              <PermissionGuard
+                route="/shipments/dashboard"
+                pageName="ShipmentOperations.Reports"
+              >
+                <ShipmentDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentWorkList />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list/:id"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/freight"
+            element={
+              <PermissionGuard
+                route="/shipments/freight"
+                pageName="ShipmentOperations.Freight"
+              >
+                <ShipmentFreight />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/transporters"
+            element={
+              <PermissionGuard
+                route="/shipments/transporters"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentTransporters />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/imports"
+            element={
+              <PermissionGuard
+                route="/shipments/imports"
+                pageName="ShipmentOperations.Imports"
+              >
+                <ShipmentImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/reports"
+            element={
+              <PermissionGuard
+                route="/shipments/reports"
+                pageName="ShipmentOperations.Reports"
+              >
+                <ShipmentReports />
               </PermissionGuard>
             }
           />

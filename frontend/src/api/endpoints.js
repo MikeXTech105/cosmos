@@ -418,6 +418,93 @@ export const ENDPOINTS = {
   DP_RECOMMENDATION_REPORT_EXPORT:
     "/api/v1/dispatch-planning/reports/recommendations/export",
 
+  // Shipment Operations
+  SO_SHIPMENTS: "/api/v1/shipment-operations/shipments",
+
+  SO_SHIPMENT_BY_ID: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}`,
+
+  SO_SHIPMENTS_MANUAL:
+    "/api/v1/shipment-operations/shipments/manual",
+
+  SO_SHIPMENTS_FROM_DISPATCH:
+    "/api/v1/shipment-operations/shipments/from-dispatch-planning",
+
+  SO_SHIPMENT_TRANSITION: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/transition`,
+
+  SO_SHIPMENT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/cancel`,
+
+  SO_PACKING_SUGGESTIONS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packing-suggestions`,
+
+  SO_PACKAGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packages`,
+
+  SO_DOCKETS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/dockets`,
+
+  SO_APPOINTMENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/appointments`,
+
+  SO_TRACKING_EVENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/tracking-events`,
+
+  SO_DELIVERY_ATTEMPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/delivery-attempts`,
+
+  SO_RECEIPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/receipts`,
+
+  SO_RETURNS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/returns`,
+
+  SO_RETURN_RECEIVE: (id) =>
+    `/api/v1/shipment-operations/returns/${id}/receive`,
+
+  SO_FREIGHT_CHARGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/freight-charges`,
+
+  SO_FREIGHT_SUBMIT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/submit`,
+
+  SO_FREIGHT_APPROVE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/approve`,
+
+  SO_FREIGHT_REJECT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/reject`,
+
+  SO_FREIGHT_MARK_PAID: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/mark-paid`,
+
+  SO_FREIGHT_ROJMEL_EXPENSE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/rojmel-expense`,
+
+  SO_TRANSPORTERS: "/api/v1/shipment-operations/transporters",
+
+  SO_TRANSPORTER_BY_ID: (partyId) =>
+    `/api/v1/shipment-operations/transporters/${partyId}`,
+
+  SO_REPORTS: "/api/v1/shipment-operations/reports",
+
+  SO_REPORTS_DASHBOARD:
+    "/api/v1/shipment-operations/reports/dashboard",
+
+  SO_REPORTS_EXPORT:
+    "/api/v1/shipment-operations/reports/export",
+
+  SO_IMPORT_VALIDATE:
+    "/api/v1/shipment-operations/imports/validate",
+
+  SO_IMPORTS: "/api/v1/shipment-operations/imports",
+
+  SO_IMPORT_COMMIT: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/commit`,
+
+  SO_IMPORT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/cancel`,
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",

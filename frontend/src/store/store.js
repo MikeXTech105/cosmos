@@ -14,6 +14,9 @@ import dispatchImportsReducer from "./slices/dispatch/importSlice";
 import dispatchReportsReducer from "./slices/dispatch/reportSlice";
 import dispatchRunsReducer from "./slices/dispatch/runSlice";
 import dispatchSettingsReducer from "./slices/dispatch/settingSlice";
+import shipmentImportsReducer from "./slices/shipments/importSlice";
+import shipmentReportsReducer from "./slices/shipments/reportSlice";
+import shipmentsReducer from "./slices/shipments/shipmentSlice";
 import oeeDashboardReducer from "./slices/oee/oeeDashboardSlice";
 import oeeDowntimeReasonReducer from "./slices/oee/oeeDowntimeReasonSlice";
 import oeeMachineReducer from "./slices/oee/oeeMachineSlice";
@@ -59,6 +62,9 @@ export const store = configureStore({
     dispatchReports: dispatchReportsReducer,
     dispatchRuns: dispatchRunsReducer,
     dispatchSettings: dispatchSettingsReducer,
+    shipmentImports: shipmentImportsReducer,
+    shipmentReports: shipmentReportsReducer,
+    shipments: shipmentsReducer,
     expenseCategories: expenseCategoryReducer,
     expenses: expenseReducer,
     hrAttendance: hrAttendanceReducer,

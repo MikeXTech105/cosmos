@@ -160,6 +160,7 @@ export const iconMap = {
   wallets: WalletCards,
   ledger: BookText,
   transfer: ArrowLeftRight,
+  truck: Truck,
   usercog: UserCog,
   supplierpayment: WalletCards,
   supplierpayments: WalletCards,
