@@ -62,9 +62,6 @@ export const InventoryPagination = ({
 }) => {
   const rangeStart = itemCount ? (pageNumber - 1) * pageSize + 1 : 0;
   const rangeEnd = itemCount ? rangeStart + itemCount - 1 : 0;
-  const pageSizeOptions = [
-    ...new Set([...PAGE_SIZE_OPTIONS, pageSize]),
-  ].sort((left, right) => left - right);
 
   return (
     <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
@@ -81,7 +78,7 @@ export const InventoryPagination = ({
           <AppSelect
             value={pageSize}
             onChange={(value) => onPageSizeChange(Number(value))}
-            options={pageSizeOptions}
+            options={PAGE_SIZE_OPTIONS}
             className="w-20"
             aria-label="Rows per page"
           />

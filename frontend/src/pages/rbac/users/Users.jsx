@@ -16,7 +16,6 @@ import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useLatestRequest from "../../../hooks/useLatestRequest";
-import useUrlFilters from "../../../hooks/useUrlFilters";
 import { roleService } from "../../../services/rbac/roleService";
 import { userService } from "../../../services/rbac/userService";
 import { getApiErrorMessage, getApiStatus } from "../../../utils/apiError";
@@ -30,22 +29,13 @@ import UserModal from "./UserModal";
 import UserStats from "./UserStats";
 import UserTable from "./UserTable";
 
+const DEFAULT_FILTERS = {
+  roleId: "all",
+  search: "",
+  status: "all",
+};
+
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-const USER_URL_FILTER_SCHEMA = Object.freeze({
-  q: Object.freeze({ default: "", type: "string" }),
-  role: Object.freeze({ default: "", type: "string" }),
-  isActive: Object.freeze({ default: null, type: "boolean" }),
-  page: Object.freeze({
-    clamp: [1, Number.MAX_SAFE_INTEGER],
-    default: 1,
-    type: "number",
-  }),
-  size: Object.freeze({
-    clamp: [1, 200],
-    default: PAGE_SIZE_OPTIONS[0],
-    type: "number",
-  }),
-});
 const USER_EXPORT_COLUMNS = [
   { header: "Full Name", getValue: (user) => user.fullName },
   { header: "Username", getValue: (user) => user.username },
@@ -421,13 +411,10 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [roleOptions, setRoleOptions] = useState([]);
-  const {
-    activeCount,
-    reset: resetUrlFilters,
-    setValue: setUrlFilter,
-    setValues: setUrlFilters,
-    values: urlFilters,
-  } = useUrlFilters(USER_URL_FILTER_SCHEMA);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [isRolesLoading, setIsRolesLoading] = useState(true);
@@ -524,67 +511,46 @@ const Users = () => {
   }, [loadUsers]);
 
   useEffect(() => {
-    if (
-      isRolesLoading ||
-      rolesError ||
-      !urlFilters.role ||
-      roleOptions.some(
-        (role) => String(role.id) === String(urlFilters.role),
-      )
-    ) {
-      return;
-    }
+    const timeoutId = window.setTimeout(() => {
+      setFilters((current) => {
+        if (current.search === searchInput) {
+          return current;
+        }
 
-    setUrlFilter("role", "", { history: "replace" });
-  }, [
-    isRolesLoading,
-    roleOptions,
-    rolesError,
-    setUrlFilter,
-    urlFilters.role,
-  ]);
+        return {
+          ...current,
+          search: searchInput,
+        };
+      });
+      setPage(1);
+    }, 350);
 
-  const filters = useMemo(
-    () => ({
-      roleId: urlFilters.role || "all",
-      search: urlFilters.q,
-      status:
-        urlFilters.isActive === null
-          ? "all"
-          : urlFilters.isActive
-            ? "active"
-            : "inactive",
-    }),
-    [urlFilters.isActive, urlFilters.q, urlFilters.role],
-  );
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
 
   const filteredUsers = useMemo(() => filterUsers(users, filters), [
     filters,
     users,
   ]);
   const totalItems = filteredUsers.length;
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalItems / urlFilters.size),
-  );
-  const currentPage = Math.min(urlFilters.page, totalPages);
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(page, totalPages);
   const paginatedUsers = useMemo(
-    () => paginate(filteredUsers, currentPage, urlFilters.size),
-    [currentPage, filteredUsers, urlFilters.size],
+    () => paginate(filteredUsers, currentPage, pageSize),
+    [currentPage, filteredUsers, pageSize],
   );
   const rangeStart = paginatedUsers.length
-    ? (currentPage - 1) * urlFilters.size + 1
+    ? (currentPage - 1) * pageSize + 1
     : 0;
   const rangeEnd = paginatedUsers.length
     ? rangeStart + paginatedUsers.length - 1
     : 0;
-  const pageSizeOptions = useMemo(
-    () =>
-      [...new Set([...PAGE_SIZE_OPTIONS, urlFilters.size])].sort(
-        (left, right) => left - right,
-      ),
-    [urlFilters.size],
-  );
+  const filterControls = useMemo(() => {
+    return {
+      ...filters,
+      search: searchInput,
+    };
+  }, [filters, searchInput]);
   const stats = useMemo(() => {
     return {
       active: users.filter((user) => user.isActive).length,
@@ -592,17 +558,6 @@ const Users = () => {
       total: users.length,
     };
   }, [users]);
-
-  useEffect(() => {
-    if (!isLoading && urlFilters.page !== currentPage) {
-      setUrlFilter("page", currentPage, { history: "replace" });
-    }
-  }, [
-    currentPage,
-    isLoading,
-    setUrlFilter,
-    urlFilters.page,
-  ]);
 
   const closeModal = useCallback(() => {
     cancelDetailRequests();
@@ -858,31 +813,32 @@ const Users = () => {
   ]);
 
   const handleFilterChange = useCallback((patch) => {
-    const urlPatch = {};
-    let history = "replace";
-
     if (Object.hasOwn(patch, "search")) {
-      urlPatch.q = patch.search;
-    }
-    if (Object.hasOwn(patch, "status")) {
-      urlPatch.isActive =
-        patch.status === "all"
-          ? null
-          : patch.status === "active";
-      history = "push";
-    }
-    if (Object.hasOwn(patch, "roleId")) {
-      urlPatch.role =
-        patch.roleId === "all" ? "" : patch.roleId;
-      history = "push";
+      setSearchInput(patch.search);
     }
 
-    setUrlFilters(urlPatch, { history });
-  }, [setUrlFilters]);
+    const filterPatch = { ...patch };
+    delete filterPatch.search;
+
+    if (Object.keys(filterPatch).length) {
+      setFilters((current) => ({
+        ...current,
+        ...filterPatch,
+      }));
+      setPage(1);
+    }
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    setSearchInput(DEFAULT_FILTERS.search);
+    setFilters(DEFAULT_FILTERS);
+    setPage(1);
+  }, []);
 
   const handlePageSizeChange = useCallback((value) => {
-    setUrlFilter("size", Number(value));
-  }, [setUrlFilter]);
+    setPageSize(Number(value));
+    setPage(1);
+  }, []);
 
   const handleExport = useCallback(async () => {
     if (!capabilities.canExport) {
@@ -1019,14 +975,13 @@ const Users = () => {
       />
 
       <UserFilters
-        activeFilterCount={activeCount}
-        filters={filters}
+        filters={filterControls}
         isRolesLoading={isRolesLoading}
         roleOptions={roleOptions}
         resultCount={totalItems}
         rolesError={rolesError}
         onChange={handleFilterChange}
-        onClear={resetUrlFilters}
+        onClear={clearFilters}
       />
 
       <UserTable
@@ -1041,7 +996,7 @@ const Users = () => {
             : undefined
         }
         onRetry={loadUsers}
-        pageSize={urlFilters.size}
+        pageSize={pageSize}
         users={paginatedUsers}
       />
 
@@ -1058,9 +1013,9 @@ const Users = () => {
           <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
             <span>Rows</span>
             <AppSelect
-              value={urlFilters.size}
+              value={pageSize}
               onChange={handlePageSizeChange}
-              options={pageSizeOptions}
+              options={PAGE_SIZE_OPTIONS}
               className="w-20"
               aria-label="Rows per page"
             />
@@ -1069,9 +1024,7 @@ const Users = () => {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() =>
-                setUrlFilter("page", Math.max(1, currentPage - 1))
-              }
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
               disabled={isLoading || currentPage <= 1}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -1082,12 +1035,7 @@ const Users = () => {
             </span>
             <button
               type="button"
-              onClick={() =>
-                setUrlFilter(
-                  "page",
-                  Math.min(totalPages, currentPage + 1),
-                )
-              }
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
               disabled={isLoading || currentPage >= totalPages}
               className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >

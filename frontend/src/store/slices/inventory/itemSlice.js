@@ -2,6 +2,10 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { itemService } from "../../../services/inventory/itemService";
 import {
+  clampInventoryPageSize,
+  DEFAULT_INVENTORY_PAGE_SIZE,
+} from "../../../utils/inventoryQuery";
+import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
@@ -14,10 +18,22 @@ const initialState = {
   detailLoading: false,
   detailError: null,
   error: null,
+  pageNumber: 1,
+  pageSize: DEFAULT_INVENTORY_PAGE_SIZE,
   totalCount: 0,
   totalPages: 1,
   summary: null,
   summaryScope: "current-page",
+  filters: {
+    Search: "",
+    IsActive: "all",
+    CategoryId: "all",
+    ProcurementClassification: "all",
+    Barcode: "",
+    ItemCode: "",
+    SortBy: "",
+    SortDirection: "",
+  },
   selected: null,
   listRequestId: null,
   detailRequestId: null,
@@ -87,6 +103,16 @@ const itemSlice = createSlice({
   name: "items",
   initialState,
   reducers: {
+    setItemFilters: (state, action) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+    setItemPage: (state, action) => {
+      state.pageNumber = action.payload;
+    },
+    setItemPageSize: (state, action) => {
+      state.pageSize = clampInventoryPageSize(action.payload);
+      state.pageNumber = 1;
+    },
     setSelectedItem: (state, action) => {
       state.selected = action.payload;
     },
@@ -108,6 +134,8 @@ const itemSlice = createSlice({
 
         state.loading = false;
         state.list = page.items;
+        state.pageNumber = page.pageNumber;
+        state.pageSize = page.pageSize;
         state.totalCount = page.totalCount;
         state.totalPages = page.totalPages;
         state.summary = page.summary;
@@ -159,6 +187,9 @@ const itemSlice = createSlice({
 
 export const {
   clearItemError,
+  setItemFilters,
+  setItemPage,
+  setItemPageSize,
   setSelectedItem,
 } = itemSlice.actions;
 
