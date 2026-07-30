@@ -255,11 +255,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       };
       const response = await dispatch(actionMap[confirmation.action](id)).unwrap();
 
-      const successMessage =
-        confirmation.action === "cancel"
-          ? `${config.singularLabel} cancelled`
-          : `${config.singularLabel} confirmed`;
-      toast.success(getSuccessMessage(response, successMessage));
+      toast.success(getSuccessMessage(response, "Action completed"));
       setConfirmation({ action: "confirm", isLoading: false, isOpen: false });
       await loadRecord();
     } catch (error) {
@@ -370,7 +366,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       {record && (
         <>
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -407,7 +403,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               </div>
             </section>
 
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap gap-2">
                 {capabilities.canUpdate && (
                   <AppButton
@@ -454,10 +450,10 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                   <tr>
                     <th className="px-3 py-3 font-semibold">Item</th>
                     <th className="px-3 py-3 text-right font-semibold">Qty</th>
-                    <th className="px-3 py-3 text-right font-semibold">Price (₹)</th>
+                    <th className="px-3 py-3 text-right font-semibold">Price</th>
                     <th className="px-3 py-3 text-right font-semibold">Discount</th>
                     <th className="px-3 py-3 text-right font-semibold">Tax</th>
-                    <th className="px-3 py-3 text-right font-semibold">Total (₹)</th>
+                    <th className="px-3 py-3 text-right font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -469,20 +465,20 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                         <td className="px-3 py-3 font-semibold text-slate-900">
                           {line.itemName || `Item ${index + 1}`}
                         </td>
-                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
+                        <td className="px-3 py-3 text-right text-slate-600">
                           {formatNumber(line.quantity)}
                         </td>
-                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                          {formatNumber(line.purchasePrice)}
+                        <td className="px-3 py-3 text-right text-slate-600">
+                          {formatCurrency(line.purchasePrice)}
                         </td>
-                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                          {formatNumber(calc.discountAmount)}
+                        <td className="px-3 py-3 text-right text-slate-600">
+                          {formatCurrency(calc.discountAmount)}
                         </td>
-                        <td className="px-3 py-3 text-right tabular-nums text-slate-600">
-                          {formatNumber(calc.taxAmount)}
+                        <td className="px-3 py-3 text-right text-slate-600">
+                          {formatCurrency(calc.taxAmount)}
                         </td>
-                        <td className="px-3 py-3 text-right font-semibold tabular-nums text-slate-900">
-                          {formatNumber(calc.lineTotal)}
+                        <td className="px-3 py-3 text-right font-semibold text-slate-900">
+                          {formatCurrency(calc.lineTotal)}
                         </td>
                       </tr>
                     );
@@ -493,13 +489,13 @@ const PurchaseDocumentDetailPage = ({ config }) => {
           </section>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-slate-900">Notes</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
                 {record.notes || record.termsAndConditions || record.reason || "No notes added."}
               </p>
             </section>
-            <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-slate-900">Totals</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between">

@@ -18,11 +18,6 @@ import {
   downloadResponseBlob,
   getDownloadErrorMessage,
 } from "../../utils/fileDownload";
-import {
-  EMPTY_VALUE,
-  formatDateTime,
-  formatNumber,
-} from "../../utils/format";
 import { canPerformAction } from "../../utils/permissionResolver";
 import {
   runReportThunk,
@@ -61,8 +56,23 @@ const getExportColumns = (report) => {
 };
 
 const formatGeneratedAt = (value) => {
-  const formatted = formatDateTime(value);
-  return formatted === EMPTY_VALUE ? "" : formatted;
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const toPascalCaseKey = (key) => {
@@ -309,7 +319,7 @@ const ReportView = ({ report }) => {
           onProgress: ({ completed, total }) => {
             if (isLatestExportRequest(requestId)) {
               setExportProgress(
-                `Exporting ${formatNumber(completed, 0)} of ${formatNumber(total, 0)}…`,
+                `Exporting ${completed.toLocaleString()} of ${total.toLocaleString()}…`,
               );
             }
           },
@@ -325,9 +335,7 @@ const ReportView = ({ report }) => {
 
         if (!isLatestExportRequest(requestId)) return;
         await downloadCsv({ columns: exportColumns, filename, rows: fallbackRows });
-        toast.success(
-          `Exported ${formatNumber(fallbackRows.length, 0)} report rows`,
-        );
+        toast.success(`Exported ${fallbackRows.length.toLocaleString()} report rows`);
       } catch (fallbackError) {
         if (!signal.aborted && isLatestExportRequest(requestId)) {
           toast.error(await getDownloadErrorMessage(fallbackError, "Unable to export report."));

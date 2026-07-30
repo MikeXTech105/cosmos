@@ -18,7 +18,6 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { formatNumber } from "../../../utils/format";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -191,18 +190,16 @@ const RojmelDashboardPage = () => {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <RojmelStatCard
           icon={Landmark}
           label="Cash in Hand"
-          loading={dashboard.loading}
           scope={scope}
           value={formatRojmelCurrency(cashInHand)}
         />
         <RojmelStatCard
           icon={TrendingUp}
           label="Period Income"
-          loading={dashboard.loading}
           scope={scope}
           tone="emerald"
           value={formatRojmelCurrency(summary.totalIncome)}
@@ -210,7 +207,6 @@ const RojmelDashboardPage = () => {
         <RojmelStatCard
           icon={TrendingDown}
           label="Period Expense"
-          loading={dashboard.loading}
           scope={scope}
           tone="red"
           value={formatRojmelCurrency(summary.totalExpense)}
@@ -218,7 +214,6 @@ const RojmelDashboardPage = () => {
         <RojmelStatCard
           icon={net >= 0 ? TrendingUp : TrendingDown}
           label="Net"
-          loading={dashboard.loading}
           scope={scope}
           tone={net >= 0 ? "emerald" : "red"}
           value={formatRojmelCurrency(net)}
@@ -232,13 +227,9 @@ const RojmelDashboardPage = () => {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Transfers</p>
-            {dashboard.loading ? (
-              <div className="mt-1 h-7 w-20 animate-pulse rounded bg-slate-100" />
-            ) : (
-              <p className="text-lg font-bold tabular-nums text-slate-900">
-                {formatRojmelCurrency(summary.totalTransfers)}
-              </p>
-            )}
+            <p className="text-lg font-bold tabular-nums text-slate-900">
+              {formatRojmelCurrency(summary.totalTransfers)}
+            </p>
             <p className="text-xs text-slate-500">Movement only—excluded from income and expense.</p>
           </div>
         </div>
@@ -262,7 +253,7 @@ const RojmelDashboardPage = () => {
                     <th className="px-4 py-3">#</th>
                     <th className="px-4 py-3">Wallet</th>
                     <th className="px-4 py-3">Type</th>
-                    <th className="px-4 py-3 text-right">Balance (₹)</th>
+                    <th className="px-4 py-3 text-right">Balance</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -271,7 +262,7 @@ const RojmelDashboardPage = () => {
                       <td className="border-b border-slate-100 px-4 py-3 text-xs text-slate-400">{index + 1}</td>
                       <td className="border-b border-slate-100 px-4 py-3 text-sm font-medium text-slate-800">{wallet.walletName}</td>
                       <td className="border-b border-slate-100 px-4 py-3"><RojmelWalletTypeBadge value={wallet.walletType} /></td>
-                      <td className="border-b border-slate-100 px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">{formatNumber(wallet.currentBalance)}</td>
+                      <td className="border-b border-slate-100 px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">{formatRojmelCurrency(wallet.currentBalance)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -303,7 +294,7 @@ const RojmelDashboardPage = () => {
         </div>
       )}
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">Expense by Category</h2>
         <p className="mt-1 text-xs text-slate-500">Transfers and adjustments are excluded.</p>
         {categoryError ? (
@@ -314,9 +305,9 @@ const RojmelDashboardPage = () => {
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryExpense} margin={{ left: 8, right: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="categoryName" tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
-                <YAxis tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                <XAxis dataKey="categoryName" tick={{ fontSize: 11, fill: "#64748b" }} />
+                <YAxis tick={{ fontSize: 11, fill: "#64748b" }} />
                 <Tooltip formatter={(value) => formatRojmelCurrency(value)} />
                 <Bar dataKey="expenseAmount" fill="var(--color-brand)" radius={[6, 6, 0, 0]} />
               </BarChart>

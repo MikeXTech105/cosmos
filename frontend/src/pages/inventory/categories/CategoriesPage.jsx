@@ -303,7 +303,7 @@ const CategoriesPage = () => {
         }
       />
 
-      <CategoryStats {...stats} loading={categoriesState.loading} />
+      <CategoryStats {...stats} />
       <CategoryFilters
         filters={filterControls}
         resultCount={categoriesState.list.length}
@@ -359,7 +359,7 @@ const CategoriesPage = () => {
       <InventoryConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete 1 category?"
+        title="Delete Category?"
         description={`${confirmation.entity?.name ?? "This category"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

@@ -710,7 +710,7 @@ const SalesInvoicesPage = () => {
         }
       />
 
-      <InvoiceStats {...stats} loading={invoiceState.loading} />
+      <InvoiceStats {...stats} />
 
       <InvoiceFilters
         canCreateCustomer={canCreateCustomer}

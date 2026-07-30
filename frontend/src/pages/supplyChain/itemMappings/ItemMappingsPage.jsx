@@ -260,7 +260,6 @@ const MappingModal = ({
         <div className="sm:col-span-2">
           <ProcurementItemAutocomplete
             disabled={readOnly || saving}
-            title={readOnly ? "This mapping is read only" : saving ? "The mapping is already saving" : undefined}
             error={errors.itemId}
             label="Existing Item"
             required
@@ -308,7 +307,6 @@ const MappingModal = ({
             checked={form.isPrimary}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
-            title={readOnly ? "This mapping is read only" : saving ? "The mapping is already saving" : undefined}
             type="checkbox"
             onChange={(event) => setField("isPrimary", event.target.checked)}
           />
@@ -319,7 +317,6 @@ const MappingModal = ({
             checked={form.isActive}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
-            title={readOnly ? "This mapping is read only" : saving ? "The mapping is already saving" : undefined}
             type="checkbox"
             onChange={(event) => setField("isActive", event.target.checked)}
           />

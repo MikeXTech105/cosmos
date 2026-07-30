@@ -305,11 +305,11 @@ const PackagingModal = ({
           onChange={(event) => setField("effectiveTo", event.target.value)}
         />
         <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700">
-          <input checked={form.isDefault} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} title={readOnly ? "This profile is read only" : saving ? "The profile is already saving" : undefined} type="checkbox" onChange={(event) => setField("isDefault", event.target.checked)} />
+          <input checked={form.isDefault} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} type="checkbox" onChange={(event) => setField("isDefault", event.target.checked)} />
           Default profile
         </label>
         <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700">
-          <input checked={form.isActive} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} title={readOnly ? "This profile is read only" : saving ? "The profile is already saving" : undefined} type="checkbox" onChange={(event) => setField("isActive", event.target.checked)} />
+          <input checked={form.isActive} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} type="checkbox" onChange={(event) => setField("isActive", event.target.checked)} />
           Profile is active
         </label>
       </div>
@@ -528,7 +528,7 @@ const PackagingProfilesPage = () => {
             <td>
               <div className="flex items-center justify-end gap-0.5">
                 <AppTooltip label="View profile"><button aria-label="View profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye className="h-4 w-4" /></button></AppTooltip>
-                {capabilities.canEdit ? <><AppTooltip label="Edit profile"><button aria-label="Edit profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip>{row.isDefault ? <AppTooltip label="This is already the default profile"><button aria-label="Already default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled type="button"><Star className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label={settingDefaultId === row.id ? "Setting this profile as default" : "Set as default"}><button aria-label="Set as default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled={settingDefaultId === row.id} type="button" onClick={() => void setDefault(row)}><Star className="h-4 w-4" /></button></AppTooltip>}</> : null}
+                {capabilities.canEdit ? <><AppTooltip label="Edit profile"><button aria-label="Edit profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip>{row.isDefault ? <AppTooltip label="This is already the default profile"><button aria-label="Already default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled type="button"><Star className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Set as default"><button aria-label="Set as default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled={settingDefaultId === row.id} type="button" onClick={() => void setDefault(row)}><Star className="h-4 w-4" /></button></AppTooltip>}</> : null}
                 {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete profile unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete profile"><button aria-label="Delete profile" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 className="h-4 w-4" /></button></AppTooltip> : null}
               </div>
               {rowConflicts[row.id] ? <p className="mt-1 text-right text-[10px] text-red-600">In use</p> : null}

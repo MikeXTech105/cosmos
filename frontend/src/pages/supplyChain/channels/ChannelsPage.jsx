@@ -167,7 +167,6 @@ const ChannelModal = ({
         <div className="sm:col-span-2">
           <AppInput
             disabled={readOnly || saving}
-            title={readOnly ? "This channel is read only" : saving ? "The channel is already saving" : undefined}
             error={errors.description}
             label="Description"
             value={form.description}
@@ -198,7 +197,6 @@ const ChannelModal = ({
             checked={form.isActive}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
-            title={readOnly ? "This channel is read only" : saving ? "The channel is already saving" : undefined}
             type="checkbox"
             onChange={(event) =>
               setForm((current) => ({

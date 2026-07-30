@@ -252,7 +252,6 @@ const PageFormModal = ({
                       required
                       placeholder="/rbac/pages"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change page status" : undefined}
                       error={errors.route?.message}
                       className="font-mono"
                       {...register("route")}
@@ -359,7 +358,6 @@ const PageFormModal = ({
                     <input
                       type="checkbox"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change page status" : undefined}
                       className={checkboxClassName}
                       {...register("isActive")}
                     />
@@ -371,7 +369,6 @@ const PageFormModal = ({
                     type="button"
                     onClick={onClose}
                     disabled={isSubmitting}
-                    title={isSubmitting ? "Wait for the page to finish saving" : undefined}
                     className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isView ? "Close" : "Cancel"}
@@ -380,7 +377,6 @@ const PageFormModal = ({
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      title={isSubmitting ? "The page is already saving" : undefined}
                       className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {isSubmitting

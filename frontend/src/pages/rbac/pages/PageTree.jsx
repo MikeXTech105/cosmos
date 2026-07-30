@@ -74,7 +74,6 @@ const TreeNode = ({
         <button
           type="button"
           disabled={!hasChildren}
-          title={!hasChildren ? "This page has no child pages" : undefined}
           onClick={() => onToggle(node.id)}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 disabled:opacity-30"
           aria-label={isExpanded ? "Collapse page" : "Expand page"}

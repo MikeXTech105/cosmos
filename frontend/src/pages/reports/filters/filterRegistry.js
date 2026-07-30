@@ -6,7 +6,6 @@ import {
   ROJMEL_TRANSACTION_STATUS_LABELS,
   ROJMEL_TRANSACTION_TYPE_LABELS,
 } from "../../../constants/rojmelEnums";
-import { formatDateInput } from "../../../utils/format";
 
 export const REPORT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 export const DEFAULT_REPORT_PAGE_SIZE = 20;
@@ -42,7 +41,11 @@ export const REPORT_INVENTORY_STOCK_STATUS_OPTIONS = [
   { label: "Negative", value: "Negative" },
 ];
 
-const toInputDate = formatDateInput;
+const pad = (value) => String(value).padStart(2, "0");
+
+const toInputDate = (date) => {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
 const startOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1);
 

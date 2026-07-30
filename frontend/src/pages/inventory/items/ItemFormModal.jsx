@@ -58,7 +58,6 @@ const ToggleRow = ({
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        title={disabled ? "Open edit mode to change this setting" : undefined}
         onChange={(event) => onChange(event.target.checked)}
         className="h-4 w-4 shrink-0 accent-brand"
       />

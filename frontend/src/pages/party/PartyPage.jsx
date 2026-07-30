@@ -17,7 +17,6 @@ import useCapabilities from "../../hooks/useCapabilities";
 import useLatestRequest from "../../hooks/useLatestRequest";
 import { getApiStatus } from "../../utils/apiError";
 import { downloadCsv } from "../../utils/csv";
-import { formatNumber } from "../../utils/format";
 import {
   downloadResponseBlob,
   getDownloadErrorMessage,
@@ -121,7 +120,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
                 id="party-confirm-dialog-title"
                 className="mt-4 text-lg font-bold tracking-tight text-slate-950"
               >
-                Delete 1 party?
+                Delete Party?
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">
                 {displayName} will be removed from Party Master.
@@ -132,8 +131,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <button
                 type="button"
                 onClick={onCancel}
-              disabled={confirmation.isSubmitting}
-              title={confirmation.isSubmitting ? "Wait for the current request to finish" : undefined}
+                disabled={confirmation.isSubmitting}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
@@ -141,8 +139,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <button
                 type="button"
                 onClick={onConfirm}
-              disabled={confirmation.isSubmitting}
-              title={confirmation.isSubmitting ? "Wait for the current request to finish" : undefined}
+                disabled={confirmation.isSubmitting}
                 className="inline-flex h-10 items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {confirmation.isSubmitting ? "Deleting..." : "Delete"}
@@ -341,7 +338,7 @@ const PartyPage = () => {
         setParties(basePage.items);
         setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult: basePage }));
         setCompatibilityNotice(
-          `Advanced Party Type, GSTIN, and credit-limit filters require server summary support for datasets above ${formatNumber(PARTY_FALLBACK_MAX_RECORDS, 0)} records. Search and status results remain available.`,
+          `Advanced Party Type, GSTIN, and credit-limit filters require server summary support for datasets above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} records. Search and status results remain available.`,
         );
         return;
       }
@@ -900,7 +897,7 @@ const PartyPage = () => {
 
           if (fallback.capped) {
             throw new Error(
-              `Backend Party export is required above ${formatNumber(PARTY_FALLBACK_MAX_RECORDS, 0)} matching records.`,
+              `Backend Party export is required above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} matching records.`,
               { cause: error },
             );
           }
@@ -1003,9 +1000,7 @@ const PartyPage = () => {
             </AppTooltip>
           )}
           {capabilities.canExport && (
-            <AppTooltip
-              label={isExporting ? "Party export is in progress" : "Export Parties"}
-            >
+            <AppTooltip label="Export Parties">
               <button
                 type="button"
                 onClick={handleExport}
@@ -1039,7 +1034,6 @@ const PartyPage = () => {
         creditLimitTotal={stats.creditLimitTotal}
         customerCount={stats.customerCount}
         inactive={stats.inactive}
-        loading={isLoading}
         metricScope={stats.metricScope}
         supplierCount={stats.supplierCount}
         total={stats.total}

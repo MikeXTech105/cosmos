@@ -32,7 +32,7 @@ const DetailRow = ({ label, value }) => {
 const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
   if (isLoading) {
     return (
-      <div className="h-full min-h-[420px] space-y-4 p-6">
+      <div className="h-full min-h-[420px] space-y-4 p-5">
         <div className="h-20 animate-pulse rounded-xl bg-slate-100" />
         {Array.from({ length: 6 }, (_, index) => (
           <div
@@ -65,7 +65,7 @@ const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
   const itemType = getItemTypeLabel(item.itemType);
 
   return (
-    <div className="h-full min-h-[420px] p-6">
+    <div className="h-full min-h-[420px] p-5">
       <div className="flex items-start gap-4">
         <ItemImageThumbnail
           src={item.imageUrl}

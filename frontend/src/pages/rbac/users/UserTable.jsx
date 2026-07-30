@@ -1,7 +1,6 @@
 import { Plus, RefreshCw, UsersRound } from "lucide-react";
 import { memo } from "react";
 
-import { formatDate } from "../../../utils/format";
 import UserActions from "./UserActions";
 
 const statusStyles = {
@@ -23,6 +22,24 @@ const UserStatusBadge = ({ isActive }) => {
       {isActive ? "Active" : "Inactive"}
     </span>
   );
+};
+
+const formatDate = (value) => {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
 
 const RolePills = ({ roles }) => {
@@ -55,10 +72,10 @@ const RolePills = ({ roles }) => {
 };
 
 const TableSkeleton = () => {
-  return Array.from({ length: 5 }, (_, index) => (
+  return Array.from({ length: 6 }, (_, index) => (
     <tr key={index}>
       <td colSpan={8} className="px-4 py-3.5">
-        <div className="h-4 animate-pulse rounded bg-slate-100" />
+        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
       </td>
     </tr>
   ));
@@ -178,7 +195,7 @@ const UserTable = ({
     <div>
       <div className="grid gap-3 lg:hidden">
         {isLoading
-          ? Array.from({ length: 5 }, (_, index) => (
+          ? Array.from({ length: 4 }, (_, index) => (
               <div
                 key={index}
                 className="h-40 animate-pulse rounded-2xl bg-slate-100"

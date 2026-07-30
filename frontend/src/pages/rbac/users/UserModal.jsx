@@ -255,7 +255,6 @@ const UserModal = ({
                       <input
                         id="username"
                         disabled={isEdit}
-                        title={isEdit ? "Usernames cannot be changed after creation" : undefined}
                         className={`${inputClassName} pl-9`}
                         placeholder="system-admin"
                         {...register("username")}
@@ -388,14 +387,7 @@ const UserModal = ({
                   </button>
                   <button
                     type="submit"
-              disabled={submitDisabled}
-              title={
-                submitDisabled
-                  ? isSubmitting
-                    ? "The user is already saving"
-                    : "Complete the required user fields before saving"
-                  : undefined
-              }
+                    disabled={submitDisabled}
                     className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {isSubmitting

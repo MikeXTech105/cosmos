@@ -146,7 +146,7 @@ const ShiftGrid = ({
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="grid items-stretch gap-4 bg-slate-50/50 p-4 md:grid-cols-2 xl:grid-cols-3">
         {isLoading
-          ? Array.from({ length: 5 }, (_, index) => (
+          ? Array.from({ length: 6 }, (_, index) => (
               <div
                 key={index}
                 className="h-[220px] animate-pulse rounded-2xl bg-white ring-1 ring-slate-200"

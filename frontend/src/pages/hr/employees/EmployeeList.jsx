@@ -123,7 +123,7 @@ const EmployeeList = ({
 
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         {isLoading
-          ? Array.from({ length: 5 }, (_, index) => (
+          ? Array.from({ length: 8 }, (_, index) => (
               <div
                 key={index}
                 className="mb-2 h-20 animate-pulse rounded-xl bg-slate-100"

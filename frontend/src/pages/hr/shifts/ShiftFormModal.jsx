@@ -213,7 +213,6 @@ const ShiftFormModal = ({
               <input
                 type="checkbox"
                 disabled={isView}
-                title={isView ? "Open edit mode to change the night-shift setting" : undefined}
                 className="h-4 w-4 accent-brand"
                 {...register("isNightShift")}
               />
@@ -236,7 +235,6 @@ const ShiftFormModal = ({
               <input
                 type="checkbox"
                 disabled={isView}
-                title={isView ? "Open edit mode to change shift status" : undefined}
                 className="h-4 w-4 accent-brand"
                 {...register("isActive")}
               />

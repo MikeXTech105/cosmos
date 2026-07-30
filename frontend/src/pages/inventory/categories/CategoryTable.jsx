@@ -84,10 +84,10 @@ const CategoryTable = ({
           </thead>
           <tbody>
             {isLoading
-              ? Array.from({ length: 5 }, (_, index) => (
+              ? Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={6} className="px-4 py-3">
-                      <div className="h-4 animate-pulse rounded bg-slate-100" />
+                      <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
                 ))

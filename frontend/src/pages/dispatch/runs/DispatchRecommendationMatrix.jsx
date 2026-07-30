@@ -383,7 +383,7 @@ const DispatchRecommendationMatrix = ({
                       className="border-b border-slate-100 px-4 py-4"
                       colSpan={warehouses.length + 1}
                     >
-                      <div className="h-4 animate-pulse rounded bg-slate-100" />
+                      <div className="h-16 animate-pulse rounded bg-slate-100" />
                     </td>
                   </tr>
                 ))

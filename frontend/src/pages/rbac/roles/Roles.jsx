@@ -186,7 +186,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
         "This removes the role from the platform. This action cannot be undone.",
       icon: Trash2,
       iconClassName: "bg-red-50 text-red-600",
-      title: "Delete 1 role?",
+      title: "Delete Role?",
     },
   }[confirmation.type];
 
@@ -235,8 +235,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <button
                 type="button"
                 onClick={onCancel}
-              disabled={confirmation.isSubmitting}
-              title={confirmation.isSubmitting ? "Wait for the current request to finish" : undefined}
+                disabled={confirmation.isSubmitting}
                 className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancel
@@ -244,8 +243,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <button
                 type="button"
                 onClick={onConfirm}
-              disabled={confirmation.isSubmitting}
-              title={confirmation.isSubmitting ? "Wait for the current request to finish" : undefined}
+                disabled={confirmation.isSubmitting}
                 className={`inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-70 ${copy.buttonClassName}`}
               >
                 {confirmation.isSubmitting
@@ -711,9 +709,7 @@ const Roles = () => {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap xl:justify-end">
-          <AppTooltip
-            label={isLoading ? "Roles are already refreshing" : "Refresh Roles"}
-          >
+          <AppTooltip label="Refresh Roles">
             <button
               type="button"
               onClick={loadRoles}
@@ -728,9 +724,7 @@ const Roles = () => {
             </button>
           </AppTooltip>
           {capabilities.canExport && (
-            <AppTooltip
-              label={isExporting ? "Role export is in progress" : "Export Roles"}
-            >
+            <AppTooltip label="Export Roles">
               <button
                 type="button"
                 onClick={handleExport}
@@ -763,7 +757,6 @@ const Roles = () => {
       <RoleStats
         active={stats.active}
         inactive={stats.inactive}
-        loading={isLoading}
         total={stats.total}
       />
 

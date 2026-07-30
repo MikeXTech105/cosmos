@@ -46,7 +46,6 @@ const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        title={disabled ? `${label} cannot be changed in the current state` : undefined}
         onChange={(event) => onChange(event.target.checked)}
         aria-label={label}
         className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-brand"
@@ -64,7 +63,6 @@ const BulkButton = memo(({ active, disabled, icon, label, onClick }) => {
       onClick={onClick}
       aria-pressed={active}
       disabled={disabled}
-      title={disabled ? "This permission cannot be changed in the current state" : undefined}
       className={[
         "inline-flex h-9 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50",
         active
@@ -81,10 +79,10 @@ const BulkButton = memo(({ active, disabled, icon, label, onClick }) => {
 BulkButton.displayName = "BulkButton";
 
 const TableSkeleton = () => {
-  return Array.from({ length: 5 }, (_, index) => (
+  return Array.from({ length: 7 }, (_, index) => (
     <tr key={index}>
       <td colSpan={7} className="px-4 py-3">
-        <div className="h-4 animate-pulse rounded bg-slate-100" />
+        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
       </td>
     </tr>
   ));

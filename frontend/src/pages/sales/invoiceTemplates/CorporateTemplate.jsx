@@ -13,7 +13,7 @@ const CorporateTemplate = ({ invoice }) => {
   return (
     <TemplatePage>
       <div className="grid gap-8 sm:grid-cols-[220px_1fr]">
-        <aside className="rounded-2xl bg-slate-950 p-6 text-white">
+        <aside className="rounded-2xl bg-slate-950 p-5 text-white">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-bold text-slate-950">
             C
           </div>
@@ -47,7 +47,7 @@ const CorporateTemplate = ({ invoice }) => {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-6 rounded-2xl border border-slate-200 p-6 sm:grid-cols-2">
+          <div className="mt-8 grid gap-6 rounded-2xl border border-slate-200 p-5 sm:grid-cols-2">
             <CustomerBlock invoice={invoice} />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">

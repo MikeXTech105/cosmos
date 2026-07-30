@@ -206,7 +206,6 @@ const OeeMasterFormModal = ({
                     <input
                       type="checkbox"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change this setting" : undefined}
                       checked={Boolean(values[field.name])}
                       className="h-4 w-4 accent-brand"
                       onChange={(event) =>
@@ -761,18 +760,16 @@ const OeeMasterPage = ({ config }) => {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <OeeStatCard
           icon={config.icon}
           label={`Total ${config.pluralLabel}`}
-          loading={state.loading}
           value={formatOeeNumber(stats.total, { maximumFractionDigits: 0 })}
           scope={stats.totalScope}
         />
         <OeeStatCard
           icon={config.activeIcon ?? config.icon}
           label="Active"
-          loading={state.loading}
           value={formatOeeNumber(stats.active, { maximumFractionDigits: 0 })}
           scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
@@ -780,7 +777,6 @@ const OeeMasterPage = ({ config }) => {
         <OeeStatCard
           icon={config.inactiveIcon ?? config.icon}
           label="Inactive"
-          loading={state.loading}
           value={formatOeeNumber(stats.inactive, { maximumFractionDigits: 0 })}
           scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
@@ -850,7 +846,7 @@ const OeeMasterPage = ({ config }) => {
       <OeeConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title={`Delete 1 ${config.entityLabel.toLowerCase()}?`}
+        title={`Delete ${config.entityLabel}?`}
         description={`${config.getName(confirmation.entity) || `This ${config.entityLabel.toLowerCase()}`} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

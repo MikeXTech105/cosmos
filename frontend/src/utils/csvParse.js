@@ -3,7 +3,6 @@ import {
   DISPATCH_IMPORT_TYPES,
   DISPATCH_INBOUND_STATUS_LABELS,
 } from "../constants/dispatchEnums";
-import { EMPTY_VALUE, formatDateInput } from "./format";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -125,10 +124,10 @@ const parseDate = (value, field, rowNumber, errors, { optional = false } = {}) =
     : null;
   const canonical =
     parsed && !Number.isNaN(parsed.getTime())
-      ? formatDateInput(parsed)
+      ? parsed.toISOString().slice(0, 10)
       : "";
 
-  if (!parsed || canonical === EMPTY_VALUE || canonical !== value) {
+  if (!parsed || canonical !== value) {
     errors.push({
       field,
       message: `${field} must use yyyy-MM-dd.`,

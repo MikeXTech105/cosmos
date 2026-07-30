@@ -762,7 +762,6 @@ const EmployeesPage = () => {
 
       <EmployeeStats
         employees={employeesState.list}
-        loading={employeesState.loading}
         total={employeesState.totalCount}
       />
 
@@ -965,8 +964,8 @@ const EmployeesPage = () => {
         isOpen={confirmation.isOpen}
         title={
           confirmation.type === "document"
-            ? "Delete 1 document?"
-            : "Delete 1 employee?"
+            ? "Delete Document?"
+            : "Delete Employee?"
         }
         description={`${
           confirmation.type === "document"

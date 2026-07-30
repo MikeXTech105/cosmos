@@ -9,30 +9,43 @@ import {
   getApiCorrelationId,
   getApiErrorMessage,
 } from "../../utils/apiError";
-import {
-  EMPTY_VALUE,
-  formatDate,
-  formatDateTime,
-  formatNumber,
-} from "../../utils/format";
 
 export const formatDispatchNumber = (
   value,
-  fallback = EMPTY_VALUE,
+  fallback = "—",
   maximumFractionDigits = 2,
 ) => {
-  const formatted = formatNumber(value, maximumFractionDigits);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+  if (value === "" || value === null || value === undefined) return fallback;
+  const number = Number(value);
+  return Number.isFinite(number)
+    ? number.toLocaleString("en-IN", { maximumFractionDigits })
+    : fallback;
 };
 
-export const formatDispatchDate = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatDate(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+export const formatDispatchDate = (value, fallback = "—") => {
+  if (!value) return fallback;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? fallback
+    : date.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
 };
 
-export const formatDispatchDateTime = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatDateTime(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+export const formatDispatchDateTime = (value, fallback = "—") => {
+  if (!value) return fallback;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? fallback
+    : date.toLocaleString("en-IN", {
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
 };
 
 const getLabel = (labels, value, prefix) => {

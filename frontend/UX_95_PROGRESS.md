@@ -13,11 +13,11 @@
 
 | Area | Start | Target | Current | Run |
 |---|---|---|---|---|
-| Visual consistency | 82 | 95 | 95 | 2 |
+| Visual consistency | 82 | 95 | — | 2 |
 | Component quality | 80 | 95 | 95 | 1 |
 | Information architecture | 55 | 95 | — | 3, 4 |
-| Feedback & affordance | 58 | 95 | 95 | 2 |
-| Data presentation | 60 | 95 | 95 | 2 |
+| Feedback & affordance | 58 | 95 | — | 2 |
+| Data presentation | 60 | 95 | — | 2 |
 | Empty / first-run | 40 | 95 | — | 3 |
 | Mobile | 45 | 95 | — | 5 |
 | Accessibility | 35 | 95 | — | 6 |
@@ -69,37 +69,17 @@ Scope: `twMerge`/`clsx` in all shared primitives · hero button fix · `forwardR
 ## Run 2 — Data presentation + feedback
 **Prompt:** `RUN2_data_presentation_and_feedback.md`
 **Depends on:** Run 1 (`disabledReason` prop)
-**Status:** Complete (2026-07-29)
+**Status:** Not started
 
 Scope: `src/utils/format.js` (one date + number format app-wide) · numeric column discipline · `materialItemName`/`materialItemCode` fix incl. CSV export · buy-list `#` column + pluralisation · radius/padding/stat-grid drift · zero hardcoded hex · no unexplained disabled control · no silent sidebar drop · consistent loading states · error contract (400/409/404/403/network) · destructive-action discipline · specific success toasts.
 
-- Files changed (exact, grouped by layer/module):
-  - Shared application layer: `src/components/common/{AppButton.jsx, AppInput.jsx, AppSelect.jsx, StatCards.jsx}`, `src/config/sidebarThemes.js`, `src/hooks/useSidebar.js`, `src/services/reports/reportExportService.js`, `src/utils/{apiError.js, apiError.test.js, csvParse.js, format.js, format.test.js, reportFormat.js}`.
-  - Dashboard: `src/pages/dashboard/dashboardHelpers.js`, `src/pages/dashboard/widgets/{OverviewStats.jsx, RevenueExpenseTrendChart.jsx, SalesPurchaseTrendChart.jsx, WidgetState.jsx}`.
-  - Dispatch: `src/pages/dispatch/dispatchDisplay.js`, `src/pages/dispatch/dashboard/DispatchDashboardPage.jsx`, `src/pages/dispatch/imports/DispatchImportsPage.jsx`, `src/pages/dispatch/runs/{DispatchRecommendationMatrix.jsx, DispatchRunDetailPage.jsx, DispatchRunsPage.jsx}`, `src/pages/dispatch/settings/DispatchSettingsPage.jsx`.
-  - HR: `src/pages/hr/{HrShared.jsx, hrHelpers.js}`, `src/pages/hr/attendance/AttendancePage.jsx`, `src/pages/hr/dashboard/HrDashboardPage.jsx`, `src/pages/hr/departments/{DepartmentFormModal.jsx, DepartmentStats.jsx, DepartmentTable.jsx, DepartmentsPage.jsx}`, `src/pages/hr/designations/{DesignationFormModal.jsx, DesignationStats.jsx, DesignationTable.jsx, DesignationsPage.jsx}`, `src/pages/hr/employees/{EmployeeLifecycleModal.jsx, EmployeeList.jsx, EmployeeProfilePanel.jsx, EmployeeStats.jsx, EmployeesPage.jsx, employeeFormMappers.js}`, `src/pages/hr/leaves/LeavesPage.jsx`, `src/pages/hr/payroll/PayrollPage.jsx`, `src/pages/hr/shifts/{ShiftFormModal.jsx, ShiftGrid.jsx, ShiftStats.jsx, ShiftsPage.jsx}`.
-  - Inventory: `src/pages/inventory/{InventoryShared.jsx, inventoryHelpers.js}`, `src/pages/inventory/categories/{CategoriesPage.jsx, CategoryFormModal.jsx, CategoryStats.jsx, CategoryTable.jsx}`, `src/pages/inventory/items/{ItemDetailsPanel.jsx, ItemFormModal.jsx, ItemStats.jsx, ItemTable.jsx, ItemsPage.jsx, itemHelpers.js}`, `src/pages/inventory/units/{UnitFormModal.jsx, UnitStats.jsx, UnitTable.jsx, UnitsPage.jsx}`.
-  - OEE: `src/pages/oee/{OeeMasterPage.jsx, OeeShared.jsx, OeeSpeedometer.jsx, oeeHelpers.js}`, `src/pages/oee/dashboard/OeeDashboardPage.jsx`, `src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx`, `src/pages/oee/reports/OeeReportsPage.jsx`.
-  - Party: `src/pages/party/{PartyFilters.jsx, PartyFormModal.jsx, PartyPage.jsx, PartyStats.jsx, PartyTable.jsx, partyHelpers.js}`.
-  - Procurement: `src/pages/procurement/{ProcurementShared.jsx, procurementHelpers.js, procurementHelpers.test.js}`, `src/pages/procurement/bomMapping/BomMappingPage.jsx`, `src/pages/procurement/generatePlan/GeneratePlanPage.jsx`, `src/pages/procurement/home/{ProcurementHomePage.jsx, procurementHomeHelpers.js}`, `src/pages/procurement/planningHistory/PlanningHistoryPage.jsx`, `src/pages/procurement/salesImport/SalesImportPage.jsx`, `src/pages/procurement/settings/ProcurementSettingsPage.jsx`.
-  - Profile: `src/pages/profile/ProfilePage.jsx`.
-  - Purchase: `src/pages/purchase/{PurchaseLineItems.jsx, PurchaseShared.jsx, purchaseHelpers.js}`, `src/pages/purchase/documents/{PurchaseDocumentDetailPage.jsx, PurchaseDocumentListPage.jsx}`, `src/pages/purchase/expenseCategories/ExpenseCategoriesPage.jsx`, `src/pages/purchase/expenses/ExpensesPage.jsx`, `src/pages/purchase/reports/PurchaseReportsPage.jsx`, `src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx`.
-  - RBAC: `src/pages/rbac/pages/{PageActions.jsx, PageFilters.jsx, PageFormModal.jsx, PageModal.jsx, PageStats.jsx, PageTable.jsx, PageTree.jsx, PagesPage.jsx}`, `src/pages/rbac/permissions/{Permissions.jsx, PermissionsTable.jsx}`, `src/pages/rbac/roles/{RoleFilters.jsx, RoleModal.jsx, RoleStats.jsx, RoleTable.jsx, Roles.jsx}`, `src/pages/rbac/users/{UserFilters.jsx, UserModal.jsx, UserStats.jsx, UserTable.jsx, Users.jsx}`.
-  - Reports: `src/pages/reports/{ReportTable.jsx, ReportView.jsx}`, `src/pages/reports/filters/filterRegistry.js`.
-  - Rojmel: `src/pages/rojmel/{RojmelShared.jsx, rojmelHelpers.js}`, `src/pages/rojmel/components/TransactionTable.jsx`, `src/pages/rojmel/dashboard/RojmelDashboardPage.jsx`, `src/pages/rojmel/transfers/TransfersPage.jsx`, `src/pages/rojmel/wallets/WalletsPage.jsx`.
-  - Sales: `src/pages/sales/invoiceTemplates/{CompactTemplate.jsx, CorporateTemplate.jsx, InvoiceTemplateShared.jsx, ModernTemplate.jsx, exportInvoicePdf.jsx}`, `src/pages/sales/invoices/{InvoiceActions.jsx, InvoiceDetailPage.jsx, InvoiceFormModal.jsx, InvoiceShared.jsx, InvoiceStats.jsx, InvoiceTable.jsx, SalesInvoicesPage.jsx, invoiceHelpers.js}`.
-  - Settings: `src/pages/settings/components/SettingsCard.jsx`, `src/pages/settings/sections/{AppearanceSection.jsx, InvoiceTemplateSection.jsx}`.
-  - Supply Chain: `src/pages/supplyChain/{SupplyChainShared.jsx, supplyChainDisplay.js}`, `src/pages/supplyChain/channels/ChannelsPage.jsx`, `src/pages/supplyChain/imports/ImportsPage.jsx`, `src/pages/supplyChain/itemMappings/ItemMappingsPage.jsx`, `src/pages/supplyChain/packagingProfiles/PackagingProfilesPage.jsx`, `src/pages/supplyChain/warehouses/WarehousesPage.jsx`.
-  - Ledger: `UX_95_PROGRESS.md`.
-- Call sites migrated to `format.js`: **58 direct formatter calls across 23 files**, plus all manually assembled ISO date-input producers.
-- Tables whose column mapping was wrong against its DTO: **3** — Procurement Home buy list, Generate Plan calculation review, and Planning History line detail. The Home and Generate Plan CSV mappings were corrected at the same time and retain raw numeric precision.
-- Disabled controls given a reason: **212 audited** — 138 `AppButton` controls and 74 native controls. Explicit `disabledReason` values use `AppTooltip`; the primitive safety net supplies a native title when a caller omits one.
-- Verified: lint ✅ test ✅ (31 files / 227 tests) build ✅
-- Deviations / notes:
-  - Authenticated acceptance navigation stopped at `/login` because no reusable signed-in browser session was available; the login surface loaded without console errors. No credential, auth code, or auth configuration was changed.
-  - The hardcoded-colour scan is zero in the editable Run 2 scope. One pre-existing `indigo-*` occurrence remains in protected `src/layouts/AuthLayout.jsx`, which this program explicitly forbids editing.
-  - The frontend DTO corrections use the documented `materialItemName`, `materialItemCode`, `unitName`, and `unitShortName` fields. No backend change or `// BACKEND:` marker was required.
-- Open items: No open code items. Repeat the protected-page visual walkthrough when an authenticated session is available.
+- Files changed: —
+- Call sites migrated to `format.js`: —
+- Tables whose column mapping was wrong against its DTO: —
+- Disabled controls given a reason: —
+- Verified: lint ⬜ test ⬜ build ⬜
+- Deviations / notes: —
+- Open items: —
 
 ---
 

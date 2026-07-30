@@ -10,10 +10,9 @@ import {
   hrEmployeeRejoinSchema,
   hrEmployeeResignSchema,
 } from "../../../utils/validationSchemas";
-import { formatDateInput } from "../../../utils/format";
 import { getEmployeeName } from "../hrHelpers";
 
-const todayInputValue = () => formatDateInput(new Date());
+const todayInputValue = () => new Date().toISOString().slice(0, 10);
 
 const getDefaultValues = (mode) => {
   if (mode === "rejoin") {

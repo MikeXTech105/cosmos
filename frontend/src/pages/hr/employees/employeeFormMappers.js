@@ -3,7 +3,6 @@ import {
   HR_EMPLOYMENT_TYPE,
   HR_GENDER,
 } from "../../../utils/hrEnums";
-import { EMPTY_VALUE, formatDateInput } from "../../../utils/format";
 
 const BANK_FIELDS = [
   "bankName",
@@ -50,8 +49,19 @@ const getDateInputValue = (...values) => {
     return "";
   }
 
-  const formatted = formatDateInput(value);
-  return formatted === EMPTY_VALUE ? "" : formatted;
+  const stringValue = String(value);
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(stringValue)) {
+    return stringValue.slice(0, 10);
+  }
+
+  const date = new Date(stringValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toISOString().slice(0, 10);
 };
 
 const splitName = (employee) => {

@@ -10,7 +10,7 @@ import { COMPANY_PROFILE } from "./companyProfile";
 
 const CompactTemplate = ({ invoice }) => {
   return (
-    <TemplatePage className="p-4">
+    <TemplatePage className="p-5">
       <div className="flex items-start justify-between gap-6 border-b border-slate-300 pb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-950">

@@ -1,9 +1,4 @@
 import { getApiErrorMessage } from "../../utils/apiError";
-import {
-  EMPTY_VALUE,
-  formatDate as formatDisplayDate,
-  formatNumber as formatDisplayNumber,
-} from "../../utils/format";
 
 const ACRONYMS = new Map([
   ["gst", "GST"],
@@ -231,19 +226,41 @@ export const loadPartyFallbackCollection = async ({
 };
 
 export const formatDate = (value) => {
-  return formatDisplayDate(value);
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 export const formatNumber = (value) => {
-  return formatDisplayNumber(value);
+  const numberValue = Number(value);
+
+  if (Number.isNaN(numberValue)) {
+    return "-";
+  }
+
+  return numberValue.toLocaleString(undefined, {
+    maximumFractionDigits: 2,
+  });
 };
 
 export const formatBalance = (party) => {
   const amount = formatNumber(party?.openingBalance);
   const balanceType = Number(party?.openingBalanceType);
 
-  if (amount === EMPTY_VALUE) {
-    return EMPTY_VALUE;
+  if (amount === "-") {
+    return "-";
   }
 
   if (balanceType === 1) {
@@ -259,7 +276,7 @@ export const formatBalance = (party) => {
 
 export const formatValue = (value) => {
   if (value === undefined || value === null || value === "") {
-    return EMPTY_VALUE;
+    return "-";
   }
 
   if (typeof value === "boolean") {

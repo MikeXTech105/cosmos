@@ -163,7 +163,7 @@ const OverviewStats = ({ error, isLoading, onRetry, overview }) => {
         return (
           <div
             key={metric.key}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
           >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand ring-1 ring-inset ring-brand/10">
@@ -198,7 +198,7 @@ const OverviewStats = ({ error, isLoading, onRetry, overview }) => {
       })}
 
       {metrics.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm sm:col-span-2 xl:col-span-4">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm sm:col-span-2 xl:col-span-4">
           No overview metrics were returned for this period.
         </div>
       )}

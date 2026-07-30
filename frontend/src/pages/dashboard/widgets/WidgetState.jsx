@@ -4,7 +4,7 @@ import AppButton from "../../../components/common/AppButton";
 
 export const StatSkeleton = () => {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="h-10 w-10 animate-pulse rounded-xl bg-brand-light" />
       <div className="mt-4 h-2.5 w-24 animate-pulse rounded-full bg-slate-100" />
       <div className="mt-3 h-6 w-28 animate-pulse rounded-md bg-slate-100" />
@@ -15,7 +15,7 @@ export const StatSkeleton = () => {
 
 export const ChartSkeleton = ({ tall = false }) => {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="h-3 w-32 animate-pulse rounded-full bg-slate-100" />
       <div
         className={[
@@ -46,7 +46,7 @@ export const ListSkeleton = ({ rows = 5 }) => {
 
 export const WidgetCard = ({ actions, children, description, title }) => {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>

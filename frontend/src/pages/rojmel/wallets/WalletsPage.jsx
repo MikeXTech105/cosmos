@@ -10,7 +10,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import { formatNumber } from "../../../utils/format";
 
 import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
@@ -44,7 +43,7 @@ import {
 import useRojmelCapabilities from "../useRojmelCapabilities";
 
 const WalletAction = ({ disabled, icon: Icon, label, onClick, tone = "default" }) => (
-  <AppTooltip label={disabled ? `${label} is unavailable for this wallet` : label}>
+  <AppTooltip label={label}>
     <button
       type="button"
       aria-label={label}
@@ -256,8 +255,8 @@ const WalletsPage = () => {
             <table className="w-full min-w-[1100px] table-fixed text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  {["#", "Wallet Code", "Wallet Name", "Type", "Linked User", "Current Balance (₹)", "Default", "Status", "Actions"].map((heading) => (
-                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Current Balance (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
+                  {["#", "Wallet Code", "Wallet Name", "Type", "Linked User", "Current Balance", "Default", "Status", "Actions"].map((heading) => (
+                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Current Balance", "Actions"].includes(heading) ? "text-right" : ""}`}>
                       {heading}
                     </th>
                   ))}
@@ -280,7 +279,7 @@ const WalletsPage = () => {
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3.5"><RojmelWalletTypeBadge value={wallet.walletType} /></td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">{wallet.linkedUserName || "-"}</td>
-                    <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatNumber(wallet.currentBalance)}</td>
+                    <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatRojmelCurrency(wallet.currentBalance)}</td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">{wallet.isDefault ? "Yes" : "No"}</td>
                     <td className="border-b border-slate-100 px-3 py-3.5"><RojmelWalletStatusPill isActive={wallet.isActive} /></td>
                     <td className="border-b border-slate-100 px-3 py-3.5">

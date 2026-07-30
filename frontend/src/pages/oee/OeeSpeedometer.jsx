@@ -1,6 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
 
-import { formatNumber } from "../../utils/format";
 import {
   formatOeePercent,
   getOeeRating,
@@ -42,9 +41,9 @@ const arcPath = (startValue, endValue) => {
   const largeArcFlag = 0;
 
   return [
-    `M ${formatNumber(start.x, { maxFractionDigits: 2, useGrouping: false })} ${formatNumber(start.y, { maxFractionDigits: 2, useGrouping: false })}`,
+    `M ${start.x.toFixed(2)} ${start.y.toFixed(2)}`,
     `A ${ARC_RADIUS} ${ARC_RADIUS} 0 ${largeArcFlag} 1`,
-    `${formatNumber(end.x, { maxFractionDigits: 2, useGrouping: false })} ${formatNumber(end.y, { maxFractionDigits: 2, useGrouping: false })}`,
+    `${end.x.toFixed(2)} ${end.y.toFixed(2)}`,
   ].join(" ");
 };
 
@@ -60,7 +59,7 @@ const Tick = ({ value, showLabel }) => {
         y1={outer.y}
         x2={inner.x}
         y2={inner.y}
-        stroke="var(--color-slate-400)"
+        stroke="#94a3b8"
         strokeLinecap="round"
         strokeWidth="1.5"
       />
@@ -114,7 +113,7 @@ const OeeSpeedometer = ({ showTicks = true, size = 220, value = 0 }) => {
         <path
           d={arcPath(0, 100)}
           fill="none"
-          stroke="var(--color-border)"
+          stroke="#e2e8f0"
           strokeLinecap="round"
           strokeWidth={TRACK_WIDTH + 2}
         />
@@ -151,7 +150,7 @@ const OeeSpeedometer = ({ showTicks = true, size = 220, value = 0 }) => {
               `L ${CENTER_X + 5} ${CENTER_Y + 5}`,
               "Z",
             ].join(" ")}
-            fill="var(--color-slate-950)"
+            fill="#0f172a"
           />
           <path
             d={[
@@ -160,12 +159,12 @@ const OeeSpeedometer = ({ showTicks = true, size = 220, value = 0 }) => {
               `L ${CENTER_X + 2} ${CENTER_Y + 3}`,
               "Z",
             ].join(" ")}
-            fill="var(--color-slate-50)"
+            fill="#f8fafc"
             opacity="0.5"
           />
         </g>
 
-        <circle cx={CENTER_X} cy={CENTER_Y} r="12" fill="var(--color-slate-950)" />
+        <circle cx={CENTER_X} cy={CENTER_Y} r="12" fill="#0f172a" />
         <circle cx={CENTER_X} cy={CENTER_Y} r="5" fill="white" />
       </svg>
     </div>

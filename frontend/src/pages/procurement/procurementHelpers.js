@@ -5,18 +5,21 @@ import {
   getApiFieldErrors,
   getApiStatus,
 } from "../../utils/apiError";
-import {
-  EMPTY_VALUE,
-  formatDate,
-  formatDateInput,
-  formatDateTime,
-  formatNumber,
-  formatQuantity,
-} from "../../utils/format";
 
-export const toIsoDate = (value) => {
-  const formatted = formatDateInput(value);
-  return formatted === EMPTY_VALUE ? "" : formatted;
+const EMPTY_VALUE = "-";
+
+export const toIsoDate = (date) => {
+  const value = date instanceof Date ? date : new Date(date);
+
+  if (Number.isNaN(value.getTime())) {
+    return "";
+  }
+
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 export const getDefaultProcurementRange = () => {
@@ -79,29 +82,68 @@ export const formatProcurementDecimal = (
     fallback !== null && typeof fallback === "object" && !Array.isArray(fallback);
   const resolvedFallback = hasOptionsAsFallback ? EMPTY_VALUE : fallback;
   const resolvedOptions = hasOptionsAsFallback ? fallback : options;
-  const formatted = formatNumber(value, resolvedOptions);
+  const requestedMaximum = Number(resolvedOptions?.maxFractionDigits);
+  const maximumFractionDigits = Number.isFinite(requestedMaximum)
+    ? Math.min(6, Math.max(0, Math.trunc(requestedMaximum)))
+    : 2;
+  const number = toNumberOrNull(value);
 
-  return formatted === EMPTY_VALUE ? resolvedFallback : formatted;
+  return number === null
+    ? resolvedFallback
+    : number.toLocaleString("en-IN", {
+        maximumFractionDigits,
+        minimumFractionDigits: 0,
+        useGrouping: true,
+      });
 };
 
-export const formatProcurementQuantity = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatQuantity(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
-};
+export const formatProcurementQuantity = (value, fallback = EMPTY_VALUE) =>
+  formatProcurementDecimal(value, fallback, { maxFractionDigits: 2 });
 
 export const formatProcurementInteger = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatNumber(value, 0);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+  const number = toNumberOrNull(value);
+
+  return number === null
+    ? fallback
+    : number.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 };
 
 export const formatProcurementDate = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatDate(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 export const formatProcurementDateTime = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatDateTime(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+  if (!value) {
+    return fallback;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 export const getCollection = (payload, keys = []) => {

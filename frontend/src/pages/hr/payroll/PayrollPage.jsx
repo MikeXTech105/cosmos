@@ -31,7 +31,6 @@ import {
   hrPayrollApproveSchema,
   hrPayrollProcessSchema,
 } from "../../../utils/validationSchemas";
-import { formatNumber } from "../../../utils/format";
 import {
   formatHrCurrency,
   formatHrDate,
@@ -339,7 +338,8 @@ const PayrollPage = () => {
     }
 
     try {
-      await dispatch(fetchHrPayrollRunById(runId)).unwrap();
+      const response = await dispatch(fetchHrPayrollRunById(runId)).unwrap();
+      toast.success(getHrSuccessMessage(response, "Payroll run loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load payroll run."));
     }
@@ -352,9 +352,10 @@ const PayrollPage = () => {
     }
 
     try {
-      await dispatch(
+      const response = await dispatch(
         fetchHrPayrollHistory(employeeQuery.employeeId),
       ).unwrap();
+      toast.success(getHrSuccessMessage(response, "Payroll history loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load payroll history."));
     }
@@ -368,7 +369,7 @@ const PayrollPage = () => {
       }
 
       try {
-        await dispatch(
+        const response = await dispatch(
           fetchHrPayslip({
             employeeId,
             params: {
@@ -377,6 +378,7 @@ const PayrollPage = () => {
             },
           }),
         ).unwrap();
+        toast.success(getHrSuccessMessage(response, "Payslip loaded"));
       } catch (error) {
         toast.error(getHrActionError(error, "Unable to load payslip."));
       }
@@ -418,31 +420,27 @@ const PayrollPage = () => {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-4">
         <HrStatCard
           icon={IndianRupee}
           label="Gross"
-          loading={payrollState.loading}
           value={formatHrCurrency(stats.gross)}
         />
         <HrStatCard
           icon={IndianRupee}
           label="Deductions"
-          loading={payrollState.loading}
           value={formatHrCurrency(stats.deductions)}
           colorClass="bg-red-50 text-red-600"
         />
         <HrStatCard
           icon={IndianRupee}
           label="Net Payable"
-          loading={payrollState.loading}
           value={formatHrCurrency(stats.net)}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <HrStatCard
           icon={UsersRound}
           label="Employees"
-          loading={payrollState.loading}
           value={stats.employees}
           colorClass="bg-brand-light text-brand"
         />
@@ -509,12 +507,12 @@ const PayrollPage = () => {
               <table className="w-full min-w-[860px] text-left">
                 <thead className="bg-slate-50">
                   <tr>
-                    {["Employee", "Gross (₹)", "Deductions (₹)", "Net Pay (₹)", "Payslip"].map((heading) => (
+                    {["Employee", "Gross", "Deductions", "Net Pay", "Payslip"].map((heading) => (
                       <th
                         key={heading}
                         className={[
                           "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
-                          heading === "Employee" ? "" : "text-right",
+                          heading === "Payslip" ? "text-right" : "",
                         ].join(" ")}
                       >
                         {heading}
@@ -531,14 +529,14 @@ const PayrollPage = () => {
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
                           {row.employeeName ?? getLookupLabel(employeeOptions, employeeId)}
                         </td>
-                        <td className="border-b border-slate-100 px-4 py-3.5 text-right text-sm tabular-nums text-slate-600">
-                          {formatNumber(row.grossPay ?? row.grossSalary ?? row.grossAmount)}
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-sm text-slate-600">
+                          {formatHrCurrency(row.grossPay ?? row.grossSalary ?? row.grossAmount)}
                         </td>
-                        <td className="border-b border-slate-100 px-4 py-3.5 text-right text-sm tabular-nums text-slate-600">
-                          {formatNumber(row.deductions ?? row.totalDeductions ?? row.deductionAmount)}
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-sm text-slate-600">
+                          {formatHrCurrency(row.deductions ?? row.totalDeductions ?? row.deductionAmount)}
                         </td>
-                        <td className="border-b border-slate-100 px-4 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">
-                          {formatNumber(row.netPay ?? row.netSalary ?? row.netAmount)}
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-900">
+                          {formatHrCurrency(row.netPay ?? row.netSalary ?? row.netAmount)}
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-right">
                           <AppButton

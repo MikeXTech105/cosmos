@@ -9,10 +9,6 @@ import {
   ITEM_TYPE_VALUES,
   normalizeItemType,
 } from "../../../utils/itemTypes";
-import {
-  formatCurrency as formatDisplayCurrency,
-  formatQuantity as formatDisplayQuantity,
-} from "../../../utils/format";
 
 export { ITEM_TYPE, ITEM_TYPE_VALUES };
 export { ITEM_CLASSIFICATION_OPTIONS };
@@ -115,11 +111,17 @@ export const buildItemPayload = (values) => {
 };
 
 export const formatCurrency = (value) => {
-  return formatDisplayCurrency(value);
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(toNumber(value));
 };
 
 const formatQuantity = (value) => {
-  return formatDisplayQuantity(value);
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(toNumber(value));
 };
 
 const cleanCompactUnitLabel = (unitShortName) => {

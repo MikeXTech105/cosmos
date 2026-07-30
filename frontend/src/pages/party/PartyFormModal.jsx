@@ -30,7 +30,6 @@ import {
   verifyGstin as verifyGstinThunk,
 } from "../../store/slices/party/gstSlice";
 import { getApiErrorMessage } from "../../utils/apiError";
-import { EMPTY_VALUE, formatDateInput } from "../../utils/format";
 import { applyApiErrorsToForm } from "../../utils/formApiErrors";
 import {
   PARTY_COMMAND_FIELDS,
@@ -120,8 +119,17 @@ const normalizeNumberBlurValue = (value, options) => {
 };
 
 const toDateInputValue = (value) => {
-  const formatted = formatDateInput(value);
-  return formatted === EMPTY_VALUE ? "" : formatted;
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10);
+  }
+
+  return date.toISOString().slice(0, 10);
 };
 
 const pickFirstString = (...values) => {
@@ -376,7 +384,6 @@ const FieldInput = ({ disabled, error, field, onChange, value }) => {
             type="checkbox"
             checked={Boolean(value)}
             disabled={disabled}
-            title={disabled ? "Open edit mode to change this setting" : undefined}
             onChange={(event) => onChange(field.name, event.target.checked)}
             className="h-4 w-4 accent-brand"
           />
@@ -571,8 +578,7 @@ const VerifiedGstinBanner = ({
             <button
               type="button"
               onClick={onReverify}
-          disabled={isVerifying}
-          title={isVerifying ? "GSTIN verification is already in progress" : undefined}
+              disabled={isVerifying}
               className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isVerifying ? (

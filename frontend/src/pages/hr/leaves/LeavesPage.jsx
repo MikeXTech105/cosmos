@@ -41,7 +41,6 @@ import {
   hrLeaveActionSchema,
   hrLeaveApplySchema,
 } from "../../../utils/validationSchemas";
-import { formatDateInput } from "../../../utils/format";
 import {
   buildHrQueryParams,
   formatHrDate,
@@ -58,7 +57,7 @@ import {
 } from "../HrShared";
 import useHrCapabilities from "../useHrCapabilities";
 
-const today = () => formatDateInput(new Date());
+const today = () => new Date().toISOString().slice(0, 10);
 
 const extractList = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -466,9 +465,10 @@ const LeavesPage = () => {
     }
 
     try {
-      await dispatch(
+      const response = await dispatch(
         fetchHrLeaveBalance(Number(balanceEmployeeId)),
       ).unwrap();
+      toast.success(getHrSuccessMessage(response, "Leave balance loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load leave balance."));
     }
@@ -476,7 +476,7 @@ const LeavesPage = () => {
 
   const loadPending = useCallback(async () => {
     try {
-      await dispatch(
+      const response = await dispatch(
         fetchHrPendingLeaveApprovals({
           PageNumber: 1,
           PageSize: 50,
@@ -485,6 +485,7 @@ const LeavesPage = () => {
             : undefined,
         }),
       ).unwrap();
+      toast.success(getHrSuccessMessage(response, "Pending approvals loaded"));
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load pending approvals."));
     }
@@ -524,11 +525,11 @@ const LeavesPage = () => {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
-        <HrStatCard icon={Clock3} label="Pending" loading={leaveState.loading} value={stats.pending} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
-        <HrStatCard icon={CheckCircle2} label="Approved" loading={leaveState.loading} value={stats.approved} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
-        <HrStatCard icon={XCircle} label="Rejected" loading={leaveState.loading} value={stats.rejected} scope="current-page" colorClass="bg-red-50 text-red-600" />
-        <HrStatCard icon={UserRound} label="On Leave Today" loading={leaveState.loading} value={stats.onLeaveToday} scope="current-page" colorClass="bg-brand-light text-brand" />
+      <div className="grid gap-3 md:grid-cols-4">
+        <HrStatCard icon={Clock3} label="Pending" value={stats.pending} scope="current-page" colorClass="bg-amber-50 text-amber-600" />
+        <HrStatCard icon={CheckCircle2} label="Approved" value={stats.approved} scope="current-page" colorClass="bg-emerald-50 text-emerald-600" />
+        <HrStatCard icon={XCircle} label="Rejected" value={stats.rejected} scope="current-page" colorClass="bg-red-50 text-red-600" />
+        <HrStatCard icon={UserRound} label="On Leave Today" value={stats.onLeaveToday} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -625,10 +626,10 @@ const LeavesPage = () => {
               </thead>
               <tbody>
                 {leaveState.loading
-                  ? Array.from({ length: 5 }, (_, index) => (
+                  ? Array.from({ length: 6 }, (_, index) => (
                       <tr key={index}>
                         <td colSpan={7} className="px-4 py-3">
-                          <div className="h-4 animate-pulse rounded bg-slate-100" />
+                          <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
                         </td>
                       </tr>
                     ))

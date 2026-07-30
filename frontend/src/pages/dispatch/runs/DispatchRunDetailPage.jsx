@@ -224,7 +224,6 @@ const OverrideModal = ({ onClose, onSaved, recommendation, runId }) => {
       <div className="mt-4">
         <AppInput
           disabled={saving}
-          title={saving ? "The override is already saving" : undefined}
           error={errors.finalRecommendationQuantity}
           label="Final recommendation quantity"
           min="0"
@@ -251,7 +250,6 @@ const OverrideModal = ({ onClose, onSaved, recommendation, runId }) => {
         <textarea
           className="min-h-24 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           disabled={saving}
-          title={saving ? "The allocation is already saving" : undefined}
           id="dispatch-override-reason"
           value={reason}
           onChange={(event) => {
@@ -342,7 +340,6 @@ const AllocationModal = ({ isOpen, onClose, onSaved, runId }) => {
         <textarea
           className="min-h-24 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           disabled={saving}
-          title={saving ? "The allocation is already saving" : undefined}
           id="dispatch-allocation-notes"
           value={notes}
           onChange={(event) => setNotes(event.target.value)}

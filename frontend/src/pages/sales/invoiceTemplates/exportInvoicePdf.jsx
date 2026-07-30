@@ -24,7 +24,7 @@ export const exportInvoicePdf = async ({
   container.style.left = "-10000px";
   container.style.top = "0";
   container.style.width = "794px";
-  container.style.background = "white";
+  container.style.background = "#ffffff";
   document.body.appendChild(container);
 
   const root = createRoot(container);
@@ -49,7 +49,7 @@ export const exportInvoicePdf = async ({
     }
 
     const canvas = await html2canvas(container, {
-      backgroundColor: "white",
+      backgroundColor: "#ffffff",
       scale: 2,
       useCORS: true,
     });

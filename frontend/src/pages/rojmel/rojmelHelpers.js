@@ -7,17 +7,11 @@ import {
   clampRojmelPageSize,
   DEFAULT_ROJMEL_PAGE_SIZE,
 } from "../../utils/rojmelQuery";
-import {
-  EMPTY_VALUE,
-  formatCurrency,
-  formatDate,
-  formatDateInput,
-} from "../../utils/format";
 
-export const toRojmelInputDate = (date = new Date()) => {
-  const formatted = formatDateInput(date);
-  return formatted === EMPTY_VALUE ? "" : formatted;
-};
+const pad = (value) => String(value).padStart(2, "0");
+
+export const toRojmelInputDate = (date = new Date()) =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
 export const getRojmelMonthRange = (today = new Date()) => ({
   FromDate: toRojmelInputDate(
@@ -27,13 +21,29 @@ export const getRojmelMonthRange = (today = new Date()) => ({
 });
 
 export const formatRojmelCurrency = (value, fallback = "₹0.00") => {
-  const formatted = formatCurrency(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) return fallback;
+
+  return new Intl.NumberFormat("en-IN", {
+    currency: "INR",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: "currency",
+  }).format(numericValue);
 };
 
-export const formatRojmelDate = (value, fallback = EMPTY_VALUE) => {
-  const formatted = formatDate(value);
-  return formatted === EMPTY_VALUE ? fallback : formatted;
+export const formatRojmelDate = (value, fallback = "-") => {
+  if (!value) return fallback;
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 export const PAYMENT_MODE_OPTIONS = ["Cash", "UPI", "Bank", "Card", "Other"].map(

@@ -225,7 +225,6 @@ const PageModal = ({
                     <input
                       id="pageName"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change the page name" : undefined}
                       className={inputClassName}
                       placeholder="customers"
                       {...register("name")}
@@ -239,7 +238,6 @@ const PageModal = ({
                     <input
                       id="pageDisplayName"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change the display name" : undefined}
                       className={inputClassName}
                       placeholder="Customers"
                       {...register("displayName")}
@@ -255,7 +253,6 @@ const PageModal = ({
                       <input
                         id="pageRoute"
                         disabled={isView}
-                        title={isView ? "Open edit mode to change the route" : undefined}
                         className={`${inputClassName} pl-9 font-mono`}
                         placeholder="/customers"
                         {...register("route")}
@@ -347,7 +344,6 @@ const PageModal = ({
                       type="number"
                       min="0"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change the sort order" : undefined}
                       className={inputClassName}
                       {...register("sortOrder", { valueAsNumber: true })}
                     />
@@ -370,7 +366,6 @@ const PageModal = ({
                     <input
                       type="checkbox"
                       disabled={isView}
-                      title={isView ? "Open edit mode to change page status" : undefined}
                       className="h-4 w-4 accent-brand"
                       {...register("isActive")}
                     />
@@ -389,13 +384,6 @@ const PageModal = ({
                     <button
                       type="submit"
                       disabled={isSubmitting || isParentsLoading}
-                      title={
-                        isSubmitting
-                          ? "The page is already saving"
-                          : isParentsLoading
-                            ? "Wait for parent pages to finish loading"
-                            : undefined
-                      }
                       className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {isSubmitting

@@ -3,12 +3,6 @@ import {
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../utils/inventoryQuery";
 import { getApiErrorMessage } from "../../utils/apiError";
-import {
-  formatDate,
-  formatDateInput,
-  formatNumber,
-  formatPercent,
-} from "../../utils/format";
 
 export const OEE_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -31,7 +25,7 @@ export const OEE_RATING_BANDS = [
     min: 0,
     max: 40,
     tone: "red",
-    color: "var(--color-red-500)",
+    color: "#ef4444",
     bgClass: "bg-red-50 text-red-700 ring-red-200",
   },
   {
@@ -39,7 +33,7 @@ export const OEE_RATING_BANDS = [
     min: 40,
     max: 65,
     tone: "amber",
-    color: "var(--color-amber-500)",
+    color: "#f59e0b",
     bgClass: "bg-amber-50 text-amber-700 ring-amber-200",
   },
   {
@@ -47,7 +41,7 @@ export const OEE_RATING_BANDS = [
     min: 65,
     max: 85,
     tone: "yellow",
-    color: "var(--color-yellow-500)",
+    color: "#eab308",
     bgClass: "bg-yellow-50 text-yellow-700 ring-yellow-200",
   },
   {
@@ -55,7 +49,7 @@ export const OEE_RATING_BANDS = [
     min: 85,
     max: 100,
     tone: "emerald",
-    color: "var(--color-green-500)",
+    color: "#22c55e",
     bgClass: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   },
 ];
@@ -160,27 +154,53 @@ export const getOeeBoolean = (value, fallback = true) => {
 };
 
 export const formatOeeNumber = (value, options = {}) => {
-  return formatNumber(value, {
-    maxFractionDigits: options.maximumFractionDigits ?? 2,
-    minFractionDigits: options.minimumFractionDigits ?? 0,
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+
+  return number.toLocaleString("en-IN", {
+    maximumFractionDigits: options.maximumFractionDigits ?? 2,
+    minimumFractionDigits: options.minimumFractionDigits ?? 0,
   });
 };
 
 export const formatOeePercent = (value, digits = 1) => {
-  return formatPercent(value, digits);
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "-";
+  }
+
+  return `${number.toFixed(digits)}%`;
 };
 
 export const formatOeeDate = (value) => {
-  return formatDate(value);
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
-export const getTodayInputValue = () => formatDateInput(new Date());
+export const getTodayInputValue = () => new Date().toISOString().slice(0, 10);
 
 export const getDateDaysAgoInputValue = (days) => {
   const date = new Date();
   date.setDate(date.getDate() - days);
 
-  return formatDateInput(date);
+  return date.toISOString().slice(0, 10);
 };
 
 export const getOeeActionError = (error, fallback) => {

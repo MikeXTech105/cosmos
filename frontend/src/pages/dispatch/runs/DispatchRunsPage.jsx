@@ -50,7 +50,6 @@ import {
 } from "../../../utils/apiError";
 import { downloadCsv } from "../../../utils/csv";
 import { getRunActions } from "../../../utils/dispatchRunLifecycle";
-import { formatDateInput } from "../../../utils/format";
 import {
   SupplyChainFilterBar,
   SupplyChainInlineError,
@@ -74,7 +73,9 @@ import {
 import useDispatchCapabilities from "../useDispatchCapabilities";
 
 const today = () => {
-  return formatDateInput(new Date());
+  const date = new Date();
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
 };
 
 const emptyRun = () => ({
@@ -314,7 +315,6 @@ const NewRunModal = ({ channels, isOpen, onClose, onCreated }) => {
           <textarea
             className="min-h-24 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
             disabled={saving}
-            title={saving ? "The planning run is already saving" : undefined}
             id="dispatch-run-notes"
             value={form.notes}
             onChange={(event) => setField("notes", event.target.value)}
@@ -411,7 +411,6 @@ const CancelRunModal = ({
         <textarea
           className="min-h-24 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           disabled={loading}
-          title={loading ? "The cancellation is already being submitted" : undefined}
           id="dispatch-run-cancel-reason"
           value={reason}
           onChange={(event) => {

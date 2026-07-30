@@ -3,9 +3,9 @@ import { Eye, RotateCcw } from "lucide-react";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { RojmelTransactionStatus } from "../../../constants/rojmelEnums";
 import {
+  formatRojmelCurrency,
   formatRojmelDate,
 } from "../rojmelHelpers";
-import { formatNumber } from "../../../utils/format";
 import {
   RojmelAmount,
   RojmelPagination,
@@ -63,12 +63,12 @@ const TransactionTable = ({
           <table className="w-full min-w-[1100px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
-                {["#", "Txn No", "Date", ...(showWallet ? ["Wallet"] : []), "Type", "Category", "Amount (₹)", "Balance After (₹)", "Status", ...(showActions ? ["Actions"] : [])].map(
+                {["#", "Txn No", "Date", ...(showWallet ? ["Wallet"] : []), "Type", "Category", "Amount", "Balance After", "Status", ...(showActions ? ["Actions"] : [])].map(
                   (heading) => (
                     <th
                       key={heading}
                       className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${
-                        ["Amount (₹)", "Balance After (₹)", "Actions"].includes(heading)
+                        ["Amount", "Balance After", "Actions"].includes(heading)
                           ? "text-right"
                           : ""
                       }`}
@@ -109,11 +109,11 @@ const TransactionTable = ({
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">
                       {transaction.categoryName || "-"}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm tabular-nums">
-                      <RojmelAmount amount={transaction.amount} showCurrency={false} type={transaction.transactionType} />
+                    <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm">
+                      <RojmelAmount amount={transaction.amount} type={transaction.transactionType} />
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">
-                      {formatNumber(transaction.balanceAfter)}
+                      {formatRojmelCurrency(transaction.balanceAfter)}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3.5">
                       <RojmelStatusPill value={transaction.status} />

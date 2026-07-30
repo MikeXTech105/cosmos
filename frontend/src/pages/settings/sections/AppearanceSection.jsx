@@ -74,7 +74,7 @@ const AppearanceSection = () => {
           </span>
         }
         bodyAriaLabel="Accent theme"
-        bodyClassName="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4"
+        bodyClassName="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-4"
         bodyRole="radiogroup"
       >
         {APP_THEMES.map((theme) => (

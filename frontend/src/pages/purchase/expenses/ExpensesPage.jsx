@@ -40,7 +40,6 @@ import {
   cleanNullableString,
   formatCurrency,
   formatDate,
-  formatNumber,
   getActionError,
   getCategoryName,
   getSuccessMessage,
@@ -651,11 +650,10 @@ const ExpensesPage = () => {
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <PurchaseStatCard
           icon={CircleDollarSign}
           label="Total Expenses"
-          loading={state.loading}
           value={stats.total}
           scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
@@ -663,7 +661,6 @@ const ExpensesPage = () => {
         <PurchaseStatCard
           icon={ReceiptText}
           label="This Month"
-          loading={state.loading}
           value={stats.thisMonth}
           scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
@@ -671,7 +668,6 @@ const ExpensesPage = () => {
         <PurchaseStatCard
           icon={ReceiptText}
           label="Count"
-          loading={state.loading}
           value={stats.count}
           scope={stats.totalScope}
           colorClass="bg-sky-50 text-sky-600"
@@ -764,10 +760,10 @@ const ExpensesPage = () => {
                   Paid To
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Amount (₹)
+                  Amount
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
-                  Tax (₹)
+                  Tax
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Ref
@@ -779,10 +775,10 @@ const ExpensesPage = () => {
             </thead>
             <tbody>
               {state.loading ? (
-                Array.from({ length: 5 }, (_, index) => (
+                Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
                     <td colSpan={8} className="px-3 py-3">
-                      <div className="h-4 animate-pulse rounded bg-slate-100" />
+                      <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
                 ))
@@ -812,11 +808,11 @@ const ExpensesPage = () => {
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {expense.paidToPartyName || expense.paidToPartyId || "-"}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">
-                      {formatNumber(expense.amount)}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold text-slate-900">
+                      {formatCurrency(expense.amount)}
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm tabular-nums text-slate-600">
-                      {formatNumber(expense.taxAmount)}
+                    <td className="border-b border-slate-100 px-3 py-3 text-right text-sm text-slate-600">
+                      {formatCurrency(expense.taxAmount)}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {expense.referenceNo || "-"}
@@ -906,7 +902,7 @@ const ExpensesPage = () => {
         description="This expense entry will be deleted."
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete 1 expense?"
+        title="Delete Expense?"
         tone="danger"
         onCancel={() =>
           setConfirmation({

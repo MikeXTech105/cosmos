@@ -256,7 +256,6 @@ const WarehouseModal = ({
             checked={form.isActive}
             className="h-4 w-4 rounded border-slate-300 accent-brand"
             disabled={readOnly || saving}
-            title={readOnly ? "This warehouse is read only" : saving ? "The warehouse is already saving" : undefined}
             type="checkbox"
             onChange={(event) => setField("isActive", event.target.checked)}
           />

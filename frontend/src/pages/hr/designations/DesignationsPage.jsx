@@ -407,7 +407,7 @@ const DesignationsPage = () => {
         }
       />
 
-      <DesignationStats {...stats} loading={designationsState.loading} />
+      <DesignationStats {...stats} />
       <DesignationFilters
         filters={filterControls}
         resultCount={designationsState.list.length}
@@ -481,7 +481,7 @@ const DesignationsPage = () => {
       <HrConfirmDialog
         isLoading={confirmation.isLoading}
         isOpen={confirmation.isOpen}
-        title="Delete 1 designation?"
+        title="Delete Designation?"
         description={`${confirmation.entity?.designationName ?? "This designation"} will be permanently removed.`}
         onCancel={() =>
           setConfirmation({

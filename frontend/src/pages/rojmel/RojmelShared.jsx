@@ -20,7 +20,6 @@ import {
   formatRojmelCurrency,
   ROJMEL_PAGE_SIZE_OPTIONS,
 } from "./rojmelHelpers";
-import { formatNumber } from "../../utils/format";
 
 const TYPE_TONES = {
   adjustment: "bg-amber-50 text-amber-700 ring-amber-200",
@@ -80,7 +79,7 @@ export const RojmelWalletStatusPill = ({ isActive }) => (
   </span>
 );
 
-export const RojmelAmount = ({ amount, showCurrency = true, type }) => {
+export const RojmelAmount = ({ amount, type }) => {
   const tone = getTransactionTypeTone(type);
   const prefix = tone === "income" ? "+" : tone === "expense" ? "−" : "";
   const className =
@@ -95,21 +94,12 @@ export const RojmelAmount = ({ amount, showCurrency = true, type }) => {
   return (
     <span className={`font-semibold tabular-nums ${className}`}>
       {prefix}
-      {showCurrency
-        ? formatRojmelCurrency(Math.abs(Number(amount) || 0))
-        : formatNumber(Math.abs(Number(amount) || 0))}
+      {formatRojmelCurrency(Math.abs(Number(amount) || 0))}
     </span>
   );
 };
 
-export const RojmelStatCard = ({
-  icon: Icon,
-  label,
-  loading = false,
-  scope,
-  tone,
-  value,
-}) => {
+export const RojmelStatCard = ({ icon: Icon, label, scope, tone, value }) => {
   const tones = {
     brand: "bg-brand-light text-brand",
     emerald: "bg-emerald-50 text-emerald-700",
@@ -129,13 +119,9 @@ export const RojmelStatCard = ({
           <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
             {label}
           </p>
-          {loading ? (
-            <div className="mt-1 h-7 w-20 animate-pulse rounded bg-slate-100" />
-          ) : (
-            <p className="mt-1 truncate text-2xl font-bold tabular-nums text-slate-900">
-              {value}
-            </p>
-          )}
+          <p className="mt-1 truncate text-2xl font-bold tabular-nums text-slate-900">
+            {value}
+          </p>
           <StatScopeBadge className="mt-1" scope={scope} />
         </div>
       </div>

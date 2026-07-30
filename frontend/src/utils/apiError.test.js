@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   getApiCorrelationId,
-  getApiErrorMessage,
   getApiFieldErrors,
   getApiStatus,
   isConflictError,
@@ -47,19 +46,5 @@ describe("API error metadata", () => {
     expect(
       getApiCorrelationId({ apiError: { data: { traceId: "trace-1" } } }),
     ).toBe("trace-1");
-  });
-
-  it("surfaces a copyable correlation reference on business conflicts", () => {
-    expect(
-      getApiErrorMessage({
-        response: {
-          data: {
-            correlationId: "corr-409",
-            message: "This record is already in use.",
-          },
-          status: 409,
-        },
-      }),
-    ).toBe("This record is already in use.\nReference: corr-409");
   });
 });
