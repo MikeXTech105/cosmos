@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { Command, Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -32,28 +31,28 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
       <div className="relative flex h-[70px] items-center justify-between px-4">
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className={clsx(
+            className={[
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
               classes.brandTile,
-            )}
+            ].join(" ")}
           >
             C
           </div>
 
           <div className="min-w-0">
             <p
-              className={clsx(
+              className={[
                 "truncate text-sm font-semibold leading-5",
                 classes.brandTitle,
-              )}
+              ].join(" ")}
             >
               COSMOS ERP
             </p>
             <p
-              className={clsx(
+              className={[
                 "whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.06em]",
                 classes.brandSubtitle,
-              )}
+              ].join(" ")}
             >
               Enterprise Resource Platform
             </p>
@@ -65,10 +64,10 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
       <div className="px-4 pb-4">
         <label className="relative block">
           <Search
-            className={clsx(
+            className={[
               "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2",
               classes.searchIcon,
-            )}
+            ].join(" ")}
           />
           <input
             value={searchQuery}
@@ -79,16 +78,16 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
               }
             }}
             placeholder="Search menu"
-            className={clsx(
+            className={[
               "h-10 w-full rounded-lg border pl-9 pr-12 text-sm outline-none transition-all focus:ring-2",
               classes.searchInput,
-            )}
+            ].join(" ")}
           />
           <span
-            className={clsx(
+            className={[
               "absolute right-2 top-1/2 inline-flex h-6 -translate-y-1/2 items-center gap-1 rounded-md border px-1.5 text-[10px] font-semibold",
               classes.searchShortcut,
-            )}
+            ].join(" ")}
           >
             <Command className="h-3 w-3" /> K
           </span>
@@ -97,10 +96,10 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
       <div className="flex-1 overflow-y-auto px-3 pb-4">
         <p
-          className={clsx(
+          className={[
             "mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em]",
             classes.menuLabel,
-          )}
+          ].join(" ")}
         >
           Menu
         </p>
@@ -130,16 +129,16 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
         {!hasPages && (
           <div
-            className={clsx(
+            className={[
               "mt-4 rounded-xl p-4 text-center",
               classes.emptyCard,
-            )}
+            ].join(" ")}
           >
-            <ShieldCheck className={clsx("mx-auto h-5 w-5", classes.iconActive)} />
-            <p className={clsx("mt-2 text-sm font-semibold", classes.emptyTitle)}>
+            <ShieldCheck className={["mx-auto h-5 w-5", classes.iconActive].join(" ")} />
+            <p className={["mt-2 text-sm font-semibold", classes.emptyTitle].join(" ")}>
               No pages assigned
             </p>
-            <p className={clsx("mt-1 text-xs leading-5", classes.emptyBody)}>
+            <p className={["mt-1 text-xs leading-5", classes.emptyBody].join(" ")}>
               RBAC pages from the API will appear here.
             </p>
           </div>
@@ -147,36 +146,36 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
         {hasPages && menuTree.length === 0 && (
           <div
-            className={clsx(
+            className={[
               "mt-4 rounded-xl p-4 text-center text-sm",
               classes.noMatch,
-            )}
+            ].join(" ")}
           >
             No matching menu items
           </div>
         )}
       </div>
 
-      <div className={clsx("border-t p-4", classes.footer)}>
-        <div className={clsx("rounded-xl p-3", classes.userCard)}>
+      <div className={["border-t p-4", classes.footer].join(" ")}>
+        <div className={["rounded-xl p-3", classes.userCard].join(" ")}>
           <div className="flex items-center gap-3">
             <div
-              className={clsx(
+              className={[
                 "flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold",
                 classes.userAvatar,
-              )}
+              ].join(" ")}
             >
               {getInitial(displayName)}
             </div>
             <div className="min-w-0">
               <p
-                className={clsx("truncate text-xs font-semibold", classes.userName)}
+                className={["truncate text-xs font-semibold", classes.userName].join(" ")}
                 title={displayName}
               >
                 {displayName}
               </p>
               <p
-                className={clsx("truncate text-[11px]", classes.userRole)}
+                className={["truncate text-[11px]", classes.userRole].join(" ")}
                 title={roleName}
               >
                 {roleName}
@@ -262,10 +261,10 @@ const Sidebar = () => {
       <aside
         aria-label="Primary sidebar"
         data-sidebar-theme={sidebarTheme.id}
-        className={clsx(
+        className={[
           "hidden h-dvh w-[280px] shrink-0 overflow-hidden border-r lg:block",
           sidebarTheme.classes.root,
-        )}
+        ].join(" ")}
       >
         <SidebarContent sidebarTheme={sidebarTheme} />
       </aside>
@@ -289,10 +288,10 @@ const Sidebar = () => {
               aria-modal="true"
               aria-label="Navigation menu"
               data-sidebar-theme={sidebarTheme.id}
-              className={clsx(
+              className={[
                 "relative h-dvh w-[min(88vw,320px)] overflow-hidden border-r shadow-2xl",
                 sidebarTheme.classes.root,
-              )}
+              ].join(" ")}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -305,10 +304,10 @@ const Sidebar = () => {
                   <button
                     type="button"
                     onClick={closeMobileSidebar}
-                    className={clsx(
+                    className={[
                       "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/40",
                       sidebarTheme.classes.navInactive,
-                    )}
+                    ].join(" ")}
                     aria-label="Close navigation menu"
                   >
                     <X className="h-5 w-5" />

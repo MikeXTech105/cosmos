@@ -1,6 +1,3 @@
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
-
 import {
   getItemClassificationLabel,
   ITEM_CLASSIFICATION,
@@ -29,20 +26,14 @@ const MATERIAL_TYPE_TONES = {
 const MATERIAL_TYPE_PILL_BASE =
   "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap";
 
-const MaterialTypePill = ({ className = "", value }) => {
+const MaterialTypePill = ({ value }) => {
   const normalizedValue = normalizeItemClassification(value);
   const label = getItemClassificationLabel(normalizedValue);
 
   if (normalizedValue === null) {
     return (
       <span
-        className={twMerge(
-          clsx(
-            MATERIAL_TYPE_PILL_BASE,
-            "border border-dashed border-slate-300 bg-slate-50 text-slate-500",
-          ),
-          className,
-        )}
+        className={`${MATERIAL_TYPE_PILL_BASE} border border-dashed border-slate-300 bg-slate-50 text-slate-500`}
       >
         {label}
       </span>
@@ -53,14 +44,14 @@ const MaterialTypePill = ({ className = "", value }) => {
 
   return (
     <span
-      className={twMerge(
-        clsx(MATERIAL_TYPE_PILL_BASE, tone.pill),
-        className,
-      )}
+      className={[
+        MATERIAL_TYPE_PILL_BASE,
+        tone.pill,
+      ].join(" ")}
     >
       <span
         aria-hidden="true"
-        className={clsx("h-1.5 w-1.5 shrink-0 rounded-full", tone.dot)}
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${tone.dot}`}
       />
       {label}
     </span>

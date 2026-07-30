@@ -1,22 +1,6 @@
-import clsx from "clsx";
-import { twMerge } from "tailwind-merge";
-
-const PageHeader = ({
-  actions,
-  badge,
-  className = "",
-  description,
-  title,
-}) => {
+const PageHeader = ({ actions, badge, description, title }) => {
   return (
-    <div
-      className={twMerge(
-        clsx(
-          "flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between",
-        ),
-        className,
-      )}
-    >
+    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
       <div>
         {badge && (
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
@@ -24,10 +8,10 @@ const PageHeader = ({
           </div>
         )}
         <h1
-          className={clsx(
+          className={[
             "text-2xl font-semibold text-slate-900",
-            badge && "mt-3",
-          )}
+            badge ? "mt-3" : "",
+          ].join(" ")}
         >
           {title}
         </h1>

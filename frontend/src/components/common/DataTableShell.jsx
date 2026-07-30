@@ -1,6 +1,4 @@
-import clsx from "clsx";
 import { PackageSearch } from "lucide-react";
-import { twMerge } from "tailwind-merge";
 
 export const DATA_TABLE_HEADER_CLASS =
   "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500";
@@ -34,29 +32,20 @@ const DataTableShell = ({
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div
-        className={twMerge(
-          clsx("overflow-x-auto"),
-          scrollerClassName,
-        )}
-      >
+      <div className={`overflow-x-auto ${scrollerClassName}`}>
         <table
-          className={twMerge(
-            clsx(
-              "w-full table-fixed text-sm",
-              minWidth,
-              "[&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-slate-200 [&_th]:px-4 [&_th]:py-3.5 [&_th]:text-left [&_th]:text-[11px] [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-slate-500",
-              "[&_td]:border-b [&_td]:border-slate-100 [&_td]:px-4 [&_td]:py-3.5 [&_td]:text-slate-700",
-              "[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-slate-50",
-            ),
+          className={[
+            "w-full table-fixed text-sm",
+            minWidth,
+            "[&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-slate-200 [&_th]:px-4 [&_th]:py-3.5 [&_th]:text-left [&_th]:text-[11px] [&_th]:font-medium [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-slate-500",
+            "[&_td]:border-b [&_td]:border-slate-100 [&_td]:px-4 [&_td]:py-3.5 [&_td]:text-slate-700",
+            "[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-slate-50",
             className,
-          )}
+          ].join(" ")}
         >
           {colGroup}
           {head ? (
-            <thead
-              className={twMerge(clsx("bg-slate-50"), headClassName)}
-            >
+            <thead className={`bg-slate-50 ${headClassName}`}>
               <tr>{head}</tr>
             </thead>
           ) : null}
