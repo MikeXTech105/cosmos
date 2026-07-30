@@ -15,7 +15,6 @@ import { formatNumber } from "../../../utils/format";
 import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import { userService } from "../../../services/rbac/userService";
 import {
   changeRojmelWalletStatus,
@@ -50,14 +49,14 @@ const WalletAction = ({ disabled, icon: Icon, label, onClick, tone = "default" }
       type="button"
       aria-label={label}
       disabled={disabled}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40 ${
         tone === "warning"
           ? "hover:bg-amber-50 hover:text-amber-700"
           : "hover:bg-slate-100 hover:text-brand"
       }`}
       onClick={onClick}
     >
-      <Icon aria-hidden="true" className="h-4 w-4" />
+      <Icon className="h-4 w-4" />
     </button>
   </AppTooltip>
 );
@@ -180,31 +179,13 @@ const WalletsPage = () => {
   };
 
   const filterControls = { ...state.filters, Search: searchInput };
-  const isFiltered = Boolean(
-    searchInput.trim() ||
-    state.filters.IsActive !== "all" ||
-    state.filters.LinkedUserId !== "all" ||
-    state.filters.WalletType !== "all",
-  );
-  const clearFilters = () => {
-    setSearchInput("");
-    dispatch(
-      setRojmelWalletFilters({
-        IsActive: "all",
-        LinkedUserId: "all",
-        Search: "",
-        WalletType: "all",
-      }),
-    );
-    dispatch(setRojmelWalletPage(1));
-  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <WalletCards aria-hidden="true" className="h-3.5 w-3.5" />
+            <WalletCards className="h-3.5 w-3.5" />
             Rojmel / Wallet Master
           </>
         }
@@ -213,12 +194,12 @@ const WalletsPage = () => {
         actions={
           <>
             <AppButton className="h-10" disabled={state.loading} variant="secondary" onClick={loadWallets}>
-              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={() => openWallet("create")}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Create Wallet
               </AppButton>
             )}
@@ -233,7 +214,7 @@ const WalletsPage = () => {
           ["Company Balance", formatRojmelCurrency(stats.companyBalance)],
         ].map(([label, value]) => (
           <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
             <p className="mt-1 text-2xl font-bold tabular-nums text-slate-900">{value}</p>
           </div>
         ))}
@@ -253,38 +234,30 @@ const WalletsPage = () => {
             dispatch(setRojmelWalletPage(1));
           }
         }}
-        onClear={clearFilters}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(
+            setRojmelWalletFilters({
+              IsActive: "all",
+              LinkedUserId: "all",
+              Search: "",
+              WalletType: "all",
+            }),
+          );
+          dispatch(setRojmelWalletPage(1));
+        }}
       />
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {state.loading || state.error || state.list.length === 0 ? (
-          <RojmelState
-            context="Wallets keep company, user and external balances separate and auditable."
-            createLabel="Create wallet"
-            error={state.error}
-            isFiltered={isFiltered}
-            isLoading={state.loading}
-            noun="wallets"
-            onClear={clearFilters}
-            onCreate={capabilities.canCreate ? () => openWallet("create") : undefined}
-            onRetry={loadWallets}
-          />
+          <RojmelState error={state.error} isLoading={state.loading} noun="wallets" onRetry={loadWallets} />
         ) : (
-          <ResponsiveTableRegion
-            mobileConfig={{
-              actions: 8,
-              fields: [3, 4, 5, 6],
-              serial: 0,
-              status: 7,
-              subtitle: 1,
-              title: 2,
-            }}
-          >
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[1100px] table-fixed text-left">
               <thead className="bg-slate-50">
                 <tr>
                   {["#", "Wallet Code", "Wallet Name", "Type", "Linked User", "Current Balance (₹)", "Default", "Status", "Actions"].map((heading) => (
-                    <th scope="col" aria-label={heading === "#" ? "Row number" : undefined} key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Current Balance (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
+                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Current Balance (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
                       {heading}
                     </th>
                   ))}
@@ -293,14 +266,14 @@ const WalletsPage = () => {
               <tbody>
                 {state.list.map((wallet, index) => (
                   <tr key={wallet.id} className="hover:bg-slate-50">
-                    <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                    <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-semibold text-slate-800">{wallet.walletCode || "-"}</td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-800">
                       <div className="flex items-center gap-2">
                         {wallet.walletName}
                         {wallet.isCompanyWallet && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-                            <LockKeyhole aria-hidden="true" className="h-3 w-3" /> Protected
+                            <LockKeyhole className="h-3 w-3" /> Protected
                           </span>
                         )}
                       </div>
@@ -329,7 +302,7 @@ const WalletsPage = () => {
                 ))}
               </tbody>
             </table>
-          </ResponsiveTableRegion>
+          </div>
         )}
         {!state.loading && !state.error && state.list.length > 0 && (
           <RojmelPagination

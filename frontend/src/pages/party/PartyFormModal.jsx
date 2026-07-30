@@ -33,12 +33,6 @@ import { getApiErrorMessage } from "../../utils/apiError";
 import { EMPTY_VALUE, formatDateInput } from "../../utils/format";
 import { applyApiErrorsToForm } from "../../utils/formApiErrors";
 import {
-  focusFirstIn,
-  getFocusableElements,
-  restoreFocus,
-  trapFocus,
-} from "../../utils/focus";
-import {
   PARTY_COMMAND_FIELDS,
   PARTY_FIELD_SECTIONS,
 } from "./partyColumns";
@@ -50,7 +44,8 @@ import {
 } from "./partyHelpers";
 
 const inputClassName =
-  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+
 const GSTIN_PATTERN =
   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
@@ -380,44 +375,20 @@ const FieldInput = ({ disabled, error, field, onChange, value }) => {
           <input
             type="checkbox"
             checked={Boolean(value)}
-            aria-invalid={Boolean(error) || undefined}
-            aria-describedby={error ? `${field.name}-error` : undefined}
             disabled={disabled}
             title={disabled ? "Open edit mode to change this setting" : undefined}
             onChange={(event) => onChange(field.name, event.target.checked)}
             className="h-4 w-4 accent-brand"
           />
         </label>
-        {error && (
-          <p
-            id={`${field.name}-error`}
-            role="alert"
-            className="mt-1.5 text-xs font-medium text-red-600"
-          >
-            {error}
-          </p>
-        )}
+        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
       </div>
     );
   }
 
   const isNumber = field.type === "integer" || field.type === "number";
-  const normalizedName = field.name.toLowerCase();
-  const semanticType = normalizedName.includes("email")
-    ? "email"
-    : /(mobile|phone|telephone)/.test(normalizedName)
-      ? "tel"
-      : "text";
-  const semanticInputMode =
-    /(pincode|postalcode|zipcode)/.test(normalizedName)
-      ? "numeric"
-      : semanticType === "tel"
-        ? "tel"
-        : undefined;
   const commonProps = {
     id: field.name,
-    "aria-invalid": Boolean(error) || undefined,
-    "aria-describedby": error ? `${field.name}-error` : undefined,
     disabled,
     value: value ?? "",
     onChange: (event) => onChange(field.name, event.target.value),
@@ -437,15 +408,7 @@ const FieldInput = ({ disabled, error, field, onChange, value }) => {
           rows={3}
           className={`${inputClassName} h-auto min-h-24 resize-y py-3`}
         />
-        {error && (
-          <p
-            id={`${field.name}-error`}
-            role="alert"
-            className="mt-1.5 text-xs font-medium text-red-600"
-          >
-            {error}
-          </p>
-        )}
+        {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}
       </div>
     );
   }
@@ -454,13 +417,9 @@ const FieldInput = ({ disabled, error, field, onChange, value }) => {
     <AppInput
       {...commonProps}
       label={label}
-      type={semanticType}
+      type="text"
       inputMode={
-        isNumber
-          ? field.type === "integer"
-            ? "numeric"
-            : "decimal"
-          : semanticInputMode
+        isNumber ? (field.type === "integer" ? "numeric" : "decimal") : undefined
       }
       className="h-10"
       error={error}
@@ -540,7 +499,7 @@ const VerifiedGstinBanner = ({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700">
-            <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+            <CheckCircle2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -617,9 +576,9 @@ const VerifiedGstinBanner = ({
               className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isVerifying ? (
-                <LoaderCircle aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
+                <ShieldCheck className="h-3.5 w-3.5" />
               )}
               Re-verify
             </button>
@@ -683,12 +642,12 @@ const GstinEntryPanel = ({
           >
             {isVerifying ? (
               <>
-                <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 Verifying...
               </>
             ) : (
               <>
-                <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4" />
                 Verify
               </>
             )}
@@ -721,7 +680,7 @@ const GstTaxSummary = ({ gstin, verifiedData }) => {
     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
             Synced GSTIN
           </p>
           <p className="mt-1 text-sm font-semibold text-slate-900">
@@ -1017,11 +976,7 @@ const PartyFormContent = ({
   };
 
   return (
-    <form
-      noValidate
-      className="flex min-h-0 flex-1 flex-col"
-      onSubmit={handleSubmit}
-    >
+    <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
         {apiErrors["root.server"] && (
           <p role="alert" className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -1056,7 +1011,7 @@ const PartyFormContent = ({
                           : "bg-slate-100 text-slate-500",
                     ].join(" ")}
                   >
-                    {isComplete ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : index + 1}
+                    {isComplete ? <Check className="h-3.5 w-3.5" /> : index + 1}
                   </span>
                   <span>{getSectionTitle(section, hasGstinField)}</span>
                   {isActive && (
@@ -1070,7 +1025,7 @@ const PartyFormContent = ({
 
         {activeSection && (
           <section>
-            <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+            <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
               {getSectionTitle(activeSection, hasGstinField)}
             </h3>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -1129,7 +1084,7 @@ const PartyFormContent = ({
       </div>
 
       <div className="flex shrink-0 flex-col gap-3 border-t border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="text-xs font-medium text-slate-500">
+        <p className="text-xs font-medium text-slate-400">
           Step {activeSectionIndex + 1} of {groupedFields.length}
         </p>
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
@@ -1160,9 +1115,9 @@ const PartyFormContent = ({
                   ? submitLabel ?? "Save"
                   : "Next"}
               {isLastSection ? (
-                <Check aria-hidden="true" className="h-4 w-4" />
+                <Check className="h-4 w-4" />
               ) : (
-                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               )}
             </button>
           )}
@@ -1187,7 +1142,6 @@ const PartyFormModal = ({
   title,
 }) => {
   const isView = mode === "view";
-  const dialogRef = useRef(null);
   const groupedFields = useMemo(() => {
     return sections
       .map((section) => ({
@@ -1202,40 +1156,15 @@ const PartyFormModal = ({
       return undefined;
     }
 
-    const previouslyFocused = document.activeElement;
-    const outsideFocusable = getFocusableElements(document.body).filter(
-      (element) => !dialogRef.current?.contains(element),
-    );
-    const previousIndex = outsideFocusable.indexOf(previouslyFocused);
-    const fallbackCandidates =
-      previousIndex >= 0
-        ? [
-            outsideFocusable[previousIndex + 1],
-            outsideFocusable[previousIndex - 1],
-          ]
-        : [];
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const focusFrame = window.requestAnimationFrame(() => {
-      focusFirstIn(dialogRef.current, { avoidDestructive: true });
-    });
-    const releaseFocusTrap = trapFocus(dialogRef.current);
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        event.preventDefault();
         onClose();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      releaseFocusTrap();
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      restoreFocus(previouslyFocused, fallbackCandidates);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   const Icon = icon === "settings" ? Settings : Contact;
@@ -1257,19 +1186,17 @@ const PartyFormModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-0 backdrop-blur-sm md:px-4 md:py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onMouseDown={onClose}
         >
           <motion.section
-            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-modal-title"
-            tabIndex={-1}
-            className="flex h-dvh max-h-dvh w-full max-w-5xl flex-col overflow-hidden rounded-none border-0 bg-white shadow-xl md:h-auto md:max-h-[calc(100dvh-3rem)] md:rounded-2xl md:border md:border-slate-200"
+            className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-3rem)]"
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -1279,7 +1206,7 @@ const PartyFormModal = ({
             <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
-                  <Icon aria-hidden="true" className="h-5 w-5" />
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
                   <h2
@@ -1297,10 +1224,10 @@ const PartyFormModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 md:h-9 md:w-9"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close party modal"
               >
-                <X aria-hidden="true" className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 

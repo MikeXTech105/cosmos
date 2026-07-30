@@ -18,7 +18,6 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
-import MobileRecordCard from "../../../components/common/MobileRecordCard";
 import PageHeader from "../../../components/common/PageHeader";
 import { hrEmployeeService } from "../../../services/hr/employeeService";
 import {
@@ -154,9 +153,6 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
-              ref={field.ref}
-              name={field.name}
-              onBlur={field.onBlur}
               label="Payroll Month"
               value={field.value}
               onChange={field.onChange}
@@ -393,7 +389,7 @@ const PayrollPage = () => {
       <PageHeader
         badge={
           <>
-            <Banknote aria-hidden="true" className="h-3.5 w-3.5" />
+            <Banknote className="h-3.5 w-3.5" />
             HR / Payroll
           </>
         }
@@ -407,14 +403,14 @@ const PayrollPage = () => {
               disabled={payrollState.loading}
               onClick={loadRun}
             >
-              <RefreshCw aria-hidden="true"
+              <RefreshCw
                 className={`h-4 w-4 ${payrollState.loading ? "animate-spin" : ""}`}
               />
               Load Run
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={() => setModal("run")}>
-                <Play aria-hidden="true" className="h-4 w-4" />
+                <Play className="h-4 w-4" />
                 Run Payroll
               </AppButton>
             )}
@@ -466,13 +462,12 @@ const PayrollPage = () => {
             <div className="grid gap-2 sm:grid-cols-[160px_auto_auto]">
               <AppInput
                 id="runId"
-                label="Payroll run"
                 value={runId}
                 onChange={(event) => setRunId(event.target.value)}
                 placeholder="Run ID"
               />
               <AppButton variant="secondary" className="h-10" onClick={loadRun}>
-                <Search aria-hidden="true" className="h-4 w-4" />
+                <Search className="h-4 w-4" />
                 Load
               </AppButton>
               {capabilities.canApprove && (
@@ -481,7 +476,7 @@ const PayrollPage = () => {
                   className="h-10"
                   onClick={() => setModal("approve")}
                 >
-                  <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+                  <CheckCircle2 className="h-4 w-4" />
                   Approve
                 </AppButton>
               )}
@@ -499,7 +494,7 @@ const PayrollPage = () => {
           ) : runRows.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-                <Banknote aria-hidden="true" className="h-6 w-6" />
+                <Banknote className="h-6 w-6" />
               </div>
               <h3 className="mt-4 text-base font-semibold text-slate-900">
                 No payroll run loaded
@@ -510,65 +505,12 @@ const PayrollPage = () => {
               </p>
             </div>
           ) : (
-            <>
-              <div className="grid gap-3 md:hidden">
-                {runRows.map((row, index) => {
-                  const employeeId = row.employeeId ?? row.id;
-
-                  return (
-                    <MobileRecordCard
-                      key={employeeId ?? row.employeeCode}
-                      serial={index + 1}
-                      title={
-                        row.employeeName ??
-                        getLookupLabel(employeeOptions, employeeId)
-                      }
-                      subtitle={row.employeeCode}
-                      fields={[
-                        {
-                          key: "gross",
-                          label: "Gross",
-                          value: formatNumber(
-                            row.grossPay ??
-                              row.grossSalary ??
-                              row.grossAmount,
-                          ),
-                        },
-                        {
-                          key: "deductions",
-                          label: "Deductions",
-                          value: formatNumber(
-                            row.deductions ??
-                              row.totalDeductions ??
-                              row.deductionAmount,
-                          ),
-                        },
-                        {
-                          key: "net",
-                          label: "Net pay",
-                          value: formatNumber(
-                            row.netPay ?? row.netSalary ?? row.netAmount,
-                          ),
-                        },
-                      ]}
-                      actionItems={[
-                        {
-                          id: "payslip",
-                          icon: Download,
-                          label: "Download payslip",
-                          onClick: () => loadPayslip(employeeId),
-                        },
-                      ]}
-                    />
-                  );
-                })}
-              </div>
-              <div className="hidden overflow-x-auto md:block">
-              <table aria-label="Payroll run employees" className="w-full min-w-[860px] text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[860px] text-left">
                 <thead className="bg-slate-50">
                   <tr>
                     {["Employee", "Gross (₹)", "Deductions (₹)", "Net Pay (₹)", "Payslip"].map((heading) => (
-                      <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                      <th
                         key={heading}
                         className={[
                           "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -604,7 +546,7 @@ const PayrollPage = () => {
                             className="h-8 rounded-lg px-2 text-xs"
                             onClick={() => loadPayslip(employeeId)}
                           >
-                            <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                            <Download className="h-3.5 w-3.5" />
                             Payslip
                           </AppButton>
                         </td>
@@ -613,8 +555,7 @@ const PayrollPage = () => {
                   })}
                 </tbody>
               </table>
-              </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -625,7 +566,6 @@ const PayrollPage = () => {
             </h3>
             <div className="mt-4 space-y-3">
               <AppSelect
-                label="Employee"
                 value={employeeQuery.employeeId}
                 onChange={(value) =>
                   setEmployeeQuery((current) => ({
@@ -637,7 +577,6 @@ const PayrollPage = () => {
               />
               <div className="grid gap-3 sm:grid-cols-2">
                 <AppSelect
-                  label="Month"
                   value={employeeQuery.month}
                   onChange={(value) =>
                     setEmployeeQuery((current) => ({ ...current, month: value }))
@@ -646,7 +585,6 @@ const PayrollPage = () => {
                 />
                 <AppInput
                   id="employeePayrollYear"
-                  label="Year"
                   type="text"
                   inputMode="numeric"
                   value={employeeQuery.year}

@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import { ACTION_CENTRE_PERMISSION_TARGETS } from "../pages/actionCentre/actionCentrePermissions";
-import { GETTING_STARTED_PERMISSION_TARGETS } from "../pages/gettingStarted/gettingStartedConfig";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
@@ -20,9 +19,6 @@ const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
-const GettingStarted = lazy(
-  () => import("../pages/gettingStarted/index.js"),
-);
 const ActionCentre = lazy(() => import("../pages/actionCentre/index.js"));
 const Pages = lazy(() => import("../pages/rbac/pages/index.js"));
 const Permissions = lazy(() => import("../pages/rbac/permissions/index.js"));
@@ -215,14 +211,6 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/dashboard" pageName="Dashboard">
                 <Dashboard />
-              </PermissionGuard>
-            }
-          />
-          <Route
-            path="/getting-started"
-            element={
-              <PermissionGuard targets={GETTING_STARTED_PERMISSION_TARGETS}>
-                <GettingStarted />
               </PermissionGuard>
             }
           />

@@ -90,7 +90,7 @@ const getItemListParams = (params = {}) => {
 };
 
 export const itemService = {
-  getItems: async (params, { signal } = {}) => {
+  getItems: async (params) => {
     const response = await axiosInstance.get(ENDPOINTS.ITEMS, {
       params: normalizeParams(
         sanitizeInventoryListParams(
@@ -98,7 +98,6 @@ export const itemService = {
           ITEM_SORT_FIELDS,
         ),
       ),
-      ...(signal ? { signal } : {}),
     });
 
     return unwrapResponse(response);

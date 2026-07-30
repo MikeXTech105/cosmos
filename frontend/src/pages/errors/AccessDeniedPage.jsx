@@ -13,7 +13,7 @@ const AccessDeniedPage = () => {
     <section className="flex min-h-[60vh] items-center justify-center py-8">
       <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
-          <ShieldAlert aria-hidden="true" className="h-7 w-7" />
+          <ShieldAlert className="h-7 w-7" />
         </div>
         <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
           403 / Access Denied
@@ -31,7 +31,7 @@ const AccessDeniedPage = () => {
             onClick={() => navigate(defaultRoute, { replace: true })}
           >
             {hasDestination ? "Go to an available page" : "No available modules"}
-            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" />
           </AppButton>
         </div>
       </div>

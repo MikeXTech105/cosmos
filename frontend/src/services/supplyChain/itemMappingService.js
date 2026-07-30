@@ -4,10 +4,9 @@ import { sanitizeSupplyChainItemMappingParams } from "../../utils/supplyChainQue
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const supplyChainItemMappingService = {
-  list: async (params = {}, { signal } = {}) => {
+  list: async (params = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.SC_ITEM_MAPPINGS, {
       params: normalizeParams(sanitizeSupplyChainItemMappingParams(params)),
-      ...(signal ? { signal } : {}),
     });
 
     return unwrapResponse(response);

@@ -28,7 +28,6 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
-import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
 import { SalesImportBatchStatus } from "../../../constants/procurementEnums";
 import { salesImportService } from "../../../services/procurement/salesImportService";
@@ -152,21 +151,13 @@ const PreviewGrid = ({ filter, preview, onFilter }) => {
     <>
       <ProcurementTable
         columnCount={8}
-        mobileConfig={{
-          fields: [1, 2, 5, 6],
-          serial: 0,
-          status: 7,
-          subtitle: 4,
-          title: 3,
-        }}
         emptyAction={
           filter !== "total" ? (
             <AppButton variant="secondary" onClick={() => onFilter("total")}>
-              Clear filters
+              Show all rows
             </AppButton>
           ) : undefined
         }
-        emptyContext="The preview validates each source row before any sales history is retained."
         emptyHint={
           rows.length === 0
             ? "Check the expected header and make sure the file contains at least one sales row."
@@ -179,17 +170,16 @@ const PreviewGrid = ({ filter, preview, onFilter }) => {
               : `No ${filter} rows`
             : undefined
         }
-        emptyVariant={filter !== "total" ? "filtered" : "empty"}
         head={
           <>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Row</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Sales date</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Product name</th>
-            <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Resolved item</th>
-            <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Row</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Sales date</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Product name</th>
+            <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Resolved item</th>
+            <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th>
           </>
         }
         headClassName="sticky top-0 z-10"
@@ -242,7 +232,7 @@ const PreviewGrid = ({ filter, preview, onFilter }) => {
                       </p>
                     </div>
                   ) : (
-                    <span className="text-slate-500">Not resolved</span>
+                    <span className="text-slate-400">Not resolved</span>
                   )}
                 </td>
                 <td className="px-4 py-3 align-top">
@@ -415,8 +405,8 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
         title="Import sales workbook"
         description="Use the retained file to preview row-level validation before confirming the import."
       >
-        <div className="grid gap-5 p-4 sm:p-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="min-w-0 space-y-4">
+        <div className="grid gap-5 p-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+          <div className="space-y-4">
             <ProcurementDateRangeFields
               {...range}
               error={rangeError}
@@ -446,12 +436,12 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
                   }
                 }}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Download template
               </AppButton>
             )}
           </div>
-          <div className="min-w-0">
+          <div>
             <button
               type="button"
           disabled={!canCreate}
@@ -465,7 +455,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
               }}
             >
               <span className="rounded-2xl bg-white p-3 text-brand shadow-sm">
-                <UploadCloud aria-hidden="true" className="h-6 w-6" />
+                <UploadCloud className="h-6 w-6" />
               </span>
               <span className="mt-4 text-sm font-semibold text-slate-800">
                 {file ? file.name : "Drop CSV/XLSX here or choose a file"}
@@ -481,7 +471,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
               className="hidden"
               onChange={(event) => void previewFile(event.target.files?.[0])}
             />
-            <p className="mt-3 break-all rounded-lg bg-slate-50 px-3 py-2 font-mono text-[11px] text-slate-600">
+            <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 font-mono text-[11px] text-slate-600">
               Expected header: {EXPECTED_HEADER}
             </p>
             {fileError && <p className="mt-2 text-xs text-red-600">{fileError}</p>}
@@ -502,7 +492,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
         <>
           {duplicateFile && (
             <div className="flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-violet-800">
-              <FileClock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+              <FileClock className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 <p className="text-sm font-semibold">This file was imported before</p>
                 <p className="mt-0.5 text-xs leading-5">
@@ -514,7 +504,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
           {counts.unmapped > 0 && (
             <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <div>
                   <p className="text-sm font-semibold">
                     {counts.unmapped} unmapped row{counts.unmapped === 1 ? "" : "s"} need attention
@@ -525,7 +515,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
                 </div>
               </div>
               <AppButton className="shrink-0" variant="secondary" onClick={onFixMappings}>
-                <Link2 aria-hidden="true" className="h-4 w-4" />Fix mappings here
+                <Link2 className="h-4 w-4" />Fix mappings here
               </AppButton>
             </div>
           )}
@@ -589,7 +579,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
                     }
                   }}
                 >
-                  <FileUp aria-hidden="true" className="h-4 w-4" />
+                  <FileUp className="h-4 w-4" />
                   Confirm import
                 </AppButton>
               )
@@ -634,7 +624,7 @@ const ImportTab = ({ canCreate, canExport, onFixMappings, onStatsChange }) => {
             <p className="mt-1 text-xs text-red-600">{correctionError}</p>
           )}
         </div>
-        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+        <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setCorrectionOpen(false)}>
             Back
           </AppButton>
@@ -829,7 +819,7 @@ const ManualSaleModal = ({
       <div className="mt-4">
         <ProcurementInlineError message={errors.form} />
       </div>
-      <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+      <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
         <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>Save manual entry</AppButton>
       </div>
@@ -918,16 +908,6 @@ const HistoryTab = ({
     Boolean(filters.importBatchId),
     filters.isMapped !== "all",
   ].filter(Boolean).length;
-  const clearHistoryFilters = () => {
-    setFilters({
-      ...initialRange,
-      importBatchId: "",
-      isMapped: "all",
-      item: null,
-      salesChannelId: "",
-    });
-    setPage(1);
-  };
 
   return (
     <div className="space-y-4">
@@ -937,17 +917,13 @@ const HistoryTab = ({
         actions={
           canCreate && (
             <AppButton disabled={channelsLoading || Boolean(channelError)} onClick={() => setModal({ open: true, record: null })}>
-              <Plus aria-hidden="true" className="h-4 w-4" />Add manual entry
+              <Plus className="h-4 w-4" />Add manual entry
             </AppButton>
           )
         }
       >
-        {channelError && <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between"><ProcurementInlineError title="Sales channels unavailable" message={getProcurementError(channelError, "Unable to load active sales channels.")} /><AppButton className="shrink-0" variant="secondary" onClick={onRetryChannels}><RefreshCw aria-hidden="true" className="h-4 w-4" />Retry channels</AppButton></div>}
-        <MobileFilterSheet
-          activeCount={activeFilterCount}
-          onClear={clearHistoryFilters}
-        >
-          <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        {channelError && <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between"><ProcurementInlineError title="Sales channels unavailable" message={getProcurementError(channelError, "Unable to load active sales channels.")} /><AppButton className="shrink-0" variant="secondary" onClick={onRetryChannels}><RefreshCw className="h-4 w-4" />Retry channels</AppButton></div>}
+        <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="grid gap-4 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <ProcurementDateRangeFields
@@ -1005,7 +981,7 @@ const HistoryTab = ({
           />
           <div className="flex items-end">
             <AppButton className="w-full" variant="secondary" disabled={loading} onClick={load}>
-              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
           </div>
           </div>
@@ -1016,41 +992,39 @@ const HistoryTab = ({
             {activeFilterCount > 0 && (
               <AppButton
                 variant="ghost"
-                onClick={clearHistoryFilters}
+                onClick={() => {
+                  setFilters({
+                    ...initialRange,
+                    importBatchId: "",
+                    isMapped: "all",
+                    item: null,
+                    salesChannelId: "",
+                  });
+                  setPage(1);
+                }}
               >
                 Clear
               </AppButton>
             )}
           </div>
-          </div>
-        </MobileFilterSheet>
+        </div>
         {error ? (
           <ProcurementErrorState error={error} onRetry={load} />
         ) : (
           <ProcurementTable
             columnCount={8}
-            mobileConfig={{
-              actions: 7,
-              fields: [1, 2, 5, 6],
-              serial: 0,
-              subtitle: 3,
-              title: 4,
-            }}
-            emptyAction={<AppButton variant="secondary" onClick={clearHistoryFilters}>Clear filters</AppButton>}
-            emptyContext="Retained sales history is the demand source for procurement planning."
-            emptyHint="Clear the current filters to return to the default sales range."
-            emptyTitle={!loading && rows.length === 0 ? "No sales match these filters" : undefined}
-            emptyVariant="filtered"
+            emptyHint="Adjust the date range or clear filters, then try again."
+            emptyTitle={!loading && rows.length === 0 ? "No sales in this range" : undefined}
             head={
               <>
-                <th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-                <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Date</th>
-                <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th>
-                <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th>
-                <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Item</th>
-                <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th>
-                <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Source</th>
-                <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Date</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Item</th>
+                <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th>
+                <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Source</th>
+                <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Actions</th>
               </>
             }
             loading={loading}
@@ -1060,7 +1034,7 @@ const HistoryTab = ({
                   const manual = isManualSalesRow(row);
                   return (
                     <tr key={getRecordId(row, ["salesHistoryId", "manualSalesId"])} className="hover:bg-slate-50/70">
-                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(page - 1) * pageSize + index + 1}</td>
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td>
                       <td className="px-4 py-3 text-slate-600">{formatProcurementDate(row.salesDate)}</td>
                       <td className="px-4 py-3 text-slate-700">{row.channelCode ?? row.channelName ?? "-"}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{row.channelSku ?? "-"}</td>
@@ -1068,8 +1042,8 @@ const HistoryTab = ({
                       <td className="px-4 py-3 text-right font-medium tabular-nums">{formatProcurementDecimal(row.quantity)}</td>
                       <td className="px-4 py-3"><ProcurementPill tone={manual ? "brand" : "slate"}>{manual ? "Manual" : "Imported"}</ProcurementPill></td>
                       <td className="px-4 py-3"><div className="flex items-center justify-end gap-0.5">
-                        {manual && canEdit && <AppTooltip label="Edit manual entry"><button type="button" aria-label="Edit manual entry" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => setModal({ open: true, record: row })}><Pencil aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>}
-                        {manual && canDelete && <AppTooltip label="Delete manual entry"><button type="button" aria-label="Delete manual entry" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>}
+                        {manual && canEdit && <AppTooltip label="Edit manual entry"><button type="button" aria-label="Edit manual entry" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip>}
+                        {manual && canDelete && <AppTooltip label="Delete manual entry"><button type="button" aria-label="Delete manual entry" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} onClick={() => { setDeleteError(""); setDeleteRecord(row); }}><Trash2 className="h-4 w-4" /></button></AppTooltip>}
                       </div></td>
                     </tr>
                   );
@@ -1096,7 +1070,7 @@ const HistoryTab = ({
       <AppModal isBusy={deleteLoading} isOpen={Boolean(deleteRecord)} title="Delete 1 manual sales entry?" onClose={() => !deleteLoading && setDeleteRecord(null)}>
         <p className="text-sm leading-6 text-slate-600">This removes only the selected manual entry. Imported batch rows are never deleted here.</p>
         <div className="mt-4"><ProcurementInlineError message={deleteError} title="Entry could not be deleted" /></div>
-        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+        <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setDeleteRecord(null)}>Keep entry</AppButton>
           <AppButton variant="danger" isLoading={deleteLoading} loadingText="Deleting…" onClick={async () => {
             setDeleteLoading(true);
@@ -1109,7 +1083,7 @@ const HistoryTab = ({
               if (getApiStatus(requestError) !== 409) toast.error(message);
             }
             finally { setDeleteLoading(false); }
-          }}><Trash2 aria-hidden="true" className="h-4 w-4" />Delete entry</AppButton>
+          }}><Trash2 className="h-4 w-4" />Delete entry</AppButton>
         </div>
       </AppModal>
     </div>
@@ -1173,31 +1147,22 @@ const BatchesTab = ({ canEdit }) => {
   };
 
   return (
-    <ProcurementSectionCard title="Import batches" description="Open a batch to inspect its retained source rows and audit status." actions={<AppButton variant="secondary" disabled={loading} onClick={load}><RefreshCw aria-hidden="true" className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh</AppButton>}>
+    <ProcurementSectionCard title="Import batches" description="Open a batch to inspect its retained source rows and audit status." actions={<AppButton variant="secondary" disabled={loading} onClick={load}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh</AppButton>}>
       {cancelError && <div className="p-4 pb-0"><ProcurementInlineError title="Batch conflict" message={cancelError} /></div>}
       {error ? <ProcurementErrorState error={error} onRetry={load} /> : (
         <ProcurementTable
           columnCount={7}
-          mobileConfig={{
-            actions: 6,
-            fields: [2, 3, 4],
-            serial: 0,
-            status: 5,
-            title: 1,
-          }}
-          emptyContext="Import batches preserve the audit trail for confirmed sales files."
           emptyHint="Confirmed sales imports will appear here with their audit status."
           emptyTitle={!loading && rows.length === 0 ? "No import batches yet" : undefined}
-          emptyVariant="empty"
           head={
             <>
-              <th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-              <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>File</th>
-              <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Imported</th>
-              <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Rows</th>
-              <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Unmapped</th>
-              <th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th>
-              <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+              <th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th>
+              <th className={PROCUREMENT_TABLE_HEADER_CLASS}>File</th>
+              <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Imported</th>
+              <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Rows</th>
+              <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Unmapped</th>
+              <th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th>
+              <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Actions</th>
             </>
           }
           loading={loading}
@@ -1209,7 +1174,7 @@ const BatchesTab = ({ canEdit }) => {
               String(batch.status).toLowerCase().includes("cancel");
             return (
               <tr key={getRecordId(batch, ["importBatchId"])}>
-                <td className="text-xs font-semibold tabular-nums text-slate-500">{(page - 1) * pageSize + index + 1}</td>
+                <td className="text-xs font-semibold tabular-nums text-slate-400">{(page - 1) * pageSize + index + 1}</td>
                 <td><button type="button" className="font-semibold text-brand hover:underline" onClick={() => void openDetail(batch)}>{batch.fileName ?? batch.originalFileName ?? "Import batch"}</button><p className="text-xs text-slate-500">{batch.batchNumber ?? getRecordId(batch, ["importBatchId"])}</p></td>
                 <td>{formatProcurementDateTime(batch.importedAt ?? batch.createdAt)}</td>
                 <td className="text-right tabular-nums">{formatProcurementInteger(batch.totalRows ?? batch.rowCount)}</td>
@@ -1217,8 +1182,8 @@ const BatchesTab = ({ canEdit }) => {
                 <td><ProcurementPill tone={cancelled ? "red" : "emerald"}>{cancelled ? "Cancelled" : "Completed"}</ProcurementPill></td>
                 <td>
                   <div className="flex items-center justify-end gap-0.5">
-                    <AppTooltip label="View batch"><button type="button" aria-label="View batch" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => void openDetail(batch)}><Eye aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>
-                    {canEdit && <AppTooltip label={cancelled ? "This batch is already cancelled" : "Cancel batch"}><button type="button" aria-label="Cancel batch" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}><Ban aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>}
+                    <AppTooltip label="View batch"><button type="button" aria-label="View batch" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => void openDetail(batch)}><Eye className="h-4 w-4" /></button></AppTooltip>
+                    {canEdit && <AppTooltip label={cancelled ? "This batch is already cancelled" : "Cancel batch"}><button type="button" aria-label="Cancel batch" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={cancelled} onClick={() => { setCancelTarget(batch); setCancelReason(""); setCancelError(""); }}><Ban className="h-4 w-4" /></button></AppTooltip>}
                   </div>
                 </td>
               </tr>
@@ -1239,16 +1204,9 @@ const BatchesTab = ({ canEdit }) => {
             </div>
             <ProcurementTable
               columnCount={5}
-              mobileConfig={{
-                fields: [1, 3, 4],
-                serial: 0,
-                title: 2,
-              }}
-              emptyContext="Retained source rows let planners audit exactly what a batch contributed."
               emptyHint="This batch has no retained source rows to inspect."
               emptyTitle={detailRows.length === 0 ? "No retained batch rows" : undefined}
-              emptyVariant="empty"
-              head={<><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Row</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Date</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Item</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th></>}
+              head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Row</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Date</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Item</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Quantity</th></>}
               headClassName="sticky top-0"
               minWidth="min-w-[760px]"
               scrollerClassName="max-h-[50vh]"
@@ -1262,7 +1220,7 @@ const BatchesTab = ({ canEdit }) => {
         <p className="text-sm leading-6 text-slate-600">Cancelling removes this batch from planning inputs while preserving its audit trail. Provide a reason.</p>
         <label className="mt-4 block text-xs font-semibold text-slate-700" htmlFor="batch-cancel-reason">Cancellation reason <span className="text-red-500">*</span></label><textarea id="batch-cancel-reason" rows={4} value={cancelReason} onChange={(event) => { setCancelReason(event.target.value); setCancelError(""); }} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" />
         <ProcurementInlineError message={cancelError} title="Batch conflict" />
-        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0"><AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton><AppButton variant="danger" isLoading={cancelLoading} loadingText="Cancelling…" onClick={async () => { if (!cancelReason.trim()) { setCancelError("A cancellation reason is required."); return; } setCancelLoading(true); try { await salesImportService.cancelBatch(getRecordId(cancelTarget, ["importBatchId"]), cancelReason.trim()); toast.success("Import batch cancelled."); setCancelTarget(null); await load(); } catch (cancelRequestError) { const message = getProcurementError(cancelRequestError, "Unable to cancel the batch."); setCancelError(message); if (getApiStatus(cancelRequestError) !== 409) toast.error(message); } finally { setCancelLoading(false); } }}>Cancel batch</AppButton></div>
+        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton><AppButton variant="danger" isLoading={cancelLoading} loadingText="Cancelling…" onClick={async () => { if (!cancelReason.trim()) { setCancelError("A cancellation reason is required."); return; } setCancelLoading(true); try { await salesImportService.cancelBatch(getRecordId(cancelTarget, ["importBatchId"]), cancelReason.trim()); toast.success("Import batch cancelled."); setCancelTarget(null); await load(); } catch (cancelRequestError) { const message = getProcurementError(cancelRequestError, "Unable to cancel the batch."); setCancelError(message); if (getApiStatus(cancelRequestError) !== 409) toast.error(message); } finally { setCancelLoading(false); } }}>Cancel batch</AppButton></div>
       </AppModal>
     </ProcurementSectionCard>
   );
@@ -1316,27 +1274,19 @@ const ProductSummaryTab = () => {
   return (
     <div className="space-y-4">
       <InventoryBasisNote message="This sales matrix shows demand inputs only. Planning later compares the derived material demand with global physical on-hand inventory." />
-      <ProcurementSectionCard title="Product summary" description="A workbook-style product × channel matrix; channel columns come from the server in its supplied order." actions={<AppButton disabled={Boolean(rangeError) || loading} onClick={load}><RefreshCw aria-hidden="true" className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh matrix</AppButton>}>
+      <ProcurementSectionCard title="Product summary" description="A workbook-style product × channel matrix; channel columns come from the server in its supplied order." actions={<AppButton disabled={Boolean(rangeError) || loading} onClick={load}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh matrix</AppButton>}>
         <div className="max-w-2xl border-b border-slate-100 p-4"><ProcurementDateRangeFields {...range} error={rangeError} onChange={(patch) => setRange((current) => ({ ...current, ...patch }))} /></div>
         {error ? <ProcurementErrorState error={error} onRetry={rangeError ? undefined : load} /> : (
           <ProcurementTable
             className="border-separate border-spacing-0"
             columnCount={channels.length + 2}
-            mobileConfig={{
-              fields: [1, 2, 3, channels.length + 1],
-              serial: "generated",
-              title: 0,
-            }}
-            emptyAction={<AppButton variant="secondary" onClick={() => setRange(initialRange)}>Clear filters</AppButton>}
-            emptyContext="The product summary compares retained sales quantities across channels."
-            emptyHint="Return to the default date range to review current demand."
+            emptyHint="Choose a range containing retained channel sales."
             emptyTitle={!loading && products.length === 0 ? "No product sales in this range" : undefined}
-            emptyVariant="filtered"
             head={
               <>
-                <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-30 min-w-64 border-r bg-slate-50`}>Product</th>
-                {channels.map((channel) => <th scope="col" key={getRecordId(channel, ["salesChannelId", "channelId"])} className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>{channel.channelCode ?? channel.channelName}</th>)}
-                <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 border-l bg-brand-light text-right text-brand`}>Total</th>
+                <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-30 min-w-64 border-r bg-slate-50`}>Product</th>
+                {channels.map((channel) => <th key={getRecordId(channel, ["salesChannelId", "channelId"])} className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>{channel.channelCode ?? channel.channelName}</th>)}
+                <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 border-l bg-brand-light text-right text-brand`}>Total</th>
               </>
             }
             headClassName="sticky top-0 z-20"
@@ -1436,7 +1386,7 @@ const SalesImportPage = () => {
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
-        badge={<><FileUp aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><FileUp className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Sales Data"
         description="See what demand is currently available, then update it by file or manual entry."
         actions={
@@ -1446,7 +1396,7 @@ const SalesImportPage = () => {
               variant="secondary"
               onClick={loadCurrentStatus}
             >
-              <RotateCw aria-hidden="true" className={`h-4 w-4 ${statusLoading ? "animate-spin" : ""}`} />
+              <RotateCw className={`h-4 w-4 ${statusLoading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canExport && (
@@ -1465,18 +1415,18 @@ const SalesImportPage = () => {
                   }
                 }}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             )}
             {capabilities.canCreate && (
               <AppButton variant="secondary" onClick={() => setManualOpen(true)}>
-                <Plus aria-hidden="true" className="h-4 w-4" />Add manual sales entry
+                <Plus className="h-4 w-4" />Add manual sales entry
               </AppButton>
             )}
             {capabilities.canCreate && (
               <AppButton onClick={() => setTab("import")}>
-                <FileUp aria-hidden="true" className="h-4 w-4" />Update sales data
+                <FileUp className="h-4 w-4" />Update sales data
               </AppButton>
             )}
           </>
@@ -1512,37 +1462,25 @@ const SalesImportPage = () => {
       <div className="rounded-xl border border-brand/20 bg-brand-light px-4 py-3 text-sm text-slate-700">
         Channels are managed in{" "}
         <Link
-          className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline md:min-h-0"
+          className="font-semibold text-brand hover:underline"
           to="/supply-chain/channels"
         >
           Supply Chain → Channels
         </Link>
         , and SKU mappings are managed in{" "}
         <Link
-          className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline md:min-h-0"
+          className="font-semibold text-brand hover:underline"
           to="/supply-chain/item-mappings"
         >
           Supply Chain → Item Mappings
         </Link>
         .
       </div>
-      <ProcurementTabs
-        active={tab}
-        id="procurement-sales-import-tabs"
-        tabs={tabs}
-        onChange={setTab}
-      />
-      <div
-        id={`procurement-sales-import-tabs-panel-${tab}`}
-        role="tabpanel"
-        aria-labelledby={`procurement-sales-import-tabs-tab-${tab}`}
-        className="space-y-6"
-      >
-        {tab === "import" && <ImportTab canCreate={capabilities.canCreate} canExport={capabilities.canExport} onFixMappings={() => navigate("/supply-chain/item-mappings")} onStatsChange={setPreviewStats} />}
-        {tab === "history" && <HistoryTab channels={channels} channelError={channelError} channelsLoading={channelsLoading} onRetryChannels={reloadChannels} canCreate={capabilities.canCreate} canEdit={capabilities.canEdit} canDelete={capabilities.canDelete} />}
-        {tab === "batches" && <BatchesTab canEdit={capabilities.canEdit} />}
-        {tab === "summary" && <ProductSummaryTab />}
-      </div>
+      <ProcurementTabs active={tab} tabs={tabs} onChange={setTab} />
+      {tab === "import" && <ImportTab canCreate={capabilities.canCreate} canExport={capabilities.canExport} onFixMappings={() => navigate("/supply-chain/item-mappings")} onStatsChange={setPreviewStats} />}
+      {tab === "history" && <HistoryTab channels={channels} channelError={channelError} channelsLoading={channelsLoading} onRetryChannels={reloadChannels} canCreate={capabilities.canCreate} canEdit={capabilities.canEdit} canDelete={capabilities.canDelete} />}
+      {tab === "batches" && <BatchesTab canEdit={capabilities.canEdit} />}
+      {tab === "summary" && <ProductSummaryTab />}
       <ManualSaleModal
         channels={channels}
         isOpen={manualOpen}

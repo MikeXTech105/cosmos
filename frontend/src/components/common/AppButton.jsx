@@ -35,7 +35,6 @@ const AppButton = forwardRef(({
   ...buttonProps
 }, ref) => {
   const resolvedDisabled = Boolean(disabled || isDisabled || isLoading);
-  const focusableDisabled = Boolean(resolvedDisabled && disabledReason);
   const fallbackDisabledReason = resolvedDisabled
     ? disabledReason ||
       (isLoading
@@ -48,26 +47,17 @@ const AppButton = forwardRef(({
       {...buttonProps}
       ref={ref}
       type={type}
-      onClick={(event) => {
-        if (resolvedDisabled) {
-          event.preventDefault();
-          return;
-        }
-
-        onClick?.(event);
-      }}
-      disabled={resolvedDisabled && !focusableDisabled}
-      tabIndex={focusableDisabled ? 0 : buttonProps.tabIndex}
+      onClick={onClick}
+      disabled={resolvedDisabled}
       aria-busy={isLoading || undefined}
       aria-disabled={resolvedDisabled || undefined}
       title={buttonProps.title ?? fallbackDisabledReason}
       className={twMerge(
         clsx(
-          "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 md:min-h-0",
+          "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all",
           variants[variant] ?? variants.primary,
           sizes[size] ?? sizes.md,
-          resolvedDisabled &&
-            "cursor-not-allowed opacity-60 disabled:opacity-60",
+          resolvedDisabled && "cursor-not-allowed disabled:opacity-60",
         ),
         className,
       )}

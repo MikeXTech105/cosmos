@@ -675,38 +675,13 @@ const SalesInvoicesPage = () => {
     ...invoiceState.filters,
     Search: searchInput,
   };
-  const activeFilterCount = [
-    searchInput.trim(),
-    invoiceState.filters.CustomerPartyId === "all" ? "" : "customer",
-    invoiceState.filters.Status === "all" ? "" : "status",
-    invoiceState.filters.PaymentStatus === "all" ? "" : "payment",
-    invoiceState.filters.FromDate,
-    invoiceState.filters.ToDate,
-    invoiceState.filters.SortBy,
-  ].filter(Boolean).length;
-  const clearFilters = () => {
-    setSearchInput("");
-    dispatch(
-      setInvoiceFilters({
-        Search: "",
-        CustomerPartyId: "all",
-        Status: "all",
-        PaymentStatus: "all",
-        FromDate: "",
-        ToDate: "",
-        SortBy: "",
-        SortDirection: "",
-      }),
-    );
-    dispatch(setInvoicePage(1));
-  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <ReceiptText aria-hidden="true" className="h-3.5 w-3.5" />
+            <ReceiptText className="h-3.5 w-3.5" />
             Sales / Invoices
           </>
         }
@@ -720,14 +695,14 @@ const SalesInvoicesPage = () => {
               disabled={invoiceState.loading}
               onClick={loadInvoices}
             >
-              <RefreshCw aria-hidden="true"
+              <RefreshCw
                 className={`h-4 w-4 ${invoiceState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 New Invoice
               </AppButton>
             )}
@@ -753,13 +728,25 @@ const SalesInvoicesPage = () => {
           dispatch(setInvoicePage(1));
         }}
         onClear={() => {
-          clearFilters();
+          setSearchInput("");
+          dispatch(
+            setInvoiceFilters({
+              Search: "",
+              CustomerPartyId: "all",
+              Status: "all",
+              PaymentStatus: "all",
+              FromDate: "",
+              ToDate: "",
+              SortBy: "",
+              SortDirection: "",
+            }),
+          );
+          dispatch(setInvoicePage(1));
         }}
       />
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <InvoiceTable
-          activeFilterCount={activeFilterCount}
           actions={{
             canCancel: capabilities.canCancel,
             canConfirm: capabilities.canConfirm,
@@ -775,7 +762,6 @@ const SalesInvoicesPage = () => {
           error={invoiceState.error}
           invoices={invoiceState.list}
           isLoading={invoiceState.loading}
-          onClear={clearFilters}
           onCreate={capabilities.canCreate ? openCreate : undefined}
           onPageChange={(value) => dispatch(setInvoicePage(value))}
           onPageSizeChange={(value) => dispatch(setInvoicePageSize(value))}
@@ -795,7 +781,7 @@ const SalesInvoicesPage = () => {
         customerEmptyMessage={
           lookups.customersError
             ? "Unable to load customers. Close and reopen to retry."
-            : "Add a customer in Party Master first."
+            : "No customers found in Party Master."
         }
         customerLoading={lookups.customersLoading}
         customerOptions={customerOptions}
@@ -805,7 +791,7 @@ const SalesInvoicesPage = () => {
         itemEmptyMessage={
           lookups.itemsError
             ? "Unable to load items. Close and reopen to retry."
-            : "Add an inventory item first."
+            : "No items found in inventory."
         }
         itemLoading={lookups.itemsLoading}
         itemOptions={itemOptions}

@@ -113,9 +113,9 @@ const UserMenu = () => {
           </span>
           <span className="block text-[11px] text-slate-500">{roleName}</span>
         </span>
-        <ChevronDown aria-hidden="true"
+        <ChevronDown
           className={clsx(
-            "hidden h-4 w-4 shrink-0 text-slate-500 transition-transform lg:block",
+            "hidden h-4 w-4 shrink-0 text-slate-400 transition-transform lg:block",
             open && "rotate-180",
           )}
         />
@@ -155,27 +155,27 @@ const UserMenu = () => {
                   to="/profile"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:min-h-0"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
-                  <User aria-hidden="true" className="h-4 w-4 text-slate-500" />
+                  <User className="h-4 w-4 text-slate-400" />
                   My Profile
                 </Link>
                 <Link
                   to="/preferences"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:min-h-0"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
-                  <Settings aria-hidden="true" className="h-4 w-4 text-slate-500" />
+                  <Settings className="h-4 w-4 text-slate-400" />
                   Preferences
                 </Link>
                 <Link
                   to="/change-password"
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:min-h-0"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
                 >
-                  <KeyRound aria-hidden="true" className="h-4 w-4 text-slate-500" />
+                  <KeyRound className="h-4 w-4 text-slate-400" />
                   Change Password
                 </Link>
               </div>
@@ -185,9 +185,9 @@ const UserMenu = () => {
                   type="button"
                   role="menuitem"
                   onClick={handleLogout}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 lg:min-h-0"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                 >
-                  <LogOut aria-hidden="true" className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" />
                   Logout
                 </button>
               </div>

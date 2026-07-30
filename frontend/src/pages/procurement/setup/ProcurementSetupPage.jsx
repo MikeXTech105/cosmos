@@ -1,3 +1,4 @@
+import { GitBranch, Link2, SlidersHorizontal } from "lucide-react";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
@@ -8,7 +9,30 @@ import BomMappingPage from "../bomMapping/BomMappingPage";
 import { ProcurementTabs } from "../ProcurementShared";
 import ProcurementSettingsPage from "../settings/ProcurementSettingsPage";
 import SkuMappingPage from "../skuMapping/SkuMappingPage";
-import { PROCUREMENT_SETUP_TABS } from "./procurementSetupTabs";
+
+const SETUP_TABS = [
+  {
+    id: "sku",
+    icon: Link2,
+    label: "SKU mapping",
+    pageName: "ProcurementPlanning.SkuMapping",
+    route: "/procurement/sku-mapping",
+  },
+  {
+    id: "bom",
+    icon: GitBranch,
+    label: "BOM",
+    pageName: "ProcurementPlanning.BomMapping",
+    route: "/procurement/bom-mapping",
+  },
+  {
+    id: "settings",
+    icon: SlidersHorizontal,
+    label: "Settings",
+    pageName: "ProcurementPlanning.Settings",
+    route: "/procurement/settings",
+  },
+];
 const SETUP_URL_OPTIONS = Object.freeze({
   clearOnChange: Object.freeze({
     tab: Object.freeze(["productId"]),
@@ -21,7 +45,7 @@ const ProcurementSetupPage = () => {
   const user = useSelector((state) => state.auth.user);
   const visibleTabs = useMemo(
     () =>
-      PROCUREMENT_SETUP_TABS.filter((tab) =>
+      SETUP_TABS.filter((tab) =>
         canPerformAction({
           action: "view",
           pages,
@@ -55,22 +79,17 @@ const ProcurementSetupPage = () => {
   const setupTabs = (
     <ProcurementTabs
       active={activeTab}
-      id="procurement-setup-tabs"
       tabs={visibleTabs}
       onChange={(tab) => setValue("tab", tab)}
     />
   );
 
   return (
-    <div
-      id={`procurement-setup-tabs-panel-${activeTab}`}
-      role="tabpanel"
-      aria-labelledby={`procurement-setup-tabs-tab-${activeTab}`}
-    >
+    <>
       {activeTab === "sku" && <SkuMappingPage moduleTabs={setupTabs} />}
       {activeTab === "bom" && <BomMappingPage moduleTabs={setupTabs} />}
       {activeTab === "settings" && <ProcurementSettingsPage moduleTabs={setupTabs} />}
-    </div>
+    </>
   );
 };
 

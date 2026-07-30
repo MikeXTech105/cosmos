@@ -1,15 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShieldCheck, X } from "lucide-react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
-import { activateDialogFocus } from "../../../utils/focus";
 
 const inputClassName =
-  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
+  "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const roleSchema = z.object({
   name: z.string().trim().min(2, "Role name is required"),
@@ -24,20 +23,12 @@ const getDefaultValues = (role) => ({
 });
 const ROLE_FIELDS = Object.keys(getDefaultValues());
 
-const FieldError = ({ error, id }) => {
+const FieldError = ({ error }) => {
   if (!error) {
     return null;
   }
 
-  return (
-    <p
-      id={id}
-      role="alert"
-      className="mt-1.5 text-xs font-medium text-red-600"
-    >
-      {error}
-    </p>
-  );
+  return <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>;
 };
 
 const RoleModal = ({
@@ -50,7 +41,6 @@ const RoleModal = ({
 }) => {
   const isView = mode === "view";
   const isEdit = mode === "edit";
-  const dialogRef = useRef(null);
 
   const {
     handleSubmit,
@@ -68,14 +58,6 @@ const RoleModal = ({
       reset(getDefaultValues(role));
     }
   }, [isOpen, reset, role]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    return activateDialogFocus(dialogRef.current, { onEscape: onClose });
-  }, [isOpen, onClose]);
 
   const submitForm = async (values) => {
     try {
@@ -107,7 +89,6 @@ const RoleModal = ({
           onMouseDown={onClose}
         >
           <motion.section
-            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="role-modal-title"
@@ -121,7 +102,7 @@ const RoleModal = ({
             <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
-                  <ShieldCheck aria-hidden="true" className="h-5 w-5" />
+                  <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
                   <h2
@@ -137,10 +118,10 @@ const RoleModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close role modal"
               >
-                <X aria-hidden="true" className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -155,7 +136,6 @@ const RoleModal = ({
               </div>
             ) : (
               <form
-                noValidate
                 className="flex min-h-0 flex-1 flex-col"
                 onSubmit={handleSubmit(submitForm)}
               >
@@ -174,21 +154,13 @@ const RoleModal = ({
                     </label>
                     <input
                       id="roleName"
-                      required
-                      aria-invalid={Boolean(errors.name) || undefined}
-                      aria-describedby={
-                        errors.name ? "role-name-error" : undefined
-                      }
                       disabled={isView}
                       title={isView ? "Open edit mode to change the role name" : undefined}
                       className={inputClassName}
                       placeholder="Operations Manager"
                       {...register("name")}
                     />
-                    <FieldError
-                      id="role-name-error"
-                      error={errors.name?.message}
-                    />
+                    <FieldError error={errors.name?.message} />
                   </div>
 
                   <div>
@@ -200,12 +172,6 @@ const RoleModal = ({
                     </label>
                     <textarea
                       id="roleDescription"
-                      aria-invalid={Boolean(errors.description) || undefined}
-                      aria-describedby={
-                        errors.description
-                          ? "role-description-error"
-                          : undefined
-                      }
                       disabled={isView}
                       title={isView ? "Open edit mode to change the description" : undefined}
                       rows={4}
@@ -213,10 +179,7 @@ const RoleModal = ({
                       placeholder="Describe the responsibilities and access profile."
                       {...register("description")}
                     />
-                    <FieldError
-                      id="role-description-error"
-                      error={errors.description?.message}
-                    />
+                    <FieldError error={errors.description?.message} />
                   </div>
 
                   <label

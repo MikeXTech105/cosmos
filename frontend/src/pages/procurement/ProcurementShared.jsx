@@ -12,8 +12,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import AppButton from "../../components/common/AppButton";
-import AppTabs from "../../components/common/AppTabs";
-import EmptyState from "../../components/common/EmptyState";
 import AppInput from "../../components/common/AppInput";
 import AppSelect from "../../components/common/AppSelect";
 import MaterialTypePill from "../../components/common/MaterialTypePill";
@@ -78,7 +76,7 @@ export const ProcurementStatTile = ({
   const content = (
     <>
       <div className={`rounded-xl p-2.5 ${tones[tone] ?? tones.brand}`}>
-        {Icon && <Icon aria-hidden="true" className="h-5 w-5" />}
+        {Icon && <Icon className="h-5 w-5" />}
       </div>
       <div className="min-w-0 text-left">
         <p className="text-xs font-medium text-slate-500">{label}</p>
@@ -95,12 +93,7 @@ export const ProcurementStatTile = ({
   ].join(" ");
 
   return onClick ? (
-    <button
-      type="button"
-      aria-pressed={active}
-      className={classes}
-      onClick={onClick}
-    >
+    <button type="button" className={classes} onClick={onClick}>
       {content}
     </button>
   ) : (
@@ -128,7 +121,7 @@ export const ProcurementPill = ({ children, className = "", tone = "slate" }) =>
 
 export const InventoryBasisNote = ({ message = INVENTORY_BASIS_MESSAGE }) => (
   <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-    <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+    <Info className="mt-0.5 h-4 w-4 shrink-0" />
     <div>
       <p className="font-semibold">Inventory basis</p>
       <p className="mt-0.5 text-xs leading-5 text-blue-700">{message}</p>
@@ -146,12 +139,9 @@ export const ProcurementInlineError = ({
   }
 
   return (
-    <div
-      role="alert"
-      className="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-    >
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
       <div className="flex min-w-0 items-start gap-3">
-        <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <div className="min-w-0">
           <p className="font-semibold">{title}</p>
           <p className="mt-0.5 whitespace-pre-line text-xs leading-5">{message}</p>
@@ -159,7 +149,7 @@ export const ProcurementInlineError = ({
       </div>
       {onRetry && (
         <AppButton className="shrink-0" variant="secondary" onClick={onRetry}>
-          <RefreshCw aria-hidden="true" className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" />
           Retry
         </AppButton>
       )}
@@ -169,21 +159,19 @@ export const ProcurementInlineError = ({
 
 export const ProcurementEmptyState = ({
   action,
-  context,
-  description = "Create the first entry to begin.",
+  description = "There is nothing to show for the current filters.",
   icon: Icon = PackageSearch,
-  title = "No procurement activity yet",
-  variant = "empty",
+  title = "No records found",
 }) => (
-  <div className="min-h-56 px-6">
-    <EmptyState
-      action={action}
-      context={variant === "empty" ? context : undefined}
-      hint={description}
-      icon={Icon}
-      title={title}
-      variant={variant}
-    />
+  <div className="flex min-h-56 flex-col items-center justify-center px-6 py-10 text-center">
+    <div className="rounded-2xl bg-slate-100 p-3 text-slate-400">
+      <Icon className="h-6 w-6" />
+    </div>
+    <h3 className="mt-4 text-sm font-semibold text-slate-800">{title}</h3>
+    <p className="mt-1 max-w-sm text-xs leading-5 text-slate-500">
+      {description}
+    </p>
+    {action && <div className="mt-4">{action}</div>}
   </div>
 );
 
@@ -206,39 +194,54 @@ export const ProcurementLoadingRows = ({ columns = 5, rows = 5 }) => (
 );
 
 export const ProcurementErrorState = ({ error, onRetry }) => (
-  <div className="min-h-56 px-6">
-    <EmptyState
-      hint={getProcurementError(error, "Please try again.")}
-      icon={AlertCircle}
-      title="Couldn't load this procurement view"
-      variant="error"
-      onAction={onRetry}
-    />
+  <div className="flex min-h-56 flex-col items-center justify-center px-6 py-10 text-center">
+    <div className="rounded-2xl bg-red-50 p-3 text-red-500">
+      <AlertCircle className="h-6 w-6" />
+    </div>
+    <h3 className="mt-4 text-sm font-semibold text-slate-800">
+      We could not load this view
+    </h3>
+    <p className="mt-1 max-w-md whitespace-pre-line text-xs leading-5 text-slate-500">
+      {getProcurementError(error, "Please try again.")}
+    </p>
+    {onRetry && (
+      <AppButton className="mt-4" variant="secondary" onClick={onRetry}>
+        <RefreshCw className="h-4 w-4" />
+        Retry
+      </AppButton>
+    )}
   </div>
 );
 
-export const ProcurementTabs = ({
-  active,
-  ariaLabel = "Procurement sections",
-  id = "procurement-tabs",
-  onChange,
-  tabs,
-}) => (
-  <AppTabs
-    active={active}
-    aria-label={ariaLabel}
-    className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm"
-    id={id}
-    tabClassName="flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm font-medium"
-    tabs={tabs.map((tab) => ({
-      ...tab,
-      count:
-        tab.count === undefined
-          ? undefined
-          : formatProcurementInteger(tab.count, "0"),
-    }))}
-    onChange={onChange}
-  />
+export const ProcurementTabs = ({ active, onChange, tabs }) => (
+  <div className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+    {tabs.map((tab) => (
+      <button
+        key={tab.id}
+        type="button"
+        onClick={() => onChange(tab.id)}
+        className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-3.5 text-sm font-medium transition-colors ${
+          active === tab.id
+            ? "bg-brand text-white shadow-sm"
+            : "text-slate-600 hover:bg-slate-50"
+        }`}
+      >
+        {tab.icon && <tab.icon className="h-4 w-4" />}
+        {tab.label}
+        {tab.count !== undefined && (
+          <span
+            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+              active === tab.id
+                ? "bg-brand-dark text-white"
+                : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {formatProcurementInteger(tab.count, "0")}
+          </span>
+        )}
+      </button>
+    ))}
+  </div>
 );
 
 export const ProcurementDateRangeFields = ({
@@ -272,10 +275,7 @@ export const ProcurementDateRangeFields = ({
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-3 text-xs">
-        <span
-          role={error ? "alert" : undefined}
-          className={error ? "text-red-600" : "text-slate-500"}
-        >
+        <span className={error ? "text-red-600" : "text-slate-500"}>
           {error || "Both dates are included in the planning range."}
         </span>
         <ProcurementPill tone={error ? "red" : "brand"}>
@@ -314,10 +314,10 @@ export const ProcurementPagination = ({
       )}{" "}
       of {formatProcurementInteger(totalCount, "0")}
     </p>
-    <div className="flex flex-wrap items-center justify-end gap-2">
+    <div className="flex items-center gap-2">
       <AppSelect
-        label="Rows per page"
-        className="w-24 shrink-0"
+        aria-label="Rows per page"
+        className="w-24"
         disabled={disabled}
         options={pageSizeOptions.map((value) => ({
           label: `${value} rows`,
@@ -332,7 +332,7 @@ export const ProcurementPagination = ({
         variant="secondary"
         onClick={() => onPageChange(pageNumber - 1)}
       >
-        <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4" />
         Previous
       </AppButton>
       <span className="min-w-20 text-center text-xs font-medium text-slate-600">
@@ -345,7 +345,7 @@ export const ProcurementPagination = ({
         onClick={() => onPageChange(pageNumber + 1)}
       >
         Next
-        <ChevronRight aria-hidden="true" className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4" />
       </AppButton>
     </div>
   </div>
@@ -384,12 +384,9 @@ export const ProcurementMessageGroup = ({ messages, severity }) => {
   const Icon = meta.icon;
 
   return (
-    <div
-      role={severity === "information" ? "status" : "alert"}
-      className={`rounded-xl border p-4 ${meta.wrapper}`}
-    >
+    <div className={`rounded-xl border p-4 ${meta.wrapper}`}>
       <div className="flex items-center gap-2">
-        <Icon aria-hidden="true" className={`h-4 w-4 ${meta.iconClass}`} />
+        <Icon className={`h-4 w-4 ${meta.iconClass}`} />
         <p className={`text-sm font-semibold ${meta.text}`}>
           {meta.title} ({messages.length})
         </p>
@@ -415,11 +412,8 @@ export const ProcurementMessageGroup = ({ messages, severity }) => {
 };
 
 export const ProcurementSuccessBanner = ({ children, title }) => (
-  <div
-    role="status"
-    className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800"
-  >
-    <CircleCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+  <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
+    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" />
     <div>
       <p className="text-sm font-semibold">{title}</p>
       {children && <div className="mt-1 text-xs leading-5">{children}</div>}
@@ -578,16 +572,14 @@ export const ProcurementItemAutocomplete = ({
           }}
           onFocus={() => setOpen(true)}
         />
-        <Search aria-hidden="true" className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-slate-500" />
+        <Search className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-slate-400" />
       </div>
       {open && !disabled && (
         <div className="absolute z-40 mt-1.5 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
           {loading ? (
-            <p role="status" className="px-3 py-3 text-xs text-slate-500">
-              Searching items…
-            </p>
+            <p className="px-3 py-3 text-xs text-slate-500">Searching items…</p>
           ) : searchError ? (
-            <div role="alert" className="px-3 py-3 text-xs text-red-600">
+            <div className="px-3 py-3 text-xs text-red-600">
               <p>{searchError}</p>
               <button
                 type="button"

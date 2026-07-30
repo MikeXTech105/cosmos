@@ -9,7 +9,7 @@ const SettingsNav = ({ activeSectionId, onSelect }) => {
       aria-label="Settings sections"
       className="w-full shrink-0 border-b border-slate-100 pb-4 lg:w-64 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-4"
     >
-      <p className="mb-2 hidden px-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 lg:block">
+      <p className="mb-2 hidden px-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400 lg:block">
         Settings menu
       </p>
       <div className="-mx-1 overflow-x-auto px-1 pb-1 lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0">
@@ -39,7 +39,7 @@ const SettingsNav = ({ activeSectionId, onSelect }) => {
                       : "bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-slate-700",
                   ].join(" ")}
                 >
-                  <Icon aria-hidden="true" className="h-4 w-4" />
+                  <Icon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold">
@@ -48,7 +48,7 @@ const SettingsNav = ({ activeSectionId, onSelect }) => {
                   <span
                     className={[
                       "mt-0.5 hidden truncate text-xs lg:block",
-                      isActive ? "text-brand" : "text-slate-500",
+                      isActive ? "text-brand/70" : "text-slate-400",
                     ].join(" ")}
                   >
                     {section.description}
@@ -82,15 +82,9 @@ const Settings = () => {
           onSelect={setActiveSectionId}
         />
 
-        <section
-          aria-labelledby="settings-section-title"
-          className="min-w-0 flex-1"
-        >
+        <main className="min-w-0 flex-1">
           <header className="mb-4 px-1">
-            <h2
-              id="settings-section-title"
-              className="text-lg font-semibold text-slate-900"
-            >
+            <h2 className="text-lg font-semibold text-slate-900">
               {activeSection.label}
             </h2>
             <p className="mt-0.5 text-sm text-slate-500">
@@ -99,7 +93,7 @@ const Settings = () => {
           </header>
 
           <ActiveSection />
-        </section>
+        </main>
       </div>
     </div>
   );

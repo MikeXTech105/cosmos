@@ -4,7 +4,7 @@ import {
   PackagePlus,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import AppButton from "../../../components/common/AppButton";
@@ -12,7 +12,6 @@ import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
-import AppTabs from "../../../components/common/AppTabs";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { itemSchema } from "../../../utils/validationSchemas";
 import {
@@ -40,28 +39,22 @@ const ToggleRow = ({
   label,
   onChange,
 }) => {
-  const inputId = useId();
-
   return (
-    <div
+    <label
       className={[
         "flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
       ].join(" ")}
     >
       <span>
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-semibold text-slate-900"
-        >
+        <span className="block text-sm font-semibold text-slate-900">
           {label}
-        </label>
+        </span>
         <span className="mt-0.5 block text-xs leading-5 text-slate-500">
           {description}
         </span>
       </span>
       <input
-        id={inputId}
         type="checkbox"
         checked={checked}
         disabled={disabled}
@@ -69,14 +62,14 @@ const ToggleRow = ({
         onChange={(event) => onChange(event.target.checked)}
         className="h-4 w-4 shrink-0 accent-brand"
       />
-    </div>
+    </label>
   );
 };
 
 const SectionCard = ({ children, title }) => {
   return (
     <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
         {title}
       </h3>
       <div className="mt-3">{children}</div>
@@ -243,7 +236,7 @@ const ItemFormModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <PackagePlus aria-hidden="true" className="h-5 w-5" />
+          <PackagePlus className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -316,8 +309,6 @@ const ItemFormModal = ({
                   name="procurementClassification"
                   render={({ field }) => (
                     <AppSelect
-                      ref={field.ref}
-                      name={field.name}
                       id="itemMaterialType"
                       label="Material type"
                       value={field.value}
@@ -341,7 +332,7 @@ const ItemFormModal = ({
             </div>
 
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Item identity
               </h3>
               <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -371,13 +362,13 @@ const ItemFormModal = ({
                       }
                       className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand-dark"
                     >
-                      <Sparkles aria-hidden="true" className="h-3 w-3" />
+                      <Sparkles className="h-3 w-3" />
                       Assign Code
                     </button>
                   </div>
                   <AppInput
                     id="itemCode"
-                    label="Item code"
+                    aria-label="Item code"
                     error={errors.itemCode?.message}
                     {...register("itemCode")}
                   />
@@ -395,8 +386,6 @@ const ItemFormModal = ({
                   name="categoryId"
                   render={({ field }) => (
                     <AppSelect
-                      ref={field.ref}
-                      name={field.name}
                       label="Category"
                       required={itemType === ITEM_TYPE.PRODUCT}
                       value={field.value}
@@ -424,8 +413,6 @@ const ItemFormModal = ({
                     name="unitId"
                     render={({ field }) => (
                       <AppSelect
-                        ref={field.ref}
-                        name={field.name}
                         label="Unit"
                         required
                         value={field.value}
@@ -476,31 +463,32 @@ const ItemFormModal = ({
             </section>
 
             <div className="border-b border-slate-200">
-              <AppTabs
-                active={visibleTab}
-                aria-label="Item form sections"
-                activeClassName="border-brand text-brand"
-                className="overflow-x-auto"
-                id="item-form-tabs"
-                inactiveClassName="border-transparent text-slate-500 hover:text-slate-900"
-                tabClassName="h-11 border-b-2 px-4 text-sm font-semibold"
-                tabs={[
+              <div className="flex gap-1 overflow-x-auto">
+                {[
                   { id: "pricing", label: "Pricing" },
                   ...(itemType === ITEM_TYPE.PRODUCT
                     ? [{ id: "stock", label: "Stock" }]
                     : []),
-                ]}
-                onChange={setActiveTab}
-              />
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={[
+                      "h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors",
+                      visibleTab === tab.id
+                        ? "border-brand text-brand"
+                        : "border-transparent text-slate-500 hover:text-slate-900",
+                    ].join(" ")}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {visibleTab === "pricing" && (
-              <div
-                id="item-form-tabs-panel-pricing"
-                role="tabpanel"
-                aria-labelledby="item-form-tabs-tab-pricing"
-                className="grid gap-4 lg:grid-cols-3"
-              >
+              <div className="grid gap-4 lg:grid-cols-3">
                 <SectionCard title="Sale Price">
                   <ItemNumberInput
                     control={control}
@@ -534,8 +522,6 @@ const ItemFormModal = ({
                       name="gstRate"
                       render={({ field }) => (
                         <AppSelect
-                          ref={field.ref}
-                          name={field.name}
                           label="GST Rate"
                           value={field.value}
                           onChange={field.onChange}
@@ -551,12 +537,7 @@ const ItemFormModal = ({
             )}
 
             {visibleTab === "stock" && itemType === ITEM_TYPE.PRODUCT && (
-              <div
-                id="item-form-tabs-panel-stock"
-                role="tabpanel"
-                aria-labelledby="item-form-tabs-tab-stock"
-                className="space-y-4"
-              >
+              <div className="space-y-4">
                 <Controller
                   control={control}
                   name="trackInventory"
@@ -626,7 +607,7 @@ const ItemFormModal = ({
                 <textarea
                   id="itemDescription"
                   rows={4}
-                  className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                   {...register("description")}
                 />
                 {errors.description?.message && (
@@ -666,19 +647,19 @@ const ItemFormModal = ({
                 disabled={isSubmitting}
                 onClick={handleSubmit((values) => submitForm(values, true))}
               >
-                <PackagePlus aria-hidden="true" className="h-4 w-4" />
+                <PackagePlus className="h-4 w-4" />
                 Save & New
               </AppButton>
             )}
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               {isEdit ? (
                 <>
-                  <Check aria-hidden="true" className="h-4 w-4" />
+                  <Check className="h-4 w-4" />
                   Save Changes
                 </>
               ) : (
                 <>
-                  <Check aria-hidden="true" className="h-4 w-4" />
+                  <Check className="h-4 w-4" />
                   Save Item
                 </>
               )}

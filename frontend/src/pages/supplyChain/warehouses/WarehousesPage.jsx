@@ -403,27 +403,27 @@ const WarehousesPage = () => {
         actions={
           <>
             <AppButton disabled={state.loading} variant="secondary" onClick={() => void load()}>
-              <RotateCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
+              <RotateCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canExport ? (
               <AppButton disabled={state.loading || state.list.length === 0} variant="secondary" onClick={() => void exportRows()}>
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             ) : (
               <DisabledAction reason="Export requires Supply Chain Warehouses export permission.">
-                <AppButton disabled variant="secondary"><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton>
+                <AppButton disabled variant="secondary"><Download className="h-4 w-4" />Export</AppButton>
               </DisabledAction>
             )}
             {capabilities.canCreate ? (
               <AppButton disabled={channelsLoading} onClick={() => setModal({ mode: "create", record: null })}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 New warehouse
               </AppButton>
             ) : (
               <DisabledAction reason="Creating warehouses requires create permission.">
-                <AppButton disabled><Plus aria-hidden="true" className="h-4 w-4" />New warehouse</AppButton>
+                <AppButton disabled><Plus className="h-4 w-4" />New warehouse</AppButton>
               </DisabledAction>
             )}
           </>
@@ -464,69 +464,15 @@ const WarehousesPage = () => {
       <DataTableShell
         colGroup={<colgroup><col className="w-[56px]" /><col className="w-36" /><col className="w-52" /><col className="w-36" /><col className="w-36" /><col className="w-36" /><col className="w-24" /><col className="w-28" /><col className="w-44" /></colgroup>}
         columnCount={9}
-        mobileConfig={{
-          actions: 8,
-          fields: [3, 4, 5, 6],
-          serial: 0,
-          status: 7,
-          subtitle: 1,
-          title: 2,
-        }}
-        emptyAction={
-          state.error ? (
-            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-          ) : activeFilterCount > 0 ? (
-            <AppButton
-              variant="secondary"
-              onClick={() =>
-                setFilters({
-                  ChannelId: "",
-                  City: "",
-                  IsActive: "",
-                  Search: "",
-                  State: "",
-                })
-              }
-            >
-              Clear filters
-            </AppButton>
-          ) : capabilities.canCreate ? (
-            <AppButton onClick={() => setModal({ mode: "create", record: null })}>
-              New warehouse
-            </AppButton>
-          ) : undefined
-        }
-        emptyContext={
-          !state.error && activeFilterCount === 0
-            ? "Warehouses connect stock locations to their operational channels."
-            : undefined
-        }
-        emptyHint={
-          state.error
-            ? state.error
-            : activeFilterCount > 0
-              ? "Clear the current filters to see all warehouses."
-              : "Create the first warehouse after setting up a channel."
-        }
-        emptyTitle={
-          !state.loading && state.list.length === 0
-            ? state.error
-              ? "Couldn't load warehouses"
-              : activeFilterCount > 0
-                ? "No warehouses match these filters"
-                : "No warehouses yet"
-            : undefined
-        }
-        emptyVariant={
-          state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"
-        }
-        head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Warehouse code</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Warehouse name</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>City</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>State</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Priority</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
+        emptyHint="Create the first warehouse or clear the current filters."
+        emptyTitle={!state.loading && state.list.length === 0 ? "No warehouses yet" : undefined}
+        head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>Warehouse code</th><th className={DATA_TABLE_HEADER_CLASS}>Warehouse name</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={DATA_TABLE_HEADER_CLASS}>City</th><th className={DATA_TABLE_HEADER_CLASS}>State</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Priority</th><th className={DATA_TABLE_HEADER_CLASS}>Status</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
         loading={state.loading}
         minWidth="min-w-[1240px]"
       >
         {state.list.map((row, index) => (
           <tr key={row.id}>
-            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
             <td className="font-semibold text-slate-900">{row.warehouseCode}</td>
             <td className="font-medium text-slate-800">{row.warehouseName}</td>
             <td><p className="font-medium text-slate-800">{row.channelCode}</p><p className="text-xs text-slate-500">{row.channelName}</p></td>
@@ -536,9 +482,9 @@ const WarehousesPage = () => {
             <td><SupplyChainStatusPill active={row.isActive} /></td>
             <td>
               <div className="flex items-center justify-end gap-0.5">
-                <AppTooltip label="View warehouse"><button aria-label="View warehouse" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>
-                {capabilities.canEdit ? <><AppTooltip label="Edit warehouse"><button aria-label="Edit warehouse" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil aria-hidden="true" className="h-4 w-4" /></button></AppTooltip><AppTooltip label={row.isActive ? "Deactivate warehouse" : "Activate warehouse"}><button aria-label={row.isActive ? "Deactivate warehouse" : "Activate warehouse"} className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void changeStatus(row)}><Power aria-hidden="true" className="h-4 w-4" /></button></AppTooltip></> : null}
-                {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete warehouse unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete warehouse"><button aria-label="Delete warehouse" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : null}
+                <AppTooltip label="View warehouse"><button aria-label="View warehouse" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye className="h-4 w-4" /></button></AppTooltip>
+                {capabilities.canEdit ? <><AppTooltip label="Edit warehouse"><button aria-label="Edit warehouse" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip><AppTooltip label={row.isActive ? "Deactivate warehouse" : "Activate warehouse"}><button aria-label={row.isActive ? "Deactivate warehouse" : "Activate warehouse"} className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void changeStatus(row)}><Power className="h-4 w-4" /></button></AppTooltip></> : null}
+                {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete warehouse unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete warehouse"><button aria-label="Delete warehouse" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 className="h-4 w-4" /></button></AppTooltip> : null}
               </div>
               {rowConflicts[row.id] ? <p className="mt-1 text-right text-[10px] text-red-600">In use</p> : null}
             </td>

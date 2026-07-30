@@ -25,7 +25,7 @@ export const getNumericToneClassName = (value) => {
   const numericValue = toReportNumber(value);
 
   if (numericValue === null || numericValue === 0) {
-    return "text-slate-500";
+    return "text-slate-400";
   }
 
   return numericValue < 0 ? "text-red-600" : "text-slate-900";

@@ -334,7 +334,7 @@ const MappingModal = ({
       <div className="mt-4">
         <SupplyChainInlineError message={errors.form} />
       </div>
-      <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+      <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>
           {readOnly ? "Close" : "Back"}
         </AppButton>
@@ -354,7 +354,6 @@ const ItemMappingsPage = () => {
   const state = useSelector((root) => root.supplyChainItemMappings);
   const { channels, error: channelError } = useSupplyChainChannels();
   const requestedTab = searchParams.get("tab");
-  const urlQuery = searchParams.get("q") ?? "";
   const tab = requestedTab === "unmatched" ? "unmatched" : "mappings";
   const [filterItem, setFilterItem] = useState(null);
   const [modal, setModal] = useState({ mode: "", record: null });
@@ -386,27 +385,6 @@ const ItemMappingsPage = () => {
       return next;
     });
   };
-  const setFilters = useCallback(
-    (patch) => {
-      dispatch(setItemMappingFilters(patch));
-
-      if (Object.prototype.hasOwnProperty.call(patch, "Search")) {
-        setSearchParams((current) => {
-          const next = new URLSearchParams(current);
-          const nextQuery = String(patch.Search ?? "").trim();
-
-          if (nextQuery) {
-            next.set("q", nextQuery);
-          } else {
-            next.delete("q");
-          }
-
-          return next;
-        });
-      }
-    },
-    [dispatch, setSearchParams],
-  );
   const params = useMemo(
     () => ({
       ...state.filters,
@@ -446,10 +424,6 @@ const ItemMappingsPage = () => {
   }, [loadMappings]);
 
   useEffect(() => {
-    dispatch(setItemMappingFilters({ Search: urlQuery }));
-  }, [dispatch, urlQuery]);
-
-  useEffect(() => {
     const timeout = window.setTimeout(() => void loadUnmatched(), 0);
 
     return () => window.clearTimeout(timeout);
@@ -458,6 +432,7 @@ const ItemMappingsPage = () => {
   const refreshAll = async () => {
     await Promise.all([loadMappings(), loadUnmatched()]);
   };
+  const setFilters = (patch) => dispatch(setItemMappingFilters(patch));
   const changeStatus = async (record) => {
     try {
       const response = await supplyChainItemMappingService.changeStatus(
@@ -553,17 +528,17 @@ const ItemMappingsPage = () => {
         actions={
           <>
             <AppButton disabled={currentLoading} variant="secondary" onClick={() => void (tab === "mappings" ? loadMappings() : loadUnmatched())}>
-              <RotateCw aria-hidden="true" className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
+              <RotateCw className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
             {capabilities.canExport ? (
-              <AppButton disabled={currentLoading || currentRows.length === 0} variant="secondary" onClick={() => void exportRows()}><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton>
+              <AppButton disabled={currentLoading || currentRows.length === 0} variant="secondary" onClick={() => void exportRows()}><Download className="h-4 w-4" />Export</AppButton>
             ) : (
-              <DisabledAction reason="Export requires Supply Chain Item Mappings export permission."><AppButton disabled variant="secondary"><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton></DisabledAction>
+              <DisabledAction reason="Export requires Supply Chain Item Mappings export permission."><AppButton disabled variant="secondary"><Download className="h-4 w-4" />Export</AppButton></DisabledAction>
             )}
             {capabilities.canCreate ? (
-              <AppButton onClick={() => setModal({ mode: "create", record: null })}><Plus aria-hidden="true" className="h-4 w-4" />New mapping</AppButton>
+              <AppButton onClick={() => setModal({ mode: "create", record: null })}><Plus className="h-4 w-4" />New mapping</AppButton>
             ) : (
-              <DisabledAction reason="Creating mappings requires create permission."><AppButton disabled><Plus aria-hidden="true" className="h-4 w-4" />New mapping</AppButton></DisabledAction>
+              <DisabledAction reason="Creating mappings requires create permission."><AppButton disabled><Plus className="h-4 w-4" />New mapping</AppButton></DisabledAction>
             )}
           </>
         }
@@ -580,14 +555,13 @@ const ItemMappingsPage = () => {
 
       <div className="rounded-xl border border-brand/20 bg-brand-light px-4 py-3 text-sm text-slate-700">
         Procurement keeps a read-only compatibility view.{" "}
-        <Link className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline md:min-h-0" to="/procurement/setup?tab=sku">
+        <Link className="font-semibold text-brand hover:underline" to="/procurement/setup?tab=sku">
           View it in Procurement Planning
         </Link>
       </div>
 
       <ProcurementTabs
         active={tab}
-        id="supply-chain-item-mapping-tabs"
         tabs={[
           { id: "mappings", icon: Link2, label: "Mappings" },
           { id: "unmatched", icon: Inbox, label: "Unmatched SKUs", count: unmatched.length },
@@ -595,13 +569,7 @@ const ItemMappingsPage = () => {
         onChange={changeTab}
       />
 
-      <div
-        id={`supply-chain-item-mapping-tabs-panel-${tab}`}
-        role="tabpanel"
-        aria-labelledby={`supply-chain-item-mapping-tabs-tab-${tab}`}
-        className="space-y-6"
-      >
-        {tab === "mappings" ? (
+      {tab === "mappings" ? (
         <>
           <SupplyChainFilterBar
             activeFilterCount={activeFilterCount}
@@ -623,70 +591,15 @@ const ItemMappingsPage = () => {
           <DataTableShell
             colGroup={<colgroup><col className="w-[56px]" /><col className="w-32" /><col className="w-40" /><col className="w-56" /><col className="w-52" /><col className="w-24" /><col className="w-44" /><col className="w-28" /><col className="w-44" /></colgroup>}
             columnCount={9}
-            mobileConfig={{
-              actions: 8,
-              fields: [1, 4, 5, 6],
-              serial: 0,
-              status: 7,
-              subtitle: 2,
-              title: 3,
-            }}
-            emptyAction={
-              state.error ? (
-                <AppButton variant="secondary" onClick={loadMappings}>Retry</AppButton>
-              ) : activeFilterCount > 0 ? (
-                <AppButton
-                  variant="secondary"
-                  onClick={() => {
-                    setFilterItem(null);
-                    setFilters({
-                      ChannelId: "",
-                      IsActive: "",
-                      IsPrimary: "",
-                      ItemId: "",
-                      Search: "",
-                    });
-                  }}
-                >
-                  Clear filters
-                </AppButton>
-              ) : capabilities.canCreate ? (
-                <AppButton onClick={() => setModal({ mode: "create", record: null })}>
-                  New mapping
-                </AppButton>
-              ) : undefined
-            }
-            emptyContext={
-              !state.error && activeFilterCount === 0
-                ? "Item mappings connect external channel SKUs to inventory items."
-                : undefined
-            }
-            emptyHint={
-              state.error
-                ? state.error
-                : activeFilterCount > 0
-                  ? "Clear the current filters to see all item mappings."
-                  : "Create the first mapping to resolve a channel SKU."
-            }
-            emptyTitle={
-              !state.loading && mappingRows.length === 0
-                ? state.error
-                  ? "Couldn't load item mappings"
-                  : activeFilterCount > 0
-                    ? "No item mappings match these filters"
-                    : "No item mappings yet"
-                : undefined
-            }
-            emptyVariant={
-              state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"
-            }
-            head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel product name</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Primary</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Effective</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
+            emptyHint="Create the first mapping or clear the current filters."
+            emptyTitle={!state.loading && mappingRows.length === 0 ? "No item mappings yet" : undefined}
+            head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th><th className={DATA_TABLE_HEADER_CLASS}>Item</th><th className={DATA_TABLE_HEADER_CLASS}>Channel product name</th><th className={DATA_TABLE_HEADER_CLASS}>Primary</th><th className={DATA_TABLE_HEADER_CLASS}>Effective</th><th className={DATA_TABLE_HEADER_CLASS}>Status</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
             loading={state.loading}
             minWidth="min-w-[1420px]"
           >
             {mappingRows.map((row, index) => (
               <tr key={row.id}>
-                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
                 <td><p className="font-semibold text-slate-900">{row.channelCode}</p><p className="text-xs text-slate-500">{row.channelName}</p></td>
                 <td className="font-semibold text-slate-900">{row.channelSku}</td>
                 <td><p className="font-medium text-slate-800">{row.itemName}</p><p className="text-xs text-slate-500">{row.itemCode}</p></td>
@@ -696,9 +609,9 @@ const ItemMappingsPage = () => {
                 <td><SupplyChainStatusPill active={row.isActive} /></td>
                 <td>
                   <div className="flex items-center justify-end gap-0.5">
-                    <AppTooltip label="View mapping"><button aria-label="View mapping" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>
-                    {capabilities.canEdit ? <><AppTooltip label="Edit mapping"><button aria-label="Edit mapping" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil aria-hidden="true" className="h-4 w-4" /></button></AppTooltip><AppTooltip label={row.isActive ? "Deactivate mapping" : "Activate mapping"}><button aria-label={row.isActive ? "Deactivate mapping" : "Activate mapping"} className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void changeStatus(row)}><Power aria-hidden="true" className="h-4 w-4" /></button></AppTooltip></> : null}
-                    {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete mapping unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete mapping"><button aria-label="Delete mapping" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : null}
+                    <AppTooltip label="View mapping"><button aria-label="View mapping" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye className="h-4 w-4" /></button></AppTooltip>
+                    {capabilities.canEdit ? <><AppTooltip label="Edit mapping"><button aria-label="Edit mapping" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip><AppTooltip label={row.isActive ? "Deactivate mapping" : "Activate mapping"}><button aria-label={row.isActive ? "Deactivate mapping" : "Activate mapping"} className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void changeStatus(row)}><Power className="h-4 w-4" /></button></AppTooltip></> : null}
+                    {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete mapping unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete mapping"><button aria-label="Delete mapping" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 className="h-4 w-4" /></button></AppTooltip> : null}
                   </div>
                   {rowConflicts[row.id] ? <p className="mt-1 text-right text-[10px] text-red-600">In use</p> : null}
                 </td>
@@ -716,38 +629,15 @@ const ItemMappingsPage = () => {
           <DataTableShell
             colGroup={<colgroup><col className="w-[56px]" /><col className="w-32" /><col className="w-44" /><col /><col className="w-28" /><col className="w-32" /><col className="w-32" /><col className="w-40" /></colgroup>}
             columnCount={8}
-            mobileConfig={{
-              actions: 7,
-              fields: [3, 4, 5, 6],
-              serial: 0,
-              subtitle: 1,
-              title: 2,
-            }}
-            emptyAction={
-              unmatchedError ? (
-                <AppButton variant="secondary" onClick={loadUnmatched}>Retry</AppButton>
-              ) : undefined
-            }
-            emptyHint={
-              unmatchedError
-                ? unmatchedError
-                : "Every imported channel SKU currently resolves to an item."
-            }
-            emptyTitle={
-              !unmatchedLoading && unmatched.length === 0
-                ? unmatchedError
-                  ? "Couldn't load unmatched SKUs"
-                  : "No unmatched SKUs"
-                : undefined
-            }
-            emptyVariant={unmatchedError ? "error" : "empty"}
-            head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel product name</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Occurrences</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>First seen</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Last seen</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            emptyHint="Every imported SKU resolves to an item."
+            emptyTitle={!unmatchedLoading && unmatched.length === 0 ? "No unmatched SKUs" : undefined}
+            head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th><th className={DATA_TABLE_HEADER_CLASS}>Channel product name</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Occurrences</th><th className={DATA_TABLE_HEADER_CLASS}>First seen</th><th className={DATA_TABLE_HEADER_CLASS}>Last seen</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
             loading={unmatchedLoading}
             minWidth="min-w-[1120px]"
           >
             {unmatchedRows.map((row, index) => (
               <tr key={`${row.channelId}-${row.channelSku}`}>
-                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(unmatchedPage - 1) * unmatchedPageSize + index + 1}</td>
+                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(unmatchedPage - 1) * unmatchedPageSize + index + 1}</td>
                 <td className="font-semibold text-slate-900">{row.channelCode}</td>
                 <td className="font-semibold text-slate-900">{row.channelSku}</td>
                 <td>{row.channelProductName || "—"}</td>
@@ -757,7 +647,7 @@ const ItemMappingsPage = () => {
                 <td>
                   <div className="flex items-center justify-end gap-0.5">
                     {capabilities.canCreate ? (
-                      <AppButton className="h-8 px-3" variant="secondary" onClick={() => setModal({ mode: "create", record: row })}><Link2 aria-hidden="true" className="h-4 w-4" />Create mapping</AppButton>
+                      <AppButton className="h-8 px-3" variant="secondary" onClick={() => setModal({ mode: "create", record: row })}><Link2 className="h-4 w-4" />Create mapping</AppButton>
                     ) : (
                       <DisabledAction reason="Creating mappings requires create permission."><AppButton className="h-8 px-3" disabled variant="secondary">Create mapping</AppButton></DisabledAction>
                     )}
@@ -768,8 +658,7 @@ const ItemMappingsPage = () => {
           </DataTableShell>
           <SupplyChainPagination disabled={unmatchedLoading} pageNumber={unmatchedPage} pageSize={unmatchedPageSize} totalCount={unmatched.length} totalPages={unmatchedTotalPages} onPageChange={setUnmatchedPage} onPageSizeChange={(value) => { setUnmatchedPageSize(Number(value)); setUnmatchedPage(1); }} />
         </>
-        )}
-      </div>
+      )}
 
       <MappingModal channels={channels} isOpen={Boolean(modal.record) || modal.mode === "create"} mode={modal.mode} record={modal.record} onClose={() => setModal({ mode: "", record: null })} onSaved={refreshAll} />
       <SupplyChainDeleteModal entityLabel="item mapping" error={deleteError} isOpen={Boolean(deleteTarget)} loading={deleting} onClose={() => { setDeleteError(""); setDeleteTarget(null); }} onConfirm={remove} />

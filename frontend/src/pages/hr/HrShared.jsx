@@ -1,8 +1,7 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Controller } from "react-hook-form";
 
 import AppButton from "../../components/common/AppButton";
-import EmptyState from "../../components/common/EmptyState";
 import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
@@ -98,10 +97,10 @@ export const HrStatCard = ({
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
         >
-          <Icon aria-hidden="true" className="h-4 w-4" />
+          <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
             {label}
           </p>
           {loading ? (
@@ -133,7 +132,7 @@ export const HrPagination = ({
   const rangeEnd = itemCount ? rangeStart + itemCount - 1 : 0;
 
   return (
-    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 md:mt-0 md:rounded-none md:border-x-0 md:border-b-0 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
       <p>
         Showing <span className="font-semibold text-slate-900">{rangeStart}</span>{" "}
         to <span className="font-semibold text-slate-900">{rangeEnd}</span> of{" "}
@@ -149,7 +148,7 @@ export const HrPagination = ({
             onChange={(value) => onPageSizeChange(Number(value))}
             options={HR_PAGE_SIZE_OPTIONS}
             className="w-20"
-            label="Rows per page"
+            aria-label="Rows per page"
           />
         </div>
 
@@ -183,26 +182,33 @@ export const HrPagination = ({
 
 export const HrEmptyState = ({
   action,
-  context,
   description,
   error,
-  errorTitle = "Couldn't load this HR list",
   icon: Icon,
   onRetry,
   title,
-  variant = "empty",
 }) => {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <EmptyState
-        action={error ? undefined : action}
-        context={!error && variant === "empty" ? context : undefined}
-        hint={error || description}
-        icon={Icon}
-        title={error ? errorTitle : title}
-        variant={error ? "error" : variant}
-        onAction={error ? onRetry : undefined}
-      />
+      <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+          <Icon className="h-6 w-6" />
+        </div>
+        <h3 className="mt-4 text-base font-semibold text-slate-900">
+          {error ? "Unable to load records" : title}
+        </h3>
+        <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+          {error || description}
+        </p>
+        {error ? (
+          <AppButton variant="secondary" className="mt-5 h-10" onClick={onRetry}>
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </AppButton>
+        ) : (
+          action
+        )}
+      </div>
     </div>
   );
 };
@@ -223,7 +229,7 @@ export const HrConfirmDialog = ({
       onClose={isLoading ? undefined : onCancel}
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600">
-        <AlertTriangle aria-hidden="true" className="h-5 w-5" />
+        <AlertTriangle className="h-5 w-5" />
       </div>
       <h2 className="mt-4 text-lg font-semibold text-slate-900">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>

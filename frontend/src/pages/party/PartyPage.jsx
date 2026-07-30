@@ -9,7 +9,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppSelect from "../../components/common/AppSelect";
@@ -115,7 +114,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
           >
             <div className="px-6 py-6">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
-                <Trash2 aria-hidden="true" className="h-5 w-5" />
+                <Trash2 className="h-5 w-5" />
               </div>
 
               <h2
@@ -157,14 +156,9 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const PartyPage = () => {
-  const [searchParams] = useSearchParams();
-  const deepLinkQuery = searchParams.get("q") ?? "";
   const [parties, setParties] = useState([]);
-  const [filters, setFilters] = useState(() => ({
-    ...DEFAULT_FILTERS,
-    Search: deepLinkQuery,
-  }));
-  const [searchInput, setSearchInput] = useState(deepLinkQuery);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.Search);
   const [activeGroup, setActiveGroup] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -241,20 +235,6 @@ const PartyPage = () => {
     resource: "party",
     route: "/party",
   });
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setFilters((current) =>
-        current.Search === deepLinkQuery
-          ? current
-          : { ...current, Search: deepLinkQuery },
-      );
-      setSearchInput(deepLinkQuery);
-      setPage(1);
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [deepLinkQuery]);
 
   const baseQueryKey = useMemo(
     () => JSON.stringify([filters.Search.trim(), filters.IsActive]),
@@ -983,7 +963,7 @@ const PartyPage = () => {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-            <Contact aria-hidden="true" className="h-3.5 w-3.5" />
+            <Contact className="h-3.5 w-3.5" />
             Party Master
           </div>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
@@ -1003,7 +983,7 @@ const PartyPage = () => {
               aria-label="Refresh Parties"
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
-              <RefreshCw aria-hidden="true"
+              <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -1017,7 +997,7 @@ const PartyPage = () => {
                 aria-label="Party Settings"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
-                <Settings aria-hidden="true" className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
                 Settings
               </button>
             </AppTooltip>
@@ -1034,7 +1014,7 @@ const PartyPage = () => {
                 aria-label="Export Parties"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
@@ -1047,7 +1027,7 @@ const PartyPage = () => {
                 aria-label="Add Party"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
               >
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Add Party
               </button>
             </AppTooltip>
@@ -1086,21 +1066,11 @@ const PartyPage = () => {
       )}
 
       <PartyTable
-        activeFilterCount={
-          [
-            searchInput.trim(),
-            filters.IsActive === "all" ? "" : "status",
-            filters.creditLimit === "all" ? "" : "credit",
-            filters.gst === "all" ? "" : "gst",
-            activeGroup === "all" ? "" : "group",
-          ].filter(Boolean).length
-        }
         actions={tableActions}
         currentPage={effectivePage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
-        onClear={clearFilters}
         onCreate={capabilities.canCreate ? openCreateModal : undefined}
         onRetry={() => loadParties({ force: true })}
         pageSize={pageSize}
@@ -1130,7 +1100,7 @@ const PartyPage = () => {
               onChange={handlePageSizeChange}
               options={PAGE_SIZE_OPTIONS}
               className="w-20"
-              label="Rows per page"
+              aria-label="Rows per page"
             />
           </div>
 
@@ -1162,7 +1132,7 @@ const PartyPage = () => {
 
       {errorMessage && (
         <div className="flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100">
-          <AlertTriangle aria-hidden="true" className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4" />
           {errorMessage}
         </div>
       )}

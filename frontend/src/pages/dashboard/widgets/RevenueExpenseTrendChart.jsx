@@ -9,7 +9,6 @@ import {
   YAxis,
 } from "recharts";
 
-import AccessibleChartTable from "../../../components/common/AccessibleChartTable";
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -56,12 +55,7 @@ const RevenueExpenseTrendChart = ({ error, isLoading, onRetry, rows }) => {
       ) : isEmptyCollection(rows) ? (
         <WidgetEmpty />
       ) : (
-        <>
-          <div
-            role="img"
-            aria-label="Bar chart comparing revenue and expenses by period"
-            className="h-[300px]"
-          >
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
               <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
@@ -94,30 +88,7 @@ const RevenueExpenseTrendChart = ({ error, isLoading, onRetry, rows }) => {
               />
             </BarChart>
           </ResponsiveContainer>
-          </div>
-          <AccessibleChartTable
-            caption="Revenue versus expense trend data"
-            columns={[
-              { key: "periodLabel", label: "Period" },
-              {
-                key: "salesRevenue",
-                label: "Revenue",
-                render: (row) => formatCurrency(row.salesRevenue),
-              },
-              {
-                key: "expenseAmount",
-                label: "Expenses",
-                render: (row) => formatCurrency(row.expenseAmount),
-              },
-              {
-                key: "operatingDifference",
-                label: "Operating difference",
-                render: (row) => formatCurrency(row.operatingDifference),
-              },
-            ]}
-            rows={rows}
-          />
-        </>
+        </div>
       )}
     </WidgetCard>
   );

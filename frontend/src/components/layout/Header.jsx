@@ -17,12 +17,12 @@ const Header = () => {
               <button
                 type="button"
                 onClick={openMobileSidebar}
-                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 lg:hidden"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 lg:hidden"
                 aria-label="Open navigation menu"
                 aria-controls="mobile-sidebar"
                 data-mobile-sidebar-trigger
               >
-                <Menu aria-hidden="true" className="h-5 w-5" />
+                <Menu className="h-5 w-5" />
               </button>
               <Breadcrumbs />
             </div>
@@ -31,15 +31,15 @@ const Header = () => {
           <button
             type="button"
             onClick={openCommand}
-            className="hidden h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-500 transition-all hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
+            className="hidden h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-400 transition-all hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
           >
             <span className="flex min-w-0 items-center gap-2">
-              <Search aria-hidden="true" className="h-4 w-4 shrink-0" />
-              <span className="truncate">Search pages and records...</span>
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="truncate">Search pages, modules, and reports...</span>
             </span>
 
-            <span className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
-              <Command aria-hidden="true" className="h-3 w-3" /> K
+            <span className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+              <Command className="h-3 w-3" /> K
             </span>
           </button>
 
@@ -47,10 +47,10 @@ const Header = () => {
             <button
               type="button"
               onClick={openCommand}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 md:hidden"
               aria-label="Open search"
             >
-              <Search aria-hidden="true" className="h-4 w-4" />
+              <Search className="h-4 w-4" />
             </button>
 
             <UserMenu />

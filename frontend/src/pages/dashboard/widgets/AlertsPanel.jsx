@@ -77,7 +77,7 @@ const AlertsPanel = ({
               value,
             }))}
             className="w-36"
-            label="Alert preview limit"
+            aria-label="Alert preview limit"
           />
           <AppInput
             value={filters.minimumAmount ?? ""}
@@ -88,7 +88,7 @@ const AlertsPanel = ({
             }
             placeholder="Min amount"
             className="h-10 w-32"
-            label="Minimum alert amount"
+            aria-label="Minimum alert amount"
           />
         </>
       }
@@ -120,7 +120,7 @@ const AlertsPanel = ({
                         meta.className,
                       ].join(" ")}
                     >
-                      <Icon aria-hidden="true" className="h-5 w-5" />
+                      <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900">
@@ -152,7 +152,7 @@ const AlertsPanel = ({
                           <p className="truncate font-medium text-slate-700">
                             {row.title ?? row.referenceNumber ?? "Alert item"}
                           </p>
-                          <p className="mt-0.5 truncate text-slate-500">
+                          <p className="mt-0.5 truncate text-slate-400">
                             {[row.referenceNumber, row.severity]
                               .filter(Boolean)
                               .join(" - ")}
@@ -168,7 +168,7 @@ const AlertsPanel = ({
 
                 <Link
                   to={meta.route}
-                  className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-brand hover:text-brand-dark md:min-h-0"
+                  className="mt-3 inline-flex text-xs font-semibold text-brand hover:text-brand-dark"
                 >
                   View all
                 </Link>
@@ -179,8 +179,8 @@ const AlertsPanel = ({
       )}
 
       {!isLoading && !error && buckets.length > 0 && (
-        <p className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-          <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
+        <p className="mt-3 flex items-center gap-2 text-xs text-slate-400">
+          <AlertTriangle className="h-3.5 w-3.5" />
           Generated from live dashboard alert buckets.
         </p>
       )}

@@ -347,7 +347,7 @@ const ChannelsPage = () => {
               variant="secondary"
               onClick={() => void load()}
             >
-              <RotateCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
+              <RotateCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canExport ? (
@@ -356,13 +356,13 @@ const ChannelsPage = () => {
                 variant="secondary"
                 onClick={() => void exportRows()}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             ) : (
               <DisabledAction reason="Export requires Supply Chain Channels export permission.">
                 <AppButton disabled variant="secondary">
-                  <Download aria-hidden="true" className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                   Export
                 </AppButton>
               </DisabledAction>
@@ -371,13 +371,13 @@ const ChannelsPage = () => {
               <AppButton
                 onClick={() => setModal({ mode: "create", record: null })}
               >
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 New channel
               </AppButton>
             ) : (
               <DisabledAction reason="Creating channels requires create permission.">
                 <AppButton disabled>
-                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   New channel
                 </AppButton>
               </DisabledAction>
@@ -406,7 +406,7 @@ const ChannelsPage = () => {
 
       <div className="rounded-xl border border-brand/20 bg-brand-light px-4 py-3 text-sm text-slate-700">
         These shared channels feed Procurement Planning.{" "}
-        <Link className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline md:min-h-0" to="/procurement">
+        <Link className="font-semibold text-brand hover:underline" to="/procurement">
           Open Procurement Planning
         </Link>
       </div>
@@ -460,65 +460,17 @@ const ChannelsPage = () => {
           </colgroup>
         }
         columnCount={7}
-        mobileConfig={{
-          actions: 6,
-          fields: [3, 4],
-          serial: 0,
-          status: 5,
-          subtitle: 1,
-          title: 2,
-        }}
-        emptyAction={
-          state.error ? (
-            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-          ) : activeFilterCount > 0 ? (
-            <AppButton
-              variant="secondary"
-              onClick={() =>
-                dispatch(setChannelFilters({ IsActive: "", Search: "" }))
-              }
-            >
-              Clear filters
-            </AppButton>
-          ) : capabilities.canCreate ? (
-            <AppButton onClick={() => setModal({ mode: "create", record: null })}>
-              New channel
-            </AppButton>
-          ) : undefined
-        }
-        emptyContext={
-          !state.error && activeFilterCount === 0
-            ? "Channels identify the external sources used by imports and procurement planning."
-            : undefined
-        }
-        emptyHint={
-          state.error
-            ? state.error
-            : activeFilterCount > 0
-              ? "Clear the current filters to see all channels."
-              : "Create the first channel to connect external demand."
-        }
-        emptyTitle={
-          !state.loading && state.list.length === 0
-            ? state.error
-              ? "Couldn't load channels"
-              : activeFilterCount > 0
-                ? "No channels match these filters"
-                : "No channels yet"
-            : undefined
-        }
-        emptyVariant={
-          state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"
-        }
+        emptyHint="Create the first channel or clear the current filters."
+        emptyTitle={!state.loading && state.list.length === 0 ? "No channels yet" : undefined}
         head={
           <>
-            <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Code</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Name</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Description</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Sort order</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>#</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Code</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Name</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Description</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Sort order</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Status</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
           </>
         }
         loading={state.loading}
@@ -526,7 +478,7 @@ const ChannelsPage = () => {
       >
         {state.list.map((row, index) => (
           <tr key={row.id}>
-            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
               {(state.pageNumber - 1) * state.pageSize + index + 1}
             </td>
             <td className="font-semibold text-slate-900">{row.code}</td>
@@ -547,7 +499,7 @@ const ChannelsPage = () => {
                     type="button"
                     onClick={() => setModal({ mode: "view", record: row })}
                   >
-                    <Eye aria-hidden="true" className="h-4 w-4" />
+                    <Eye className="h-4 w-4" />
                   </button>
                 </AppTooltip>
                 {capabilities.canEdit ? (
@@ -559,7 +511,7 @@ const ChannelsPage = () => {
                         type="button"
                         onClick={() => setModal({ mode: "edit", record: row })}
                       >
-                        <Pencil aria-hidden="true" className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                     <AppTooltip label={row.isActive ? "Deactivate channel" : "Activate channel"}>
@@ -569,7 +521,7 @@ const ChannelsPage = () => {
                         type="button"
                         onClick={() => void changeStatus(row)}
                       >
-                        <Power aria-hidden="true" className="h-4 w-4" />
+                        <Power className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                   </>
@@ -583,7 +535,7 @@ const ChannelsPage = () => {
                         disabled
                         type="button"
                       >
-                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                   ) : (
@@ -597,7 +549,7 @@ const ChannelsPage = () => {
                           setDeleteTarget(row);
                         }}
                       >
-                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                   )

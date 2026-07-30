@@ -1,12 +1,6 @@
 import clsx from "clsx";
 import { PackageSearch } from "lucide-react";
-import { Children, isValidElement } from "react";
 import { twMerge } from "tailwind-merge";
-
-import { enhanceTableHeaders } from "../../utils/tableAccessibility";
-import EmptyState from "./EmptyState";
-import { MobileRecordCardSkeleton } from "./MobileRecordCard";
-import { buildMobileCards } from "./mobileTableCards";
 
 export const DATA_TABLE_HEADER_CLASS =
   "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500";
@@ -15,24 +9,10 @@ export const DATA_TABLE_CELL_CLASS =
   "border-b border-slate-100 px-4 py-3.5 text-slate-700";
 
 export const DATA_TABLE_ROW_ACTION_CLASS =
-  "inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40 md:h-8 md:w-8";
+  "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
 export const DATA_TABLE_ROW_ACTION_DANGER_CLASS =
-  "inline-flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40 md:h-8 md:w-8";
-
-const countRows = (nodes) => {
-  return Children.toArray(nodes).reduce((count, node) => {
-    if (!isValidElement(node)) {
-      return count;
-    }
-
-    if (node.type === "tr") {
-      return count + 1;
-    }
-
-    return count + countRows(node.props.children);
-  }, 0);
-};
+  "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
 const DataTableShell = ({
   children,
@@ -40,72 +20,27 @@ const DataTableShell = ({
   colGroup,
   columnCount,
   emptyAction,
-  emptyContext,
   emptyHint,
   emptyIcon: EmptyIcon = PackageSearch,
   emptyTitle,
-  emptyVariant = "empty",
   head,
   headClassName = "",
   loading = false,
-  mobileCards,
-  mobileConfig,
   minWidth = "min-w-[760px]",
   rows = 5,
   scrollerClassName = "",
-  resultCount,
-  tableLabel,
 }) => {
   const isEmpty = !loading && Boolean(emptyTitle);
-  const resolvedMobileCards =
-    mobileCards ?? buildMobileCards({ children, config: mobileConfig, head });
-  const resolvedTableLabel =
-    tableLabel ??
-    (typeof emptyContext === "string" ? emptyContext : null) ??
-    (typeof emptyTitle === "string" ? emptyTitle : null) ??
-    "Records";
-  const visibleResultCount =
-    resultCount ?? (isEmpty ? 0 : countRows(children));
 
   return (
-    <div className="md:overflow-hidden md:rounded-xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
-      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {loading
-          ? `Loading ${resolvedTableLabel.toLocaleLowerCase()}`
-          : `${visibleResultCount} ${visibleResultCount === 1 ? "result" : "results"}`}
-      </p>
-      <div className="grid gap-3 md:hidden">
-        {loading ? (
-          Array.from({ length: rows }, (_, index) => (
-            <MobileRecordCardSkeleton key={index} />
-          ))
-        ) : isEmpty ? (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <EmptyState
-              action={emptyAction}
-              context={emptyContext}
-              hint={emptyHint}
-              icon={EmptyIcon}
-              title={emptyTitle}
-              variant={emptyVariant}
-            />
-          </div>
-        ) : (
-          resolvedMobileCards
-        )}
-      </div>
-
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div
-        role="region"
-        aria-label={`${resolvedTableLabel} table view`}
-        tabIndex={0}
         className={twMerge(
-          clsx("hidden overflow-x-auto md:block"),
+          clsx("overflow-x-auto"),
           scrollerClassName,
         )}
       >
         <table
-          aria-label={resolvedTableLabel}
           className={twMerge(
             clsx(
               "w-full table-fixed text-sm",
@@ -122,7 +57,7 @@ const DataTableShell = ({
             <thead
               className={twMerge(clsx("bg-slate-50"), headClassName)}
             >
-              <tr>{enhanceTableHeaders(head)}</tr>
+              <tr>{head}</tr>
             </thead>
           ) : null}
           <tbody>
@@ -137,15 +72,19 @@ const DataTableShell = ({
               : isEmpty
                 ? (
                     <tr>
-                      <td colSpan={columnCount} className="p-0">
-                        <EmptyState
-                          action={emptyAction}
-                          context={emptyContext}
-                          hint={emptyHint}
-                          icon={EmptyIcon}
-                          title={emptyTitle}
-                          variant={emptyVariant}
-                        />
+                      <td colSpan={columnCount} className="py-12 text-center">
+                        <EmptyIcon className="mx-auto h-8 w-8 text-slate-300" />
+                        <p className="mt-3 text-sm font-medium text-slate-900">
+                          {emptyTitle}
+                        </p>
+                        {emptyHint ? (
+                          <p className="mt-1 text-xs text-slate-500">
+                            {emptyHint}
+                          </p>
+                        ) : null}
+                        {emptyAction ? (
+                          <div className="mt-4">{emptyAction}</div>
+                        ) : null}
                       </td>
                     </tr>
                   )

@@ -377,7 +377,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl ${copy.iconClassName}`}
               >
-                <Icon aria-hidden="true" className="h-5 w-5" />
+                <Icon className="h-5 w-5" />
               </div>
 
               <h2
@@ -957,7 +957,7 @@ const Users = () => {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5" />
             RBAC / User Management
           </div>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
@@ -979,7 +979,7 @@ const Users = () => {
               aria-label="Refresh Users"
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
-              <RefreshCw aria-hidden="true"
+              <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -997,7 +997,7 @@ const Users = () => {
                 aria-label="Export Users"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
@@ -1010,7 +1010,7 @@ const Users = () => {
                 aria-label="Add User"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
               >
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Add User
               </button>
             </AppTooltip>
@@ -1037,13 +1037,11 @@ const Users = () => {
       />
 
       <UserTable
-        activeFilterCount={activeCount}
         actions={tableActions}
         currentPage={currentPage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
-        onClear={resetUrlFilters}
         onCreate={
           capabilities.canCreate && capabilities.canAssignRole
             ? openCreateModal
@@ -1071,7 +1069,7 @@ const Users = () => {
               onChange={handlePageSizeChange}
               options={pageSizeOptions}
               className="w-20"
-              label="Rows per page"
+              aria-label="Rows per page"
             />
           </div>
 

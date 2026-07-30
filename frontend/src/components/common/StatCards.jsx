@@ -57,14 +57,14 @@ const StatCards = ({ cards = [], className = "", loading = false }) => {
                   </p>
                 )}
                 {card.hint ? (
-                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
                     {card.hint}
                   </p>
                 ) : null}
               </div>
               {Icon ? (
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-slate-50">
-                  <Icon aria-hidden="true" className="h-4 w-4 text-slate-500" />
+                  <Icon className="h-4 w-4 text-slate-400" />
                 </div>
               ) : null}
             </div>

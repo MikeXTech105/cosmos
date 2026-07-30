@@ -43,7 +43,7 @@ const ModernTemplate = ({ invoice }) => {
 
       <div className="mt-8 grid gap-6 sm:grid-cols-[1fr_320px]">
         <div className="rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Amount In Words
           </p>
           <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">

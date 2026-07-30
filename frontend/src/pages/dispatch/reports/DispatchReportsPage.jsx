@@ -161,13 +161,13 @@ const DispatchReportsPage = () => {
             {state.loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void load()}>
-                <RefreshCw aria-hidden="true" className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
@@ -178,7 +178,7 @@ const DispatchReportsPage = () => {
                 variant="secondary"
                 onClick={exportReport}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             ) : null}
@@ -318,65 +318,26 @@ const DispatchReportsPage = () => {
           </colgroup>
         }
         columnCount={12}
-        mobileConfig={{
-          fields: [1, 4, 8, 9],
-          serial: 0,
-          status: 11,
-          subtitle: 6,
-          title: 5,
-        }}
-        emptyAction={
-          state.error ? (
-            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-          ) : activeFilterCount > 0 ? (
-            <AppButton
-              variant="secondary"
-              onClick={() =>
-                setFilters({
-                  ChannelId: "",
-                  FromDate: "",
-                  Status: "",
-                  ToDate: "",
-                  WarehouseId: "",
-                })
-              }
-            >
-              Clear filters
-            </AppButton>
-          ) : undefined
-        }
-        emptyContext="This report combines finalized planning recommendations across channels and warehouses."
-        emptyHint={
-          state.error
-            ? "Check the connection and try loading the recommendation report again."
-            : activeFilterCount > 0
-              ? "Clear the current filters to see recommendations from other periods."
-              : "Finalize a dispatch planning run to populate this report."
-        }
+        emptyHint="Adjust the filters or finalize a dispatch planning run."
         emptyTitle={
-          !state.loading && (state.error || state.list.length === 0)
-            ? state.error
-              ? "Couldn't load recommendation report"
-              : activeFilterCount > 0
-                ? "No recommendation rows match these filters"
-                : "No finalized recommendations yet"
+          !state.loading && state.list.length === 0
+            ? "No recommendation rows match these filters"
             : undefined
         }
-        emptyVariant={state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"}
         head={
           <>
-            <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Run no.</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Planning date</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Tier</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Run status</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>#</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Run no.</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Planning date</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Channel</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Item</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Channel SKU</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Tier</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Run status</th>
           </>
         }
         loading={state.loading}
@@ -386,7 +347,7 @@ const DispatchReportsPage = () => {
           <tr
             key={`${row.runNumber}-${row.warehouseCode}-${row.itemCode}-${index}`}
           >
-            <td className="text-xs font-semibold tabular-nums text-slate-500">
+            <td className="text-xs font-semibold tabular-nums text-slate-400">
               {(state.pageNumber - 1) * state.pageSize + index + 1}
             </td>
             <td className="font-medium text-slate-900">{row.runNumber}</td>

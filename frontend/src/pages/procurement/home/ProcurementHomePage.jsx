@@ -18,7 +18,6 @@ import AppButton from "../../../components/common/AppButton";
 import AppModal from "../../../components/common/AppModal";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import procurementMessages from "../../../i18n/locales/en/procurement.json";
 import { planningService } from "../../../services/procurement/planningService";
 import {
@@ -149,7 +148,7 @@ const AssumptionsModal = ({
           </div>
         </div>
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-          <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+          <Info className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="text-xs leading-5">
             The current planning contract accepts only the demand range and notes
             for preview. Safety, lead-time, and rounding overrides therefore remain
@@ -160,7 +159,7 @@ const AssumptionsModal = ({
       <div className="mt-5 flex flex-wrap justify-end gap-2">
         <Link to="/procurement/setup?tab=settings">
           <AppButton variant="secondary">
-            <Settings2 aria-hidden="true" className="h-4 w-4" />Manage saved defaults
+            <Settings2 className="h-4 w-4" />Manage saved defaults
           </AppButton>
         </Link>
         <AppButton
@@ -168,7 +167,7 @@ const AssumptionsModal = ({
           disabledReason={error || undefined}
           onClick={onApply}
         >
-          <RefreshCw aria-hidden="true" className="h-4 w-4" />Recalculate
+          <RefreshCw className="h-4 w-4" />Recalculate
         </AppButton>
       </div>
     </AppModal>
@@ -188,45 +187,38 @@ const BuyList = ({ lines }) => {
   }
 
   return (
-    <ResponsiveTableRegion
-      mobileConfig={{
-        fields: [2, 3, 5, 7],
-        serial: 0,
-        status: 9,
-        title: 1,
-      }}
-    >
+    <div className="overflow-x-auto">
       <table className="min-w-[1260px] w-full text-left">
         <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
           <tr>
-            <th scope="col" aria-label="Row number" className="px-4 py-3 text-left"><span aria-hidden="true">#</span></th>
-            <th scope="col" className="px-4 py-3" colSpan={2}>Material</th>
-            <th scope="col" className="px-4 py-3">Unit</th>
-            <th scope="col" className="px-4 py-3 text-right">
+            <th className="px-4 py-3 text-left">#</th>
+            <th className="px-4 py-3" colSpan={2}>Material</th>
+            <th className="px-4 py-3">Unit</th>
+            <th className="px-4 py-3 text-right">
               <span className="inline-flex items-center gap-1">
                 Physical stock
                 <AppTooltip label="Global Items.CurrentStock supplied by the planning preview.">
-                  <button type="button" className="rounded text-slate-500 hover:text-slate-700">
-                    <Info aria-hidden="true" className="h-3.5 w-3.5" />
+                  <button type="button" className="rounded text-slate-400 hover:text-slate-700">
+                    <Info className="h-3.5 w-3.5" />
                   </button>
                 </AppTooltip>
               </span>
             </th>
-            <th scope="col" className="px-4 py-3 text-right">Inbound</th>
-            <th scope="col" className="px-4 py-3 text-right">
+            <th className="px-4 py-3 text-right">Inbound</th>
+            <th className="px-4 py-3 text-right">
               <span className="inline-flex items-center gap-1">
                 Projected available
                 <AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation.">
-                  <button type="button" className="rounded text-slate-500 hover:text-slate-700">
-                    <Info aria-hidden="true" className="h-3.5 w-3.5" />
+                  <button type="button" className="rounded text-slate-400 hover:text-slate-700">
+                    <Info className="h-3.5 w-3.5" />
                   </button>
                 </AppTooltip>
               </span>
             </th>
-            <th scope="col" className="px-4 py-3 text-right">Reorder point</th>
-            <th scope="col" className="bg-brand-light px-4 py-3 text-right text-brand">To order</th>
-            <th scope="col" className="px-4 py-3 text-right">Cover</th>
-            <th scope="col" className="px-4 py-3">Status</th>
+            <th className="px-4 py-3 text-right">Reorder point</th>
+            <th className="bg-brand-light px-4 py-3 text-right text-brand">To order</th>
+            <th className="px-4 py-3 text-right">Cover</th>
+            <th className="px-4 py-3">Status</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -238,7 +230,7 @@ const BuyList = ({ lines }) => {
             return (
               <Fragment key={id}>
                 <tr className="group text-sm hover:bg-slate-50/70">
-                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                     {index + 1}
                   </td>
                   <td className="px-4 py-3" colSpan={2}>
@@ -246,7 +238,7 @@ const BuyList = ({ lines }) => {
                       <button
                         type="button"
                         aria-label={isExpanded ? "Hide calculation" : "Show calculation"}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 md:h-7 md:w-7"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                         onClick={() =>
                           setExpanded((current) => {
                             const next = new Set(current);
@@ -256,7 +248,7 @@ const BuyList = ({ lines }) => {
                           })
                         }
                       >
-                        {isExpanded ? <ChevronDown aria-hidden="true" className="h-4 w-4" /> : <ChevronRight aria-hidden="true" className="h-4 w-4" />}
+                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </button>
                       <div className="min-w-0">
                         <p className="max-w-72 truncate font-semibold text-slate-900">
@@ -289,7 +281,7 @@ const BuyList = ({ lines }) => {
           })}
         </tbody>
       </table>
-    </ResponsiveTableRegion>
+    </div>
   );
 };
 
@@ -390,7 +382,7 @@ const ProcurementHomePage = () => {
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
-        badge={<><ShoppingBasket aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><ShoppingBasket className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Procurement"
         description="A decision-ready view of what needs ordering from the latest server calculation."
       />
@@ -422,13 +414,13 @@ const ProcurementHomePage = () => {
               </span>
             </div>
             <p className="mt-3 flex items-center gap-2 text-xs text-white/70">
-              <CalendarRange aria-hidden="true" className="h-4 w-4" />
+              <CalendarRange className="h-4 w-4" />
               Sales from {formatDateRange(range.fromDate, range.toDate)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <AppButton className="border-white/20 bg-white text-brand hover:bg-brand-light" variant="secondary" onClick={() => { setDraftRange(range); setAssumptionsOpen(true); }}>
-              <Settings2 aria-hidden="true" className="h-4 w-4" />Adjust assumptions
+              <Settings2 className="h-4 w-4" />Adjust assumptions
             </AppButton>
             <AppButton
               className="border-white/25 bg-white/10 text-white hover:bg-white/20 disabled:opacity-90"
@@ -437,7 +429,7 @@ const ProcurementHomePage = () => {
               variant="secondary"
               onClick={() => downloadPlanningCsv(allLines, range)}
             >
-              <Download aria-hidden="true" className="h-4 w-4" />Export CSV
+              <Download className="h-4 w-4" />Export CSV
             </AppButton>
             <AppButton
               className="bg-white text-brand hover:bg-white/90 disabled:opacity-80"
@@ -448,7 +440,7 @@ const ProcurementHomePage = () => {
               variant="secondary"
               onClick={saveDraft}
             >
-              <Save aria-hidden="true" className="h-4 w-4" />Save draft
+              <Save className="h-4 w-4" />Save draft
             </AppButton>
           </div>
         </div>
@@ -467,7 +459,7 @@ const ProcurementHomePage = () => {
             }}
           >
             Range: {formatDateRange(range.fromDate, range.toDate)}
-            <X aria-hidden="true" className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
@@ -491,7 +483,7 @@ const ProcurementHomePage = () => {
               disabledReason="The buy list is already refreshing"
               onClick={() => void loadPreview(range)}
             >
-              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
             <Link to="/procurement/generate-plan">
               <AppButton variant="secondary">Full step-by-step flow</AppButton>
@@ -524,7 +516,7 @@ const ProcurementHomePage = () => {
               <span>
                 {zeroLines.length} material{zeroLines.length === 1 ? "" : "s"} with nothing to order
               </span>
-              {showZero ? <ChevronDown aria-hidden="true" className="h-4 w-4" /> : <ChevronRight aria-hidden="true" className="h-4 w-4" />}
+              {showZero ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </button>
             {showZero && <BuyList lines={zeroLines} />}
           </div>

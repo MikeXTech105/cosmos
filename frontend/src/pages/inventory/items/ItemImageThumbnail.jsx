@@ -13,7 +13,7 @@ const ItemImageThumbnail = ({
   return (
     <div
       className={[
-        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-50 text-slate-500",
+        "flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-50 text-slate-400",
         className,
       ].join(" ")}
     >
@@ -25,7 +25,7 @@ const ItemImageThumbnail = ({
           className="h-full w-full object-cover"
         />
       ) : (
-        <ImageIcon aria-hidden="true" className={iconClassName} />
+        <ImageIcon className={iconClassName} />
       )}
     </div>
   );

@@ -198,7 +198,7 @@ const PurchaseDocumentFormModal = ({
         >
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
             <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Document Header
               </h3>
               <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -207,8 +207,6 @@ const PurchaseDocumentFormModal = ({
                   name="supplierId"
                   render={({ field }) => (
                     <AppSelect
-                      ref={field.ref}
-                      name={field.name}
                       label="Supplier"
                       required
                       value={field.value}
@@ -230,8 +228,6 @@ const PurchaseDocumentFormModal = ({
                     name="purchaseBillId"
                     render={({ field }) => (
                       <AppSelect
-                        ref={field.ref}
-                        name={field.name}
                         label="Purchase Bill"
                         value={field.value}
                         onChange={(value) => field.onChange(Number(value))}
@@ -284,8 +280,6 @@ const PurchaseDocumentFormModal = ({
                     name="paymentType"
                     render={({ field }) => (
                       <AppSelect
-                        ref={field.ref}
-                        name={field.name}
                         label="Payment Type"
                         value={field.value}
                         onChange={(value) => field.onChange(Number(value))}
@@ -333,7 +327,7 @@ const PurchaseDocumentFormModal = ({
                     <textarea
                       id="termsAndConditions"
                       rows={4}
-                      className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                      className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                       {...register("termsAndConditions")}
                     />
                   </div>
@@ -348,7 +342,7 @@ const PurchaseDocumentFormModal = ({
                   <textarea
                     id="purchaseNotes"
                     rows={4}
-                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                     {...register("notes")}
                   />
                 </div>
@@ -427,7 +421,7 @@ const PurchaseDocumentFormModal = ({
               Cancel
             </AppButton>
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
-              <Check aria-hidden="true" className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               Save
             </AppButton>
           </div>

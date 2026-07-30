@@ -188,7 +188,7 @@ const StatusPill = ({ status }) => {
   return <SupplyChainBadge tone={tone}>{status || "Unknown"}</SupplyChainBadge>;
 };
 
-const ErrorRowsTable = ({ isFiltered, offset = 0, onClear, rows }) => (
+const ErrorRowsTable = ({ offset = 0, rows }) => (
   <DataTableShell
     colGroup={
       <colgroup>
@@ -200,34 +200,22 @@ const ErrorRowsTable = ({ isFiltered, offset = 0, onClear, rows }) => (
       </colgroup>
     }
     columnCount={5}
-    mobileConfig={{
-      fields: [1, 4],
-      serial: 0,
-      subtitle: 2,
-      title: 3,
-    }}
-    emptyAction={
-      isFiltered ? (
-        <AppButton variant="secondary" onClick={onClear}>Clear filters</AppButton>
-      ) : undefined
-    }
     emptyHint="The selected validation category has no row errors."
     emptyTitle={rows.length === 0 ? "No matching row errors" : undefined}
-    emptyVariant={isFiltered ? "filtered" : "empty"}
     head={
       <>
-        <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-        <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Row number</th>
-        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Field</th>
-        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Message</th>
-        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Original value</th>
+        <th className={DATA_TABLE_HEADER_CLASS}>#</th>
+        <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Row number</th>
+        <th className={DATA_TABLE_HEADER_CLASS}>Field</th>
+        <th className={DATA_TABLE_HEADER_CLASS}>Message</th>
+        <th className={DATA_TABLE_HEADER_CLASS}>Original value</th>
       </>
     }
     minWidth="min-w-[920px]"
   >
     {rows.map((row, index) => (
       <tr key={`${row.rowNumber}-${row.field}-${index}`}>
-        <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+        <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
           {offset + index + 1}
         </td>
         <td className="text-right tabular-nums">
@@ -498,7 +486,7 @@ const NewImportWizard = ({
               chooseFile(event.dataTransfer.files?.[0]);
             }}
           >
-            <Upload aria-hidden="true" className="h-8 w-8 text-slate-500" />
+            <Upload className="h-8 w-8 text-slate-400" />
             <span className="mt-3 text-sm font-semibold text-slate-800">
               {choice.file?.name ?? "Drop a CSV or XLSX file here"}
             </span>
@@ -570,7 +558,7 @@ const NewImportWizard = ({
           {(validation?.warnings ?? []).length > 0 ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
               <div className="flex items-center gap-2 text-sm font-semibold">
-                <AlertTriangle aria-hidden="true" className="h-4 w-4" />
+                <AlertTriangle className="h-4 w-4" />
                 Validation warnings
               </div>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
@@ -593,22 +581,20 @@ const NewImportWizard = ({
                 variant="secondary"
                 onClick={() => void downloadErrors()}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Download error CSV
               </AppButton>
             ) : (
               <DisabledAction reason="Downloading errors requires export permission.">
                 <AppButton disabled variant="secondary">
-                  <Download aria-hidden="true" className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                   Download error CSV
                 </AppButton>
               </DisabledAction>
             )}
           </div>
           <ErrorRowsTable
-            isFiltered={errorFilter !== "all"}
             offset={(errorPage - 1) * errorPageSize}
-            onClear={() => setErrorFilter("all")}
             rows={pagedRows}
           />
           <SupplyChainPagination
@@ -690,7 +676,7 @@ const NewImportWizard = ({
 
       {step === 4 && result ? (
         <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
-          <CheckCircle2 aria-hidden="true" className="h-10 w-10 text-emerald-600" />
+          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
           <h2 className="mt-4 text-xl font-semibold text-slate-900">
             Import committed
           </h2>
@@ -706,7 +692,7 @@ const NewImportWizard = ({
             </div>
             <div>
               <dt className="text-xs font-medium text-slate-500">Correlation ID</dt>
-              <dd className="mt-1 flex items-center gap-2 break-all text-xs text-slate-500">
+              <dd className="mt-1 flex items-center gap-2 break-all text-xs text-slate-400">
                 {result.correlationId || "Not supplied"}
                 {result.correlationId ? (
                   <AppTooltip label="Copy correlation ID">
@@ -728,7 +714,7 @@ const NewImportWizard = ({
                         }
                       }}
                     >
-                      <Clipboard aria-hidden="true" className="h-4 w-4" />
+                      <Clipboard className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                 ) : null}
@@ -765,7 +751,7 @@ const NewImportWizard = ({
         <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
           {correctionReason}
         </div>
-        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+        <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setDuplicateConfirmOpen(false)}>
             Back
           </AppButton>
@@ -808,7 +794,7 @@ const ImportDetailsModal = ({ detail, isOpen, loading, onClose }) => {
           </div>
         </>
       )}
-      <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex justify-end border-t border-slate-200 bg-white px-4 pt-4 md:static md:mx-0 md:border-t-0 md:px-0">
+      <div className="mt-5 flex justify-end">
         <AppButton variant="secondary" onClick={onClose}>Close</AppButton>
       </div>
     </AppModal>
@@ -957,17 +943,17 @@ const ImportsPage = () => {
         actions={
           <>
             <AppButton disabled={state.loading} variant="secondary" onClick={() => void load()}>
-              <RotateCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />Refresh
+              <RotateCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
             {capabilities.canExport ? (
-              <AppButton disabled={state.loading || state.list.length === 0} variant="secondary" onClick={() => void exportRows()}><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton>
+              <AppButton disabled={state.loading || state.list.length === 0} variant="secondary" onClick={() => void exportRows()}><Download className="h-4 w-4" />Export</AppButton>
             ) : (
-              <DisabledAction reason="Export requires Supply Chain Imports export permission."><AppButton disabled variant="secondary"><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton></DisabledAction>
+              <DisabledAction reason="Export requires Supply Chain Imports export permission."><AppButton disabled variant="secondary"><Download className="h-4 w-4" />Export</AppButton></DisabledAction>
             )}
             {capabilities.canCreate ? (
-              <AppButton onClick={() => setTab("new")}><Plus aria-hidden="true" className="h-4 w-4" />New import</AppButton>
+              <AppButton onClick={() => setTab("new")}><Plus className="h-4 w-4" />New import</AppButton>
             ) : (
-              <DisabledAction reason="Starting an import requires create permission."><AppButton disabled><Plus aria-hidden="true" className="h-4 w-4" />New import</AppButton></DisabledAction>
+              <DisabledAction reason="Starting an import requires create permission."><AppButton disabled><Plus className="h-4 w-4" />New import</AppButton></DisabledAction>
             )}
           </>
         }
@@ -984,7 +970,6 @@ const ImportsPage = () => {
 
       <ProcurementTabs
         active={tab}
-        id="supply-chain-import-tabs"
         tabs={[
           { id: "new", icon: Upload, label: "New import" },
           { id: "history", icon: History, label: "History" },
@@ -992,13 +977,7 @@ const ImportsPage = () => {
         onChange={setTab}
       />
 
-      <div
-        id={`supply-chain-import-tabs-panel-${tab}`}
-        role="tabpanel"
-        aria-labelledby={`supply-chain-import-tabs-tab-${tab}`}
-        className="space-y-6"
-      >
-        {tab === "new" ? (
+      {tab === "new" ? (
         capabilities.canCreate ? (
           <NewImportWizard
             canApprove={capabilities.canApprove}
@@ -1030,56 +1009,10 @@ const ImportsPage = () => {
           <DataTableShell
             colGroup={<colgroup><col className="w-[56px]" /><col className="w-56" /><col className="w-40" /><col className="w-32" /><col className="w-44" /><col className="w-24" /><col className="w-24" /><col className="w-24" /><col className="w-28" /><col className="w-28" /><col className="w-40" /><col className="w-44" /></colgroup>}
             columnCount={12}
-            mobileConfig={{
-              actions: 11,
-              fields: [3, 4, 5, 7],
-              serial: 0,
-              status: 9,
-              subtitle: 2,
-              title: 1,
-            }}
-            emptyAction={
-              state.error ? (
-                <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-              ) : activeFilterCount > 0 ? (
-                <AppButton
-                  variant="secondary"
-                  onClick={() =>
-                    setFilters({ ChannelId: "", ImportType: "", Status: "" })
-                  }
-                >
-                  Clear filters
-                </AppButton>
-              ) : capabilities.canCreate ? (
-                <AppButton onClick={() => setTab("import")}>Start import</AppButton>
-              ) : undefined
-            }
-            emptyContext={
-              !state.error && activeFilterCount === 0
-                ? "Import batches preserve validation and commit history for channel files."
-                : undefined
-            }
             emptyIcon={Inbox}
-            emptyHint={
-              state.error
-                ? state.error
-                : activeFilterCount > 0
-                  ? "Clear the current filters to see all import batches."
-                  : "Validate a channel file to create the first import batch."
-            }
-            emptyTitle={
-              !state.loading && state.list.length === 0
-                ? state.error
-                  ? "Couldn't load import batches"
-                  : activeFilterCount > 0
-                    ? "No import batches match these filters"
-                    : "No import batches yet"
-                : undefined
-            }
-            emptyVariant={
-              state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"
-            }
-            head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>File name</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Import type</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Period</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Total</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Valid</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Invalid</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Committed</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Uploaded at</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
+            emptyHint="Validated and committed import batches will appear here."
+            emptyTitle={!state.loading && state.list.length === 0 ? "No import batches yet" : undefined}
+            head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>File name</th><th className={DATA_TABLE_HEADER_CLASS}>Import type</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={DATA_TABLE_HEADER_CLASS}>Period</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Total</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Valid</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Invalid</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Committed</th><th className={DATA_TABLE_HEADER_CLASS}>Status</th><th className={DATA_TABLE_HEADER_CLASS}>Uploaded at</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
             loading={state.loading}
             minWidth="min-w-[1660px]"
           >
@@ -1090,7 +1023,7 @@ const ImportsPage = () => {
 
               return (
                 <tr key={getBatchId(batch)}>
-                  <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                  <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
                   <td className="truncate font-medium text-slate-800" title={batch.originalFileName}>{batch.originalFileName || "—"}</td>
                   <td>{batch.importType || "—"}</td>
                   <td>{batch.channelCode || "All"}</td>
@@ -1103,9 +1036,9 @@ const ImportsPage = () => {
                   <td>{formatSupplyChainDate(batch.uploadedAtUtc)}</td>
                   <td>
                     <div className="flex items-center justify-end gap-0.5">
-                      <AppTooltip label="View batch details"><button aria-label="View batch details" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void openDetail(batch)}><Eye aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>
-                      {capabilities.canExport && Number(batch.invalidRows) > 0 ? <AppTooltip label="Download errors"><button aria-label="Download errors" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void downloadErrors(batch)}><Download aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : null}
-                      {capabilities.canDelete && canCancel ? <AppTooltip label="Cancel staged batch"><button aria-label="Cancel staged batch" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setCancelError(""); setCancelReason(""); setCancelTarget(batch); }}><XCircle aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : committed ? <AppTooltip label="Committed Procurement imports are cancelled from Procurement history"><Link aria-label="Open Procurement import history" className={DATA_TABLE_ROW_ACTION_CLASS} to="/procurement/sales-import?tab=history"><History aria-hidden="true" className="h-4 w-4" /></Link></AppTooltip> : null}
+                      <AppTooltip label="View batch details"><button aria-label="View batch details" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void openDetail(batch)}><Eye className="h-4 w-4" /></button></AppTooltip>
+                      {capabilities.canExport && Number(batch.invalidRows) > 0 ? <AppTooltip label="Download errors"><button aria-label="Download errors" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => void downloadErrors(batch)}><Download className="h-4 w-4" /></button></AppTooltip> : null}
+                      {capabilities.canDelete && canCancel ? <AppTooltip label="Cancel staged batch"><button aria-label="Cancel staged batch" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setCancelError(""); setCancelReason(""); setCancelTarget(batch); }}><XCircle className="h-4 w-4" /></button></AppTooltip> : committed ? <AppTooltip label="Committed Procurement imports are cancelled from Procurement history"><Link aria-label="Open Procurement import history" className={DATA_TABLE_ROW_ACTION_CLASS} to="/procurement/sales-import?tab=history"><History className="h-4 w-4" /></Link></AppTooltip> : null}
                     </div>
                   </td>
                 </tr>
@@ -1114,8 +1047,7 @@ const ImportsPage = () => {
           </DataTableShell>
           <SupplyChainPagination disabled={state.loading} pageNumber={state.pageNumber} pageSize={state.pageSize} totalCount={state.totalCount} totalPages={state.totalPages} onPageChange={(value) => dispatch(setImportPage(value))} onPageSizeChange={(value) => dispatch(setImportPageSize(value))} />
         </>
-        )}
-      </div>
+      )}
 
       <ImportDetailsModal detail={detail} isOpen={detailOpen} loading={detailLoading} onClose={() => setDetailOpen(false)} />
       <AppModal
@@ -1139,7 +1071,7 @@ const ImportsPage = () => {
             }}
           />
         </div>
-        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
+        <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton>
           {!cancelReason.trim() ? (
             <DisabledAction reason="Enter a cancellation reason to continue.">

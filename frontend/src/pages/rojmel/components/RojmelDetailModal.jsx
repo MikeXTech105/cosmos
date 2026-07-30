@@ -12,7 +12,7 @@ const RojmelDetailModal = ({ fields, isLoading, isOpen, onClose, title }) => (
       <dl className="grid gap-3 sm:grid-cols-2">
         {fields.map((field) => (
           <div key={field.label} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
               {field.label}
             </dt>
             <dd className="mt-1 break-words text-sm font-medium text-slate-800">

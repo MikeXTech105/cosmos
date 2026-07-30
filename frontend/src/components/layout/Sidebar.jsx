@@ -8,11 +8,6 @@ import { useLocation } from "react-router-dom";
 import { useSidebar } from "../../hooks/useSidebar";
 import useSidebarTheme from "../../hooks/useSidebarTheme";
 import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay";
-import {
-  focusFirstIn,
-  restoreFocus,
-  trapFocus,
-} from "../../utils/focus";
 import SidebarGroup from "./SidebarGroup";
 import SidebarItem from "./SidebarItem";
 
@@ -69,12 +64,9 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
       <div className="px-4 pb-4">
         <label className="relative block">
-          <span className={clsx("mb-1.5 block text-xs font-semibold", classes.menuLabel)}>
-            Search
-          </span>
-          <Search aria-hidden="true"
+          <Search
             className={clsx(
-              "pointer-events-none absolute left-3 bottom-3 h-4 w-4",
+              "pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2",
               classes.searchIcon,
             )}
           />
@@ -88,7 +80,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
             }}
             placeholder="Search menu"
             className={clsx(
-              "h-11 w-full rounded-lg border pl-9 pr-12 text-base outline-none transition-all focus:ring-2 lg:h-10 lg:text-sm",
+              "h-10 w-full rounded-lg border pl-9 pr-12 text-sm outline-none transition-all focus:ring-2",
               classes.searchInput,
             )}
           />
@@ -98,7 +90,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
               classes.searchShortcut,
             )}
           >
-            <Command aria-hidden="true" className="h-3 w-3" /> K
+            <Command className="h-3 w-3" /> K
           </span>
         </label>
       </div>
@@ -113,7 +105,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
           Menu
         </p>
 
-        <nav className="space-y-2 lg:space-y-1" aria-label="Primary navigation">
+        <nav className="space-y-1" aria-label="Primary navigation">
           {menuTree.map((item) =>
             item.children.length > 0 ? (
               <SidebarGroup
@@ -143,7 +135,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
               classes.emptyCard,
             )}
           >
-            <ShieldCheck aria-hidden="true" className={clsx("mx-auto h-5 w-5", classes.iconActive)} />
+            <ShieldCheck className={clsx("mx-auto h-5 w-5", classes.iconActive)} />
             <p className={clsx("mt-2 text-sm font-semibold", classes.emptyTitle)}>
               No pages assigned
             </p>
@@ -218,12 +210,34 @@ const Sidebar = () => {
     document.body.style.overflow = "hidden";
 
     const focusFrame = window.requestAnimationFrame(() => {
-      focusFirstIn(drawerRef.current);
+      drawerRef.current
+        ?.querySelector("button, input, a[href]")
+        ?.focus();
     });
-    const releaseFocusTrap = trapFocus(drawerRef.current);
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         closeMobileSidebar();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusable = Array.from(
+        drawerRef.current?.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
       }
     };
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
@@ -236,11 +250,10 @@ const Sidebar = () => {
 
     return () => {
       window.cancelAnimationFrame(focusFrame);
-      releaseFocusTrap();
       document.removeEventListener("keydown", handleKeyDown);
       desktopQuery.removeEventListener("change", handleDesktopChange);
       document.body.style.overflow = previousOverflow;
-      restoreFocus(previousFocusRef.current);
+      previousFocusRef.current?.focus?.();
     };
   }, [closeMobileSidebar, mobileOpen]);
 
@@ -262,8 +275,7 @@ const Sidebar = () => {
           <div className="fixed inset-0 z-50 lg:hidden">
             <motion.button
               type="button"
-              aria-hidden="true"
-              tabIndex={-1}
+              aria-label="Close navigation menu"
               className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1px]"
               onClick={closeMobileSidebar}
               initial={{ opacity: 0 }}
@@ -294,12 +306,12 @@ const Sidebar = () => {
                     type="button"
                     onClick={closeMobileSidebar}
                     className={clsx(
-                      "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/40",
+                      "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand/40",
                       sidebarTheme.classes.navInactive,
                     )}
                     aria-label="Close navigation menu"
                   >
-                    <X aria-hidden="true" className="h-5 w-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 }
               />

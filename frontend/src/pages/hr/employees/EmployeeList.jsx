@@ -1,9 +1,6 @@
 import { Plus, UserRound } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import MobileRecordCard, {
-  MobileRecordCardSkeleton,
-} from "../../../components/common/MobileRecordCard";
 import {
   HR_EMPLOYEE_STATUS_KEY,
   getEmployeeStatusKey,
@@ -78,7 +75,6 @@ export const EmployeeAvatar = ({ employee, isSelected = false, size = "md" }) =>
 };
 
 const EmployeeList = ({
-  activeFilterCount = 0,
   actions,
   departmentOptions,
   designationOptions,
@@ -86,7 +82,6 @@ const EmployeeList = ({
   error,
   isLoading,
   onCreate,
-  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -98,37 +93,20 @@ const EmployeeList = ({
   totalPages,
 }) => {
   if (!isLoading && (error || employees.length === 0)) {
-    const variant = activeFilterCount > 0 ? "filtered" : "empty";
-
     return (
       <HrEmptyState
-        context="Employee profiles connect people to departments, shifts, attendance, leave, and payroll."
         icon={UserRound}
         error={error}
-        errorTitle="Couldn't load employees"
-        title={
-          variant === "filtered"
-            ? "No employees match these filters"
-            : "No employees yet"
-        }
-        description={
-          variant === "filtered"
-            ? "Clear the current filters to see all employees."
-            : "Create the first employee profile to begin using HR."
-        }
+        title="No employees found"
+        description="Create the first employee profile or adjust the current filters."
         onRetry={onRetry}
-        variant={variant}
         action={
-          variant === "filtered" ? (
-            <AppButton variant="secondary" onClick={onClear}>
-              Clear filters
-            </AppButton>
-          ) : actions.canCreate ? (
+          actions.canCreate && (
             <AppButton className="mt-5 h-10" onClick={onCreate}>
-              <Plus aria-hidden="true" className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               Add Employee
             </AppButton>
-          ) : undefined
+          )
         }
       />
     );
@@ -144,68 +122,14 @@ const EmployeeList = ({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        <div className="grid gap-3 md:hidden">
-          {isLoading
-            ? Array.from({ length: 5 }, (_, index) => (
-                <MobileRecordCardSkeleton key={index} fields={3} />
-              ))
-            : employees.map((employee, index) => (
-                <MobileRecordCard
-                  key={
-                    getHrRecordId(employee, "employee") ??
-                    employee.employeeCode
-                  }
-                  serial={(pageNumber - 1) * pageSize + index + 1}
-                  title={getEmployeeName(employee)}
-                  subtitle={employee.employeeCode ?? "-"}
-                  status={
-                    <EmployeeStatusPill
-                      status={employee.status}
-                      statusName={employee.statusName}
-                    />
-                  }
-                  fields={[
-                    {
-                      key: "designation",
-                      label: "Designation",
-                      value: getLookupLabel(
-                        designationOptions,
-                        employee.designationId,
-                        employee.designationName ?? "-",
-                      ),
-                    },
-                    {
-                      key: "department",
-                      label: "Department",
-                      value: getLookupLabel(
-                        departmentOptions,
-                        employee.departmentId,
-                        employee.departmentName ?? "-",
-                      ),
-                    },
-                  ]}
-                  footer={
-                    <button
-                      type="button"
-                      className="inline-flex min-h-11 items-center text-sm font-medium text-brand"
-                      onClick={() => onSelect(employee)}
-                    >
-                      View profile
-                    </button>
-                  }
-                />
-              ))}
-        </div>
-
-        <div className="hidden md:block">
-          {isLoading
-            ? Array.from({ length: 5 }, (_, index) => (
-                <div
-                  key={index}
-                  className="mb-2 h-20 animate-pulse rounded-xl bg-slate-100"
-                />
-              ))
-            : employees.map((employee) => {
+        {isLoading
+          ? Array.from({ length: 5 }, (_, index) => (
+              <div
+                key={index}
+                className="mb-2 h-20 animate-pulse rounded-xl bg-slate-100"
+              />
+            ))
+          : employees.map((employee) => {
               const id = getHrRecordId(employee, "employee");
               const isSelected = String(id) === String(selectedId);
 
@@ -228,7 +152,7 @@ const EmployeeList = ({
                         <p className="truncate text-sm font-semibold text-slate-900">
                           {getEmployeeName(employee)}
                         </p>
-                        <p className="mt-0.5 truncate font-mono text-xs font-medium text-slate-500">
+                        <p className="mt-0.5 truncate font-mono text-xs font-medium text-slate-400">
                           {employee.employeeCode ?? "-"}
                         </p>
                       </div>
@@ -253,8 +177,7 @@ const EmployeeList = ({
                   </div>
                 </button>
               );
-              })}
-        </div>
+            })}
       </div>
 
       <HrPagination

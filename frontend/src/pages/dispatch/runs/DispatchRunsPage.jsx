@@ -547,20 +547,20 @@ const DispatchRunsPage = () => {
             {state.loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void load()}>
-                <RefreshCw aria-hidden="true" className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
             {state.list.length === 0 ? (
               <DisabledDispatchAction reason="There are no runs on this page to export.">
                 <AppButton disabled variant="secondary">
-                  <Download aria-hidden="true" className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                   Export
                 </AppButton>
               </DisabledDispatchAction>
@@ -589,19 +589,19 @@ const DispatchRunsPage = () => {
                   })
                 }
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             )}
             {capabilities.canCreate ? (
               <AppButton onClick={() => setCreateOpen(true)}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 New run
               </AppButton>
             ) : (
               <DisabledDispatchAction reason="Creating runs requires Planning Runs create permission.">
                 <AppButton disabled>
-                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   New run
                 </AppButton>
               </DisabledDispatchAction>
@@ -714,65 +714,24 @@ const DispatchRunsPage = () => {
           </colgroup>
         }
         columnCount={10}
-        mobileConfig={{
-          actions: 9,
-          fields: [2, 5, 6, 7],
-          serial: 0,
-          status: 4,
-          subtitle: 3,
-          title: 1,
-        }}
-        emptyAction={
-          state.error ? (
-            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-          ) : activeFilterCount > 0 ? (
-            <AppButton
-              variant="secondary"
-              onClick={() =>
-                setFilters({
-                  ChannelId: "",
-                  FromDate: "",
-                  Status: "",
-                  ToDate: "",
-                })
-              }
-            >
-              Clear filters
-            </AppButton>
-          ) : capabilities.canCreate ? (
-            <AppButton onClick={() => setCreateOpen(true)}>Create planning run</AppButton>
-          ) : undefined
-        }
-        emptyContext="Planning runs turn committed sales and stock snapshots into reviewable warehouse recommendations."
-        emptyHint={
-          state.error
-            ? "Check the connection and try loading the planning runs again."
-            : activeFilterCount > 0
-              ? "Clear the current filters to see other planning runs."
-              : "Commit Sales and Warehouse stock snapshots, then create the first run."
-        }
+        emptyHint="Create a run after committing Sales and Warehouse stock snapshots."
         emptyTitle={
-          !state.loading && (state.error || state.list.length === 0)
-            ? state.error
-              ? "Couldn't load planning runs"
-              : activeFilterCount > 0
-                ? "No planning runs match these filters"
-                : "No planning runs yet"
+          !state.loading && state.list.length === 0
+            ? "No planning runs match these filters"
             : undefined
         }
-        emptyVariant={state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"}
         head={
           <>
-            <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Run no.</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Planning date</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Lines</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended qty</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated qty</th>
-            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Created at</th>
-            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>#</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Run no.</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Channel</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Planning date</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Status</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Lines</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended qty</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated qty</th>
+            <th className={DATA_TABLE_HEADER_CLASS}>Created at</th>
+            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
           </>
         }
         loading={state.loading}
@@ -782,7 +741,7 @@ const DispatchRunsPage = () => {
           const actions = getRunActions(row.status, capabilities);
           return (
             <tr key={row.id}>
-              <td className="text-xs font-semibold tabular-nums text-slate-500">
+              <td className="text-xs font-semibold tabular-nums text-slate-400">
                 {(state.pageNumber - 1) * state.pageSize + index + 1}
               </td>
               <td className="font-medium text-slate-900">{row.runNumber}</td>
@@ -802,7 +761,7 @@ const DispatchRunsPage = () => {
                       type="button"
                       onClick={() => navigate(`/dispatch/runs/${row.id}`)}
                     >
-                      <Eye aria-hidden="true" className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                   {actions.cancel ? (
@@ -816,7 +775,7 @@ const DispatchRunsPage = () => {
                           setCancelTarget(row);
                         }}
                       >
-                        <Ban aria-hidden="true" className="h-4 w-4" />
+                        <Ban className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                   ) : null}

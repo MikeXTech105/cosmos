@@ -1,9 +1,6 @@
 import { Building2, Plus } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import MobileRecordCard, {
-  MobileRecordCardSkeleton,
-} from "../../../components/common/MobileRecordCard";
 import {
   formatHrDate,
   getHrBoolean,
@@ -17,13 +14,11 @@ import {
 import DepartmentActions from "./DepartmentActions";
 
 const DepartmentTable = ({
-  activeFilterCount = 0,
   actions,
   departments,
   error,
   isLoading,
   onCreate,
-  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -33,81 +28,29 @@ const DepartmentTable = ({
   totalPages,
 }) => {
   if (!isLoading && (error || departments.length === 0)) {
-    const variant = activeFilterCount > 0 ? "filtered" : "empty";
-
     return (
       <HrEmptyState
-        context="Departments organize employees, reporting, and workforce metrics."
         icon={Building2}
         error={error}
-        errorTitle="Couldn't load departments"
-        title={
-          variant === "filtered"
-            ? "No departments match these filters"
-            : "No departments yet"
-        }
-        description={
-          variant === "filtered"
-            ? "Clear the current filters to see all departments."
-            : "Create the first HR department to organize your team."
-        }
+        title="No departments found"
+        description="Create the first HR department or adjust the current filters."
         onRetry={onRetry}
-        variant={variant}
         action={
-          variant === "filtered" ? (
-            <AppButton variant="secondary" onClick={onClear}>
-              Clear filters
-            </AppButton>
-          ) : actions.canCreate ? (
+          actions.canCreate && (
             <AppButton className="mt-5 h-10" onClick={onCreate}>
-              <Plus aria-hidden="true" className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
               Add Department
             </AppButton>
-          ) : undefined
+          )
         }
       />
     );
   }
 
   return (
-    <div className="overflow-hidden md:rounded-2xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
-      <div className="grid gap-3 pb-3 md:hidden">
-        {isLoading
-          ? Array.from({ length: 5 }, (_, index) => (
-              <MobileRecordCardSkeleton key={index} fields={3} />
-            ))
-          : departments.map((department, index) => (
-              <MobileRecordCard
-                key={getHrRecordId(department, "department") ?? index}
-                serial={(pageNumber - 1) * pageSize + index + 1}
-                title={department.departmentName ?? "-"}
-                subtitle={department.description || "HR department"}
-                status={
-                  <HrStatusPill
-                    isActive={getHrBoolean(department.isActive)}
-                  />
-                }
-                fields={[
-                  {
-                    key: "code",
-                    label: "Code",
-                    value: department.departmentCode ?? "-",
-                  },
-                  {
-                    key: "created",
-                    label: "Created",
-                    value: formatHrDate(department.createdAt),
-                  },
-                ]}
-                actions={
-                  <DepartmentActions department={department} {...actions} />
-                }
-              />
-            ))}
-      </div>
-
-      <div className="hidden overflow-x-auto md:block">
-        <table aria-label="Departments" className="w-full min-w-[840px] table-fixed text-left">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[840px] table-fixed text-left">
           <thead className="bg-slate-50">
             <tr>
               {[
@@ -119,7 +62,7 @@ const DepartmentTable = ({
                 "Created Date",
                 "Actions",
               ].map((heading) => (
-                <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                <th
                   key={heading}
                   className={[
                     "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -148,19 +91,19 @@ const DepartmentTable = ({
                       key={id ?? department.departmentCode}
                       className="transition-colors hover:bg-slate-50"
                     >
-                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                         {(pageNumber - 1) * pageSize + index + 1}
                       </td>
                       <td className="border-b border-slate-100 px-4 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-light text-brand">
-                            <Building2 aria-hidden="true" className="h-4 w-4" />
+                            <Building2 className="h-4 w-4" />
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-slate-900">
                               {department.departmentName ?? "-"}
                             </p>
-                            <p className="truncate text-xs text-slate-500">
+                            <p className="truncate text-xs text-slate-400">
                               HR department
                             </p>
                           </div>

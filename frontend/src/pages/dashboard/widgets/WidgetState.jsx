@@ -1,7 +1,6 @@
 import { FileSearch, RefreshCw } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import EmptyState from "../../../components/common/EmptyState";
 
 export const StatSkeleton = () => {
   return (
@@ -66,10 +65,7 @@ export const WidgetCard = ({ actions, children, description, title }) => {
 
 export const WidgetError = ({ message, onRetry }) => {
   return (
-    <div
-      role="alert"
-      className="rounded-xl border border-red-100 bg-red-50 px-4 py-4"
-    >
+    <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-4">
       <h3 className="text-sm font-semibold text-red-700">
         Unable to load this widget
       </h3>
@@ -82,7 +78,7 @@ export const WidgetError = ({ message, onRetry }) => {
           className="mt-3 h-9 rounded-lg border-red-200 bg-white px-3 text-red-700 hover:bg-red-50"
           onClick={onRetry}
         >
-          <RefreshCw aria-hidden="true" className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" />
           Retry
         </AppButton>
       )}
@@ -90,17 +86,11 @@ export const WidgetError = ({ message, onRetry }) => {
   );
 };
 
-export const WidgetEmpty = ({
-  hint = "Activity will appear here once it is recorded.",
-  message = "No activity for this period",
-}) => {
+export const WidgetEmpty = ({ message = "No data for this period." }) => {
   return (
-    <div className="min-h-[180px] rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4">
-      <EmptyState
-        hint={hint}
-        icon={FileSearch}
-        title={message}
-      />
+    <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+      <FileSearch className="h-7 w-7 text-slate-400" />
+      <p className="mt-2 text-sm font-medium text-slate-700">{message}</p>
     </div>
   );
 };

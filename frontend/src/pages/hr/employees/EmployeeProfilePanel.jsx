@@ -14,9 +14,7 @@ import {
 import { useMemo, useState } from "react";
 
 import AppButton from "../../../components/common/AppButton";
-import AppTabs from "../../../components/common/AppTabs";
 import AppTooltip from "../../../components/common/AppTooltip";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import {
   HR_ATTENDANCE_STATUS_OPTIONS,
   HR_EMPLOYEE_STATUS_KEY,
@@ -49,7 +47,7 @@ const tabs = [
 const DetailRow = ({ label, value }) => {
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </p>
       <p className="mt-1 break-words text-sm font-medium text-slate-900">
@@ -63,7 +61,7 @@ const EmptyPanel = ({ children, icon: Icon, title }) => {
   return (
     <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-        <Icon aria-hidden="true" className="h-6 w-6" />
+        <Icon className="h-6 w-6" />
       </div>
       <h3 className="mt-4 text-base font-semibold text-slate-900">{title}</h3>
       <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
@@ -313,7 +311,7 @@ const EmployeeProfilePanel = ({
                 className="h-9 rounded-lg px-3"
                 onClick={() => onRejoin?.(employee)}
               >
-                <UserPlus aria-hidden="true" className="h-4 w-4" />
+                <UserPlus className="h-4 w-4" />
                 Rejoin
               </AppButton>
             ) : (
@@ -324,7 +322,7 @@ const EmployeeProfilePanel = ({
                     className="h-9 rounded-lg px-3"
                     onClick={() => onEdit(employee)}
                   >
-                    <Pencil aria-hidden="true" className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                     Edit
                   </AppButton>
                 )}
@@ -334,7 +332,7 @@ const EmployeeProfilePanel = ({
                     className="h-9 rounded-lg px-3 text-amber-700 hover:bg-amber-50"
                     onClick={() => onResign?.(employee)}
                   >
-                    <LogOut aria-hidden="true" className="h-4 w-4" />
+                    <LogOut className="h-4 w-4" />
                     Resign
                   </AppButton>
                 )}
@@ -343,10 +341,10 @@ const EmployeeProfilePanel = ({
                     <button
                       type="button"
                       onClick={() => onDelete(employee)}
-                      className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 md:h-9 md:w-9"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
                       aria-label="Delete employee"
                     >
-                      <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                 )}
@@ -356,28 +354,35 @@ const EmployeeProfilePanel = ({
         </div>
 
         <div className="mt-5 overflow-x-auto">
-          <AppTabs
-            active={activeTab}
-            aria-label="Employee profile sections"
-            activeClassName="border-brand text-brand"
-            className="gap-2 border-b border-slate-200 md:gap-1"
-            id="employee-profile-tabs"
-            inactiveClassName="border-transparent text-slate-500 hover:text-slate-800"
-            tabClassName="flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium"
-            tabs={tabs}
-            onChange={setActiveTab}
-          />
+          <div className="flex gap-1 border-b border-slate-200">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={[
+                    "flex h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium transition-colors",
+                    isActive
+                      ? "border-brand text-brand"
+                      : "border-transparent text-slate-500 hover:text-slate-800",
+                  ].join(" ")}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-6">
         {activeTab === "overview" && (
-          <div
-            id="employee-profile-tabs-panel-overview"
-            role="tabpanel"
-            aria-labelledby="employee-profile-tabs-tab-overview"
-            className="space-y-5"
-          >
+          <div className="space-y-5">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
                 Personal & Contact
@@ -485,7 +490,7 @@ const EmployeeProfilePanel = ({
                       key={`${address.addressType ?? "address"}-${index}`}
                       className="rounded-xl border border-slate-100 bg-slate-50 p-3"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Address {index + 1}
                       </p>
                       <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -515,11 +520,7 @@ const EmployeeProfilePanel = ({
         )}
 
         {activeTab === "bank" && (
-          <div
-            id="employee-profile-tabs-panel-bank"
-            role="tabpanel"
-            aria-labelledby="employee-profile-tabs-tab-bank"
-          >
+          <div>
             <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-slate-900">
                 Bank Details
@@ -530,7 +531,7 @@ const EmployeeProfilePanel = ({
                   className="h-9 rounded-lg px-3"
                   onClick={() => onEditBank(employee)}
                 >
-                  <Pencil aria-hidden="true" className="h-4 w-4" />
+                  <Pencil className="h-4 w-4" />
                   {hasBankInfo(currentBankDetails) ? "Edit Bank" : "Add Bank"}
                 </AppButton>
               )}
@@ -564,11 +565,7 @@ const EmployeeProfilePanel = ({
         )}
 
         {activeTab === "documents" && (
-          <div
-            id="employee-profile-tabs-panel-documents"
-            role="tabpanel"
-            aria-labelledby="employee-profile-tabs-tab-documents"
-          >
+          <div>
             <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-slate-900">
                 Documents
@@ -578,7 +575,7 @@ const EmployeeProfilePanel = ({
                   className="h-9 rounded-lg px-3"
                   onClick={onAddDocument}
                 >
-                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   Add Document
                 </AppButton>
               )}
@@ -635,7 +632,7 @@ const EmployeeProfilePanel = ({
                             rel="noreferrer"
                             className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold text-brand hover:bg-brand-light"
                           >
-                            <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                            <Download className="h-3.5 w-3.5" />
                             Open
                           </a>
                         )}
@@ -644,10 +641,10 @@ const EmployeeProfilePanel = ({
                             <button
                               type="button"
                               onClick={() => onDeleteDocument(document)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
                               aria-label="Delete document"
                             >
-                              <Trash2 aria-hidden="true" className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </AppTooltip>
                         )}
@@ -661,11 +658,7 @@ const EmployeeProfilePanel = ({
         )}
 
         {activeTab === "attendance" && (
-          <div
-            id="employee-profile-tabs-panel-attendance"
-            role="tabpanel"
-            aria-labelledby="employee-profile-tabs-tab-attendance"
-          >
+          <div>
             <h3 className="mb-4 text-sm font-semibold text-slate-900">
               Recent Attendance
             </h3>
@@ -676,21 +669,13 @@ const EmployeeProfilePanel = ({
                 No attendance has been recorded yet for employee #{employeeId}.
               </EmptyPanel>
             ) : (
-              <ResponsiveTableRegion
-                className="rounded-2xl border border-slate-200"
-                mobileConfig={{
-                  fields: [1, 2],
-                  serial: "generated",
-                  status: 3,
-                  title: 0,
-                }}
-              >
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
                 <table className="w-full min-w-[680px] text-left">
                   <thead className="bg-slate-50">
                     <tr>
                       {["Date", "Check In", "Check Out", "Status"].map(
                         (heading) => (
-                          <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                          <th
                             key={heading}
                             className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"
                           >
@@ -734,18 +719,13 @@ const EmployeeProfilePanel = ({
                     ))}
                   </tbody>
                 </table>
-              </ResponsiveTableRegion>
+              </div>
             )}
           </div>
         )}
 
         {activeTab === "leaves" && (
-          <div
-            id="employee-profile-tabs-panel-leaves"
-            role="tabpanel"
-            aria-labelledby="employee-profile-tabs-tab-leaves"
-            className="space-y-5"
-          >
+          <div className="space-y-5">
             <div>
               <h3 className="mb-4 text-sm font-semibold text-slate-900">
                 Leave Balance
@@ -763,7 +743,7 @@ const EmployeeProfilePanel = ({
                       key={item.label}
                       className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                         {item.label}
                       </p>
                       <p className="mt-1 text-lg font-bold text-slate-900">

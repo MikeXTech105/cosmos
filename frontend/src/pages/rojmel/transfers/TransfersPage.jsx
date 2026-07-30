@@ -7,7 +7,6 @@ import { formatNumber } from "../../../utils/format";
 import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import {
   cancelRojmelTransfer,
   createRojmelTransfer,
@@ -45,10 +44,10 @@ const Action = ({ icon: Icon, label, onClick, warning }) => (
     <button
       type="button"
       aria-label={label}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 ${warning ? "hover:bg-amber-50 hover:text-amber-700" : "hover:bg-slate-100 hover:text-brand"}`}
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 ${warning ? "hover:bg-amber-50 hover:text-amber-700" : "hover:bg-slate-100 hover:text-brand"}`}
       onClick={onClick}
     >
-      <Icon aria-hidden="true" className="h-4 w-4" />
+      <Icon className="h-4 w-4" />
     </button>
   </AppTooltip>
 );
@@ -170,33 +169,13 @@ const TransfersPage = () => {
       ].map(([label, value]) => ({ label, value }))
     : [];
   const filterControls = { ...state.filters, Search: searchInput };
-  const defaultRange = getRojmelMonthRange();
-  const isFiltered = Boolean(
-    searchInput.trim() ||
-    state.filters.Status !== "all" ||
-    state.filters.WalletId !== "all" ||
-    state.filters.FromDate !== defaultRange.FromDate ||
-    state.filters.ToDate !== defaultRange.ToDate,
-  );
-  const clearFilters = () => {
-    setSearchInput("");
-    dispatch(
-      setRojmelTransferFilters({
-        ...defaultRange,
-        Search: "",
-        Status: "all",
-        WalletId: "all",
-      }),
-    );
-    dispatch(setRojmelTransferPage(1));
-  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <ArrowLeftRight aria-hidden="true" className="h-3.5 w-3.5" />
+            <ArrowLeftRight className="h-3.5 w-3.5" />
             Rojmel / Transfers
           </>
         }
@@ -205,12 +184,12 @@ const TransfersPage = () => {
         actions={
           <>
             <AppButton className="h-10" disabled={state.loading} variant="secondary" onClick={loadTransfers}>
-              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.isAdmin && capabilities.canCreate && (
               <AppButton className="h-10" onClick={() => setFormOpen(true)}>
-                <Plus aria-hidden="true" className="h-4 w-4" /> New Transfer
+                <Plus className="h-4 w-4" /> New Transfer
               </AppButton>
             )}
           </>
@@ -237,42 +216,30 @@ const TransfersPage = () => {
             dispatch(setRojmelTransferPage(1));
           }
         }}
-        onClear={clearFilters}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(
+            setRojmelTransferFilters({
+              ...getRojmelMonthRange(),
+              Search: "",
+              Status: "all",
+              WalletId: "all",
+            }),
+          );
+          dispatch(setRojmelTransferPage(1));
+        }}
       />
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {state.loading || state.error || state.list.length === 0 ? (
-          <RojmelState
-            context="Transfers move value between wallets without changing income or expense totals."
-            createLabel="Create transfer"
-            error={state.error}
-            isFiltered={isFiltered}
-            isLoading={state.loading}
-            noun="transfers"
-            onClear={clearFilters}
-            onCreate={
-              capabilities.isAdmin && capabilities.canCreate
-                ? () => setFormOpen(true)
-                : undefined
-            }
-            onRetry={loadTransfers}
-          />
+          <RojmelState error={state.error} isLoading={state.loading} noun="transfers" onRetry={loadTransfers} />
         ) : (
-          <ResponsiveTableRegion
-            mobileConfig={{
-              actions: 6,
-              fields: [3, 4],
-              serial: 0,
-              status: 5,
-              subtitle: 2,
-              title: 1,
-            }}
-          >
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] table-fixed text-left">
               <thead className="bg-slate-50">
                 <tr>
                   {["#", "Transfer No", "Date", "From Wallet → To Wallet", "Amount (₹)", "Status", "Actions"].map((heading) => (
-                    <th scope="col" aria-label={heading === "#" ? "Row number" : undefined} key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Amount (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
+                    <th key={heading} className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${["Amount (₹)", "Actions"].includes(heading) ? "text-right" : ""}`}>
                       {heading}
                     </th>
                   ))}
@@ -283,12 +250,12 @@ const TransfersPage = () => {
                   const active = Number(transfer.status) === 1;
                   return (
                     <tr key={transfer.id} className="hover:bg-slate-50">
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                      <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
                       <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-semibold text-slate-800">{transfer.transferNo || "-"}</td>
                       <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">{formatRojmelDate(transfer.transferDate)}</td>
                       <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-medium text-slate-800">
                         <span className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-2.5 py-1.5 text-blue-800">
-                          {transfer.fromWalletName} <ArrowLeftRight aria-hidden="true" className="h-3.5 w-3.5" /> {transfer.toWalletName}
+                          {transfer.fromWalletName} <ArrowLeftRight className="h-3.5 w-3.5" /> {transfer.toWalletName}
                         </span>
                       </td>
                       <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatNumber(transfer.amount)}</td>
@@ -306,7 +273,7 @@ const TransfersPage = () => {
                 })}
               </tbody>
             </table>
-          </ResponsiveTableRegion>
+          </div>
         )}
         {!state.loading && !state.error && state.list.length > 0 && (
           <RojmelPagination

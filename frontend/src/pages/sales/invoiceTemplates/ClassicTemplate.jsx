@@ -23,7 +23,7 @@ const ClassicTemplate = ({ invoice }) => {
         <div className="grid gap-8 border-b border-slate-300 py-5 sm:grid-cols-2">
           <CustomerBlock invoice={invoice} />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
               Amount In Words
             </p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">

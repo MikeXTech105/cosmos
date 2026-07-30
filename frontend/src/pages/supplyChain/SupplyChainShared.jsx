@@ -10,7 +10,6 @@ import AppButton from "../../components/common/AppButton";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
-import MobileFilterSheet from "../../components/common/MobileFilterSheet";
 import { getApiErrorMessage } from "../../utils/apiError";
 import {
   formatSupplyChainNumber,
@@ -26,7 +25,7 @@ export const SupplyChainStatusPill = ({ active, label }) => (
         : "bg-slate-50 text-slate-600 ring-slate-200",
     ].join(" ")}
   >
-    <Circle aria-hidden="true" className="h-1.5 w-1.5 fill-current" />
+    <Circle className="h-1.5 w-1.5 fill-current" />
     {label ?? (active ? "Active" : "Inactive")}
   </span>
 );
@@ -54,22 +53,20 @@ export const SupplyChainFilterBar = ({
   children,
   onClear,
 }) => (
-  <MobileFilterSheet activeCount={activeFilterCount} onClear={onClear}>
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-end gap-3">{children}</div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
-        <p className="text-xs text-slate-500">
-          {activeFilterCount} active filter
-          {activeFilterCount === 1 ? "" : "s"}
-        </p>
-        {activeFilterCount > 0 ? (
-          <AppButton variant="ghost" onClick={onClear}>
-            Clear
-          </AppButton>
-        ) : null}
-      </div>
+  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-wrap items-end gap-3">{children}</div>
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+      <p className="text-xs text-slate-500">
+        {activeFilterCount} active filter
+        {activeFilterCount === 1 ? "" : "s"}
+      </p>
+      {activeFilterCount > 0 ? (
+        <AppButton variant="ghost" onClick={onClear}>
+          Clear
+        </AppButton>
+      ) : null}
     </div>
-  </MobileFilterSheet>
+  </div>
 );
 
 export const SupplyChainPagination = ({
@@ -96,7 +93,7 @@ export const SupplyChainPagination = ({
           <AppTooltip label="Wait for the current page to finish loading.">
             <span className="inline-flex w-28">
               <AppSelect
-                label="Rows per page"
+                aria-label="Rows per page"
                 className="w-28"
                 disabled
                 options={SUPPLY_CHAIN_PAGE_SIZE_OPTIONS.map((value) => ({
@@ -110,7 +107,7 @@ export const SupplyChainPagination = ({
           </AppTooltip>
         ) : (
           <AppSelect
-            label="Rows per page"
+            aria-label="Rows per page"
             className="w-28"
             options={SUPPLY_CHAIN_PAGE_SIZE_OPTIONS.map((value) => ({
               label: `${value} rows`,
@@ -129,7 +126,7 @@ export const SupplyChainPagination = ({
             }
           >
             <AppButton className="h-10 px-3" disabled variant="secondary">
-              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </AppButton>
           </AppTooltip>
@@ -139,7 +136,7 @@ export const SupplyChainPagination = ({
             variant="secondary"
             onClick={() => onPageChange(pageNumber - 1)}
           >
-            <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" />
             Previous
           </AppButton>
         )}
@@ -156,7 +153,7 @@ export const SupplyChainPagination = ({
           >
             <AppButton className="h-10 px-3" disabled variant="secondary">
               Next
-              <ChevronRight aria-hidden="true" className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" />
             </AppButton>
           </AppTooltip>
         ) : (
@@ -166,7 +163,7 @@ export const SupplyChainPagination = ({
             onClick={() => onPageChange(pageNumber + 1)}
           >
             Next
-            <ChevronRight aria-hidden="true" className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
           </AppButton>
         )}
       </div>
@@ -186,7 +183,7 @@ export const SupplyChainInlineError = ({
   return (
     <div className="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
       <div className="flex min-w-0 items-start gap-3">
-        <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <div>
           <p className="text-sm font-semibold">{title}</p>
           <p className="mt-0.5 whitespace-pre-line text-xs leading-5">
@@ -198,7 +195,7 @@ export const SupplyChainInlineError = ({
       </div>
       {onRetry ? (
         <AppButton className="shrink-0" variant="secondary" onClick={onRetry}>
-          <RefreshCw aria-hidden="true" className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4" />
           Retry
         </AppButton>
       ) : null}

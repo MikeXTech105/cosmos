@@ -13,10 +13,7 @@ const CorporateTemplate = ({ invoice }) => {
   return (
     <TemplatePage>
       <div className="grid gap-8 sm:grid-cols-[220px_1fr]">
-        <aside
-          aria-label="Company information"
-          className="rounded-2xl bg-slate-950 p-6 text-white"
-        >
+        <aside className="rounded-2xl bg-slate-950 p-6 text-white">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-bold text-slate-950">
             C
           </div>
@@ -35,7 +32,7 @@ const CorporateTemplate = ({ invoice }) => {
           </p>
         </aside>
 
-        <section aria-label="Invoice summary">
+        <main>
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
@@ -53,7 +50,7 @@ const CorporateTemplate = ({ invoice }) => {
           <div className="mt-8 grid gap-6 rounded-2xl border border-slate-200 p-6 sm:grid-cols-2">
             <CustomerBlock invoice={invoice} />
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                 Bank / Terms
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -64,7 +61,7 @@ const CorporateTemplate = ({ invoice }) => {
               </p>
             </div>
           </div>
-        </section>
+        </main>
       </div>
 
       <div className="mt-8">

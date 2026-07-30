@@ -4,15 +4,13 @@ import {
   Contact,
   Eye,
   Pencil,
+  Plus,
+  RefreshCw,
   Trash2,
 } from "lucide-react";
 import { memo } from "react";
 
-import CommonEmptyState from "../../components/common/EmptyState";
 import AppTooltip from "../../components/common/AppTooltip";
-import MobileRecordCard, {
-  MobileRecordCardSkeleton,
-} from "../../components/common/MobileRecordCard";
 import {
   formatBalance,
   formatValue,
@@ -70,8 +68,8 @@ const PartyStatusBadge = ({ isActive }) => {
 const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
   const buttonClass =
     tone === "danger"
-      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
-      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <AppTooltip label={label}>
@@ -81,7 +79,7 @@ const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
         aria-label={label}
         className={buttonClass}
       >
-        <Icon aria-hidden="true" className="h-4 w-4" />
+        <Icon className="h-4 w-4" />
       </button>
     </AppTooltip>
   );
@@ -101,7 +99,7 @@ const PartyActions = ({
   party,
 }) => {
   return (
-    <div className="flex items-center justify-end gap-2 md:gap-0.5">
+    <div className="flex items-center justify-end gap-0.5">
       {canView && (
         <ActionButton
           icon={Eye}
@@ -158,85 +156,85 @@ const TableSkeleton = () => {
   ));
 };
 
-const PartyEmptyState = ({
-  activeFilterCount,
-  errorMessage,
-  hasError,
-  onClear,
-  onCreate,
-  onRetry,
-}) => {
-  const variant = hasError
-    ? "error"
-    : activeFilterCount > 0
-      ? "filtered"
-      : "empty";
-
+const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
   return (
-    <CommonEmptyState
-      actionLabel={variant === "empty" ? "Add Party" : undefined}
-      context={
-        variant === "empty"
-          ? "Parties keep customer and supplier details, balances, and tax information together."
-          : undefined
-      }
-      hint={
-        hasError
-          ? errorMessage ?? "The party list could not be checked."
-          : variant === "filtered"
-            ? "Clear the current filters to see all parties."
-            : "Add your first customer or supplier to begin trading."
-      }
-      icon={Contact}
-      title={
-        hasError
-          ? "Couldn't load parties"
-          : variant === "filtered"
-            ? "No parties match these filters"
-            : "No parties yet"
-      }
-      variant={variant}
-      onAction={
-        hasError
-          ? onRetry
-          : variant === "filtered"
-            ? onClear
-            : onCreate
-      }
-    />
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+        <Contact className="h-6 w-6" />
+      </div>
+      <h3 className="mt-4 text-base font-bold text-slate-950">
+        {hasError ? "Unable to load parties" : "No parties found"}
+      </h3>
+      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+        {hasError
+          ? errorMessage ?? "Something went wrong while loading parties."
+          : "Create the first party or adjust filters to find existing records."}
+      </p>
+      <div className="mt-5">
+        {hasError ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </button>
+        ) : onCreate ? (
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
+            Add Party
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 };
 
 const MobilePartyCard = ({ actions, party, serialNumber }) => {
-  const location = [getPartyCity(party), getPartyState(party)]
-    .filter(Boolean)
-    .join(", ");
-
   return (
-    <MobileRecordCard
-      serial={serialNumber}
-      title={getPartyDisplayName(party)}
-      subtitle={getPartyTypeLabel(party)}
-      status={<PartyStatusBadge isActive={party.isActive} />}
-      fields={[
-        { key: "contact", label: "Contact", value: party.mobileNo || "-" },
-        { key: "location", label: "Location", value: location || "-" },
-        { key: "balance", label: "Balance", value: formatBalance(party) },
-        { key: "gstin", label: "GSTIN", value: party.gstin || "-" },
-      ]}
-      actions={<PartyActions party={party} {...actions} />}
-    />
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-400">
+              #{serialNumber}
+            </span>
+            <p className="truncate text-sm font-bold text-slate-950">
+              {getPartyDisplayName(party)}
+            </p>
+          </div>
+          <p className="mt-1 truncate text-xs font-semibold text-slate-400">
+            {getPartyTypeLabel(party)}
+          </p>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+            {[party.mobileNo, getPartyCity(party), getPartyState(party)]
+              .filter(Boolean)
+              .join(" / ") || "-"}
+          </p>
+        </div>
+        <PartyActions party={party} {...actions} />
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <PartyStatusBadge isActive={party.isActive} />
+        <span className="text-xs text-slate-500">
+          Balance {formatBalance(party)}
+        </span>
+      </div>
+    </article>
   );
 };
 
 const PartyTable = ({
-  activeFilterCount = 0,
   actions,
   currentPage = 1,
   errorMessage,
   hasError,
   isLoading,
-  onClear,
   onCreate,
   onRetry,
   pageSize = 10,
@@ -245,11 +243,9 @@ const PartyTable = ({
   if (!isLoading && (hasError || parties.length === 0)) {
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <PartyEmptyState
-          activeFilterCount={activeFilterCount}
+        <EmptyState
           errorMessage={errorMessage}
           hasError={hasError}
-          onClear={onClear}
           onCreate={onCreate}
           onRetry={onRetry}
         />
@@ -259,10 +255,13 @@ const PartyTable = ({
 
   return (
     <div>
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {isLoading
           ? Array.from({ length: 5 }, (_, index) => (
-              <MobileRecordCardSkeleton key={index} />
+              <div
+                key={index}
+                className="h-40 animate-pulse rounded-2xl bg-slate-100"
+              />
             ))
           : parties.map((party, index) => (
               <MobilePartyCard
@@ -274,9 +273,9 @@ const PartyTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
         <div className="overflow-x-auto">
-          <table aria-label="Parties" className="min-w-[1120px] table-fixed border-separate border-spacing-0 text-left">
+          <table className="min-w-[1120px] table-fixed border-separate border-spacing-0 text-left">
             <colgroup>
               <col className="w-[56px]" />
               <col className="w-[210px]" />
@@ -303,7 +302,7 @@ const PartyTable = ({
                   "Status",
                   "Actions",
                 ].map((heading) => (
-                  <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                  <th
                     key={heading}
                     className={[
                       "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -324,7 +323,7 @@ const PartyTable = ({
                     key={party.id}
                     className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                   >
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5">
@@ -341,7 +340,7 @@ const PartyTable = ({
                           <span className="block truncate text-sm font-medium text-slate-900">
                             {getPartyDisplayName(party)}
                           </span>
-                          <span className="mt-0.5 block truncate text-xs text-slate-500">
+                          <span className="mt-0.5 block truncate text-xs text-slate-400">
                             {[party.partyCode, getPartyTypeLabel(party)]
                               .filter(Boolean)
                               .join(" / ") || "-"}

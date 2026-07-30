@@ -13,7 +13,6 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import { itemService } from "../../../services/inventory/itemService";
 import {
   buildInvoicePayload,
@@ -226,7 +225,7 @@ const InvoiceFormModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <ReceiptText aria-hidden="true" className="h-5 w-5" />
+          <ReceiptText className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -255,7 +254,7 @@ const InvoiceFormModal = ({
         >
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
             <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Invoice Header
               </h3>
               <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -264,8 +263,6 @@ const InvoiceFormModal = ({
                   name="customerPartyId"
                   render={({ field }) => (
                     <AppSelect
-                      ref={field.ref}
-                      name={field.name}
                       label="Customer"
                       required
                       value={field.value}
@@ -330,44 +327,37 @@ const InvoiceFormModal = ({
                   className="h-9 rounded-lg px-3"
                   onClick={() => append(getDefaultInvoiceLine())}
                 >
-                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                   Add Row
                 </AppButton>
               </div>
 
-              <ResponsiveTableRegion
-                mobileConfig={{
-                  actions: 7,
-                  fields: [1, 2, 3, 6],
-                  serial: "generated",
-                  title: 0,
-                }}
-              >
+              <div className="overflow-x-auto">
                 <table className="w-full min-w-[1050px] table-fixed text-left">
                   <thead>
                     <tr className="border-b border-slate-100 bg-white">
-                      <th scope="col" className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Item
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Qty
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Rate
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Disc %
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Disc Amt
                       </th>
-                      <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                         GST %
                       </th>
-                      <th scope="col" className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Line Total (₹)
                       </th>
-                      <th scope="col" className="w-12 px-2 py-2" />
+                      <th className="w-12 px-2 py-2" />
                     </tr>
                   </thead>
                   <tbody>
@@ -383,9 +373,6 @@ const InvoiceFormModal = ({
                               name={`items.${index}.itemId`}
                               render={({ field: itemField }) => (
                                 <AppSelect
-                                  aria-label={`Item for invoice line ${index + 1}`}
-                                  ref={itemField.ref}
-                                  name={itemField.name}
                                   value={itemField.value}
                                   onChange={(value) => {
                                     itemField.onChange(Number(value));
@@ -465,9 +452,9 @@ const InvoiceFormModal = ({
                                   disabled={fields.length === 1}
                                   title={fields.length === 1 ? "An invoice requires at least one line" : undefined}
                               onClick={() => remove(index)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-30"
                             >
-                              <Trash2 aria-hidden="true" className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </td>
                         </tr>
@@ -475,7 +462,7 @@ const InvoiceFormModal = ({
                     })}
                   </tbody>
                 </table>
-              </ResponsiveTableRegion>
+              </div>
 
               {errors.items?.message && (
                 <p className="px-4 py-3 text-xs font-medium text-red-600">
@@ -496,7 +483,7 @@ const InvoiceFormModal = ({
                   <textarea
                     id="invoiceNotes"
                     rows={4}
-                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                     {...register("notes")}
                   />
                   {errors.notes?.message && (
@@ -516,7 +503,7 @@ const InvoiceFormModal = ({
                   <textarea
                     id="termsAndConditions"
                     rows={4}
-                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                    className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                     {...register("termsAndConditions")}
                   />
                   {errors.termsAndConditions?.message && (
@@ -596,8 +583,6 @@ const InvoiceFormModal = ({
                         defaultValue={SALES_PAYMENT_MODE.CASH}
                         render={({ field }) => (
                           <AppSelect
-                            ref={field.ref}
-                            name={field.name}
                             label="Mode"
                             value={field.value}
                             onChange={(value) => field.onChange(Number(value))}
@@ -624,7 +609,7 @@ const InvoiceFormModal = ({
                       <textarea
                         id="initialPaymentNotes"
                         rows={2}
-                        className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+                        className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
                         {...register("initialPayment.notes")}
                       />
                       {errors.initialPayment?.notes?.message && (
@@ -648,7 +633,7 @@ const InvoiceFormModal = ({
               Cancel
             </AppButton>
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
-              <Check aria-hidden="true" className="h-4 w-4" />
+              <Check className="h-4 w-4" />
               {isEdit ? "Save Changes" : "Save Draft"}
             </AppButton>
           </div>

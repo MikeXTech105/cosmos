@@ -34,10 +34,10 @@ export const InvoiceStatCard = ({
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
         >
-          <Icon aria-hidden="true" className="h-4 w-4" />
+          <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
             {label}
           </p>
           {loading ? (
@@ -68,7 +68,7 @@ export const InvoicePagination = ({
   const rangeEnd = invoiceCount ? rangeStart + invoiceCount - 1 : 0;
 
   return (
-    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 md:mt-0 md:rounded-none md:border-x-0 md:border-b-0 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
       <p>
         Showing{" "}
         <span className="font-semibold text-slate-900">{rangeStart}</span> to{" "}
@@ -85,7 +85,7 @@ export const InvoicePagination = ({
             onChange={(value) => onPageSizeChange(Number(value))}
             options={PAGE_SIZE_OPTIONS}
             className="w-24"
-            label="Rows per page"
+            aria-label="Rows per page"
           />
         </div>
 
@@ -142,7 +142,7 @@ export const InvoiceConfirmDialog = ({
             : "bg-brand-light text-brand",
         ].join(" ")}
       >
-        <AlertTriangle aria-hidden="true" className="h-5 w-5" />
+        <AlertTriangle className="h-5 w-5" />
       </div>
       <h2 className="mt-4 text-lg font-semibold text-slate-900">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>

@@ -64,8 +64,6 @@ const AppSelect = forwardRef(({
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
   const optionRefs = useRef([]);
-  const typeaheadBufferRef = useRef("");
-  const typeaheadTimeoutRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -149,12 +147,6 @@ const AppSelect = forwardRef(({
   }, []);
 
   useEffect(() => {
-    return () => {
-      window.clearTimeout(typeaheadTimeoutRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
     if (!isOpen) {
       return undefined;
     }
@@ -211,16 +203,11 @@ const AppSelect = forwardRef(({
     });
   }, [activeHighlightedIndex, isOpen]);
 
-  const closeDropdown = ({ restoreTrigger = true } = {}) => {
+  const closeDropdown = () => {
     setIsOpen(false);
     setMenuPosition(null);
     setHighlightedIndex(-1);
-    typeaheadBufferRef.current = "";
-    window.clearTimeout(typeaheadTimeoutRef.current);
-
-    if (restoreTrigger) {
-      triggerRef.current?.focus();
-    }
+    triggerRef.current?.focus();
     onBlur?.();
   };
 
@@ -267,52 +254,7 @@ const AppSelect = forwardRef(({
     }
   };
 
-  const moveByTypeahead = (key) => {
-    const character = key.toLocaleLowerCase();
-    const previousBuffer = typeaheadBufferRef.current;
-    const repeatedCharacter =
-      previousBuffer.length > 0 &&
-      previousBuffer.split("").every((entry) => entry === character);
-    const nextBuffer = repeatedCharacter
-      ? character
-      : `${previousBuffer}${character}`;
-    const optionIndexes = navigableIndexes.filter(
-      (index) => index < normalizedOptions.length,
-    );
-
-    typeaheadBufferRef.current = nextBuffer;
-    window.clearTimeout(typeaheadTimeoutRef.current);
-    typeaheadTimeoutRef.current = window.setTimeout(() => {
-      typeaheadBufferRef.current = "";
-    }, 600);
-
-    if (optionIndexes.length === 0) {
-      return;
-    }
-
-    const currentPosition = optionIndexes.indexOf(activeHighlightedIndex);
-    const orderedIndexes = [
-      ...optionIndexes.slice(currentPosition + 1),
-      ...optionIndexes.slice(0, currentPosition + 1),
-    ];
-    const matchingIndex = orderedIndexes.find((index) =>
-      String(normalizedOptions[index]?.label ?? "")
-        .toLocaleLowerCase()
-        .startsWith(nextBuffer),
-    );
-
-    if (matchingIndex !== undefined) {
-      setHighlightedValueKey(currentValueKey);
-      setHighlightedIndex(matchingIndex);
-    }
-  };
-
   const handleTriggerKeyDown = (event) => {
-    if (event.key === "Tab" && isOpen) {
-      closeDropdown({ restoreTrigger: false });
-      return;
-    }
-
     if (event.key === "Escape" && isOpen) {
       event.preventDefault();
       closeDropdown();
@@ -362,21 +304,6 @@ const AppSelect = forwardRef(({
         );
         setIsOpen(true);
       }
-      return;
-    }
-
-    if (
-      event.key.length === 1 &&
-      !event.altKey &&
-      !event.ctrlKey &&
-      !event.metaKey
-    ) {
-      event.preventDefault();
-
-      if (!isOpen) {
-        setIsOpen(true);
-      }
-      moveByTypeahead(event.key);
     }
   };
 
@@ -398,14 +325,7 @@ const AppSelect = forwardRef(({
           className="mb-1.5 block text-xs font-semibold text-slate-700"
         >
           {label}
-          {required && (
-            <>
-              <span aria-hidden="true" className="ml-0.5 text-red-600">
-                *
-              </span>
-              <span className="sr-only"> (required)</span>
-            </>
-          )}
+          {required && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
 
@@ -451,7 +371,7 @@ const AppSelect = forwardRef(({
         }}
         onKeyDown={handleTriggerKeyDown}
         className={clsx(
-          "flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border bg-white text-left text-base text-slate-700 outline-none transition-all focus-visible:ring-2 focus-visible:ring-brand/30 md:min-h-0 md:text-sm",
+          "flex w-full items-center justify-between gap-3 rounded-lg border bg-white text-left text-sm text-slate-700 outline-none transition-all",
           sizes[size] ?? sizes.md,
           isOpen
             ? "border-brand/40 ring-2 ring-brand/15"
@@ -459,21 +379,20 @@ const AppSelect = forwardRef(({
               ? "border-red-400"
               : "border-slate-200 hover:border-slate-300",
           resolvedDisabled &&
-            "cursor-not-allowed bg-slate-50 text-slate-500 opacity-60",
+            "cursor-not-allowed bg-slate-50 text-slate-400 opacity-60",
         )}
       >
         <span
           className={clsx(
             "min-w-0 flex-1 truncate",
-            !selectedOption && "text-slate-500",
+            !selectedOption && "text-slate-400",
           )}
         >
           {selectedOption?.label ?? placeholder}
         </span>
         <ChevronDown
-          aria-hidden="true"
           className={clsx(
-            "h-4 w-4 shrink-0 text-slate-500 transition-transform",
+            "h-4 w-4 shrink-0 text-slate-400 transition-transform",
             isOpen && "rotate-180",
           )}
         />
@@ -512,7 +431,7 @@ const AppSelect = forwardRef(({
                   : undefined,
               width: menuPosition.width,
             }}
-            className="fixed z-[100] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+            className="fixed z-[70] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
           >
             <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
               {normalizedOptions.length === 0 ? (
@@ -547,7 +466,7 @@ const AppSelect = forwardRef(({
                         }
                       }}
                       className={clsx(
-                        "flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 text-left text-base transition-colors md:h-9 md:text-sm",
+                        "flex h-9 w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 text-left text-sm transition-colors",
                         isSelected || isHighlighted
                           ? "bg-brand-light text-slate-900"
                           : "text-slate-600 hover:bg-slate-50",
@@ -559,10 +478,7 @@ const AppSelect = forwardRef(({
                         {option.label}
                       </span>
                       {isSelected && (
-                        <Check
-                          aria-hidden="true"
-                          className="h-4 w-4 shrink-0 text-brand"
-                        />
+                        <Check className="h-4 w-4 shrink-0 text-brand" />
                       )}
                     </button>
                   );
@@ -592,7 +508,7 @@ const AppSelect = forwardRef(({
                   setHighlightedIndex(createIndex);
                 }}
               >
-                <Plus aria-hidden="true" className="h-4 w-4 shrink-0" />
+                <Plus className="h-4 w-4 shrink-0" />
                 <span className="min-w-0 flex-1 truncate">{createLabel}</span>
               </button>
             )}

@@ -268,24 +268,13 @@ const CategoriesPage = () => {
     ...categoriesState.filters,
     Search: searchInput,
   };
-  const activeFilterCount = [
-    searchInput.trim(),
-    categoriesState.filters.IsActive === "all"
-      ? ""
-      : categoriesState.filters.IsActive,
-  ].filter(Boolean).length;
-  const clearFilters = () => {
-    setSearchInput("");
-    dispatch(setCategoryFilters({ Search: "", IsActive: "all" }));
-    dispatch(setCategoryPage(1));
-  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <FolderKanban aria-hidden="true" className="h-3.5 w-3.5" />
+            <FolderKanban className="h-3.5 w-3.5" />
             Inventory / Category Master
           </>
         }
@@ -299,14 +288,14 @@ const CategoriesPage = () => {
               disabled={categoriesState.loading}
               onClick={loadCategories}
             >
-              <RefreshCw aria-hidden="true"
+              <RefreshCw
                 className={`h-4 w-4 ${categoriesState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus aria-hidden="true" className="h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Add Category
               </AppButton>
             )}
@@ -327,12 +316,13 @@ const CategoriesPage = () => {
           }
         }}
         onClear={() => {
-          clearFilters();
+          setSearchInput("");
+          dispatch(setCategoryFilters({ Search: "", IsActive: "all" }));
+          dispatch(setCategoryPage(1));
         }}
       />
 
       <CategoryTable
-        activeFilterCount={activeFilterCount}
         actions={{
           ...capabilities,
           onDelete: (category) =>
@@ -348,7 +338,6 @@ const CategoriesPage = () => {
         error={categoriesState.error}
         isLoading={categoriesState.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
-        onClear={clearFilters}
         onPageChange={(value) => dispatch(setCategoryPage(value))}
         onPageSizeChange={(value) => dispatch(setCategoryPageSize(value))}
         onRetry={loadCategories}

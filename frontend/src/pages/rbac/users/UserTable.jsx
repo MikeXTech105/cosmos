@@ -1,10 +1,6 @@
-import { UsersRound } from "lucide-react";
+import { Plus, RefreshCw, UsersRound } from "lucide-react";
 import { memo } from "react";
 
-import CommonEmptyState from "../../../components/common/EmptyState";
-import MobileRecordCard, {
-  MobileRecordCardSkeleton,
-} from "../../../components/common/MobileRecordCard";
 import { formatDate } from "../../../utils/format";
 import UserActions from "./UserActions";
 
@@ -32,7 +28,7 @@ const UserStatusBadge = ({ isActive }) => {
 const RolePills = ({ roles }) => {
   if (!roles?.length) {
     return (
-      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
         No role
       </span>
     );
@@ -68,84 +64,98 @@ const TableSkeleton = () => {
   ));
 };
 
-const UserEmptyState = ({
-  activeFilterCount,
-  errorMessage,
-  hasError,
-  onClear,
-  onCreate,
-  onRetry,
-}) => {
-  const variant = hasError
-    ? "error"
-    : activeFilterCount > 0
-      ? "filtered"
-      : "empty";
-
+const EmptyState = ({ onCreate, onRetry, hasError, errorMessage }) => {
   return (
-    <CommonEmptyState
-      actionLabel={variant === "empty" ? "Create User" : undefined}
-      context={
-        variant === "empty"
-          ? "Users are the people who can sign in and work in COSMOS."
-          : undefined
-      }
-      hint={
-        hasError
-          ? errorMessage ?? "The user list could not be checked."
-          : variant === "filtered"
-            ? "Clear the current filters to see all users."
-            : "Invite a user and assign a role to get your team started."
-      }
-      icon={UsersRound}
-      title={
-        hasError
-          ? "Couldn't load users"
-          : variant === "filtered"
-            ? "No users match these filters"
-            : "No users yet"
-      }
-      variant={variant}
-      onAction={
-        hasError
-          ? onRetry
-          : variant === "filtered"
-            ? onClear
-            : onCreate
-      }
-    />
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+        <UsersRound className="h-6 w-6" />
+      </div>
+
+      <h3 className="mt-4 text-base font-bold text-slate-950">
+        {hasError ? "Unable to load users" : "No users found"}
+      </h3>
+      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+        {hasError
+          ? errorMessage ?? "Something went wrong while loading users."
+          : "Create the first user or adjust your filters to find a specific account."}
+      </p>
+
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+        {hasError ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </button>
+        ) : onCreate ? (
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
+            Create User
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 };
 
 const MobileUserCard = ({ actions, serialNumber, user }) => {
   return (
-    <MobileRecordCard
-      serial={serialNumber}
-      title={user.fullName || user.username}
-      subtitle={`@${user.username}`}
-      status={<UserStatusBadge isActive={user.isActive} />}
-      fields={[
-        { key: "email", label: "Email", value: user.email, fullWidth: true },
-        { key: "role", label: "Role", value: <RolePills roles={user.roles} /> },
-        {
-          key: "created",
-          label: "Created",
-          value: formatDate(user.createdAt),
-        },
-      ]}
-      actions={<UserActions user={user} {...actions} />}
-    />
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-400">
+              #{serialNumber}
+            </span>
+            <p className="truncate text-sm font-bold text-slate-950">
+              {user.fullName || user.username}
+            </p>
+          </div>
+          <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
+            @{user.username}
+          </p>
+        </div>
+
+        <UserActions user={user} {...actions} />
+      </div>
+
+      <div className="mt-4 grid gap-3 text-sm">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+            Email
+          </p>
+          <p className="mt-1 truncate text-slate-700">{user.email}</p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+            Role
+          </p>
+          <RolePills roles={user.roles} />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <UserStatusBadge isActive={user.isActive} />
+          <span className="text-xs text-slate-500">
+            Created {formatDate(user.createdAt)}
+          </span>
+        </div>
+      </div>
+    </article>
   );
 };
 
 const UserTable = ({
-  activeFilterCount = 0,
   actions,
   currentPage = 1,
   errorMessage,
   hasError,
   isLoading,
-  onClear,
   onCreate,
   onRetry,
   pageSize = 10,
@@ -154,11 +164,9 @@ const UserTable = ({
   if (!isLoading && (hasError || users.length === 0)) {
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <UserEmptyState
-          activeFilterCount={activeFilterCount}
+        <EmptyState
           hasError={hasError}
           errorMessage={errorMessage}
-          onClear={onClear}
           onCreate={onCreate}
           onRetry={onRetry}
         />
@@ -168,10 +176,13 @@ const UserTable = ({
 
   return (
     <div>
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {isLoading
           ? Array.from({ length: 5 }, (_, index) => (
-              <MobileRecordCardSkeleton key={index} fields={3} />
+              <div
+                key={index}
+                className="h-40 animate-pulse rounded-2xl bg-slate-100"
+              />
             ))
           : users.map((user, index) => (
               <MobileUserCard
@@ -183,8 +194,8 @@ const UserTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
-        <table aria-label="Users" className="w-full table-fixed border-separate border-spacing-0 text-left">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
+        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[56px]" />
             <col className="w-[13%]" />
@@ -207,7 +218,7 @@ const UserTable = ({
                 "Created Date",
                 "Actions",
               ].map((heading) => (
-                <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                <th
                   key={heading}
                   className={[
                     "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -229,7 +240,7 @@ const UserTable = ({
                   key={user.id}
                   className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                 >
-                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="border-b border-slate-100 px-4 py-3.5">

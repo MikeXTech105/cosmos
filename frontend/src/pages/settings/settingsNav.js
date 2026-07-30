@@ -1,7 +1,6 @@
-import { FileText, ListChecks, MonitorCog } from "lucide-react";
+import { FileText, MonitorCog } from "lucide-react";
 
 import AppearanceSection from "./sections/AppearanceSection";
-import GettingStartedSection from "./sections/GettingStartedSection";
 import InvoiceTemplateSection from "./sections/InvoiceTemplateSection";
 
 const settingsNav = [
@@ -18,13 +17,6 @@ const settingsNav = [
     icon: FileText,
     id: "invoice-template",
     label: "Invoice template",
-  },
-  {
-    Component: GettingStartedSection,
-    description: "First-run checklist visibility.",
-    icon: ListChecks,
-    id: "getting-started",
-    label: "Getting started",
   },
 ];
 

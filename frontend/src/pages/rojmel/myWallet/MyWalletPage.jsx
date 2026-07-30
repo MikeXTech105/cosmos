@@ -109,33 +109,13 @@ const MyWalletPage = () => {
   const ledgerCategories = state.categoriesByType[RojmelCategoryType.Both] ?? [];
   const entryCategories = state.categoriesByType[activeCategoryType] ?? [];
   const filterControls = { ...state.ledger.filters, Search: searchInput };
-  const defaultRange = getRojmelMonthRange();
-  const isFiltered = Boolean(
-    searchInput.trim() ||
-    state.ledger.filters.CategoryId !== "all" ||
-    state.ledger.filters.TransactionType !== "all" ||
-    state.ledger.filters.FromDate !== defaultRange.FromDate ||
-    state.ledger.filters.ToDate !== defaultRange.ToDate,
-  );
-  const clearFilters = () => {
-    setSearchInput("");
-    dispatch(
-      setMyRojmelLedgerFilters({
-        ...defaultRange,
-        CategoryId: "all",
-        Search: "",
-        TransactionType: "all",
-      }),
-    );
-    dispatch(setMyRojmelLedgerPage(1));
-  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <Wallet aria-hidden="true" className="h-3.5 w-3.5" />
+            <Wallet className="h-3.5 w-3.5" />
             Rojmel / My Wallet
           </>
         }
@@ -148,7 +128,7 @@ const MyWalletPage = () => {
             variant="secondary"
             onClick={refreshAll}
           >
-            <RefreshCw aria-hidden="true" className={`h-4 w-4 ${state.walletLoading || state.ledger.loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${state.walletLoading || state.ledger.loading ? "animate-spin" : ""}`} />
             Refresh
           </AppButton>
         }
@@ -158,10 +138,10 @@ const MyWalletPage = () => {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-              <Wallet aria-hidden="true" className="h-7 w-7" />
+              <Wallet className="h-7 w-7" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
                 Current Balance
               </p>
               <p className="mt-1 text-4xl font-bold tabular-nums text-slate-900">
@@ -188,7 +168,7 @@ const MyWalletPage = () => {
               className="flex min-h-32 items-center justify-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 text-lg font-bold text-emerald-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
               onClick={() => openEntry("income")}
             >
-              <ArrowDownLeft aria-hidden="true" className="h-6 w-6" />
+              <ArrowDownLeft className="h-6 w-6" />
               + Income
             </button>
             <button
@@ -196,7 +176,7 @@ const MyWalletPage = () => {
               className="flex min-h-32 items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-6 text-lg font-bold text-red-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
               onClick={() => openEntry("expense")}
             >
-              <ArrowUpRight aria-hidden="true" className="h-6 w-6" />
+              <ArrowUpRight className="h-6 w-6" />
               − Expense
             </button>
           </>
@@ -221,17 +201,23 @@ const MyWalletPage = () => {
             dispatch(setMyRojmelLedgerPage(1));
           }
         }}
-        onClear={clearFilters}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(
+            setMyRojmelLedgerFilters({
+              ...getRojmelMonthRange(),
+              CategoryId: "all",
+              Search: "",
+              TransactionType: "all",
+            }),
+          );
+          dispatch(setMyRojmelLedgerPage(1));
+        }}
       />
 
       <TransactionTable
-        createLabel="Add income"
-        emptyContext="Your wallet ledger records income and expenses with a running balance."
         error={state.ledger.error}
-        isFiltered={isFiltered}
         isLoading={state.ledger.loading}
-        onClear={clearFilters}
-        onCreate={capabilities.canCreate ? () => openEntry("income") : undefined}
         onPageChange={(value) => dispatch(setMyRojmelLedgerPage(value))}
         onPageSizeChange={(value) => dispatch(setMyRojmelLedgerPageSize(value))}
         onRetry={loadLedger}

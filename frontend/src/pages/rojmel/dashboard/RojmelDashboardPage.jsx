@@ -20,12 +20,10 @@ import {
 import { toast } from "sonner";
 import { formatNumber } from "../../../utils/format";
 
-import AccessibleChartTable from "../../../components/common/AccessibleChartTable";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
-import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import { rojmelReportService } from "../../../services/rojmel/reportService";
 import { fetchRojmelDashboard } from "../../../store/slices/rojmel/rojmelDashboardSlice";
 import { getApiErrorMessage } from "../../../utils/apiError";
@@ -133,7 +131,7 @@ const RojmelDashboardPage = () => {
       <PageHeader
         badge={
           <>
-            <WalletCards aria-hidden="true" className="h-3.5 w-3.5" />
+            <WalletCards className="h-3.5 w-3.5" />
             Rojmel / Daily Cash Book
           </>
         }
@@ -146,7 +144,7 @@ const RojmelDashboardPage = () => {
             variant="secondary"
             onClick={loadDashboard}
           >
-            <RefreshCw aria-hidden="true" className={`h-4 w-4 ${dashboard.loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${dashboard.loading ? "animate-spin" : ""}`} />
             Refresh
           </AppButton>
         }
@@ -154,7 +152,7 @@ const RojmelDashboardPage = () => {
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center">
         <AppSelect
-          label="Dashboard period"
+          aria-label="Dashboard period"
           className="sm:w-44"
           options={PERIOD_OPTIONS}
           value={period}
@@ -166,7 +164,7 @@ const RojmelDashboardPage = () => {
         {period === "custom" && (
           <>
             <AppInput
-              label="From date"
+              aria-label="From date"
               className="h-10"
               max={dates.ToDate}
               type="date"
@@ -176,7 +174,7 @@ const RojmelDashboardPage = () => {
               }
             />
             <AppInput
-              label="To date"
+              aria-label="To date"
               className="h-10"
               min={dates.FromDate}
               max={toRojmelInputDate()}
@@ -230,10 +228,10 @@ const RojmelDashboardPage = () => {
       <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-            <ArrowLeftRight aria-hidden="true" className="h-5 w-5" />
+            <ArrowLeftRight className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Transfers</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Transfers</p>
             {dashboard.loading ? (
               <div className="mt-1 h-7 w-20 animate-pulse rounded bg-slate-100" />
             ) : (
@@ -257,26 +255,20 @@ const RojmelDashboardPage = () => {
               <h2 className="text-sm font-semibold text-slate-900">Wallet Balances</h2>
               <p className="mt-1 text-xs text-slate-500">Current server-confirmed cash positions.</p>
             </div>
-            <ResponsiveTableRegion
-              mobileConfig={{
-                fields: [2, 3],
-                serial: 0,
-                title: 1,
-              }}
-            >
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[540px] text-left">
                 <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th scope="col" aria-label="Row number" className="px-4 py-3"><span aria-hidden="true">#</span></th>
-                    <th scope="col" className="px-4 py-3">Wallet</th>
-                    <th scope="col" className="px-4 py-3">Type</th>
-                    <th scope="col" className="px-4 py-3 text-right">Balance (₹)</th>
+                    <th className="px-4 py-3">#</th>
+                    <th className="px-4 py-3">Wallet</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3 text-right">Balance (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dashboard.walletBalances.map((wallet, index) => (
                     <tr key={wallet.walletId} className="hover:bg-slate-50">
-                      <td className="border-b border-slate-100 px-4 py-3 text-xs text-slate-500">{index + 1}</td>
+                      <td className="border-b border-slate-100 px-4 py-3 text-xs text-slate-400">{index + 1}</td>
                       <td className="border-b border-slate-100 px-4 py-3 text-sm font-medium text-slate-800">{wallet.walletName}</td>
                       <td className="border-b border-slate-100 px-4 py-3"><RojmelWalletTypeBadge value={wallet.walletType} /></td>
                       <td className="border-b border-slate-100 px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">{formatNumber(wallet.currentBalance)}</td>
@@ -284,7 +276,7 @@ const RojmelDashboardPage = () => {
                   ))}
                 </tbody>
               </table>
-            </ResponsiveTableRegion>
+            </div>
           </section>
 
           <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -315,43 +307,21 @@ const RojmelDashboardPage = () => {
         <h2 className="text-sm font-semibold text-slate-900">Expense by Category</h2>
         <p className="mt-1 text-xs text-slate-500">Transfers and adjustments are excluded.</p>
         {categoryError ? (
-          <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{categoryError}</p>
+          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{categoryError}</p>
         ) : categoryLoading ? (
-          <div
-            role="status"
-            aria-label="Loading expense by category"
-            className="mt-4 h-56 animate-pulse rounded-xl bg-slate-100"
-          />
+          <div className="mt-4 h-56 animate-pulse rounded-xl bg-slate-100" />
         ) : (
-          <>
-            <div
-              role="img"
-              aria-label="Bar chart of expense amount by category"
-              className="mt-4 h-64"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={categoryExpense} margin={{ left: 8, right: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                  <XAxis dataKey="categoryName" tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
-                  <Tooltip formatter={(value) => formatRojmelCurrency(value)} />
-                  <Bar dataKey="expenseAmount" fill="var(--color-brand)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <AccessibleChartTable
-              caption="Expense amounts by category"
-              columns={[
-                { key: "categoryName", label: "Category" },
-                {
-                  key: "expenseAmount",
-                  label: "Expense amount",
-                  render: (row) => formatRojmelCurrency(row.expenseAmount),
-                },
-              ]}
-              rows={categoryExpense}
-            />
-          </>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryExpense} margin={{ left: 8, right: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <XAxis dataKey="categoryName" tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--color-muted)" }} />
+                <Tooltip formatter={(value) => formatRojmelCurrency(value)} />
+                <Bar dataKey="expenseAmount" fill="var(--color-brand)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </section>
     </section>

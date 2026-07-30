@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
-import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
 import { unitService } from "../../../services/inventory/unitService";
@@ -238,13 +237,6 @@ const ReportFilterBar = ({
 
   const defaults = useMemo(() => getDefaultReportFilters(report), [report]);
   const hasActiveFilters = hasActiveReportFilters(report, filters);
-  const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
-    if (["PageNumber", "PageSize", "SortBy", "SortDirection"].includes(key)) {
-      return false;
-    }
-
-    return value !== "" && value !== undefined && value !== defaults[key];
-  }).length;
 
   const renderFilter = (filter) => {
     const config = normalizeFilterConfig(filter);
@@ -272,7 +264,7 @@ const ReportFilterBar = ({
               });
             }}
             options={DATE_PRESETS.map(({ label, value }) => ({ label, value }))}
-            label="Date preset"
+            aria-label="Date preset"
           />
           <AppInput
             type="date"
@@ -284,7 +276,7 @@ const ReportFilterBar = ({
                 datePreset: "custom",
               })
             }
-            label="From date"
+            aria-label="From date"
           />
           <AppInput
             type="date"
@@ -296,7 +288,7 @@ const ReportFilterBar = ({
                 datePreset: "custom",
               })
             }
-            label="To date"
+            aria-label="To date"
           />
         </div>
       );
@@ -305,17 +297,14 @@ const ReportFilterBar = ({
     if (config.key === "search") {
       return (
         <label key="search" className="relative min-w-[220px] flex-1">
-          <span className="mb-1.5 block text-xs font-semibold text-slate-700">
-            Search
-          </span>
-          <Search aria-hidden="true" className="pointer-events-none absolute bottom-3 left-3 h-4 w-4 text-slate-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             value={filters.Search ?? ""}
             onChange={(event) =>
               onChange({ PageNumber: 1, Search: event.target.value })
             }
             placeholder="Search report..."
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
       );
@@ -331,7 +320,7 @@ const ReportFilterBar = ({
           placeholder={config.label ?? definition.label}
           className="min-w-[180px]"
           disabled={disabled || loadingLookups.parties}
-          label={`Filter by ${config.label ?? definition.label}`}
+          aria-label={`Filter by ${config.label ?? definition.label}`}
         />
       );
     }
@@ -349,7 +338,7 @@ const ReportFilterBar = ({
           placeholder="Item"
           className="min-w-[180px]"
           disabled={disabled || loadingLookups.items}
-          label="Filter by item"
+          aria-label="Filter by item"
         />
       );
     }
@@ -364,7 +353,7 @@ const ReportFilterBar = ({
           placeholder="Unit"
           className="min-w-[160px]"
           disabled={disabled || loadingLookups.units}
-          label="Filter by unit"
+          aria-label="Filter by unit"
         />
       );
     }
@@ -383,7 +372,7 @@ const ReportFilterBar = ({
           options={withAll(`All ${definition.label ?? config.key}`, definition.options)}
           placeholder={definition.label ?? config.key}
           className="min-w-[160px]"
-          label={`Filter by ${definition.label ?? config.key}`}
+          aria-label={`Filter by ${definition.label ?? config.key}`}
         />
       );
     }
@@ -406,7 +395,7 @@ const ReportFilterBar = ({
           placeholder={config.source === "expense" ? "Expense category" : "Category"}
           className="min-w-[180px]"
           disabled={disabled || loadingLookups[sourceKey]}
-          label="Filter by category"
+          aria-label="Filter by category"
         />
       );
     }
@@ -422,7 +411,7 @@ const ReportFilterBar = ({
           options={withAll("All wallets", lookups.rojmelWallets)}
           className="min-w-[190px]"
           disabled={disabled || loadingLookups.rojmelWallets}
-          label="Filter by wallet"
+          aria-label="Filter by wallet"
         />
       );
     }
@@ -436,7 +425,7 @@ const ReportFilterBar = ({
           options={withAll("All categories", lookups.rojmelCategories)}
           className="min-w-[180px]"
           disabled={disabled || loadingLookups.rojmelCategories}
-          label="Filter by Rojmel category"
+          aria-label="Filter by Rojmel category"
         />
       );
     }
@@ -452,7 +441,7 @@ const ReportFilterBar = ({
           onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
           options={withAll(`All ${definition.label.toLowerCase()}`, definition.options)}
           className="min-w-[170px]"
-          label={`Filter by ${definition.label.toLowerCase()}`}
+          aria-label={`Filter by ${definition.label.toLowerCase()}`}
         />
       );
     }
@@ -467,7 +456,7 @@ const ReportFilterBar = ({
               onChange({ AsOfDate: event.target.value, PageNumber: 1 })
             }
             className="h-10 px-3"
-            label="As of date"
+            aria-label="As of date"
           />
         </div>
       );
@@ -499,7 +488,7 @@ const ReportFilterBar = ({
             }
             placeholder={labels[config.key]}
             className="h-10 px-3"
-            label={labels[config.key]}
+            aria-label={labels[config.key]}
           />
         </div>
       );
@@ -513,7 +502,7 @@ const ReportFilterBar = ({
           onChange={(value) => onChange({ PageNumber: 1, Status: value })}
           options={withAll("All status", definition.getOptions(config))}
           className="min-w-[150px]"
-          label="Filter by status"
+          aria-label="Filter by status"
         />
       );
     }
@@ -526,7 +515,7 @@ const ReportFilterBar = ({
           onChange={(value) => onChange({ PageNumber: 1, PaymentStatus: value })}
           options={withAll("All payments", definition.options)}
           className="min-w-[160px]"
-          label="Filter by payment status"
+          aria-label="Filter by payment status"
         />
       );
     }
@@ -579,11 +568,7 @@ const ReportFilterBar = ({
   };
 
   return (
-    <MobileFilterSheet
-      activeCount={activeFilterCount}
-      onClear={() => onClear(defaults)}
-    >
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="flex flex-wrap items-start gap-3">
         {(report.filters ?? []).map(renderFilter)}
 
@@ -593,13 +578,13 @@ const ReportFilterBar = ({
           disabled={disabled || !hasActiveFilters}
           onClick={() => onClear(defaults)}
         >
-          <RotateCcw aria-hidden="true" className="h-4 w-4" />
+          <RotateCcw className="h-4 w-4" />
           Clear
         </AppButton>
       </div>
 
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-        <Filter aria-hidden="true" className="h-3.5 w-3.5" />
+        <Filter className="h-3.5 w-3.5" />
         {resultCount} rows on this page
         {report.group === "rojmel" && (
           <span className="ml-auto rounded-full bg-brand-light px-2.5 py-1 font-semibold text-brand">
@@ -607,8 +592,7 @@ const ReportFilterBar = ({
           </span>
         )}
       </div>
-      </div>
-    </MobileFilterSheet>
+    </div>
   );
 };
 

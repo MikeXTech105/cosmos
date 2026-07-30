@@ -6,7 +6,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import {
@@ -45,10 +45,6 @@ const AppImageUpload = ({
   onFileChange,
   value,
 }) => {
-  const generatedId = useId();
-  const inputId = `image-upload-${generatedId}`;
-  const errorId = `${inputId}-error`;
-  const noticeId = `${inputId}-notice`;
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -148,6 +144,13 @@ const AppImageUpload = ({
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openFilePicker();
+    }
+  };
+
   const clearImage = (event) => {
     event.stopPropagation();
     setUploadError("");
@@ -165,20 +168,22 @@ const AppImageUpload = ({
   return (
     <div>
       {label && (
-        <label
-          htmlFor={inputId}
-          className="mb-1.5 block text-xs font-semibold text-slate-700"
-        >
+        <p className="mb-1.5 text-xs font-semibold text-slate-700">
           {label}
-        </label>
+        </p>
       )}
 
       <div
+        role="button"
+        tabIndex={isDisabled ? -1 : 0}
+        aria-disabled={isDisabled}
+        onClick={openFilePicker}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={() => setIsDragging(false)}
+        onKeyDown={handleKeyDown}
         className={twMerge(
-          "relative min-h-36 w-full overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white text-center transition-colors hover:border-brand/40 hover:bg-slate-50",
+          "relative flex min-h-36 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center transition-colors hover:border-brand/40 hover:bg-slate-50",
           isDragging ? "border-brand/60 bg-slate-50" : "",
           isDisabled ? "cursor-not-allowed opacity-70" : "",
           currentError ? "border-red-300" : "",
@@ -186,118 +191,87 @@ const AppImageUpload = ({
       >
         <input
           ref={inputRef}
-          id={inputId}
           type="file"
           accept="image/png,image/jpeg,image/webp"
           disabled={isDisabled}
-          tabIndex={-1}
-          aria-describedby={
-            currentError ? errorId : previewNotice ? noticeId : undefined
-          }
           onChange={handleInputChange}
-          className="sr-only"
+          className="hidden"
         />
 
-        <button
-          type="button"
-          disabled={isDisabled}
-          aria-label={displayValue ? `Replace ${label ?? "image"}` : `Upload ${label ?? "image"}`}
-          aria-describedby={
-            currentError ? errorId : previewNotice ? noticeId : undefined
-          }
-          onClick={openFilePicker}
-          className="flex min-h-36 w-full cursor-pointer flex-col items-center justify-center p-4 text-center disabled:cursor-not-allowed"
-        >
-          {displayValue && !previewError ? (
-            <div className="flex w-full items-center gap-4 text-left">
-              <img
-                src={displayValue}
-                alt=""
-                onError={() => setFailedPreviewUrl(displayValue)}
-                className="h-24 w-24 shrink-0 rounded-lg border border-slate-200 object-cover"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-slate-900">
-                  Image selected
-                </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
-                  Click or drop another image to replace it.
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand">
-                  <Upload aria-hidden="true" className="h-3.5 w-3.5" />
-                  Replace
-                </span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-light text-brand">
-                {previewError ? (
-                  <ImageIcon aria-hidden="true" className="h-5 w-5" />
-                ) : (
-                  <ImageUp aria-hidden="true" className="h-5 w-5" />
-                )}
-              </div>
-              <p className="mt-3 text-sm font-semibold text-slate-900">
-                Click to upload or drag & drop
+        {displayValue && !previewError ? (
+          <div className="flex w-full items-center gap-4 text-left">
+            <img
+              src={displayValue}
+              alt=""
+              onError={() => setFailedPreviewUrl(displayValue)}
+              className="h-24 w-24 shrink-0 rounded-lg border border-slate-200 object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-slate-900">
+                Image selected
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                PNG, JPG, or WebP up to 5MB
+                Click or drop another image to replace it.
               </p>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand">
+                <Upload className="h-3.5 w-3.5" />
+                Replace
+              </span>
             </div>
-          )}
-
-          {isUploading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white px-6">
-              <LoaderCircle
-                aria-hidden="true"
-                className="h-5 w-5 animate-spin text-brand"
-              />
-              <p className="mt-3 text-sm font-semibold text-slate-900">
-                Uploading image
-              </p>
-              <progress
-                value={progress}
-                max="100"
-                aria-label="Image upload progress"
-                className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full accent-brand"
-              />
-              <p className="mt-2 text-xs font-medium text-slate-500">
-                {progress}%
-              </p>
+            <button
+              type="button"
+              disabled={isUploading}
+              onClick={clearImage}
+              className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="Remove item image"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-light text-brand">
+              {previewError ? (
+                <ImageIcon className="h-5 w-5" />
+              ) : (
+                <ImageUp className="h-5 w-5" />
+              )}
             </div>
-          )}
-        </button>
+            <p className="mt-3 text-sm font-semibold text-slate-900">
+              Click to upload or drag & drop
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              PNG, JPG, or WebP up to 5MB
+            </p>
+          </div>
+        )}
 
-        {displayValue && !previewError ? (
-          <button
-            type="button"
-            disabled={isUploading}
-            onClick={clearImage}
-            className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
-            aria-label="Remove item image"
-          >
-            <X aria-hidden="true" className="h-4 w-4" />
-          </button>
-        ) : null}
+        {isUploading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white px-6">
+            <LoaderCircle className="h-5 w-5 animate-spin text-brand" />
+            <p className="mt-3 text-sm font-semibold text-slate-900">
+              Uploading image
+            </p>
+            <progress
+              value={progress}
+              max="100"
+              className="mt-3 h-2 w-full max-w-xs overflow-hidden rounded-full accent-brand"
+            />
+            <p className="mt-2 text-xs font-medium text-slate-500">
+              {progress}%
+            </p>
+          </div>
+        )}
       </div>
 
       {currentError && (
-        <p
-          id={errorId}
-          role="alert"
-          className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600"
-        >
-          <AlertCircle aria-hidden="true" className="h-3.5 w-3.5" />
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
+          <AlertCircle className="h-3.5 w-3.5" />
           {currentError}
         </p>
       )}
       {!currentError && previewNotice && (
-        <p
-          id={noticeId}
-          role="status"
-          className="mt-1.5 text-xs font-medium leading-5 text-amber-700"
-        >
+        <p className="mt-1.5 text-xs font-medium leading-5 text-amber-700">
           {previewNotice}
         </p>
       )}

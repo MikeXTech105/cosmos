@@ -1,10 +1,6 @@
-import { ShieldCheck } from "lucide-react";
+import { Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { memo } from "react";
 
-import CommonEmptyState from "../../../components/common/EmptyState";
-import MobileRecordCard, {
-  MobileRecordCardSkeleton,
-} from "../../../components/common/MobileRecordCard";
 import { formatDate } from "../../../utils/format";
 import RoleActions from "./RoleActions";
 
@@ -39,82 +35,80 @@ const TableSkeleton = () => {
   ));
 };
 
-const RoleEmptyState = ({
-  activeFilterCount,
-  errorMessage,
-  hasError,
-  onClear,
-  onCreate,
-  onRetry,
-}) => {
-  const variant = hasError
-    ? "error"
-    : activeFilterCount > 0
-      ? "filtered"
-      : "empty";
-
+const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
   return (
-    <CommonEmptyState
-      actionLabel={variant === "empty" ? "Create Role" : undefined}
-      context={
-        variant === "empty"
-          ? "Roles group permissions into reusable access profiles."
-          : undefined
-      }
-      hint={
-        hasError
-          ? errorMessage ?? "The role list could not be checked."
-          : variant === "filtered"
-            ? "Clear the current filters to see all roles."
-            : "Create a role before inviting users."
-      }
-      icon={ShieldCheck}
-      title={
-        hasError
-          ? "Couldn't load roles"
-          : variant === "filtered"
-            ? "No roles match these filters"
-            : "No roles yet"
-      }
-      variant={variant}
-      onAction={
-        hasError
-          ? onRetry
-          : variant === "filtered"
-            ? onClear
-            : onCreate
-      }
-    />
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+        <ShieldCheck className="h-6 w-6" />
+      </div>
+      <h3 className="mt-4 text-base font-bold text-slate-950">
+        {hasError ? "Unable to load roles" : "No roles found"}
+      </h3>
+      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+        {hasError
+          ? errorMessage ?? "Something went wrong while loading roles."
+          : "Create the first role or adjust your filters to find an access profile."}
+      </p>
+      <div className="mt-5">
+        {hasError ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </button>
+        ) : onCreate ? (
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
+            Create Role
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 };
 
 const MobileRoleCard = ({ actions, role, serialNumber }) => {
   return (
-    <MobileRecordCard
-      serial={serialNumber}
-      title={role.name}
-      subtitle={role.description || "No description provided."}
-      status={<RoleStatusBadge isActive={role.isActive} />}
-      fields={[
-        {
-          key: "created",
-          label: "Created",
-          value: formatDate(role.createdAt),
-        },
-      ]}
-      actions={<RoleActions role={role} {...actions} />}
-    />
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-400">
+              #{serialNumber}
+            </span>
+            <p className="truncate text-sm font-bold text-slate-950">
+              {role.name}
+            </p>
+          </div>
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+            {role.description || "No description provided."}
+          </p>
+        </div>
+        <RoleActions role={role} {...actions} />
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <RoleStatusBadge isActive={role.isActive} />
+        <span className="text-xs text-slate-500">
+          Created {formatDate(role.createdAt)}
+        </span>
+      </div>
+    </article>
   );
 };
 
 const RoleTable = ({
-  activeFilterCount = 0,
   actions,
   currentPage = 1,
   errorMessage,
   hasError,
   isLoading,
-  onClear,
   onCreate,
   onRetry,
   pageSize = 10,
@@ -123,11 +117,9 @@ const RoleTable = ({
   if (!isLoading && (hasError || roles.length === 0)) {
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <RoleEmptyState
-          activeFilterCount={activeFilterCount}
+        <EmptyState
           errorMessage={errorMessage}
           hasError={hasError}
-          onClear={onClear}
           onCreate={onCreate}
           onRetry={onRetry}
         />
@@ -137,10 +129,13 @@ const RoleTable = ({
 
   return (
     <div>
-      <div className="grid gap-3 md:hidden">
+      <div className="grid gap-3 lg:hidden">
         {isLoading
           ? Array.from({ length: 5 }, (_, index) => (
-              <MobileRecordCardSkeleton key={index} fields={1} />
+              <div
+                key={index}
+                className="h-40 animate-pulse rounded-2xl bg-slate-100"
+              />
             ))
           : roles.map((role, index) => (
               <MobileRoleCard
@@ -152,8 +147,8 @@ const RoleTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
-        <table aria-label="Roles" className="w-full table-fixed border-separate border-spacing-0 text-left">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
+        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[56px]" />
             <col className="w-[20%]" />
@@ -172,7 +167,7 @@ const RoleTable = ({
                 "Created Date",
                 "Actions",
               ].map((heading) => (
-                <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
+                <th
                   key={heading}
                   className={[
                     "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -193,7 +188,7 @@ const RoleTable = ({
                   key={role.id}
                   className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                 >
-                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
+                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="border-b border-slate-100 px-4 py-3.5">

@@ -18,7 +18,6 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-import AccessibleChartTable from "../../../components/common/AccessibleChartTable";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
@@ -205,13 +204,13 @@ const DispatchDashboardPage = () => {
             {loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  <RefreshCw className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void load()}>
-                <RefreshCw aria-hidden="true" className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
@@ -222,7 +221,7 @@ const DispatchDashboardPage = () => {
                 variant="secondary"
                 onClick={exportReport}
               >
-                <Download aria-hidden="true" className="h-4 w-4" />
+                <Download className="h-4 w-4" />
                 Export
               </AppButton>
             ) : null}
@@ -334,59 +333,22 @@ const DispatchDashboardPage = () => {
           </div>
           <DataTableShell
             columnCount={8}
-            mobileConfig={{
-              fields: [1, 4, 5, 6],
-              serial: 0,
-              status: 7,
-              subtitle: 2,
-              title: 3,
-            }}
-            emptyAction={
-              error ? (
-                <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-              ) : activeFilterCount > 0 ? (
-                <AppButton
-                  variant="secondary"
-                  onClick={() =>
-                    setFilters({
-                      ChannelId: "",
-                      FromDate: "",
-                      ToDate: "",
-                    })
-                  }
-                >
-                  Clear filters
-                </AppButton>
-              ) : undefined
-            }
-            emptyContext="The dashboard highlights the largest finalized recommendations for the selected period."
-            emptyHint={
-              error
-                ? "Check the connection and try loading the dispatch dashboard again."
-                : activeFilterCount > 0
-                  ? "Clear the current filters to see other finalized recommendations."
-                  : "Finalize a planning run to populate this dashboard."
-            }
+            emptyHint="Finalize a planning run or broaden the date filters."
             emptyTitle={
-              !loading && (error || topRows.length === 0)
-                ? error
-                  ? "Couldn't load finalized recommendations"
-                  : activeFilterCount > 0
-                    ? "No finalized recommendations match these filters"
-                    : "No finalized recommendations yet"
+              !loading && topRows.length === 0
+                ? "No finalized recommendations in this period"
                 : undefined
             }
-            emptyVariant={error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"}
             head={
               <>
-                <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
-                <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Run</th>
-                <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
-                <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th>
-                <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended</th>
-                <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
-                <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
-                <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th>
+                <th className={DATA_TABLE_HEADER_CLASS}>#</th>
+                <th className={DATA_TABLE_HEADER_CLASS}>Run</th>
+                <th className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
+                <th className={DATA_TABLE_HEADER_CLASS}>Item</th>
+                <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recommended</th>
+                <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
+                <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
+                <th className={DATA_TABLE_HEADER_CLASS}>Status</th>
               </>
             }
             loading={loading}
@@ -396,7 +358,7 @@ const DispatchDashboardPage = () => {
               <tr
                 key={`${row.runNumber}-${row.warehouseCode}-${row.itemCode}-${index}`}
               >
-                <td className="text-xs font-semibold tabular-nums text-slate-500">
+                <td className="text-xs font-semibold tabular-nums text-slate-400">
                   {index + 1}
                 </td>
                 <td>
@@ -429,12 +391,7 @@ const DispatchDashboardPage = () => {
               No warehouse totals in this period.
             </div>
           ) : (
-            <>
-              <div
-                role="img"
-                aria-label="Bar chart comparing recommended and allocated quantities by warehouse"
-                className="mt-4 h-72"
-              >
+            <div className="mt-4 h-72">
               <ResponsiveContainer height="100%" width="100%">
                 <BarChart
                   data={chartData}
@@ -476,26 +433,7 @@ const DispatchDashboardPage = () => {
                   />
                 </BarChart>
               </ResponsiveContainer>
-              </div>
-              <AccessibleChartTable
-                caption="Recommended versus allocated quantities by warehouse"
-                columns={[
-                  { key: "name", label: "Warehouse" },
-                  {
-                    key: "recommended",
-                    label: "Recommended",
-                    render: (row) =>
-                      formatDispatchNumber(row.recommended, "0"),
-                  },
-                  {
-                    key: "allocated",
-                    label: "Allocated",
-                    render: (row) => formatDispatchNumber(row.allocated, "0"),
-                  },
-                ]}
-                rows={chartData}
-              />
-            </>
+            </div>
           )}
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
 import { FolderTree, X } from "lucide-react";
-import { createElement, memo, useEffect, useMemo, useRef } from "react";
+import { createElement, memo, useEffect, useMemo } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -9,7 +9,6 @@ import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import { getIconComponent } from "../../../config/iconMap";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
-import { activateDialogFocus } from "../../../utils/focus";
 import {
   getDescendantIds,
   normalizePageNumberBlurValue,
@@ -95,7 +94,6 @@ const PageFormModal = ({
 }) => {
   const isView = mode === "view";
   const isEdit = mode === "edit";
-  const dialogRef = useRef(null);
   const blockedParentIds = useMemo(() => {
     const blockedIds = page?.id ? getDescendantIds(pages, page.id) : new Set();
 
@@ -131,14 +129,6 @@ const PageFormModal = ({
       reset(defaultValues);
     }
   }, [defaultValues, isOpen, reset]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    return activateDialogFocus(dialogRef.current, { onEscape: onClose });
-  }, [isOpen, onClose]);
 
   const selectedIcon = useWatch({ control, name: "icon" });
   const availableParents = useMemo(() => {
@@ -182,7 +172,6 @@ const PageFormModal = ({
           onMouseDown={onClose}
         >
           <motion.section
-            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="page-form-modal-title"
@@ -196,7 +185,7 @@ const PageFormModal = ({
             <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
-                  <FolderTree aria-hidden="true" className="h-5 w-5" />
+                  <FolderTree className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
                   <h2
@@ -211,10 +200,10 @@ const PageFormModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close page form"
               >
-                <X aria-hidden="true" className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -222,7 +211,6 @@ const PageFormModal = ({
               <ModalSkeleton />
             ) : (
               <form
-                noValidate
                 className="flex min-h-0 flex-1 flex-col"
                 onSubmit={handleSubmit(submitForm)}
               >
@@ -276,8 +264,6 @@ const PageFormModal = ({
                     name="icon"
                     render={({ field }) => (
                       <AppSelect
-                        ref={field.ref}
-                        name={field.name}
                         id="pageIcon"
                         label="Icon"
                         required
@@ -294,12 +280,11 @@ const PageFormModal = ({
                   <div className="flex min-h-16 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
                       {createElement(getIconComponent(selectedIcon), {
-                        "aria-hidden": true,
                         className: "h-5 w-5",
                       })}
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
                         Icon Preview
                       </span>
                       <span className="mt-0.5 block truncate text-sm font-semibold text-slate-800">
@@ -313,8 +298,6 @@ const PageFormModal = ({
                     name="parentPageId"
                     render={({ field }) => (
                       <AppSelect
-                        ref={field.ref}
-                        name={field.name}
                         id="parentPageId"
                         label="Parent Page"
                         disabled={isView}

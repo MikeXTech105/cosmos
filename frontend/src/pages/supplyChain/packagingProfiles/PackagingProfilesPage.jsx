@@ -471,9 +471,9 @@ const PackagingProfilesPage = () => {
         title="Packaging profiles"
         actions={
           <>
-            <AppButton disabled={state.loading} variant="secondary" onClick={() => void load()}><RotateCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />Refresh</AppButton>
-            {capabilities.canExport ? <AppButton disabled={state.loading || state.list.length === 0} variant="secondary" onClick={() => void exportRows()}><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton> : <DisabledAction reason="Export requires Supply Chain Packaging Profiles export permission."><AppButton disabled variant="secondary"><Download aria-hidden="true" className="h-4 w-4" />Export</AppButton></DisabledAction>}
-            {capabilities.canCreate ? <AppButton onClick={() => setModal({ mode: "create", record: null })}><Plus aria-hidden="true" className="h-4 w-4" />New profile</AppButton> : <DisabledAction reason="Creating packaging profiles requires create permission."><AppButton disabled><Plus aria-hidden="true" className="h-4 w-4" />New profile</AppButton></DisabledAction>}
+            <AppButton disabled={state.loading} variant="secondary" onClick={() => void load()}><RotateCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />Refresh</AppButton>
+            {capabilities.canExport ? <AppButton disabled={state.loading || state.list.length === 0} variant="secondary" onClick={() => void exportRows()}><Download className="h-4 w-4" />Export</AppButton> : <DisabledAction reason="Export requires Supply Chain Packaging Profiles export permission."><AppButton disabled variant="secondary"><Download className="h-4 w-4" />Export</AppButton></DisabledAction>}
+            {capabilities.canCreate ? <AppButton onClick={() => setModal({ mode: "create", record: null })}><Plus className="h-4 w-4" />New profile</AppButton> : <DisabledAction reason="Creating packaging profiles requires create permission."><AppButton disabled><Plus className="h-4 w-4" />New profile</AppButton></DisabledAction>}
           </>
         }
       />
@@ -507,70 +507,15 @@ const PackagingProfilesPage = () => {
       <DataTableShell
         colGroup={<colgroup><col className="w-[56px]" /><col className="w-56" /><col className="w-36" /><col className="w-36" /><col className="w-28" /><col className="w-44" /><col className="w-44" /><col className="w-36" /><col className="w-24" /><col className="w-28" /><col className="w-44" /></colgroup>}
         columnCount={11}
-        mobileConfig={{
-          actions: 10,
-          fields: [3, 4, 5, 6],
-          serial: 0,
-          status: 9,
-          subtitle: 2,
-          title: 1,
-        }}
-        emptyAction={
-          state.error ? (
-            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
-          ) : activeFilterCount > 0 ? (
-            <AppButton
-              variant="secondary"
-              onClick={() => {
-                setFilterItem(null);
-                setFilters({
-                  ChannelId: "",
-                  IsActive: "",
-                  IsDefault: "",
-                  ItemId: "",
-                  Search: "",
-                });
-              }}
-            >
-              Clear filters
-            </AppButton>
-          ) : capabilities.canCreate ? (
-            <AppButton onClick={() => setModal({ mode: "create", record: null })}>
-              New profile
-            </AppButton>
-          ) : undefined
-        }
-        emptyContext={
-          !state.error && activeFilterCount === 0
-            ? "Packaging profiles define channel-aware box quantities, dimensions, and weights."
-            : undefined
-        }
-        emptyHint={
-          state.error
-            ? state.error
-            : activeFilterCount > 0
-              ? "Clear the current filters to see all packaging profiles."
-              : "Create the first profile for an inventory item."
-        }
-        emptyTitle={
-          !state.loading && state.list.length === 0
-            ? state.error
-              ? "Couldn't load packaging profiles"
-              : activeFilterCount > 0
-                ? "No packaging profiles match these filters"
-                : "No packaging profiles yet"
-            : undefined
-        }
-        emptyVariant={
-          state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"
-        }
-        head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Packaging code</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Units per box</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Dimensions</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Gross / Net weight</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Volumetric weight</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Default</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
+        emptyHint="Create the first profile or clear the current filters."
+        emptyTitle={!state.loading && state.list.length === 0 ? "No packaging profiles yet" : undefined}
+        head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>Item</th><th className={DATA_TABLE_HEADER_CLASS}>Packaging code</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Units per box</th><th className={DATA_TABLE_HEADER_CLASS}>Dimensions</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Gross / Net weight</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Volumetric weight</th><th className={DATA_TABLE_HEADER_CLASS}>Default</th><th className={DATA_TABLE_HEADER_CLASS}>Status</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
         loading={state.loading}
         minWidth="min-w-[1580px]"
       >
         {state.list.map((row, index) => (
           <tr key={row.id}>
-            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
             <td><p className="font-medium text-slate-800">{row.itemName}</p><p className="text-xs text-slate-500">{row.itemCode}</p></td>
             <td><p className="font-semibold text-slate-900">{row.packagingCode}</p><p className="text-xs text-slate-500">{row.packagingName}</p></td>
             <td>{row.channelCode || "All channels"}</td>
@@ -582,9 +527,9 @@ const PackagingProfilesPage = () => {
             <td><SupplyChainStatusPill active={row.isActive} /></td>
             <td>
               <div className="flex items-center justify-end gap-0.5">
-                <AppTooltip label="View profile"><button aria-label="View profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>
-                {capabilities.canEdit ? <><AppTooltip label="Edit profile"><button aria-label="Edit profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>{row.isDefault ? <AppTooltip label="This is already the default profile"><button aria-label="Already default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled type="button"><Star aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label={settingDefaultId === row.id ? "Setting this profile as default" : "Set as default"}><button aria-label="Set as default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled={settingDefaultId === row.id} type="button" onClick={() => void setDefault(row)}><Star aria-hidden="true" className="h-4 w-4" /></button></AppTooltip>}</> : null}
-                {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete profile unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete profile"><button aria-label="Delete profile" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : null}
+                <AppTooltip label="View profile"><button aria-label="View profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "view", record: row })}><Eye className="h-4 w-4" /></button></AppTooltip>
+                {capabilities.canEdit ? <><AppTooltip label="Edit profile"><button aria-label="Edit profile" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setModal({ mode: "edit", record: row })}><Pencil className="h-4 w-4" /></button></AppTooltip>{row.isDefault ? <AppTooltip label="This is already the default profile"><button aria-label="Already default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled type="button"><Star className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label={settingDefaultId === row.id ? "Setting this profile as default" : "Set as default"}><button aria-label="Set as default" className={DATA_TABLE_ROW_ACTION_CLASS} disabled={settingDefaultId === row.id} type="button" onClick={() => void setDefault(row)}><Star className="h-4 w-4" /></button></AppTooltip>}</> : null}
+                {capabilities.canDelete ? rowConflicts[row.id] ? <AppTooltip label={rowConflicts[row.id]}><button aria-label="Delete profile unavailable" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} disabled type="button"><Trash2 className="h-4 w-4" /></button></AppTooltip> : <AppTooltip label="Delete profile"><button aria-label="Delete profile" className={DATA_TABLE_ROW_ACTION_DANGER_CLASS} type="button" onClick={() => { setDeleteError(""); setDeleteTarget(row); }}><Trash2 className="h-4 w-4" /></button></AppTooltip> : null}
               </div>
               {rowConflicts[row.id] ? <p className="mt-1 text-right text-[10px] text-red-600">In use</p> : null}
             </td>

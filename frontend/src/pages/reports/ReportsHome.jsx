@@ -13,10 +13,7 @@ import {
 } from "./reportRegistry";
 
 const DynamicIcon = ({ className, name }) => {
-  return createElement(getIconComponent(name), {
-    "aria-hidden": true,
-    className,
-  });
+  return createElement(getIconComponent(name), { className });
 };
 
 const ReportCard = ({ report }) => {
@@ -36,7 +33,7 @@ const ReportCard = ({ report }) => {
           </p>
           <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand">
             View report
-            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </div>
       </div>
@@ -94,7 +91,7 @@ const ReportsHome = ({ forcedGroup }) => {
           description="The requested report group could not be found."
         />
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <FileSearch aria-hidden="true" className="mx-auto h-8 w-8 text-slate-500" />
+          <FileSearch className="mx-auto h-8 w-8 text-slate-400" />
           <h2 className="mt-3 text-base font-semibold text-slate-900">
             Report group not found
           </h2>
@@ -124,20 +121,19 @@ const ReportsHome = ({ forcedGroup }) => {
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <label className="relative block">
-          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search reports..."
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
       </div>
 
       {groupedReports.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-          <FileSearch aria-hidden="true" className="mx-auto h-8 w-8 text-slate-500" />
+          <FileSearch className="mx-auto h-8 w-8 text-slate-400" />
           <h2 className="mt-3 text-base font-semibold text-slate-900">
             No reports available
           </h2>

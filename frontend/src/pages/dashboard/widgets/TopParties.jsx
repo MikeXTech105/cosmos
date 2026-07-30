@@ -36,14 +36,14 @@ const TopParties = ({
               value,
             }))}
             className="w-28"
-            label="Top parties count"
+            aria-label="Top parties count"
           />
           <AppSelect
             value={filters.partyType}
             onChange={(value) => onChange({ partyType: value })}
             options={PARTY_TYPE_OPTIONS}
             className="min-w-[150px]"
-            label="Top parties type"
+            aria-label="Top parties type"
           />
         </>
       }
@@ -66,7 +66,7 @@ const TopParties = ({
                 <p className="truncate text-sm font-semibold text-slate-900">
                   {party.partyName ?? "Unnamed party"}
                 </p>
-                <p className="mt-1 truncate text-xs text-slate-500">
+                <p className="mt-1 truncate text-xs text-slate-400">
                   {[party.partyCode, party.partyType].filter(Boolean).join(" - ") ||
                     "No party code"}
                 </p>
@@ -78,7 +78,7 @@ const TopParties = ({
                 <p className="mt-1 text-xs text-slate-500">
                   {formatCurrency(party.outstandingAmount)} outstanding
                 </p>
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="mt-1 text-[11px] text-slate-400">
                   {formatNumber(party.transactionCount)} txns
                 </p>
               </div>

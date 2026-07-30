@@ -9,7 +9,6 @@ import {
   YAxis,
 } from "recharts";
 
-import AccessibleChartTable from "../../../components/common/AccessibleChartTable";
 import {
   formatCompactCurrency,
   formatCurrency,
@@ -37,7 +36,7 @@ const TrendTooltip = ({ active, label, payload }) => {
         <p>Sales: {formatCurrency(row.salesAmount)}</p>
         <p>Purchases: {formatCurrency(row.purchaseAmount)}</p>
         <p>Difference: {formatCurrency(row.difference)}</p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-400">
           {formatNumber(row.salesTransactionCount)} sales txns ·{" "}
           {formatNumber(row.purchaseTransactionCount)} purchase txns
         </p>
@@ -61,12 +60,7 @@ const SalesPurchaseTrendChart = ({ error, isLoading, onRetry, rows }) => {
       ) : isEmptyCollection(rows) ? (
         <WidgetEmpty />
       ) : (
-        <>
-          <div
-            role="img"
-            aria-label="Bar chart comparing sales and purchases by period"
-            className="h-[300px]"
-          >
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ bottom: 0, left: 0, right: 8, top: 8 }}>
               <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
@@ -99,40 +93,7 @@ const SalesPurchaseTrendChart = ({ error, isLoading, onRetry, rows }) => {
               />
             </BarChart>
           </ResponsiveContainer>
-          </div>
-          <AccessibleChartTable
-            caption="Sales versus purchase trend data"
-            columns={[
-              { key: "periodLabel", label: "Period" },
-              {
-                key: "salesAmount",
-                label: "Sales",
-                render: (row) => formatCurrency(row.salesAmount),
-              },
-              {
-                key: "purchaseAmount",
-                label: "Purchases",
-                render: (row) => formatCurrency(row.purchaseAmount),
-              },
-              {
-                key: "difference",
-                label: "Difference",
-                render: (row) => formatCurrency(row.difference),
-              },
-              {
-                key: "salesTransactionCount",
-                label: "Sales transactions",
-                render: (row) => formatNumber(row.salesTransactionCount),
-              },
-              {
-                key: "purchaseTransactionCount",
-                label: "Purchase transactions",
-                render: (row) => formatNumber(row.purchaseTransactionCount),
-              },
-            ]}
-            rows={rows}
-          />
-        </>
+        </div>
       )}
     </WidgetCard>
   );

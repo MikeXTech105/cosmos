@@ -148,13 +148,7 @@ export const actionSignals = Object.freeze([
     route: "/supply-chain/item-mappings?tab=unmatched",
   }),
   Object.freeze({
-    fetch: async () =>
-      getPagedCount(
-        await bomService.getIssues({
-          PageNumber: 1,
-          PageSize: 1,
-        }),
-      ),
+    fetch: async () => getCollectionCount(await bomService.getIssues()),
     group: "blocking",
     hint: messages.signals.productsMissingBom.hint,
     icon: PackageX,
@@ -165,12 +159,7 @@ export const actionSignals = Object.freeze([
   }),
   Object.freeze({
     fetch: async () =>
-      getPagedCount(
-        await procurementSettingService.getMissing({
-          PageNumber: 1,
-          PageSize: 1,
-        }),
-      ),
+      getCollectionCount(await procurementSettingService.getMissing()),
     group: "blocking",
     hint: messages.signals.materialsMissingSettings.hint,
     icon: SlidersHorizontal,
@@ -190,8 +179,8 @@ export const actionSignals = Object.freeze([
     route: "/dispatch/settings",
   }),
   Object.freeze({
-    // CONFIRM: PlanningRunStatus.Draft = 1 was verified against the
-    // 2026-07-29 live response; status 2 was shown as Finalized.
+    // CONFIRMED: The 2026-07-29 live response returned status 1 for the
+    // current runs shown as Draft and status 2 for the finalized runs.
     fetch: async () =>
       getPagedCount(
         await planningService.listRuns({
@@ -244,11 +233,7 @@ export const omittedActionSignals = Object.freeze([
 ]);
 
 export const getPermittedActionSignals = (signals, permissions) =>
-  signals.filter(
-    (signal) =>
-      Boolean(signal?.permission?.key) &&
-      Boolean(permissions[signal.permission.key]),
-  );
+  signals.filter((signal) => Boolean(permissions[signal.permission.key]));
 
 export const fetchActionSignals = async (signals) => {
   const settled = await Promise.allSettled(

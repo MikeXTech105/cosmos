@@ -231,7 +231,7 @@ const HrDashboardPage = () => {
       <PageHeader
         badge={
           <>
-            <UsersRound aria-hidden="true" className="h-3.5 w-3.5" />
+            <UsersRound className="h-3.5 w-3.5" />
             HR / Dashboard
           </>
         }
@@ -244,7 +244,7 @@ const HrDashboardPage = () => {
             disabled={state.loading}
             onClick={loadDashboard}
           >
-            <RefreshCw aria-hidden="true" className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} />
             Refresh
           </AppButton>
         }
@@ -297,7 +297,7 @@ const HrDashboardPage = () => {
                 Present count for the last seven days.
               </p>
             </div>
-            <BarChart3 aria-hidden="true" className="h-5 w-5 text-slate-500" />
+            <BarChart3 className="h-5 w-5 text-slate-400" />
           </div>
           <div className="mt-5">
             <MiniBarChart items={trend} />
