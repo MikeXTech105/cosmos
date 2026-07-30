@@ -119,10 +119,10 @@ const ReportKpiChips = ({ kpis = [], summary }) => {
         >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp aria-hidden="true" className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
                 {kpi.label}
               </p>
               <p className="mt-0.5 truncate text-lg font-bold text-slate-900">
@@ -140,7 +140,7 @@ const RequiredParamPrompt = ({ report }) => {
   return (
     <div className="flex min-h-[420px] flex-col items-center justify-center px-6 py-12 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-        <FileSearch className="h-6 w-6" />
+        <FileSearch aria-hidden="true" className="h-6 w-6" />
       </div>
       <h3 className="mt-4 text-base font-semibold text-slate-900">
         {report.requiredPromptTitle ?? "Select a required filter"}
@@ -153,7 +153,10 @@ const RequiredParamPrompt = ({ report }) => {
 };
 
 const DynamicIcon = ({ className, name }) => {
-  return createElement(getIconComponent(name), { className });
+  return createElement(getIconComponent(name), {
+    "aria-hidden": true,
+    className,
+  });
 };
 
 const ReportView = ({ report }) => {
@@ -372,7 +375,7 @@ const ReportView = ({ report }) => {
               disabled={isLoading || isMissingRequiredParam}
               onClick={handleRetry}
             >
-              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {report.exportable && canExport && (
@@ -383,7 +386,7 @@ const ReportView = ({ report }) => {
                 loadingText={exportProgress || "Exporting…"}
                 onClick={handleExport}
               >
-                <Download className="h-4 w-4" />
+                <Download aria-hidden="true" className="h-4 w-4" />
                 Export
               </AppButton>
             )}

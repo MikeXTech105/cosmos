@@ -29,6 +29,41 @@ body {
   background: var(--erp-bg);
 }
 
+@media (max-width: 47.999rem) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  button,
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  [role="button"] {
+    min-height: 44px;
+  }
+
+  .mobile-record-actions button {
+    width: 44px;
+    height: 44px;
+  }
+
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 63.999rem) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 ::selection {
   color: #0f172a;
   background: var(--app-accent-light);
@@ -53,11 +88,38 @@ body {
   background: transparent;
 }
 
+@layer base {
+  :where(
+      a[href],
+      button,
+      input,
+      select,
+      textarea,
+      [contenteditable="true"],
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-dark ring-2 ring-brand/30;
+  }
+}
+
 @layer utilities {
   .flex-center {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 }
 

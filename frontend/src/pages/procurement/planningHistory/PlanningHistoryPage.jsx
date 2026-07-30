@@ -25,6 +25,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
 import useUrlFilters from "../../../hooks/useUrlFilters";
 import {
@@ -136,6 +137,7 @@ const getRunLines = (payload) => getCollection(payload, ["planningLines", "lines
 const RunList = ({
   activeFilterCount,
   canCancel,
+  canCreate,
   data,
   error,
   filters,
@@ -159,7 +161,11 @@ const RunList = ({
       title="Saved plans"
       description="Each saved plan is a versioned snapshot. Opening one never recalculates its material values."
     >
-      <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <MobileFilterSheet
+        activeCount={activeFilterCount}
+        onClear={onClearFilters}
+      >
+        <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
         <ProcurementDateRangeFields
           fromDate={filters.fromDate}
@@ -178,16 +184,54 @@ const RunList = ({
           <p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p>
           {activeFilterCount > 0 && <AppButton variant="ghost" onClick={onClearFilters}>Clear</AppButton>}
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
       {error ? (
         <ProcurementErrorState error={error} onRetry={onRetry} />
       ) : (
         <ProcurementTable
           columnCount={9}
+          mobileConfig={{
+            actions: 8,
+            fields: [2, 3, 4, 5],
+            serial: 0,
+            status: 7,
+            title: 1,
+          }}
+          emptyAction={
+            activeFilterCount > 0 ? (
+              <AppButton variant="secondary" onClick={onClearFilters}>
+                Clear filters
+              </AppButton>
+            ) : canCreate ? (
+              <Link
+                className="inline-flex h-9 items-center justify-center rounded-xl bg-brand px-5 text-sm font-medium text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
+                to="/procurement/generate-plan"
+              >
+                Create plan
+              </Link>
+            ) : undefined
+          }
+          emptyContext={
+            activeFilterCount === 0
+              ? "Saved plans preserve procurement calculations as versioned snapshots."
+              : undefined
+          }
           emptyIcon={FileClock}
-          emptyHint="Saved draft, finalized, and cancelled plan snapshots will appear here."
-          emptyTitle={!loading && runs.length === 0 ? "No plans yet" : undefined}
-          head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Plan</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Demand range</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Days</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Lines</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Purchase lines</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Calculated</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+          emptyHint={
+            activeFilterCount > 0
+              ? "Clear the current date or status filters to see saved plans."
+              : "Create a procurement plan to save your first snapshot."
+          }
+          emptyTitle={
+            !loading && runs.length === 0
+              ? activeFilterCount > 0
+                ? "No plans match these filters"
+                : "No plans yet"
+              : undefined
+          }
+          emptyVariant={activeFilterCount > 0 ? "filtered" : "empty"}
+          head={<><th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Plan</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Demand range</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Days</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Lines</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Purchase lines</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Calculated</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
           loading={loading}
           minWidth="min-w-[1000px]"
         >
@@ -201,7 +245,7 @@ const RunList = ({
                     key={getRecordId(run, ["planningRunId"])}
                     className="hover:bg-slate-50/80"
                   >
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(page - 1) * pageSize + index + 1}
                     </td>
                     <td className="px-4 py-3">
@@ -238,7 +282,7 @@ const RunList = ({
                       <div className="flex items-center justify-end gap-0.5">
                         <AppTooltip label="Open plan">
                           <button type="button" aria-label="Open plan" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpen(run)}>
-                            <Eye className="h-4 w-4" />
+                            <Eye aria-hidden="true" className="h-4 w-4" />
                           </button>
                         </AppTooltip>
                         {canCancel && !isFinalizedRun(run) && !isCancelledRun(run) ? (
@@ -249,7 +293,7 @@ const RunList = ({
                               className={`${PROCUREMENT_ROW_ACTION_CLASS} hover:bg-red-50 hover:text-red-600`}
                               onClick={() => onCancel(run)}
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircle aria-hidden="true" className="h-4 w-4" />
                             </button>
                           </AppTooltip>
                         ) : null}
@@ -414,7 +458,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
       <div className="mt-5 flex justify-end gap-2">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
         <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>
-          <Save className="h-4 w-4" />Save adjustment
+          <Save aria-hidden="true" className="h-4 w-4" />Save adjustment
         </AppButton>
       </div>
     </AppModal>
@@ -458,12 +502,12 @@ const RunDetail = ({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <AppButton variant="secondary" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />All plans
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" />All plans
         </AppButton>
         <div className="flex flex-wrap gap-2">
           {canCancel && !immutable ? (
             <AppButton variant="danger" onClick={onCancel}>
-              <XCircle className="h-4 w-4" />Cancel plan
+              <XCircle aria-hidden="true" className="h-4 w-4" />Cancel plan
             </AppButton>
           ) : null}
           {!immutable && (
@@ -474,7 +518,7 @@ const RunDetail = ({
               loadingText="Finalizing…"
               onClick={onFinalize}
             >
-              <ShieldCheck className="h-4 w-4" />Finalize plan
+              <ShieldCheck aria-hidden="true" className="h-4 w-4" />Finalize plan
             </AppButton>
           )}
         </div>
@@ -511,7 +555,7 @@ const RunDetail = ({
         </div>
         {immutable && (
           <div className="flex items-start gap-3 border-t border-emerald-100 bg-emerald-50 px-5 py-3 text-emerald-800">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+            <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="text-xs leading-5"><strong>This plan is {cancelled ? "cancelled" : "finalized"}.</strong> Its snapshot and every line are immutable.</p>
           </div>
         )}
@@ -526,7 +570,7 @@ const RunDetail = ({
               value={lineFilters.search}
               onChange={(event) => onUpdateLineFilters({ search: event.target.value })}
             />
-            <Search className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-slate-400" />
+            <Search aria-hidden="true" className="pointer-events-none absolute bottom-3.5 right-3 h-4 w-4 text-slate-500" />
           </div>
           <AppSelect
             label="Purchase lines"
@@ -555,16 +599,26 @@ const RunDetail = ({
         {linesError ? <ProcurementErrorState error={linesError} onRetry={onLoadLines} /> : (
           <ProcurementTable
             columnCount={10}
-            emptyHint="Clear line filters or open another saved plan."
-            emptyTitle={!linesLoading && lines.length === 0 ? "No snapshot lines match the filters" : undefined}
-            head={<><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-20 min-w-64 border-r bg-slate-50`}>Material</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>System suggestion</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>To order</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Delta</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Shortfall</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Physical stock<AppTooltip label="Global Items.CurrentStock supplied by the saved planning snapshot."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Inbound</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Projected available<AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Warnings / flags</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            mobileConfig={{
+              actions: 9,
+              fields: [1, 3, 4, 7],
+              serial: "generated",
+              status: 8,
+              title: 0,
+            }}
+            emptyAction={activeLineFilterCount > 0 ? <AppButton variant="secondary" onClick={() => onUpdateLineFilters({ hasWarnings: "all", manualPlanning: "all", page: 1, purchaseOnly: "all", search: "" })}>Clear filters</AppButton> : undefined}
+            emptyContext="Snapshot lines preserve the material calculations and adjustments saved with this plan."
+            emptyHint={activeLineFilterCount > 0 ? "Clear line filters to see other snapshot lines." : "Open another saved plan or create a plan with material demand."}
+            emptyTitle={!linesLoading && lines.length === 0 ? activeLineFilterCount > 0 ? "No snapshot lines match these filters" : "No snapshot lines yet" : undefined}
+            emptyVariant={activeLineFilterCount > 0 ? "filtered" : "empty"}
+            head={<><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-20 min-w-64 border-r bg-slate-50`}>Material</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>System suggestion</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>To order</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Delta</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Shortfall</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Physical stock<AppTooltip label="Global Items.CurrentStock supplied by the saved planning snapshot."><button type="button" className="text-slate-500 hover:text-slate-700"><Info aria-hidden="true" className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Inbound</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}><span className="inline-flex items-center gap-1">Projected available<AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation."><button type="button" className="text-slate-500 hover:text-slate-700"><Info aria-hidden="true" className="h-3.5 w-3.5" /></button></AppTooltip></span></th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Warnings / flags</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
             headClassName="sticky top-0 z-10"
             loading={linesLoading}
             minWidth="min-w-[1460px]"
             scrollerClassName="max-h-[60vh]"
             rows={5}
           >
-            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{line.materialItemCode ?? EMPTY_VALUE}</p><p className="mt-0.5 text-xs text-slate-500">{line.materialItemName ?? EMPTY_VALUE} · {line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
+            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{line.materialItemCode ?? EMPTY_VALUE}</p><p className="mt-0.5 text-xs text-slate-500">{line.materialItemName ?? EMPTY_VALUE} · {line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle aria-hidden="true" className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil aria-hidden="true" className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-500">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
           </ProcurementTable>
         )}
         <ProcurementPagination disabled={linesLoading} {...pagination} onPageChange={(value) => onUpdateLineFilters({ page: value })} onPageSizeChange={(value) => onUpdateLineFilters({ page: 1, pageSize: Number(value) })} />
@@ -895,7 +949,7 @@ const PlanningHistoryPage = () => {
       variant="secondary"
       onClick={exportCurrentPlan}
     >
-      <Download className="h-4 w-4" />
+      <Download aria-hidden="true" className="h-4 w-4" />
       Export
     </AppButton>
   );
@@ -903,7 +957,7 @@ const PlanningHistoryPage = () => {
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
-        badge={<><History className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><History aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Plans"
         description="Open saved plan snapshots, make traceable draft adjustments, finalize for immutability, and export the approved result."
         actions={
@@ -913,7 +967,7 @@ const PlanningHistoryPage = () => {
               variant="secondary"
               onClick={() => run ? void refreshCurrentRun() : void loadRuns()}
             >
-              <RotateCw className={`h-4 w-4 ${run ? detailLoading || linesLoading ? "animate-spin" : "" : loading ? "animate-spin" : ""}`} />
+              <RotateCw aria-hidden="true" className={`h-4 w-4 ${run ? detailLoading || linesLoading ? "animate-spin" : "" : loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canExport && (
@@ -925,7 +979,7 @@ const PlanningHistoryPage = () => {
                     </AppTooltip>
                   )
             )}
-            <Link to="/procurement/generate-plan"><AppButton><Plus className="h-4 w-4" />New plan</AppButton></Link>
+            <Link to="/procurement/generate-plan"><AppButton><Plus aria-hidden="true" className="h-4 w-4" />New plan</AppButton></Link>
           </>
         }
       />
@@ -984,6 +1038,7 @@ const PlanningHistoryPage = () => {
         <RunList
           activeFilterCount={activeCount}
           canCancel={capabilities.canDelete}
+          canCreate={capabilities.canCreate}
           data={data}
           error={error}
           filters={filters}
@@ -1030,7 +1085,7 @@ const PlanningHistoryPage = () => {
         onClose={() => !finalizing && setFinalizeOpen(false)}
       >
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="text-sm font-semibold">This action is immutable</p>
             <p className="mt-0.5 text-xs leading-5">
@@ -1042,7 +1097,7 @@ const PlanningHistoryPage = () => {
         <div className="mt-5 flex justify-end gap-2">
           <AppButton variant="secondary" onClick={() => setFinalizeOpen(false)}>Keep draft</AppButton>
           <AppButton isLoading={finalizing} loadingText="Finalizing…" onClick={finalize}>
-            <ShieldCheck className="h-4 w-4" />Finalize snapshot
+            <ShieldCheck aria-hidden="true" className="h-4 w-4" />Finalize snapshot
           </AppButton>
         </div>
       </AppModal>
@@ -1087,7 +1142,7 @@ const PlanningHistoryPage = () => {
               variant="danger"
               onClick={cancelPlan}
             >
-              <XCircle className="h-4 w-4" />
+              <XCircle aria-hidden="true" className="h-4 w-4" />
               Cancel plan
             </AppButton>
           )}

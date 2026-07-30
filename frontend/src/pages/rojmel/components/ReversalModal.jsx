@@ -43,7 +43,7 @@ const ReversalModal = ({ isOpen, noun = "entry", onClose, onConfirm }) => {
     >
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-          <RotateCcw className="h-5 w-5" />
+          <RotateCcw aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -59,7 +59,7 @@ const ReversalModal = ({ isOpen, noun = "entry", onClose, onConfirm }) => {
       <form className="mt-6 space-y-4" onSubmit={submit}>
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             <span>A reason is required for the audit trail.</span>
           </div>
         </div>
@@ -72,12 +72,12 @@ const ReversalModal = ({ isOpen, noun = "entry", onClose, onConfirm }) => {
           </label>
           <textarea
             id="rojmel-reversal-reason"
-            autoFocus
+            data-autofocus="true"
             rows={4}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Explain why this entry must be reversed"
-            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </div>
         {error && (
@@ -85,7 +85,7 @@ const ReversalModal = ({ isOpen, noun = "entry", onClose, onConfirm }) => {
             {error}
           </p>
         )}
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+        <div className="sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end md:static">
           <AppButton disabled={isSubmitting} variant="secondary" onClick={close}>
             Keep Entry
           </AppButton>
@@ -96,7 +96,7 @@ const ReversalModal = ({ isOpen, noun = "entry", onClose, onConfirm }) => {
             type="submit"
             variant="danger"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Reverse Entry
           </AppButton>
         </div>

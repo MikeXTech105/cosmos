@@ -108,11 +108,11 @@ const FlowSteps = ({ current }) => {
                 ? "bg-brand text-white"
                 : complete
                   ? "bg-brand-light text-brand"
-                  : "text-slate-400"
+                  : "text-slate-500"
             }`}
           >
             <span className={`flex h-7 w-7 items-center justify-center rounded-full ${active ? "bg-brand-dark" : complete ? "bg-white" : "bg-slate-100"}`}>
-              {complete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              {complete ? <Check aria-hidden="true" className="h-4 w-4" /> : <Icon aria-hidden="true" className="h-4 w-4" />}
             </span>
             <span className="text-xs font-semibold">{step.label}</span>
           </div>
@@ -178,7 +178,7 @@ const Derivation = ({ line }) => (
         <div className="mt-3 space-y-1">
           {line.warnings.map((warning, index) => (
             <div key={warning.code ?? index} className="flex items-start gap-2 text-xs text-amber-700">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>{warning.message ?? warning.description ?? String(warning)}</span>
             </div>
           ))}
@@ -214,7 +214,7 @@ const Derivation = ({ line }) => (
   </div>
 );
 
-const PreviewTable = ({ columns, lines, loading }) => {
+const PreviewTable = ({ columns, lines, loading, onResetRange }) => {
   const [expanded, setExpanded] = useState(new Set());
   const visibleColumnCount =
     Object.values(columns).filter(Boolean).length + 3;
@@ -223,22 +223,35 @@ const PreviewTable = ({ columns, lines, loading }) => {
     <ProcurementTable
       className="border-separate border-spacing-0"
       columnCount={visibleColumnCount}
-      emptyHint="Choose a range with retained sales demand, then preview again."
+      mobileConfig={{
+        actions: 0,
+        fields: [2, 3, 4, 5],
+        serial: "generated",
+        title: 1,
+      }}
+      emptyAction={
+        <AppButton variant="secondary" onClick={onResetRange}>
+          Clear filters
+        </AppButton>
+      }
+      emptyContext="Planning lines translate retained product demand into material requirements."
+      emptyHint="Return to the default demand range, then preview again."
       emptyTitle={lines.length === 0 && !loading ? "No planning lines for this range" : undefined}
+      emptyVariant="filtered"
       head={
         <>
-          <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-30 w-10 border-r bg-slate-50 px-2`} />
-          <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-10 z-30 min-w-64 border-r bg-slate-50`}>Material</th>
-          {columns.materialRequirement && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>Requirement</th>}
-          {columns.averageDailyUsage && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Average daily usage</th>}
-          {columns.leadTimeDays && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-36 text-right`}>Lead time</th>}
-          {columns.reorderPoint && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>Reorder point</th>}
-          {columns.physicalStock && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}><span className="inline-flex items-center gap-1">Physical stock<AppTooltip label="Global Items.CurrentStock supplied by the planning preview."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th>}
-          {columns.inboundStock && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Inbound</th>}
-          {columns.projectedAvailableStock && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-40 text-right`}><span className="inline-flex items-center gap-1">Projected available<AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation."><button type="button" className="text-slate-400 hover:text-slate-700"><Info className="h-3.5 w-3.5" /></button></AppTooltip></span></th>}
-          {columns.shortage && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Shortfall</th>}
-          {columns.calculatedSuggestedQuantity && <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-36 bg-brand-light text-right text-brand`}>System suggestion</th>}
-          <th className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-40`}>Flags</th>
+          <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-0 z-30 w-10 border-r bg-slate-50 px-2`} />
+          <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} sticky left-10 z-30 min-w-64 border-r bg-slate-50`}>Material</th>
+          {columns.materialRequirement && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>Requirement</th>}
+          {columns.averageDailyUsage && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Average daily usage</th>}
+          {columns.leadTimeDays && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-36 text-right`}>Lead time</th>}
+          {columns.reorderPoint && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}>Reorder point</th>}
+          {columns.physicalStock && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-32 text-right`}><span className="inline-flex items-center gap-1">Physical stock<AppTooltip label="Global Items.CurrentStock supplied by the planning preview."><button type="button" className="text-slate-500 hover:text-slate-700"><Info aria-hidden="true" className="h-3.5 w-3.5" /></button></AppTooltip></span></th>}
+          {columns.inboundStock && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Inbound</th>}
+          {columns.projectedAvailableStock && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-40 text-right`}><span className="inline-flex items-center gap-1">Projected available<AppTooltip label="Global stock + latest valid inbound snapshot. Not warehouse-level allocation."><button type="button" className="text-slate-500 hover:text-slate-700"><Info aria-hidden="true" className="h-3.5 w-3.5" /></button></AppTooltip></span></th>}
+          {columns.shortage && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-28 text-right`}>Shortfall</th>}
+          {columns.calculatedSuggestedQuantity && <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-36 bg-brand-light text-right text-brand`}>System suggestion</th>}
+          <th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} min-w-40`}>Flags</th>
         </>
       }
       headClassName="sticky top-0 z-20"
@@ -265,14 +278,14 @@ const PreviewTable = ({ columns, lines, loading }) => {
                         className={PROCUREMENT_ROW_ACTION_CLASS}
                         onClick={() => setExpanded((current) => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; })}
                       >
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        {isExpanded ? <ChevronDown aria-hidden="true" className="h-4 w-4" /> : <ChevronRight aria-hidden="true" className="h-4 w-4" />}
                       </button>
                     </AppTooltip>
                   </td>
                   <td className="sticky left-10 z-10 border-b border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="text-sm font-semibold text-slate-900">{line.materialItemCode ?? EMPTY_VALUE}</p><p className="mt-0.5 max-w-52 truncate text-xs text-slate-500">{line.materialItemName ?? EMPTY_VALUE} · {line.unitShortName ?? line.unitName ?? EMPTY_VALUE}</p></td>
                   {columns.materialRequirement && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.materialRequirement)}</td>}
                   {columns.averageDailyUsage && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.averageDailyUsage)}</td>}
-                  {columns.leadTimeDays && <td className="border-b border-slate-100 px-4 py-3 text-right tabular-nums"><p className="text-sm font-semibold">{formatProcurementDecimal(line.leadTimeDays)} days</p><ProcurementPill tone="brand">{line.leadTimeSource ?? "-"}</ProcurementPill><p className="mt-1 text-[10px] leading-4 text-slate-400">override → history average → configured</p></td>}
+                  {columns.leadTimeDays && <td className="border-b border-slate-100 px-4 py-3 text-right tabular-nums"><p className="text-sm font-semibold">{formatProcurementDecimal(line.leadTimeDays)} days</p><ProcurementPill tone="brand">{line.leadTimeSource ?? "-"}</ProcurementPill><p className="mt-1 text-[10px] leading-4 text-slate-500">override → history average → configured</p></td>}
                   {columns.reorderPoint && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.reorderPoint)}</td>}
                   {columns.physicalStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td>}
                   {columns.inboundStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td>}
@@ -479,7 +492,7 @@ const GeneratePlanPage = () => {
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
-        badge={<><Calculator className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><Calculator aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Create a saved plan"
         description="Choose a sales range. Prerequisites validate automatically, then the server calculates a reviewable draft."
         actions={
@@ -490,7 +503,7 @@ const GeneratePlanPage = () => {
               variant="secondary"
               onClick={validate}
             >
-              <RotateCw className={`h-4 w-4 ${validationLoading || previewLoading ? "animate-spin" : ""}`} />
+              <RotateCw aria-hidden="true" className={`h-4 w-4 ${validationLoading || previewLoading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             <AppButton
@@ -499,7 +512,7 @@ const GeneratePlanPage = () => {
               variant="secondary"
               onClick={() => downloadPreviewCsv(lines)}
             >
-              <Download className="h-4 w-4" />
+              <Download aria-hidden="true" className="h-4 w-4" />
               Export
             </AppButton>
             <AppButton
@@ -509,7 +522,7 @@ const GeneratePlanPage = () => {
               loadingText="Saving…"
               onClick={saveDraft}
             >
-              <Save className="h-4 w-4" />
+              <Save aria-hidden="true" className="h-4 w-4" />
               Save draft
             </AppButton>
           </>
@@ -549,18 +562,28 @@ const GeneratePlanPage = () => {
           <ProcurementDateRangeFields fromDate={form.fromDate} toDate={form.toDate} error={displayedRangeError} onChange={(patch) => { beginValidationRequest(); beginPreviewRequest(); beginSaveRequest(); setValidationLoading(false); setPreviewLoading(false); setSaving(false); setFormErrors({}); setForm((current) => ({ ...current, ...patch })); setValidation(null); setPreview(null); setSavedRun(null); }} />
           <div><label className="text-xs font-semibold text-slate-700" htmlFor="plan-notes">Planning notes</label><textarea id="plan-notes" rows={3} className={`mt-1.5 w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 ${formErrors.notes ? "border-red-400" : "border-slate-200"}`} placeholder="Context retained with the draft run" value={form.notes} onChange={(event) => { setFormErrors((current) => ({ ...current, notes: "" })); setForm((current) => ({ ...current, notes: event.target.value })); }} />{formErrors.notes && <p className="mt-1 text-xs font-medium text-red-600">{formErrors.notes}</p>}<p className="mt-1 text-xs text-slate-500">{getInclusiveDayCount(form.fromDate, form.toDate)} calendar days of demand.</p></div>
         </div>
-        <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">Validation starts automatically after a valid range is selected.</p><AppButton disabled={Boolean(rangeError) || previewLoading || saving} isLoading={validationLoading} loadingText="Validating…" onClick={validate}><ShieldCheck className="h-4 w-4" />Validate again</AppButton></div>
+        <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">Validation starts automatically after a valid range is selected.</p><AppButton disabled={Boolean(rangeError) || previewLoading || saving} isLoading={validationLoading} loadingText="Validating…" onClick={validate}><ShieldCheck aria-hidden="true" className="h-4 w-4" />Validate again</AppButton></div>
       </ProcurementSectionCard>
       <ProcurementInlineError message={validationError} title="Validation could not run" />
 
       {(validation || validationLoading) && <ProcurementSectionCard title="2. Resolve validation messages" description="Blocking errors must be fixed. Warnings are visible but do not prevent a preview or draft.">
         <div className="space-y-3 p-6">{validationLoading ? <ProcurementLoadingRows columns={2} rows={5} /> : <MessageGroups messages={messages} />}</div>
-        {!validationLoading && <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">{hasBlocking ? "Fix blocking prerequisites, then validate again." : "No blockers. The preview calculates automatically; warnings stay visible."}</p><AppButton disabled={hasBlocking} isLoading={previewLoading} loadingText="Generating…" onClick={loadPreview}><Eye className="h-4 w-4" />Preview again</AppButton></div>}
+        {!validationLoading && <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">{hasBlocking ? "Fix blocking prerequisites, then validate again." : "No blockers. The preview calculates automatically; warnings stay visible."}</p><AppButton disabled={hasBlocking} isLoading={previewLoading} loadingText="Generating…" onClick={loadPreview}><Eye aria-hidden="true" className="h-4 w-4" />Preview again</AppButton></div>}
       </ProcurementSectionCard>}
       <ProcurementInlineError message={previewError} title="Preview could not be calculated" />
 
-      {(preview || previewLoading) && <ProcurementSectionCard title="3. Review the calculated plan" description="Decision-critical columns stay visible; expand any row for its complete derivation and explanation." actions={<AppButton variant="secondary" onClick={() => setColumnsOpen(true)}><Columns3 className="h-4 w-4" />Columns</AppButton>}>
-        <PreviewTable columns={columns} lines={lines} loading={previewLoading} />
+      {(preview || previewLoading) && <ProcurementSectionCard title="3. Review the calculated plan" description="Decision-critical columns stay visible; expand any row for its complete derivation and explanation." actions={<AppButton variant="secondary" onClick={() => setColumnsOpen(true)}><Columns3 aria-hidden="true" className="h-4 w-4" />Columns</AppButton>}>
+        <PreviewTable
+          columns={columns}
+          lines={lines}
+          loading={previewLoading}
+          onResetRange={() => {
+            setForm((current) => ({ ...current, ...initialRange }));
+            setValidation(null);
+            setPreview(null);
+            setSavedRun(null);
+          }}
+        />
         {!previewLoading && <div className="border-t border-slate-100 px-5 py-4"><p className="text-xs text-slate-500">Saving preserves these values as a draft snapshot. Warnings do not block saving.</p></div>}
       </ProcurementSectionCard>}
       <ProcurementInlineError message={saveError} title={saveConflict ? "Planning prerequisites changed" : "Draft could not be saved"} />

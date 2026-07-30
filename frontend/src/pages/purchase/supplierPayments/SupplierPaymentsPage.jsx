@@ -14,9 +14,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
@@ -197,6 +200,8 @@ const PaymentModal = ({
             name="supplierId"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Supplier"
                 required
                 value={field.value}
@@ -231,6 +236,8 @@ const PaymentModal = ({
             name="paymentMode"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Payment Mode"
                 value={field.value}
                 onChange={(value) => field.onChange(Number(value))}
@@ -266,17 +273,24 @@ const PaymentModal = ({
                 append({ purchaseBillId: "", allocatedAmount: "0" })
               }
             >
-              <Plus className="h-4 w-4" />
+              <Plus aria-hidden="true" className="h-4 w-4" />
               Add Allocation
             </AppButton>
           </div>
-          <div className="overflow-x-auto">
+          <ResponsiveTableRegion
+            mobileConfig={{
+              actions: 2,
+              fields: [1],
+              serial: "generated",
+              title: 0,
+            }}
+          >
             <table className="w-full min-w-[620px] text-left">
               <thead className="text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Purchase Bill</th>
-                  <th className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
-                  <th className="w-14 px-2 py-3" />
+                  <th scope="col" className="px-4 py-3 font-semibold">Purchase Bill</th>
+                  <th scope="col" className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
+                  <th scope="col" className="w-14 px-2 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -298,6 +312,9 @@ const PaymentModal = ({
                           name={`allocations.${index}.purchaseBillId`}
                           render={({ field: billField }) => (
                             <AppSelect
+                              aria-label={`Bill for allocation ${index + 1}`}
+                              ref={billField.ref}
+                              name={billField.name}
                               value={billField.value}
                               onChange={(value) => billField.onChange(Number(value))}
                               onBlur={billField.onBlur}
@@ -326,11 +343,11 @@ const PaymentModal = ({
                         <div className="flex items-center justify-end gap-0.5">
                           <button
                             type="button"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                             onClick={() => remove(index)}
                             aria-label="Remove allocation"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 aria-hidden="true" className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -339,7 +356,7 @@ const PaymentModal = ({
                 )}
               </tbody>
             </table>
-          </div>
+          </ResponsiveTableRegion>
           <div className="flex flex-col gap-2 border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm sm:flex-row sm:justify-end">
             <span>Payment: {formatCurrency(watchedAmount)}</span>
             <span>Allocated: {formatCurrency(allocatedTotal)}</span>
@@ -370,7 +387,7 @@ const PaymentModal = ({
           <textarea
             id="supplierPaymentNotes"
             rows={3}
-            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             {...register("notes")}
           />
         </div>
@@ -633,13 +650,32 @@ const SupplierPaymentsPage = () => {
     state.filters.SupplierId !== "all" ||
     Boolean(state.filters.FromDate) ||
     Boolean(state.filters.ToDate);
+  const activeFilterCount =
+    Number(Boolean(searchInput)) +
+    Number(state.filters.SupplierId !== "all") +
+    Number(Boolean(state.filters.FromDate)) +
+    Number(Boolean(state.filters.ToDate));
+  const clearFilters = () => {
+    setSearchInput("");
+    dispatch(
+      setSupplierPaymentFilters({
+        Search: "",
+        SupplierId: "all",
+        FromDate: "",
+        ToDate: "",
+        SortBy: "",
+        SortDirection: "",
+      }),
+    );
+    dispatch(setSupplierPaymentPage(1));
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <CreditCard className="h-3.5 w-3.5" />
+            <CreditCard aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -653,7 +689,7 @@ const SupplierPaymentsPage = () => {
               disabled={state.loading}
               onClick={loadPayments}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -670,7 +706,7 @@ const SupplierPaymentsPage = () => {
                   })
                 }
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 New Payment
               </AppButton>
             )}
@@ -697,15 +733,17 @@ const SupplierPaymentsPage = () => {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet activeCount={activeFilterCount} onClear={clearFilters}>
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_220px_160px_160px_auto]">
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Search supplier payments..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
           <AppSelect
@@ -715,7 +753,7 @@ const SupplierPaymentsPage = () => {
               dispatch(setSupplierPaymentPage(1));
             }}
             options={[{ value: "all", label: "All suppliers" }, ...supplierOptions]}
-            aria-label="Filter by supplier"
+            label="Filter by supplier"
             creatable={canCreateSupplier}
             createLabel="Create new supplier"
             onCreateClick={() => {
@@ -733,7 +771,7 @@ const SupplierPaymentsPage = () => {
               );
               dispatch(setSupplierPaymentPage(1));
             }}
-            aria-label="From date"
+            label="From date"
             className="h-10"
           />
           <AppInput
@@ -743,61 +781,55 @@ const SupplierPaymentsPage = () => {
               dispatch(setSupplierPaymentFilters({ ToDate: event.target.value }));
               dispatch(setSupplierPaymentPage(1));
             }}
-            aria-label="To date"
+            label="To date"
             className="h-10"
           />
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
             disabled={!hasFilters}
-            onClick={() => {
-              setSearchInput("");
-              dispatch(
-                setSupplierPaymentFilters({
-                  Search: "",
-                  SupplierId: "all",
-                  FromDate: "",
-                  ToDate: "",
-                  SortBy: "",
-                  SortDirection: "",
-                }),
-              );
-              dispatch(setSupplierPaymentPage(1));
-            }}
+            onClick={clearFilters}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+        <ResponsiveTableRegion
+          mobileConfig={{
+            actions: 7,
+            fields: [2, 3, 4, 5],
+            serial: 0,
+            subtitle: 6,
+            title: 1,
+          }}
+        >
           <table className="w-full min-w-[920px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
-                  #
-                </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" aria-label="Row number" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"><span aria-hidden="true">#</span></th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Payment #
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Supplier
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Date
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Amount (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Mode
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Ref
                 </th>
-                <th className="w-36 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="w-36 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -815,15 +847,55 @@ const SupplierPaymentsPage = () => {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
+                    className="p-0"
                   >
-                    {state.error || "No supplier payments found."}
+                    <EmptyState
+                      actionLabel={!state.error && !hasFilters ? "New Payment" : undefined}
+                      context={
+                        !state.error && !hasFilters
+                          ? "Supplier payments record outgoing amounts and their purchase-bill allocations."
+                          : undefined
+                      }
+                      hint={
+                        state.error
+                          ? state.error
+                          : hasFilters
+                            ? "Clear the current filters to see all supplier payments."
+                            : "Record the first supplier payment after entering a purchase bill."
+                      }
+                      icon={CreditCard}
+                      title={
+                        state.error
+                          ? "Couldn't load supplier payments"
+                          : hasFilters
+                            ? "No supplier payments match these filters"
+                            : "No supplier payments yet"
+                      }
+                      variant={
+                        state.error ? "error" : hasFilters ? "filtered" : "empty"
+                      }
+                      onAction={
+                        state.error
+                          ? loadPayments
+                          : hasFilters
+                            ? clearFilters
+                            : capabilities.canCreate
+                              ? () =>
+                                  setModal({
+                                    isLoading: false,
+                                    isOpen: true,
+                                    mode: "create",
+                                    payment: null,
+                                  })
+                              : undefined
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
                 state.list.map((payment, index) => (
                   <tr key={payment.id} className="hover:bg-slate-50">
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(state.pageNumber - 1) * state.pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm font-semibold text-slate-900">
@@ -877,7 +949,7 @@ const SupplierPaymentsPage = () => {
               )}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTableRegion>
 
         <PurchasePagination
           disabled={state.loading}

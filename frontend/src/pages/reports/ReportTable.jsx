@@ -2,11 +2,12 @@ import {
   ChevronDown,
   ChevronUp,
   FileSearch,
-  RefreshCw,
 } from "lucide-react";
 
 import AppButton from "../../components/common/AppButton";
+import EmptyState from "../../components/common/EmptyState";
 import AppSelect from "../../components/common/AppSelect";
+import ResponsiveTableRegion from "../../components/common/ResponsiveTableRegion";
 import {
   formatCell,
   getPillMeta,
@@ -18,13 +19,13 @@ import { REPORT_PAGE_SIZE_OPTIONS } from "./filters/filterRegistry";
 
 const getSortIcon = (active, direction) => {
   if (!active) {
-    return <ChevronDown className="h-3.5 w-3.5 opacity-30" />;
+    return <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 opacity-30" />;
   }
 
   return direction === "asc" ? (
-    <ChevronUp className="h-3.5 w-3.5" />
+    <ChevronUp aria-hidden="true" className="h-3.5 w-3.5" />
   ) : (
-    <ChevronDown className="h-3.5 w-3.5" />
+    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
   );
 };
 
@@ -57,7 +58,7 @@ const ReportPagination = ({
             onChange={(value) => onPageSizeChange(Number(value))}
             options={REPORT_PAGE_SIZE_OPTIONS}
             className="w-24"
-            aria-label="Rows per page"
+            label="Rows per page"
           />
         </div>
 
@@ -110,45 +111,56 @@ const ReportTable = ({
 
   if (!isLoading && (error || rows.length === 0)) {
     return (
-      <div className="flex min-h-[420px] flex-col items-center justify-center px-6 py-12 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-          <FileSearch className="h-6 w-6" />
-        </div>
-        <h3 className="mt-4 text-base font-semibold text-slate-900">
-          {error ? "Unable to load report" : "No data for the selected filters"}
-        </h3>
-        <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-          {error
-            ? error
-            : "Adjust the filters or date range, then the report will refresh automatically."}
-        </p>
-        {error && (
-          <AppButton variant="secondary" className="mt-5 h-10" onClick={onRetry}>
-            <RefreshCw className="h-4 w-4" />
-            Retry
-          </AppButton>
-        )}
+      <div className="min-h-[420px] px-6">
+        <EmptyState
+          hint={
+            error
+              ? error
+              : "Clear or adjust the selected filters to broaden this report."
+          }
+          icon={FileSearch}
+          title={
+            error
+              ? "Couldn't load this report"
+              : "No report rows match these filters"
+          }
+          variant={error ? "error" : "filtered"}
+          onAction={error ? onRetry : undefined}
+        />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-[420px] flex-col">
-      <div className="min-h-0 flex-1 overflow-auto">
+      <ResponsiveTableRegion
+        className="min-h-0 flex-1"
+        tableLabel={`${report.title ?? report.label ?? "Report"} results`}
+        mobileConfig={{
+          fields: [2, 3, 4, 5],
+          serial: 0,
+          title: 1,
+        }}
+      >
         <table className="w-full min-w-[920px] table-fixed text-left">
           <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
-              <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
-                #
-              </th>
+              <th scope="col" aria-label="Row number" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"><span aria-hidden="true">#</span></th>
               {columns.map((column) => {
                 const sortKey = column.sortKey ?? column.key;
                 const isSortable = report.paginated && column.sortable !== false;
                 const isSorted = filters.SortBy === sortKey;
 
                 return (
-                  <th
+                  <th scope="col"
                     key={String(column.key)}
+                    aria-sort={
+                      isSorted
+                        ? filters.SortDirection === "desc"
+                          ? "descending"
+                          : "ascending"
+                        : undefined
+                    }
                     style={column.width ? { width: column.width } : undefined}
                     className={[
                       "border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -201,7 +213,7 @@ const ReportTable = ({
                     key={row?.id ?? row?.sourceId ?? `${report.id}-${rowIndex}`}
                     className="transition-colors hover:bg-slate-50"
                   >
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(pageNumber - 1) * pageSize + rowIndex + 1}
                     </td>
                     {columns.map((column) => {
@@ -250,7 +262,7 @@ const ReportTable = ({
                 ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
 
       {report.paginated && (
         <ReportPagination

@@ -120,7 +120,7 @@ const PaymentModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <CreditCard className="h-5 w-5" />
+          <CreditCard aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -155,6 +155,8 @@ const PaymentModal = ({
             name="paymentMode"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Payment Mode"
                 value={field.value}
                 onChange={(value) => field.onChange(Number(value))}
@@ -182,7 +184,7 @@ const PaymentModal = ({
           <textarea
             id="paymentNotes"
             rows={3}
-            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             {...register("notes")}
           />
           {errors.notes?.message && (
@@ -201,7 +203,7 @@ const PaymentModal = ({
             Cancel
           </AppButton>
           <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
-            <Check className="h-4 w-4" />
+            <Check aria-hidden="true" className="h-4 w-4" />
             Record Payment
           </AppButton>
         </div>

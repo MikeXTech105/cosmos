@@ -379,12 +379,12 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
   return (
     <section className="min-w-0 space-y-5">
       {!embedded && <PageHeader
-        badge={<><GitBranch className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><GitBranch aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
         title="BOM Mapping"
         description="Define the active material recipe for each finished product with explicit replace-all semantics and issue-driven navigation."
         actions={
           <AppButton variant="secondary" disabled={productsLoading || issuesLoading} onClick={() => { void loadProducts(); void loadIssues(); }}>
-            <RotateCw className={`h-4 w-4 ${productsLoading || issuesLoading ? "animate-spin" : ""}`} />Refresh
+            <RotateCw aria-hidden="true" className={`h-4 w-4 ${productsLoading || issuesLoading ? "animate-spin" : ""}`} />Refresh
           </AppButton>
         }
       />}
@@ -418,14 +418,30 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
         ]}
       />
       {moduleTabs}
-      <ProcurementTabs active={view} tabs={tabs} onChange={setView} />
+      <ProcurementTabs
+        active={view}
+        id="procurement-bom-view-tabs"
+        tabs={tabs}
+        onChange={setView}
+      />
 
+      <div
+        id={`procurement-bom-view-tabs-panel-${view}`}
+        role="tabpanel"
+        aria-labelledby={`procurement-bom-view-tabs-tab-${view}`}
+        className="space-y-6"
+      >
       {view === "products" && <div className="grid min-w-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <ProcurementSectionCard title="Finished products" description="Active items classified as finished products.">
           <div className="m-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <div className="relative">
-              <AppInput placeholder="Search products" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} />
-              <Search className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
+            <AppInput
+              label="Search products"
+              placeholder="Search products"
+              value={productSearch}
+              onChange={(event) => setProductSearch(event.target.value)}
+            />
+              <Search aria-hidden="true" className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-500" />
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
               <p className="text-xs text-slate-500">{productSearch.trim() ? "1 active filter" : "0 active filters"}</p>
@@ -446,16 +462,16 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
         <ProcurementSectionCard
           title={selectedProduct ? `Active BOM · ${getItemLabel(selectedProduct)}` : "Active BOM"}
           description="Saving replaces the current active BOM. Previous rows remain inactive in backend history."
-          actions={selectedProduct && canSave ? <><AppButton variant="secondary" onClick={() => append(emptyLine())}><ListPlus className="h-4 w-4" />Add component</AppButton><AppButton disabled={!isDirty || bomLoading} onClick={openConfirmation}><Save className="h-4 w-4" />Save replacement</AppButton></> : undefined}
+          actions={selectedProduct && canSave ? <><AppButton variant="secondary" onClick={() => append(emptyLine())}><ListPlus aria-hidden="true" className="h-4 w-4" />Add component</AppButton><AppButton disabled={!isDirty || bomLoading} onClick={openConfirmation}><Save aria-hidden="true" className="h-4 w-4" />Save replacement</AppButton></> : undefined}
         >
           {!selectedProduct ? <ProcurementEmptyState icon={PackageSearch} title="Choose a finished product" description="Select a product on the left or open an issue below to load its active material recipe." /> : bomLoading ? <ProcurementLoadingRows columns={4} rows={5} /> : bomError ? <ProcurementErrorState error={bomError} /> : (
             <div>
-              {fields.length === 0 ? <ProcurementEmptyState title="No active BOM" description="Add the first component to define this product's material recipe." action={canSave ? <AppButton onClick={() => append(emptyLine())}><ListPlus className="h-4 w-4" />Add first component</AppButton> : undefined} /> : (
+              {fields.length === 0 ? <ProcurementEmptyState title="No active BOM" description="Add the first component to define this product's material recipe." action={canSave ? <AppButton onClick={() => append(emptyLine())}><ListPlus aria-hidden="true" className="h-4 w-4" />Add first component</AppButton> : undefined} /> : (
                 <div className="space-y-3 p-4">
                   {fields.map((field, index) => {
                     const selectedItem = componentValues[index]?.componentItem;
                     const unit = selectedItem?.unitName ?? selectedItem?.unit?.name ?? selectedItem?.unitCode ?? "-";
-                    return <div key={field.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-[minmax(0,1fr)_180px_120px_44px] md:items-start"><ProcurementItemAutocomplete disabled={!canSave} error={errors.components?.[index]?.componentItem?.message} excludeItemId={getRecordId(selectedProduct, ["itemId", "productId"])} label={`Component ${index + 1}`} mode="component" required value={selectedItem} onChange={(item) => setValue(`components.${index}.componentItem`, item, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled={!canSave} disabledReason={!canSave ? "Requires BOM edit permission" : undefined} error={errors.components?.[index]?.quantityRequired?.message} label="Quantity required" min="0" step="any" type="number" required value={componentValues[index]?.quantityRequired ?? ""} onChange={(event) => setValue(`components.${index}.quantityRequired`, event.target.value, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled disabledReason="Unit is inherited from the selected material" label="Unit" value={unit} /><div className="pt-6"><AppTooltip label={!canSave ? "Requires BOM edit permission" : "Remove component"}><button type="button" aria-label="Remove component" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={!canSave} onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></button></AppTooltip></div></div>;
+                    return <div key={field.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 md:grid-cols-[minmax(0,1fr)_180px_120px_44px] md:items-start"><ProcurementItemAutocomplete disabled={!canSave} error={errors.components?.[index]?.componentItem?.message} excludeItemId={getRecordId(selectedProduct, ["itemId", "productId"])} label={`Component ${index + 1}`} mode="component" required value={selectedItem} onChange={(item) => setValue(`components.${index}.componentItem`, item, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled={!canSave} disabledReason={!canSave ? "Requires BOM edit permission" : undefined} error={errors.components?.[index]?.quantityRequired?.message} label="Quantity required" min="0" step="any" type="number" required value={componentValues[index]?.quantityRequired ?? ""} onChange={(event) => setValue(`components.${index}.quantityRequired`, event.target.value, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled disabledReason="Unit is inherited from the selected material" label="Unit" value={unit} /><div className="pt-6"><AppTooltip label={!canSave ? "Requires BOM edit permission" : "Remove component"}><button type="button" aria-label="Remove component" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={!canSave} onClick={() => remove(index)}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></AppTooltip></div></div>;
                   })}
                 </div>
               )}
@@ -470,22 +486,31 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
         {issuesError ? <ProcurementErrorState error={issuesError} onRetry={loadIssues} /> : (
           <ProcurementTable
             columnCount={5}
+            mobileConfig={{
+              actions: 4,
+              fields: [2, 3],
+              serial: 0,
+              title: 1,
+            }}
+            emptyContext="The issue queue identifies sold products without a usable active BOM."
             emptyIcon={CheckCircle2}
             emptyHint="All sold finished products have usable active BOMs."
             emptyTitle={!issuesLoading && issues.length === 0 ? "No BOM issues" : undefined}
-            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Product</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Issue</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Last sale</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            emptyVariant="empty"
+            head={<><th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Product</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Issue</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Last sale</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
             loading={issuesLoading}
             minWidth="min-w-[760px]"
           >
-            {issues.map((issue, index) => <tr key={getRecordId(issue, ["productId", "itemId"]) ?? index}><td className="text-xs font-semibold tabular-nums text-slate-400">{index + 1}</td><td><p className="font-semibold text-slate-800">{issue.productCode ?? issue.itemCode}</p><p className="text-xs text-slate-500">{issue.productName ?? issue.itemName}</p></td><td><ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{issue.issueTypeName ?? issue.issueType ?? "Needs attention"}</ProcurementPill><p className="mt-1 text-xs text-slate-600">{issue.message ?? issue.description}</p></td><td>{formatProcurementDate(issue.lastSalesDate ?? issue.lastSoldDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Open BOM editor"><button type="button" aria-label="Open BOM editor" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => { const productId = getRecordId(issue, ["productId", "itemId"]); const product = products.find((item) => String(getRecordId(item, ["itemId", "productId"])) === String(productId)) ?? { itemCode: issue.productCode, itemId: productId, itemName: issue.productName }; selectProduct(product); setView("products"); window.scrollTo({ top: 0, behavior: "smooth" }); }}><GitBranch className="h-4 w-4" /></button></AppTooltip></div></td></tr>)}
+            {issues.map((issue, index) => <tr key={getRecordId(issue, ["productId", "itemId"]) ?? index}><td className="text-xs font-semibold tabular-nums text-slate-500">{index + 1}</td><td><p className="font-semibold text-slate-800">{issue.productCode ?? issue.itemCode}</p><p className="text-xs text-slate-500">{issue.productName ?? issue.itemName}</p></td><td><ProcurementPill tone="amber"><AlertTriangle aria-hidden="true" className="h-3 w-3" />{issue.issueTypeName ?? issue.issueType ?? "Needs attention"}</ProcurementPill><p className="mt-1 text-xs text-slate-600">{issue.message ?? issue.description}</p></td><td>{formatProcurementDate(issue.lastSalesDate ?? issue.lastSoldDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Open BOM editor"><button type="button" aria-label="Open BOM editor" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => { const productId = getRecordId(issue, ["productId", "itemId"]); const product = products.find((item) => String(getRecordId(item, ["itemId", "productId"])) === String(productId)) ?? { itemCode: issue.productCode, itemId: productId, itemName: issue.productName }; selectProduct(product); setView("products"); window.scrollTo({ top: 0, behavior: "smooth" }); }}><GitBranch aria-hidden="true" className="h-4 w-4" /></button></AppTooltip></div></td></tr>)}
           </ProcurementTable>
         )}
       </ProcurementSectionCard>}
+      </div>
 
       <AppModal isBusy={saving} isOpen={confirmOpen} title="Replace this product's active BOM?" onClose={() => !saving && setConfirmOpen(false)}>
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-semibold">Replace-all operation</p><p className="mt-0.5 text-xs leading-5">The submitted component list becomes the entire active BOM. Existing rows not in this list are made inactive and retained in backend history.</p></div></div>
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"><AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-semibold">Replace-all operation</p><p className="mt-0.5 text-xs leading-5">The submitted component list becomes the entire active BOM. Existing rows not in this list are made inactive and retained in backend history.</p></div></div>
         <p className="mt-4 text-sm text-slate-600">{fields.length} component{fields.length === 1 ? "" : "s"} will be active for <strong>{getItemLabel(selectedProduct)}</strong>.</p>
-        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setConfirmOpen(false)}>Review again</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={save}><Save className="h-4 w-4" />Replace active BOM</AppButton></div>
+        <div className="mt-5 flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setConfirmOpen(false)}>Review again</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={save}><Save aria-hidden="true" className="h-4 w-4" />Replace active BOM</AppButton></div>
       </AppModal>
     </section>
   );

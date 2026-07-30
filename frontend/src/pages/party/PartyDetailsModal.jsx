@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Contact, X } from "lucide-react";
-import { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 
+import { activateDialogFocus } from "../../utils/focus";
 import {
   PARTY_COMMAND_FIELDS,
   PARTY_DTO_FIELDS,
@@ -26,7 +27,7 @@ const DetailItem = ({ name, value }) => {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-400">
+      <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
         {getFieldLabel(name)}
       </p>
       <p className="mt-1 break-words text-sm font-semibold text-slate-800">
@@ -47,6 +48,7 @@ const ModalSkeleton = () => {
 };
 
 const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
+  const dialogRef = useRef(null);
   const sections = useMemo(() => {
     const commandFieldMap = new Map(
       PARTY_COMMAND_FIELDS.map((field) => [field.name, field]),
@@ -74,15 +76,7 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
       return undefined;
     }
 
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return activateDialogFocus(dialogRef.current, { onEscape: onClose });
   }, [isOpen, onClose]);
 
   return (
@@ -96,6 +90,7 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
           onMouseDown={onClose}
         >
           <motion.section
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-details-title"
@@ -109,7 +104,7 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
             <div className="flex shrink-0 items-start justify-between border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-brand">
-                  <Contact className="h-5 w-5" />
+                  <Contact aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
                   <h2
@@ -127,10 +122,10 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close party details"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
 
@@ -141,7 +136,7 @@ const PartyDetailsModal = ({ isLoading, isOpen, onClose, party }) => {
                 <div className="space-y-6">
                   {sections.map((section) => (
                     <section key={section.id}>
-                      <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
+                      <h3 className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                         {section.title}
                       </h3>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">

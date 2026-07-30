@@ -89,14 +89,14 @@ const TopSellingItems = ({
               value,
             }))}
             className="w-28"
-            aria-label="Top selling items count"
+            label="Top selling items count"
           />
           <AppSelect
             value={filters.categoryId}
             onChange={(value) => onChange({ categoryId: value })}
             options={options}
             className="min-w-[180px]"
-            aria-label="Top selling items category"
+            label="Top selling items category"
           />
         </>
       }
@@ -119,7 +119,7 @@ const TopSellingItems = ({
                 <p className="truncate text-sm font-semibold text-slate-900">
                   {item.itemName ?? "Unnamed item"}
                 </p>
-                <p className="mt-1 truncate text-xs text-slate-400">
+                <p className="mt-1 truncate text-xs text-slate-500">
                   {[item.itemCode, item.categoryName].filter(Boolean).join(" - ") ||
                     "No code or category"}
                 </p>

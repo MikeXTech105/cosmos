@@ -3,10 +3,10 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   FileSearch,
-  RefreshCw,
 } from "lucide-react";
 
 import AppButton from "../../components/common/AppButton";
+import EmptyState from "../../components/common/EmptyState";
 import AppSelect from "../../components/common/AppSelect";
 import StatScopeBadge from "../../components/common/StatScopeBadge";
 import {
@@ -37,8 +37,8 @@ export const RojmelTransactionTypeBadge = ({ value }) => {
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${TYPE_TONES[tone]}`}
     >
-      {tone === "income" && <ArrowDownLeft className="h-3 w-3" />}
-      {tone === "expense" && <ArrowUpRight className="h-3 w-3" />}
+      {tone === "income" && <ArrowDownLeft aria-hidden="true" className="h-3 w-3" />}
+      {tone === "expense" && <ArrowUpRight aria-hidden="true" className="h-3 w-3" />}
       {getTransactionTypeLabel(value)}
     </span>
   );
@@ -123,10 +123,10 @@ export const RojmelStatCard = ({
         <div
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone] ?? tones.brand}`}
         >
-          <Icon className="h-5 w-5" />
+          <Icon aria-hidden="true" className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
             {label}
           </p>
           {loading ? (
@@ -167,7 +167,7 @@ export const RojmelPagination = ({
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium text-slate-600">Rows</span>
         <AppSelect
-          aria-label="Rows per page"
+          label="Rows per page"
           className="w-20"
           disabled={disabled}
           options={ROJMEL_PAGE_SIZE_OPTIONS}
@@ -198,7 +198,17 @@ export const RojmelPagination = ({
   );
 };
 
-export const RojmelState = ({ error, isLoading, noun, onRetry }) => {
+export const RojmelState = ({
+  context,
+  createLabel,
+  error,
+  isFiltered = false,
+  isLoading,
+  noun,
+  onClear,
+  onCreate,
+  onRetry,
+}) => {
   if (isLoading) {
     return (
       <div className="space-y-3 p-4">
@@ -209,27 +219,30 @@ export const RojmelState = ({ error, isLoading, noun, onRetry }) => {
     );
   }
 
+  const variant = error ? "error" : isFiltered ? "filtered" : "empty";
+
   return (
-    <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-      <div
-        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-          error ? "bg-red-50 text-red-600" : "bg-brand-light text-brand"
-        }`}
-      >
-        {error ? <AlertCircle className="h-6 w-6" /> : <FileSearch className="h-6 w-6" />}
-      </div>
-      <h3 className="mt-4 text-base font-semibold text-slate-900">
-        {error ? `Unable to load ${noun}` : `No ${noun} found`}
-      </h3>
-      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-        {error || "Adjust the current filters or add the first entry."}
-      </p>
-      {error && (
-        <AppButton className="mt-5 h-10" variant="secondary" onClick={onRetry}>
-          <RefreshCw className="h-4 w-4" />
-          Retry
-        </AppButton>
-      )}
+    <div className="min-h-72 px-6">
+      <EmptyState
+        actionLabel={isFiltered || error ? undefined : createLabel}
+        context={context}
+        hint={
+          error ||
+          (isFiltered
+            ? `Clear the current filters to see ${noun}.`
+            : `Add the first ${noun.replace(/s$/, "")} to begin.`)
+        }
+        icon={error ? AlertCircle : FileSearch}
+        title={
+          error
+            ? `Couldn't load ${noun}`
+            : isFiltered
+              ? `No ${noun} match these filters`
+              : `No ${noun} yet`
+        }
+        variant={variant}
+        onAction={error ? onRetry : isFiltered ? onClear : onCreate}
+      />
     </div>
   );
 };

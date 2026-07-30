@@ -75,9 +75,9 @@ const DeleteConfirmDialog = ({
         <div className="flex items-start gap-3">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-600">
             {childCount > 0 ? (
-              <AlertTriangle className="h-5 w-5" />
+              <AlertTriangle aria-hidden="true" className="h-5 w-5" />
             ) : (
-              <Trash2 className="h-5 w-5" />
+              <Trash2 aria-hidden="true" className="h-5 w-5" />
             )}
           </span>
           <div className="min-w-0">
@@ -395,7 +395,7 @@ const PagesPage = () => {
       <PageHeader
         badge={
           <>
-            <FolderTree className="h-3.5 w-3.5" />
+            <FolderTree aria-hidden="true" className="h-3.5 w-3.5" />
             RBAC / Page Management
           </>
         }
@@ -410,7 +410,7 @@ const PagesPage = () => {
                 onClick={loadPages}
                 variant="secondary"
               >
-                <RefreshCw
+                <RefreshCw aria-hidden="true"
                   className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
                 />
                 Refresh
@@ -422,7 +422,7 @@ const PagesPage = () => {
                   className="h-10 w-full px-4 sm:w-auto"
                   onClick={() => openCreateModal()}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus aria-hidden="true" className="h-4 w-4" />
                   Add Page
                 </AppButton>
               </AppTooltip>
@@ -455,11 +455,19 @@ const PagesPage = () => {
 
       {viewMode === "tree" ? (
         <PageTree
+          activeFilterCount={
+            [
+              filters.search.trim(),
+              filters.status === "all" ? "" : "status",
+              filters.parentPageId === "all" ? "" : "parent",
+            ].filter(Boolean).length
+          }
           actions={actions}
           errorMessage={error}
           expandedTreeIds={expandedTreeIds}
           hasError={Boolean(error)}
           isLoading={loading}
+          onClear={clearFilters}
           onCreate={capabilities.canCreate ? () => openCreateModal() : undefined}
           onExpandTree={(payload) => dispatch(setRbacPageTreeExpanded(payload))}
           onRetry={loadPages}
@@ -468,11 +476,19 @@ const PagesPage = () => {
         />
       ) : (
         <PageTable
+          activeFilterCount={
+            [
+              filters.search.trim(),
+              filters.status === "all" ? "" : "status",
+              filters.parentPageId === "all" ? "" : "parent",
+            ].filter(Boolean).length
+          }
           actions={actions}
           errorMessage={error}
           expandedGroupIds={expandedGroupIds}
           hasError={Boolean(error)}
           isLoading={loading}
+          onClear={clearFilters}
           onCreate={capabilities.canCreate ? () => openCreateModal() : undefined}
           onExpandAllGroups={(payload) =>
             dispatch(setRbacPageGroupsExpanded(payload))
@@ -493,7 +509,7 @@ const PagesPage = () => {
           of <span className="font-semibold text-slate-900">{list.length}</span>{" "}
           pages
         </span>
-        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
           {viewMode === "tree" ? "Tree View" : "Grouped Table"}
         </span>
       </div>

@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { itemService } from "../../../services/inventory/itemService";
 import {
@@ -82,15 +83,21 @@ const PaymentHistory = ({ error, isLoading, payments }) => {
           Payment History
         </h2>
       </div>
-      <div className="overflow-x-auto">
+      <ResponsiveTableRegion
+        mobileConfig={{
+          fields: [1, 2, 3, 4],
+          serial: "generated",
+          title: 0,
+        }}
+      >
         <table className="w-full min-w-[620px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
-              <th className="px-4 py-3 font-semibold">Mode</th>
-              <th className="px-4 py-3 font-semibold">Reference</th>
-              <th className="px-4 py-3 font-semibold">Notes</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Date</th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">Amount (₹)</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Mode</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Reference</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Notes</th>
             </tr>
           </thead>
           <tbody>
@@ -134,7 +141,7 @@ const PaymentHistory = ({ error, isLoading, payments }) => {
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
     </section>
   );
 };
@@ -548,7 +555,7 @@ const InvoiceDetailPage = () => {
               className="h-10"
               onClick={() => navigate("/sales/invoices")}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               Back
             </AppButton>
           }
@@ -569,7 +576,7 @@ const InvoiceDetailPage = () => {
               className="h-10"
               onClick={() => navigate("/sales/invoices")}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               Back
             </AppButton>
             <AppButton
@@ -578,7 +585,7 @@ const InvoiceDetailPage = () => {
               disabled={invoiceState.detailLoading}
               onClick={loadInvoice}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${invoiceState.detailLoading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -592,7 +599,7 @@ const InvoiceDetailPage = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Customer
                 </p>
                 <p className="mt-1 truncate text-sm font-semibold text-slate-900">
@@ -600,7 +607,7 @@ const InvoiceDetailPage = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Total
                 </p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">
@@ -608,7 +615,7 @@ const InvoiceDetailPage = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Balance
                 </p>
                 <p className="mt-1 text-sm font-semibold text-red-600">
@@ -616,7 +623,7 @@ const InvoiceDetailPage = () => {
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Status
                 </p>
                 <div className="mt-1">
@@ -626,7 +633,7 @@ const InvoiceDetailPage = () => {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Payment
                 </p>
                 <div className="mt-1">
@@ -647,7 +654,7 @@ const InvoiceDetailPage = () => {
                 label: entry.name,
               }))}
               className="min-w-44"
-              aria-label="Invoice template"
+              label="Invoice template"
             />
             {capabilities.canUpdate && (
               <AppButton
@@ -656,7 +663,7 @@ const InvoiceDetailPage = () => {
                 disabled={!isInvoiceDraft(invoice)}
                 onClick={openEdit}
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil aria-hidden="true" className="h-4 w-4" />
                 Edit
               </AppButton>
             )}
@@ -667,7 +674,7 @@ const InvoiceDetailPage = () => {
                 disabled={!isInvoiceDraft(invoice)}
                 onClick={() => openConfirmation("confirm")}
               >
-                <CheckCircle2 className="h-4 w-4" />
+                <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                 Confirm
               </AppButton>
             )}
@@ -678,7 +685,7 @@ const InvoiceDetailPage = () => {
                 disabled={!isInvoiceConfirmed(invoice)}
                 onClick={() => openConfirmation("cancel")}
               >
-                <Ban className="h-4 w-4" />
+                <Ban aria-hidden="true" className="h-4 w-4" />
                 Cancel
               </AppButton>
             )}
@@ -688,7 +695,7 @@ const InvoiceDetailPage = () => {
                 disabled={isInvoiceCancelled(invoice)}
                 onClick={openPayment}
               >
-                <CreditCard className="h-4 w-4" />
+                <CreditCard aria-hidden="true" className="h-4 w-4" />
                 Record Payment
               </AppButton>
             )}
@@ -699,7 +706,7 @@ const InvoiceDetailPage = () => {
                   className="h-10 rounded-lg px-3"
                   onClick={printInvoice}
                 >
-                  <Printer className="h-4 w-4" />
+                  <Printer aria-hidden="true" className="h-4 w-4" />
                   Print
                 </AppButton>
                 <AppButton
@@ -708,7 +715,7 @@ const InvoiceDetailPage = () => {
                   disabled={isPdfLoading}
                   onClick={downloadPdf}
                 >
-                  <Download className="h-4 w-4" />
+                  <Download aria-hidden="true" className="h-4 w-4" />
                   PDF
                 </AppButton>
               </>
@@ -767,7 +774,7 @@ const InvoiceDetailPage = () => {
         customerEmptyMessage={
           lookups.customersError
             ? "Unable to load customers. Close and reopen to retry."
-            : "No customers found in Party Master."
+            : "Add a customer in Party Master first."
         }
         customerLoading={lookups.customersLoading}
         customerOptions={customerOptions}
@@ -777,7 +784,7 @@ const InvoiceDetailPage = () => {
         itemEmptyMessage={
           lookups.itemsError
             ? "Unable to load items. Close and reopen to retry."
-            : "No items found in inventory."
+            : "Add an inventory item first."
         }
         itemLoading={lookups.itemsLoading}
         itemOptions={itemOptions}

@@ -158,7 +158,7 @@ const ProfilePage = () => {
         actions={
           !readOnlyFallback && !isLoading && !isEditing ? (
             <AppButton onClick={() => setIsEditing(true)}>
-              <Pencil className="h-4 w-4" /> Edit profile
+              <Pencil aria-hidden="true" className="h-4 w-4" /> Edit profile
             </AppButton>
           ) : null
         }
@@ -204,15 +204,15 @@ const ProfilePage = () => {
           </form>
         ) : (
           <div className="grid gap-5 p-6 sm:grid-cols-2">
-            <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Username</p><p className="mt-1 text-sm font-medium text-slate-800">{profile?.username ?? profile?.userName ?? "—"}</p></div>
-            <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Email</p><p className="mt-1 break-all text-sm font-medium text-slate-800">{profile?.email ?? "—"}</p></div>
-            <div className="sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Roles</p><div className="mt-2 flex flex-wrap gap-2">{roleLabels.length > 0 ? roleLabels.map((role) => <span key={role} className="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand"><ShieldCheck className="h-3.5 w-3.5" />{role}</span>) : <span className="text-sm text-slate-500">No roles assigned</span>}</div></div>
+            <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Username</p><p className="mt-1 text-sm font-medium text-slate-800">{profile?.username ?? profile?.userName ?? "—"}</p></div>
+            <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p><p className="mt-1 break-all text-sm font-medium text-slate-800">{profile?.email ?? "—"}</p></div>
+            <div className="sm:col-span-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Roles</p><div className="mt-2 flex flex-wrap gap-2">{roleLabels.length > 0 ? roleLabels.map((role) => <span key={role} className="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand"><ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />{role}</span>) : <span className="text-sm text-slate-500">No roles assigned</span>}</div></div>
           </div>
         )}
 
         <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="inline-flex items-center gap-2 text-sm text-slate-600"><UserRound className="h-4 w-4" />Personal account</span>
-          <Link to="/change-password" className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:text-brand-dark"><KeyRound className="h-4 w-4" />Change password</Link>
+          <span className="inline-flex items-center gap-2 text-sm text-slate-600"><UserRound aria-hidden="true" className="h-4 w-4" />Personal account</span>
+          <Link to="/change-password" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-brand hover:text-brand-dark md:min-h-0"><KeyRound aria-hidden="true" className="h-4 w-4" />Change password</Link>
         </div>
       </section>
     </div>

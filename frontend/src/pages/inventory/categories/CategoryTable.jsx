@@ -1,6 +1,9 @@
-import { FolderKanban, Plus, RefreshCw } from "lucide-react";
+import { FolderKanban } from "lucide-react";
 
-import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
 import {
   InventoryPagination,
   InventoryStatusPill,
@@ -10,10 +13,12 @@ import CategoryActions from "./CategoryActions";
 
 const CategoryTable = ({
   actions,
+  activeFilterCount = 0,
   categories,
   error,
   isLoading,
   onCreate,
+  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -23,43 +28,79 @@ const CategoryTable = ({
   totalPages,
 }) => {
   if (!isLoading && (error || categories.length === 0)) {
+    const variant = error
+      ? "error"
+      : activeFilterCount > 0
+        ? "filtered"
+        : "empty";
+
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-            <FolderKanban className="h-6 w-6" />
-          </div>
-          <h3 className="mt-4 text-base font-semibold text-slate-900">
-            {error ? "Unable to load categories" : "No categories found"}
-          </h3>
-          <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-            {error
+        <EmptyState
+          actionLabel={variant === "empty" ? "Add Category" : undefined}
+          context={
+            variant === "empty"
+              ? "Categories group your items for reporting and procurement planning."
+              : undefined
+          }
+          hint={
+            error
               ? error
-              : "Create the first inventory category or adjust the current filters."}
-          </p>
-          {(error || actions.canCreate) && (
-            <AppButton
-              variant={error ? "secondary" : "primary"}
-              className="mt-5 h-10"
-              onClick={error ? onRetry : onCreate}
-            >
-              {error ? (
-                <RefreshCw className="h-4 w-4" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              {error ? "Retry" : "Add Category"}
-            </AppButton>
-          )}
-        </div>
+              : variant === "filtered"
+                ? "Clear the current filters to see your categories."
+                : "Create a category to organize your first inventory items."
+          }
+          icon={FolderKanban}
+          title={
+            error
+              ? "Couldn't load categories"
+              : variant === "filtered"
+                ? "No categories match these filters"
+                : "No categories yet"
+          }
+          variant={variant}
+          onAction={
+            error
+              ? onRetry
+              : variant === "filtered"
+                ? onClear
+                : actions.canCreate
+                  ? onCreate
+                  : undefined
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] table-fixed text-left">
+    <div className="overflow-hidden md:rounded-2xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
+      <div className="grid gap-3 pb-3 md:hidden">
+        {isLoading
+          ? Array.from({ length: 5 }, (_, index) => (
+              <MobileRecordCardSkeleton key={index} fields={2} />
+            ))
+          : categories.map((category, index) => (
+              <MobileRecordCard
+                key={category.id}
+                serial={(pageNumber - 1) * pageSize + index + 1}
+                title={category.name}
+                subtitle={category.description || "No description"}
+                status={<InventoryStatusPill isActive={category.isActive} />}
+                fields={[
+                  {
+                    key: "created",
+                    label: "Created",
+                    value: formatDate(category.createdAt),
+                  },
+                ]}
+                actions={<CategoryActions category={category} {...actions} />}
+              />
+            ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
+        <table aria-label="Item categories" className="w-full min-w-[760px] table-fixed text-left">
           <thead className="bg-slate-50">
             <tr>
               {[
@@ -70,7 +111,7 @@ const CategoryTable = ({
                 "Created Date",
                 "Actions",
               ].map((heading) => (
-                  <th
+                  <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
                     key={heading}
                     className={[
                       "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -96,7 +137,7 @@ const CategoryTable = ({
                     key={category.id}
                     className="transition-colors hover:bg-slate-50"
                   >
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(pageNumber - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">

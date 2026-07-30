@@ -15,7 +15,7 @@ const ReportNotFound = () => {
       />
       <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-          <FileSearch className="h-6 w-6" />
+          <FileSearch aria-hidden="true" className="h-6 w-6" />
         </div>
         <h2 className="mt-4 text-base font-semibold text-slate-900">
           Nothing lives at this report URL

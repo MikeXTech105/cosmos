@@ -21,6 +21,10 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import { hrEmployeeService } from "../../../services/hr/employeeService";
@@ -160,6 +164,9 @@ const QuickActionModal = ({ action, employeeOptions, isOpen, onClose, onSubmit }
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Employee"
               required
               value={field.value}
@@ -250,6 +257,9 @@ const ManualEntryModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Employee"
               required
               value={field.value}
@@ -289,6 +299,9 @@ const ManualEntryModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Status"
               value={field.value}
               onChange={field.onChange}
@@ -357,6 +370,9 @@ const AdjustmentModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Employee"
               required
               value={field.value}
@@ -680,12 +696,32 @@ const AttendancePage = () => {
     }
   }, [dispatch, reportFilters.attendanceDate, reportFilters.departmentId]);
 
+  const attendanceFilterCount = [
+    attendanceState.filters.EmployeeId,
+    attendanceState.filters.DepartmentId === "all" ? "" : "department",
+    attendanceState.filters.FromDate,
+    attendanceState.filters.ToDate,
+    attendanceState.filters.Status === "all" ? "" : "status",
+  ].filter(Boolean).length;
+  const clearAttendanceFilters = () => {
+    dispatch(
+      setHrAttendanceFilters({
+        DepartmentId: "all",
+        EmployeeId: "",
+        FromDate: "",
+        Status: "all",
+        ToDate: "",
+      }),
+    );
+    dispatch(setHrAttendancePage(1));
+  };
+
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <CalendarCheck className="h-3.5 w-3.5" />
+            <CalendarCheck aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Attendance
           </>
         }
@@ -699,14 +735,14 @@ const AttendancePage = () => {
               disabled={attendanceState.loading}
               onClick={loadAttendance}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${attendanceState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={() => setModal("manual")}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Manual Entry
               </AppButton>
             )}
@@ -721,7 +757,11 @@ const AttendancePage = () => {
         <HrStatCard icon={CalendarCheck} label="On Leave" loading={attendanceState.loading} value={stats.leave} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet
+        activeCount={attendanceFilterCount}
+        onClear={clearAttendanceFilters}
+      >
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[180px_180px_160px_160px_160px_auto]">
           <AppSelect
             value={attendanceState.filters.EmployeeId}
@@ -730,7 +770,7 @@ const AttendancePage = () => {
               dispatch(setHrAttendancePage(1));
             }}
             options={[{ value: "", label: "All employees" }, ...employeeOptions]}
-            aria-label="Filter attendance by employee"
+            label="Filter attendance by employee"
           />
           <AppSelect
             value={attendanceState.filters.DepartmentId}
@@ -739,10 +779,11 @@ const AttendancePage = () => {
               dispatch(setHrAttendancePage(1));
             }}
             options={[{ value: "all", label: "All departments" }, ...departmentOptions]}
-            aria-label="Filter attendance by department"
+            label="Filter attendance by department"
           />
           <AppInput
             id="fromDate"
+            label="From date"
             type="date"
             value={attendanceState.filters.FromDate}
             onChange={(event) => {
@@ -752,6 +793,7 @@ const AttendancePage = () => {
           />
           <AppInput
             id="toDate"
+            label="To date"
             type="date"
             value={attendanceState.filters.ToDate}
             onChange={(event) => {
@@ -766,43 +808,35 @@ const AttendancePage = () => {
               dispatch(setHrAttendancePage(1));
             }}
             options={[{ value: "all", label: "All status" }, ...HR_ATTENDANCE_STATUS_OPTIONS]}
-            aria-label="Filter attendance by status"
+            label="Filter attendance by status"
           />
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
-            onClick={() => {
-              dispatch(
-                setHrAttendanceFilters({
-                  DepartmentId: "all",
-                  EmployeeId: "",
-                  FromDate: "",
-                  Status: "all",
-                  ToDate: "",
-                }),
-              );
-              dispatch(setHrAttendancePage(1));
+          onClick={() => {
+              clearAttendanceFilters();
             }}
           >
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       {(capabilities.canCreate || capabilities.canApprove) && (
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
           {capabilities.canCreate && (
             <>
               <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkIn")}>
-                <LogIn className="h-4 w-4" />
+                <LogIn aria-hidden="true" className="h-4 w-4" />
                 Check In
               </AppButton>
               <AppButton variant="secondary" className="h-10" onClick={() => setModal("checkOut")}>
-                <LogOut className="h-4 w-4" />
+                <LogOut aria-hidden="true" className="h-4 w-4" />
                 Check Out
               </AppButton>
               <AppButton variant="secondary" className="h-10" onClick={() => setModal("adjustment")}>
-                <FileClock className="h-4 w-4" />
+                <FileClock aria-hidden="true" className="h-4 w-4" />
                 Adjustment
               </AppButton>
             </>
@@ -817,7 +851,7 @@ const AttendancePage = () => {
                   setModal("decision");
                 }}
               >
-                <ShieldCheck className="h-4 w-4" />
+                <ShieldCheck aria-hidden="true" className="h-4 w-4" />
                 Approve
               </AppButton>
               <AppButton
@@ -828,7 +862,7 @@ const AttendancePage = () => {
                   setModal("decision");
                 }}
               >
-                <ShieldX className="h-4 w-4" />
+                <ShieldX aria-hidden="true" className="h-4 w-4" />
                 Reject
               </AppButton>
             </>
@@ -838,20 +872,93 @@ const AttendancePage = () => {
 
       {!attendanceState.loading && (attendanceState.error || attendanceState.list.length === 0) ? (
         <HrEmptyState
+          action={
+            attendanceFilterCount > 0 ? (
+              <AppButton variant="secondary" onClick={clearAttendanceFilters}>
+                Clear filters
+              </AppButton>
+            ) : capabilities.canCreate ? (
+              <AppButton onClick={() => setModal("checkIn")}>
+                <LogIn aria-hidden="true" className="h-4 w-4" />
+                Check in
+              </AppButton>
+            ) : undefined
+          }
+          context="Attendance records daily check-ins, hours, adjustments, and approval status."
           icon={CalendarCheck}
           error={attendanceState.error}
-          title="No attendance records found"
-          description="Attendance records will appear here once employees check in or HR adds manual entries."
+          errorTitle="Couldn't load attendance"
+          title={
+            attendanceFilterCount > 0
+              ? "No attendance entries match these filters"
+              : "No attendance entries yet"
+          }
+          description={
+            attendanceFilterCount > 0
+              ? "Clear the current filters to see all attendance entries."
+              : "Attendance will appear after an employee checks in or HR adds an entry."
+          }
           onRetry={loadAttendance}
+          variant={attendanceFilterCount > 0 ? "filtered" : "empty"}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left">
+        <div className="overflow-hidden md:rounded-2xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
+          <div className="grid gap-3 pb-3 md:hidden">
+            {attendanceState.loading
+              ? Array.from({ length: 5 }, (_, index) => (
+                  <MobileRecordCardSkeleton key={index} />
+                ))
+              : attendanceState.list.map((row, index) => (
+                  <MobileRecordCard
+                    key={
+                      getHrRecordId(row, "attendance") ??
+                      `${row.employeeId}-${row.attendanceDate}`
+                    }
+                    serial={
+                      (attendanceState.pageNumber - 1) *
+                        attendanceState.pageSize +
+                      index +
+                      1
+                    }
+                    title={
+                      row.employeeName ??
+                      getLookupLabel(employeeOptions, row.employeeId)
+                    }
+                    subtitle={formatHrDate(row.attendanceDate ?? row.date)}
+                    status={
+                      <AttendanceStatusPill
+                        status={row.attendanceStatus ?? row.status}
+                      />
+                    }
+                    fields={[
+                      {
+                        key: "checkIn",
+                        label: "Check in",
+                        value: formatHrDateTime(row.checkInTime),
+                      },
+                      {
+                        key: "checkOut",
+                        label: "Check out",
+                        value: formatHrDateTime(row.checkOutTime),
+                      },
+                      {
+                        key: "hours",
+                        label: "Hours",
+                        value: formatHrHours(
+                          row.totalHours ?? row.hoursWorked ?? row.hours,
+                        ),
+                      },
+                    ]}
+                  />
+                ))}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
+            <table aria-label="Attendance records" className="w-full min-w-[900px] text-left">
               <thead className="bg-slate-50">
                 <tr>
                   {["#", "Employee", "Date", "Check In", "Check Out", "Hours", "Status"].map((heading) => (
-                    <th key={heading} className="border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    <th scope="col" aria-label={heading === "#" ? "Row number" : undefined} key={heading} className="border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
                       {heading}
                     </th>
                   ))}
@@ -868,7 +975,7 @@ const AttendancePage = () => {
                     ))
                   : attendanceState.list.map((row, index) => (
                       <tr key={getHrRecordId(row, "attendance") ?? `${row.employeeId}-${row.attendanceDate}`} className="hover:bg-slate-50">
-                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                           {(attendanceState.pageNumber - 1) * attendanceState.pageSize + index + 1}
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
@@ -913,12 +1020,14 @@ const AttendancePage = () => {
           <h3 className="text-sm font-semibold text-slate-900">Monthly Report</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <AppSelect
+              label="Employee"
               value={reportFilters.employeeId}
               onChange={(value) => setReportFilters((current) => ({ ...current, employeeId: value }))}
               options={[{ value: "", label: "Select employee" }, ...employeeOptions]}
             />
             <AppInput
               id="reportMonth"
+              label="Month"
               type="number"
               min="1"
               max="12"
@@ -927,6 +1036,7 @@ const AttendancePage = () => {
             />
             <AppInput
               id="reportYear"
+              label="Year"
               type="number"
               min="2000"
               value={reportFilters.year}
@@ -942,12 +1052,14 @@ const AttendancePage = () => {
           <h3 className="text-sm font-semibold text-slate-900">Department Report</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <AppSelect
+              label="Department"
               value={reportFilters.departmentId}
               onChange={(value) => setReportFilters((current) => ({ ...current, departmentId: value }))}
               options={[{ value: "", label: "Select department" }, ...departmentOptions]}
             />
             <AppInput
               id="departmentAttendanceDate"
+              label="Attendance date"
               type="date"
               value={reportFilters.attendanceDate}
               onChange={(event) => setReportFilters((current) => ({ ...current, attendanceDate: event.target.value }))}

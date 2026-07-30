@@ -40,7 +40,7 @@ const TextAreaField = ({ error, id, label, required, ...props }) => {
         id={id}
         rows={4}
         className={[
-          "w-full resize-y rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400",
+          "w-full resize-y rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-500",
           "outline-none transition-all focus:border-brand focus:ring-2 focus:ring-brand/20",
           error ? "border-red-400 bg-red-50" : "border-slate-200",
         ].join(" ")}
@@ -101,7 +101,7 @@ const EmployeeLifecycleModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <Icon className="h-5 w-5" />
+          <Icon aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">

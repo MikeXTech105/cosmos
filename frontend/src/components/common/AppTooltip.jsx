@@ -16,7 +16,10 @@ const AppTooltip = ({ children, className = "", label }) => {
   const id = useId();
   const triggerRef = useRef(null);
   const childIsDisabled =
-    isValidElement(children) && Boolean(children.props.disabled);
+    isValidElement(children) &&
+    Boolean(
+      children.props.disabled || children.props["aria-disabled"] === true,
+    );
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({
     below: false,
@@ -93,7 +96,6 @@ const AppTooltip = ({ children, className = "", label }) => {
         ref={triggerRef}
         aria-describedby={childIsDisabled && open ? id : undefined}
         className={twMerge(clsx("inline-flex"), className)}
-        tabIndex={childIsDisabled ? 0 : undefined}
         onMouseEnter={showTooltip}
         onMouseLeave={closeTooltip}
         onFocusCapture={showTooltip}

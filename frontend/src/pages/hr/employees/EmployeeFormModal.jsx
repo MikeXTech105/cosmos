@@ -25,7 +25,7 @@ import {
 const Section = ({ children, title }) => {
   return (
     <div className="rounded-2xl border border-slate-200 p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {title}
       </h3>
       <div className="mt-4 space-y-4">{children}</div>
@@ -107,7 +107,7 @@ const EmployeeFormModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <UserRound className="h-5 w-5" />
+          <UserRound aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -181,6 +181,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Gender"
                       value={field.value}
                       onChange={field.onChange}
@@ -216,6 +219,9 @@ const EmployeeFormModal = ({
                 <AppInput
                   id="mobile"
                   label="Mobile"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   required
                   disabled={isView}
                   error={errors.mobile?.message}
@@ -240,6 +246,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Department"
                       required
                       value={field.value}
@@ -259,6 +268,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Designation"
                       required
                       value={field.value}
@@ -278,6 +290,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Reporting Manager"
                       value={field.value}
                       onChange={field.onChange}
@@ -303,6 +318,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Shift"
                       required
                       value={field.value}
@@ -322,6 +340,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Employment Type"
                       value={field.value}
                       onChange={field.onChange}
@@ -336,6 +357,9 @@ const EmployeeFormModal = ({
                   control={control}
                   render={({ field }) => (
                     <AppSelect
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
                       label="Status"
                       value={field.value}
                       onChange={field.onChange}
@@ -359,17 +383,17 @@ const EmployeeFormModal = ({
                       className="rounded-xl border border-slate-100 bg-slate-50 p-3"
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                           Address {index + 1}
                         </p>
                         {!isView && addressFields.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeAddress(index)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
                             aria-label={`Remove address ${index + 1}`}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 aria-hidden="true" className="h-4 w-4" />
                           </button>
                         )}
                       </div>
@@ -420,6 +444,8 @@ const EmployeeFormModal = ({
                         <AppInput
                           id={`pincode-${index}`}
                           label="Pincode"
+                          inputMode="numeric"
+                          autoComplete="postal-code"
                           disabled={isView}
                           error={addressErrors.pincode?.message}
                           {...register(`addresses.${index}.pincode`)}
@@ -445,7 +471,7 @@ const EmployeeFormModal = ({
                       })
                     }
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus aria-hidden="true" className="h-4 w-4" />
                     Add Address
                   </AppButton>
                 )}
@@ -490,7 +516,7 @@ const EmployeeFormModal = ({
             )}
           </div>
 
-          <div className="sticky bottom-0 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end">
+          <div className="sticky bottom-0 z-10 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end md:static">
             <AppButton variant="secondary" onClick={onClose}>
               {isView ? "Close" : "Cancel"}
             </AppButton>

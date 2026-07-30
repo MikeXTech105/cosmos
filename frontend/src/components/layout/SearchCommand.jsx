@@ -1,7 +1,20 @@
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Command, Search, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  Command,
+  LoaderCircle,
+  Search,
+  X,
+} from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import { useSidebar } from "../../hooks/useSidebar";
@@ -9,34 +22,101 @@ import {
   clampCommandHighlight,
   filterCommandItems,
 } from "../../utils/searchCommand";
+import {
+  restoreFocus,
+  trapFocus,
+} from "../../utils/focus";
+import {
+  getPermittedGlobalSearchEntities,
+  globalSearchEntities,
+  searchRecordEntities,
+} from "./globalSearch";
 
-const FOCUSABLE_SELECTOR =
-  "button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex='-1'])";
+const MIN_RECORD_QUERY_LENGTH = 2;
+const RECORD_SEARCH_DEBOUNCE_MS = 300;
 
 const SearchCommand = () => {
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
   const { closeCommand, commandOpen, flatMenuItems, openCommand } = useSidebar();
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const dialogRef = useRef(null);
+  const [recordGroups, setRecordGroups] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
   const inputRef = useRef(null);
+  const dialogRef = useRef(null);
   const optionRefs = useRef([]);
   const previousFocusRef = useRef(null);
-  const results = useMemo(
+  const requestIdRef = useRef(0);
+  const abortControllerRef = useRef(null);
+  const normalizedQuery = query.trim();
+  const navigationResults = useMemo(
     () => filterCommandItems(flatMenuItems, query),
     [flatMenuItems, query],
   );
+  const permittedEntities = useMemo(
+    () =>
+      getPermittedGlobalSearchEntities(globalSearchEntities, {
+        pages: auth.pages ?? [],
+        roles: auth.roles ?? [],
+        user: auth.user,
+      }),
+    [auth.pages, auth.roles, auth.user],
+  );
+  const resultGroups = useMemo(() => {
+    const groups = [];
 
-  const handleClose = () => {
+    if (navigationResults.length > 0) {
+      groups.push({
+        id: "navigation",
+        items: navigationResults.map((item) => ({
+          badge: "Page",
+          Icon: item.Icon,
+          id: item.id,
+          primary: item.label,
+          route: item.route,
+          secondary: item.modulePath || item.route,
+        })),
+        label: "Navigation",
+      });
+    }
+
+    recordGroups.forEach((group) => {
+      groups.push({
+        ...group,
+        items: group.items.map((item) => ({
+          ...item,
+          badge: group.label,
+          Icon: group.icon,
+        })),
+      });
+    });
+
+    return groups;
+  }, [navigationResults, recordGroups]);
+  const results = useMemo(
+    () => resultGroups.flatMap((group) => group.items),
+    [resultGroups],
+  );
+
+  const handleClose = useCallback(() => {
+    requestIdRef.current += 1;
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     setQuery("");
+    setRecordGroups([]);
+    setRecordsLoading(false);
     setHighlightedIndex(-1);
     closeCommand();
-  };
+  }, [closeCommand]);
 
-  const handleNavigate = (route) => {
-    navigate(route);
-    handleClose();
-  };
+  const handleNavigate = useCallback(
+    (route) => {
+      navigate(route);
+      handleClose();
+    },
+    [handleClose, navigate],
+  );
 
   useEffect(() => {
     const handleShortcut = (event) => {
@@ -44,7 +124,7 @@ const SearchCommand = () => {
         event.preventDefault();
 
         if (commandOpen) {
-          inputRef.current?.focus();
+          handleClose();
         } else {
           openCommand();
         }
@@ -53,7 +133,7 @@ const SearchCommand = () => {
 
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [commandOpen, openCommand]);
+  }, [commandOpen, handleClose, openCommand]);
 
   useEffect(() => {
     if (!commandOpen) {
@@ -64,20 +144,63 @@ const SearchCommand = () => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frameId = window.requestAnimationFrame(() => inputRef.current?.focus());
+    const releaseFocusTrap = trapFocus(dialogRef.current);
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      releaseFocusTrap();
       document.body.style.overflow = previousOverflow;
-
-      const previousFocus = previousFocusRef.current;
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
-        previousFocus.focus();
-      }
+      restoreFocus(previousFocusRef.current);
     };
   }, [commandOpen]);
 
   useEffect(() => {
-    const activeIndex = clampCommandHighlight(highlightedIndex, results.length);
+    const requestId = ++requestIdRef.current;
+
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+
+    if (
+      !commandOpen ||
+      normalizedQuery.length < MIN_RECORD_QUERY_LENGTH
+    ) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      setRecordsLoading(true);
+      const result = await searchRecordEntities({
+        entities: permittedEntities,
+        isCurrent: (candidateId) =>
+          requestIdRef.current === candidateId,
+        query: normalizedQuery,
+        requestId,
+        signal: controller.signal,
+      });
+
+      if (!result.stale) {
+        setRecordGroups(result.groups);
+        setRecordsLoading(false);
+      }
+    }, RECORD_SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, [commandOpen, normalizedQuery, permittedEntities]);
+
+  useEffect(() => {
+    const activeIndex = clampCommandHighlight(
+      highlightedIndex,
+      results.length,
+    );
 
     if (activeIndex >= 0) {
       optionRefs.current[activeIndex]?.scrollIntoView?.({ block: "nearest" });
@@ -102,45 +225,33 @@ const SearchCommand = () => {
         setHighlightedIndex(results.length - 1);
       } else {
         const direction = event.key === "ArrowDown" ? 1 : -1;
-        const activeIndex = clampCommandHighlight(highlightedIndex, results.length);
-        const nextIndex = activeIndex < 0
-          ? direction > 0 ? 0 : results.length - 1
-          : (activeIndex + direction + results.length) % results.length;
+        const activeIndex = clampCommandHighlight(
+          highlightedIndex,
+          results.length,
+        );
+        const nextIndex =
+          activeIndex < 0
+            ? direction > 0
+              ? 0
+              : results.length - 1
+            : (activeIndex + direction + results.length) % results.length;
         setHighlightedIndex(nextIndex);
       }
       return;
     }
 
-    const activeIndex = clampCommandHighlight(highlightedIndex, results.length);
+    const activeIndex = clampCommandHighlight(
+      highlightedIndex,
+      results.length,
+    );
 
     if (event.key === "Enter" && activeIndex >= 0) {
       event.preventDefault();
       const route = results[activeIndex]?.route;
+
       if (route) {
         handleNavigate(route);
       }
-      return;
-    }
-
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const focusable = Array.from(
-      dialogRef.current?.querySelectorAll(FOCUSABLE_SELECTOR) ?? [],
-    );
-    const first = focusable[0];
-    const last = focusable.at(-1);
-
-    if (!first || !last) {
-      event.preventDefault();
-      dialogRef.current?.focus();
-    } else if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
     }
   };
 
@@ -148,9 +259,11 @@ const SearchCommand = () => {
     highlightedIndex,
     results.length,
   );
-  const activeOptionId = activeHighlightedIndex >= 0
-    ? `command-option-${activeHighlightedIndex}`
-    : undefined;
+  const activeOptionId =
+    activeHighlightedIndex >= 0
+      ? `command-option-${activeHighlightedIndex}`
+      : undefined;
+  let optionIndex = -1;
 
   return (
     <AnimatePresence>
@@ -177,15 +290,26 @@ const SearchCommand = () => {
             onKeyDown={handleDialogKeyDown}
           >
             <h2 id="command-palette-title" className="sr-only">
-              Search pages, modules, and reports
+              Search pages and records
             </h2>
             <div className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-100 px-4">
-              <Search className="h-4 w-4 text-slate-400" />
+              <Search aria-hidden="true" className="h-4 w-4 text-slate-500" />
               <input
                 ref={inputRef}
                 value={query}
                 onChange={(event) => {
-                  setQuery(event.target.value);
+                  const nextQuery = event.target.value;
+
+                  setQuery(nextQuery);
+                  setRecordsLoading(
+                    nextQuery.trim().length >= MIN_RECORD_QUERY_LENGTH,
+                  );
+                  if (
+                    nextQuery.trim().length <
+                    MIN_RECORD_QUERY_LENGTH
+                  ) {
+                    setRecordGroups([]);
+                  }
                   setHighlightedIndex(0);
                 }}
                 role="combobox"
@@ -193,80 +317,123 @@ const SearchCommand = () => {
                 aria-controls="command-results"
                 aria-expanded="true"
                 aria-activedescendant={activeOptionId}
-                placeholder="Search pages, modules, and reports..."
-                className="h-full flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                aria-label="Search pages and records"
+                placeholder="Search pages and records..."
+                className="h-full flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-500"
               />
               <button
                 type="button"
                 onClick={handleClose}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close command palette"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
 
             <div
               id="command-results"
               role="listbox"
-              aria-label="Navigation results"
+              aria-label="Global search results"
               className="min-h-0 flex-1 overflow-y-auto p-2"
             >
-              {results.map((item, index) => {
-                const Icon = item.Icon;
-                const isHighlighted = activeHighlightedIndex === index;
+              <p
+                className="sr-only"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {recordsLoading
+                  ? "Searching records"
+                  : normalizedQuery
+                    ? `${results.length} search ${results.length === 1 ? "result" : "results"}`
+                    : `${results.length} available ${results.length === 1 ? "page" : "pages"}`}
+              </p>
+              {recordsLoading && (
+                <div
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-500"
+                  role="status"
+                >
+                  <LoaderCircle aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                  Searching records
+                </div>
+              )}
 
-                return (
-                  <button
-                    key={`${item.id}-${item.route}`}
-                    ref={(element) => {
-                      optionRefs.current[index] = element;
-                    }}
-                    id={`command-option-${index}`}
-                    type="button"
-                    role="option"
-                    aria-selected={isHighlighted}
-                    tabIndex={-1}
-                    onClick={() => handleNavigate(item.route)}
-                    onMouseEnter={() =>
-                      setHighlightedIndex(clampCommandHighlight(index, results.length))
-                    }
-                    className={clsx(
-                      "group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20",
-                      isHighlighted ? "bg-slate-100" : "hover:bg-slate-100",
-                    )}
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-slate-900">
-                        {item.label}
-                      </span>
-                      <span className="block truncate text-xs text-slate-500">
-                        {item.modulePath || item.route}
-                      </span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500" />
-                  </button>
-                );
-              })}
+              {resultGroups.map((group) => (
+                <section key={group.id} aria-label={group.label}>
+                  <div className="flex items-center gap-1 px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    <span>{group.label}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{group.items.length}</span>
+                  </div>
+                  {group.items.map((item) => {
+                    optionIndex += 1;
+                    const index = optionIndex;
+                    const Icon = item.Icon;
+                    const isHighlighted =
+                      activeHighlightedIndex === index;
 
-              {results.length === 0 && (
+                    return (
+                      <button
+                        key={`${group.id}-${item.id}-${item.route}`}
+                        ref={(element) => {
+                          optionRefs.current[index] = element;
+                        }}
+                        id={`command-option-${index}`}
+                        type="button"
+                        role="option"
+                        aria-selected={isHighlighted}
+                        tabIndex={-1}
+                        onClick={() => handleNavigate(item.route)}
+                        onMouseEnter={() => setHighlightedIndex(index)}
+                        className={clsx(
+                          "group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20",
+                          isHighlighted
+                            ? "bg-slate-100"
+                            : "hover:bg-slate-100",
+                        )}
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
+                          <Icon aria-hidden="true" className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-slate-900">
+                            {item.primary}
+                          </span>
+                          {item.secondary ? (
+                            <span className="block truncate text-xs text-slate-500">
+                              {item.secondary}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="max-w-28 truncate rounded-md bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-500">
+                          {item.badge}
+                        </span>
+                        <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500" />
+                      </button>
+                    );
+                  })}
+                </section>
+              ))}
+
+              {!recordsLoading && results.length === 0 && (
                 <div className="px-4 py-10 text-center" role="status">
-                  <Command className="mx-auto h-5 w-5 text-slate-300" />
+                  <Command aria-hidden="true" className="mx-auto h-5 w-5 text-slate-300" />
                   <p className="mt-3 text-sm font-medium text-slate-700">
-                    No results found
+                    {normalizedQuery
+                      ? `No matches for '${normalizedQuery}'`
+                      : "No recent pages are available"}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Try searching another page, module, or route.
+                    {normalizedQuery
+                      ? "Try fewer words or a different record identifier."
+                      : "Pages appear here when you have access to them."}
                   </p>
                 </div>
               )}
             </div>
 
             <div className="hidden shrink-0 items-center justify-center border-t border-slate-100 bg-slate-50 px-4 py-2 text-[11px] text-slate-500 sm:flex">
-              ↑↓ Navigate&nbsp;&nbsp; Enter Open&nbsp;&nbsp; Esc Close
+              Up/Down Navigate&nbsp;&nbsp; Enter Open&nbsp;&nbsp; Esc Close
             </div>
           </motion.div>
         </motion.div>

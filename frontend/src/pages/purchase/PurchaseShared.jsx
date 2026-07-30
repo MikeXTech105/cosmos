@@ -34,10 +34,10 @@ export const PurchaseStatCard = ({
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
         >
-          <Icon className="h-4 w-4" />
+          <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
             {label}
           </p>
           {loading ? (
@@ -86,7 +86,7 @@ export const PurchasePagination = ({
             onChange={(value) => onPageSizeChange(Number(value))}
             options={PAGE_SIZE_OPTIONS}
             className="w-24"
-            aria-label="Rows per page"
+            label="Rows per page"
           />
         </div>
 
@@ -143,7 +143,7 @@ export const PurchaseConfirmDialog = ({
             : "bg-brand-light text-brand",
         ].join(" ")}
       >
-        <AlertTriangle className="h-5 w-5" />
+        <AlertTriangle aria-hidden="true" className="h-5 w-5" />
       </div>
       <h2 className="mt-4 text-lg font-semibold text-slate-900">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>

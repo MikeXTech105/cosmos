@@ -23,7 +23,7 @@ const ThemeSwatch = ({ isSelected, onSelect, theme }) => {
           ].join(" ")}
           aria-hidden="true"
         >
-          <Check className="h-3 w-3" strokeWidth={3} />
+          <Check aria-hidden="true" className="h-3 w-3" strokeWidth={3} />
         </span>
       )}
 

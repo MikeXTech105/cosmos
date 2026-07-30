@@ -7,9 +7,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
@@ -117,7 +120,7 @@ export const CategoryModal = ({ category, isOpen, mode, onClose, onSubmit }) => 
           <textarea
             id="expenseCategoryDescription"
             rows={4}
-            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             {...register("description")}
           />
           {errors.description?.message && (
@@ -268,13 +271,28 @@ const ExpenseCategoriesPage = () => {
   };
 
   const hasFilters = Boolean(searchInput) || state.filters.IsActive !== "all";
+  const activeFilterCount =
+    Number(Boolean(searchInput)) +
+    Number(state.filters.IsActive !== "all");
+  const clearFilters = () => {
+    setSearchInput("");
+    dispatch(
+      setExpenseCategoryFilters({
+        Search: "",
+        IsActive: "all",
+        SortBy: "",
+        SortDirection: "",
+      }),
+    );
+    dispatch(setExpenseCategoryPage(1));
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <FolderKanban className="h-3.5 w-3.5" />
+            <FolderKanban aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -288,7 +306,7 @@ const ExpenseCategoriesPage = () => {
               disabled={state.loading}
               onClick={loadCategories}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -300,7 +318,7 @@ const ExpenseCategoriesPage = () => {
                   setModal({ category: null, isOpen: true, mode: "create" })
                 }
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 New Category
               </AppButton>
             )}
@@ -335,15 +353,17 @@ const ExpenseCategoriesPage = () => {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet activeCount={activeFilterCount} onClear={clearFilters}>
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 md:grid-cols-[minmax(240px,1fr)_180px_auto]">
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Search categories..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
           <AppSelect
@@ -353,49 +373,45 @@ const ExpenseCategoriesPage = () => {
               dispatch(setExpenseCategoryPage(1));
             }}
             options={ACTIVE_OPTIONS}
-            aria-label="Filter by status"
+            label="Filter by status"
           />
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
             disabled={!hasFilters}
-            onClick={() => {
-              setSearchInput("");
-              dispatch(
-                setExpenseCategoryFilters({
-                  Search: "",
-                  IsActive: "all",
-                  SortBy: "",
-                  SortDirection: "",
-                }),
-              );
-              dispatch(setExpenseCategoryPage(1));
-            }}
+            onClick={clearFilters}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+        <ResponsiveTableRegion
+          mobileConfig={{
+            actions: 4,
+            fields: [2],
+            serial: 0,
+            status: 3,
+            title: 1,
+          }}
+        >
           <table className="w-full min-w-[720px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
-                <th className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
-                  #
-                </th>
-                <th className="w-[28%] border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" aria-label="Row number" className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"><span aria-hidden="true">#</span></th>
+                <th scope="col" className="w-[28%] border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Name
                 </th>
-                <th className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Description
                 </th>
-                <th className="w-32 border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="w-32 border-b border-slate-200 px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Status
                 </th>
-                <th className="w-36 border-b border-slate-200 px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="w-36 border-b border-slate-200 px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -413,15 +429,54 @@ const ExpenseCategoriesPage = () => {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
+                    className="p-0"
                   >
-                    {state.error || "No expense categories found."}
+                    <EmptyState
+                      actionLabel={!state.error && !hasFilters ? "New Category" : undefined}
+                      context={
+                        !state.error && !hasFilters
+                          ? "Expense categories organize operating costs for entry and reporting."
+                          : undefined
+                      }
+                      hint={
+                        state.error
+                          ? state.error
+                          : hasFilters
+                            ? "Clear the current filters to see all expense categories."
+                            : "Create a category before recording your first expense."
+                      }
+                      icon={FolderKanban}
+                      title={
+                        state.error
+                          ? "Couldn't load expense categories"
+                          : hasFilters
+                            ? "No expense categories match these filters"
+                            : "No expense categories yet"
+                      }
+                      variant={
+                        state.error ? "error" : hasFilters ? "filtered" : "empty"
+                      }
+                      onAction={
+                        state.error
+                          ? loadCategories
+                          : hasFilters
+                            ? clearFilters
+                            : capabilities.canCreate
+                              ? () =>
+                                  setModal({
+                                    category: null,
+                                    isOpen: true,
+                                    mode: "create",
+                                  })
+                              : undefined
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
                 state.list.map((category, index) => (
                   <tr key={category.id} className="hover:bg-slate-50">
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(state.pageNumber - 1) * state.pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3 text-sm font-semibold text-slate-900">
@@ -485,7 +540,7 @@ const ExpenseCategoriesPage = () => {
               )}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTableRegion>
 
         <PurchasePagination
           disabled={state.loading}

@@ -6,11 +6,14 @@ import {
   FileLock2,
   Pencil,
   Plus,
-  RefreshCw,
   Trash2,
 } from "lucide-react";
 import { createElement, memo } from "react";
 
+import EmptyState from "../../../components/common/EmptyState";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
 import { getIconComponent } from "../../../config/iconMap";
 import { permissionColumns } from "./permissionsColumns";
 
@@ -36,7 +39,7 @@ const PermissionCheckbox = memo(({ checked, disabled, label, onChange }) => {
   return (
     <label
       className={[
-        "group inline-flex h-9 w-9 items-center justify-center rounded-xl transition-colors focus-within:ring-2 focus-within:ring-brand/20",
+        "group inline-flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-within:ring-2 focus-within:ring-brand/20 md:h-9 md:w-9",
         disabled
           ? "cursor-not-allowed opacity-50"
           : "cursor-pointer hover:bg-slate-100",
@@ -72,7 +75,10 @@ const BulkButton = memo(({ active, disabled, icon, label, onClick }) => {
           : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900",
       ].join(" ")}
     >
-      {createElement(icon, { className: "h-3.5 w-3.5" })}
+      {createElement(icon, {
+        "aria-hidden": true,
+        className: "h-3.5 w-3.5",
+      })}
       {label}
     </button>
   );
@@ -92,9 +98,9 @@ const TableSkeleton = () => {
 
 const StatePanel = ({ errorMessage, hasError, onRetry, selectedRoleId }) => {
   const title = hasError
-    ? "Unable to load permission matrix"
+    ? "Couldn't load permission matrix"
     : selectedRoleId
-      ? "No pages available"
+      ? "No pages yet"
       : "Select a role to begin";
   const description = hasError
     ? errorMessage ?? "Something went wrong while loading permissions."
@@ -103,25 +109,18 @@ const StatePanel = ({ errorMessage, hasError, onRetry, selectedRoleId }) => {
       : "Choose a role above to review and manage its page access.";
 
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-        <FileLock2 className="h-6 w-6" />
-      </div>
-      <h3 className="mt-4 text-base font-bold text-slate-950">{title}</h3>
-      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-        {description}
-      </p>
-      {hasError && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Retry
-        </button>
-      )}
-    </div>
+    <EmptyState
+      context={
+        selectedRoleId
+          ? "The permission matrix maps roles to pages and allowed actions."
+          : undefined
+      }
+      hint={description}
+      icon={FileLock2}
+      title={title}
+      variant={hasError ? "error" : "empty"}
+      onAction={hasError ? onRetry : undefined}
+    />
   );
 };
 
@@ -137,6 +136,7 @@ const PermissionRow = memo(({ isDisabled, onToggleCell, page, row }) => {
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
             {createElement(getIconComponent(page.icon), {
+              "aria-hidden": true,
               className: "h-4 w-4",
             })}
           </span>
@@ -235,15 +235,66 @@ const PermissionsTable = ({
         </div>
       </div>
 
-      <div className="max-h-[calc(100dvh-360px)] min-h-72 overflow-auto">
-        <table className="min-w-[900px] w-full border-separate border-spacing-0 text-left">
+      <div className="grid gap-3 p-3 md:hidden">
+        {isLoading
+          ? Array.from({ length: 5 }, (_, index) => (
+              <MobileRecordCardSkeleton key={index} fields={1} />
+            ))
+          : pages.map((page, index) => {
+              const row = matrix[String(page.id)];
+              const enabledForPage = permissionColumns.filter((column) =>
+                Boolean(row?.[column.key]),
+              ).length;
+
+              return (
+                <MobileRecordCard
+                  key={page.id}
+                  serial={index + 1}
+                  title={page.displayName}
+                  subtitle={page.hierarchyPath || page.route || page.name}
+                  fields={[
+                    {
+                      key: "enabled",
+                      label: "Enabled permissions",
+                      value: `${enabledForPage} of ${permissionColumns.length}`,
+                    },
+                  ]}
+                  footer={
+                    <div className="grid grid-cols-3 gap-2">
+                      {permissionColumns.map((column) => (
+                        <div
+                          key={column.key}
+                          className="flex min-w-0 flex-col items-center gap-1 text-center"
+                        >
+                          <PermissionCheckbox
+                            checked={Boolean(row?.[column.key])}
+                            disabled={isDisabled}
+                            label={`${column.label} permission for ${page.displayName}`}
+                            onChange={(checked) =>
+                              onToggleCell(page.id, column.key, checked)
+                            }
+                          />
+                          <span className="text-[11px] text-slate-500">
+                            {column.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  }
+                />
+              );
+            })}
+      </div>
+
+      <div className="hidden max-h-[calc(100dvh-360px)] min-h-72 overflow-auto md:block">
+        <table aria-label="Role permission matrix" className="min-w-[900px] w-full border-separate border-spacing-0 text-left">
           <thead className="sticky top-0 z-20 bg-slate-50">
             <tr>
-              <th className="sticky left-0 z-30 min-w-[280px] border-b border-r border-slate-200 bg-slate-50 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+              <th scope="col" className="sticky left-0 z-30 min-w-[280px] border-b border-r border-slate-200 bg-slate-50 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500">
                 Page
               </th>
               {permissionColumns.map((column) => (
-                <th
+                <th scope="col" aria-label={column.label === "#" ? "Row number" : undefined}
                   key={column.key}
                   className="w-[104px] whitespace-nowrap border-b border-slate-200 px-3 py-3.5 text-center text-xs font-medium uppercase tracking-wide text-slate-500"
                 >

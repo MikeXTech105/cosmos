@@ -81,7 +81,7 @@ const DesignationFormModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <BadgeCheck className="h-5 w-5" />
+          <BadgeCheck aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -137,6 +137,8 @@ const DesignationFormModal = ({
             control={control}
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Department"
                 required
                 value={field.value}
@@ -148,7 +150,7 @@ const DesignationFormModal = ({
                     ? "Loading departments..."
                     : "Select department"
                 }
-                emptyMessage="No active departments found"
+                emptyMessage="Add an active department before creating a designation"
                 disabled={isView || departmentsLoading}
                 error={errors.departmentId?.message}
                 creatable={canCreateDepartment}
@@ -170,7 +172,7 @@ const DesignationFormModal = ({
               rows={4}
               disabled={isView}
               title={isView ? "Open edit mode to change the description" : undefined}
-              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-slate-50"
+              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:bg-slate-50"
               {...register("description")}
             />
             {errors.description?.message && (

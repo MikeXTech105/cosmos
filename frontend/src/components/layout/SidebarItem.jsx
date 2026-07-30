@@ -19,7 +19,7 @@ const SidebarItem = ({ item, depth = 0, onNavigate, themeClasses }) => {
       aria-current={item.isActive ? "page" : undefined}
       onClick={onNavigate}
       className={clsx(
-        "group relative flex h-10 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
+        "group relative flex h-11 items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors lg:h-10",
         `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
         item.isActive
           ? themeClasses.navActive
@@ -44,7 +44,7 @@ const SidebarItem = ({ item, depth = 0, onNavigate, themeClasses }) => {
           active ? themeClasses.iconActive : themeClasses.iconInactive,
         )}
       >
-        <Icon className="h-4 w-4" />
+        <Icon aria-hidden="true" className="h-4 w-4" />
       </span>
 
       <span className="relative z-10 min-w-0 flex-1 truncate">

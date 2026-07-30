@@ -104,7 +104,7 @@ const TransferFormModal = ({ isOpen, onClose, onSubmit, wallets }) => {
     >
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-          <ArrowLeftRight className="h-5 w-5" />
+          <ArrowLeftRight aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">New Transfer</h2>
@@ -121,7 +121,7 @@ const TransferFormModal = ({ isOpen, onClose, onSubmit, wallets }) => {
           </p>
         )}
         <AppInput
-          autoFocus
+          data-autofocus="true"
           className="h-14 text-xl font-bold tabular-nums"
           error={errors.amount?.message}
           label="Amount"
@@ -139,6 +139,9 @@ const TransferFormModal = ({ isOpen, onClose, onSubmit, wallets }) => {
             name="fromWalletId"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
+                onBlur={field.onBlur}
                 error={errors.fromWalletId?.message}
                 label="From Wallet"
                 options={walletOptions}
@@ -154,6 +157,9 @@ const TransferFormModal = ({ isOpen, onClose, onSubmit, wallets }) => {
             name="toWalletId"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
+                onBlur={field.onBlur}
                 error={errors.toWalletId?.message}
                 label="To Wallet"
                 options={destinationOptions}
@@ -176,12 +182,12 @@ const TransferFormModal = ({ isOpen, onClose, onSubmit, wallets }) => {
         </div>
         <AppInput label="Description" placeholder="Purpose of this transfer" {...register("description")} />
 
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+        <div className="sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end md:static">
           <AppButton disabled={isSubmitting} variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
           <AppButton isLoading={isSubmitting} loadingText="Transferring…" type="submit">
-            <ArrowLeftRight className="h-4 w-4" />
+            <ArrowLeftRight aria-hidden="true" className="h-4 w-4" />
             Transfer Money
           </AppButton>
         </div>

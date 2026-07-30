@@ -17,6 +17,10 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
 import { hrEmployeeService } from "../../../services/hr/employeeService";
 import {
@@ -158,6 +162,9 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Employee"
               required
               value={field.value}
@@ -173,6 +180,9 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
           control={control}
           render={({ field }) => (
             <AppSelect
+              ref={field.ref}
+              name={field.name}
+              onBlur={field.onBlur}
               label="Leave Type"
               value={field.value}
               onChange={field.onChange}
@@ -490,12 +500,32 @@ const LeavesPage = () => {
     }
   }, [dispatch, pendingManagerId]);
 
+  const leaveFilterCount = [
+    leaveState.filters.EmployeeId,
+    leaveState.filters.FromDate,
+    leaveState.filters.ToDate,
+    leaveState.filters.LeaveTypeId === "all" ? "" : "type",
+    leaveState.filters.Status === "all" ? "" : "status",
+  ].filter(Boolean).length;
+  const clearLeaveFilters = () => {
+    dispatch(
+      setHrLeaveFilters({
+        EmployeeId: "",
+        FromDate: "",
+        LeaveTypeId: "all",
+        Status: "all",
+        ToDate: "",
+      }),
+    );
+    dispatch(setHrLeavePage(1));
+  };
+
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <CalendarOff className="h-3.5 w-3.5" />
+            <CalendarOff aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Leaves
           </>
         }
@@ -509,14 +539,14 @@ const LeavesPage = () => {
               disabled={leaveState.loading}
               onClick={loadLeaves}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${leaveState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={() => setModal("apply")}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Apply Leave
               </AppButton>
             )}
@@ -531,9 +561,14 @@ const LeavesPage = () => {
         <HrStatCard icon={UserRound} label="On Leave Today" loading={leaveState.loading} value={stats.onLeaveToday} scope="current-page" colorClass="bg-brand-light text-brand" />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet
+        activeCount={leaveFilterCount}
+        onClear={clearLeaveFilters}
+      >
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[180px_180px_160px_160px_160px_auto]">
           <AppSelect
+            label="Employee"
             value={leaveState.filters.EmployeeId}
             onChange={(value) => {
               dispatch(setHrLeaveFilters({ EmployeeId: value }));
@@ -542,6 +577,7 @@ const LeavesPage = () => {
             options={[{ value: "", label: "All employees" }, ...employeeOptions]}
           />
           <AppSelect
+            label="Leave type"
             value={leaveState.filters.LeaveTypeId}
             onChange={(value) => {
               dispatch(setHrLeaveFilters({ LeaveTypeId: value }));
@@ -551,6 +587,7 @@ const LeavesPage = () => {
           />
           <AppInput
             id="leaveFromDate"
+            label="From date"
             type="date"
             value={leaveState.filters.FromDate}
             onChange={(event) => {
@@ -560,6 +597,7 @@ const LeavesPage = () => {
           />
           <AppInput
             id="leaveToDate"
+            label="To date"
             type="date"
             value={leaveState.filters.ToDate}
             onChange={(event) => {
@@ -568,6 +606,7 @@ const LeavesPage = () => {
             }}
           />
           <AppSelect
+            label="Status"
             value={leaveState.filters.Status}
             onChange={(value) => {
               dispatch(setHrLeaveFilters({ Status: value }));
@@ -578,40 +617,132 @@ const LeavesPage = () => {
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
-            onClick={() => {
-              dispatch(
-                setHrLeaveFilters({
-                  EmployeeId: "",
-                  FromDate: "",
-                  LeaveTypeId: "all",
-                  Status: "all",
-                  ToDate: "",
-                }),
-              );
-              dispatch(setHrLeavePage(1));
+          onClick={() => {
+              clearLeaveFilters();
             }}
           >
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       {!leaveState.loading && (leaveState.error || leaveState.list.length === 0) ? (
         <HrEmptyState
+          action={
+            leaveFilterCount > 0 ? (
+              <AppButton variant="secondary" onClick={clearLeaveFilters}>
+                Clear filters
+              </AppButton>
+            ) : capabilities.canCreate ? (
+              <AppButton onClick={() => setModal("apply")}>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                Apply Leave
+              </AppButton>
+            ) : undefined
+          }
+          context="Leave requests track time off from application through approval."
           icon={CalendarOff}
           error={leaveState.error}
-          title="No leave requests found"
-          description="Leave requests will appear here once employees apply."
+          errorTitle="Couldn't load leave requests"
+          title={
+            leaveFilterCount > 0
+              ? "No leave requests match these filters"
+              : "No leave requests yet"
+          }
+          description={
+            leaveFilterCount > 0
+              ? "Clear the current filters to see all leave requests."
+              : "Leave requests will appear after an employee applies."
+          }
           onRetry={loadLeaves}
+          variant={leaveFilterCount > 0 ? "filtered" : "empty"}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-left">
+        <div className="overflow-hidden md:rounded-2xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
+          <div className="grid gap-3 pb-3 md:hidden">
+            {leaveState.loading
+              ? Array.from({ length: 5 }, (_, index) => (
+                  <MobileRecordCardSkeleton key={index} />
+                ))
+              : leaveState.list.map((leave, index) => (
+                  <MobileRecordCard
+                    key={
+                      getHrRecordId(leave, "leaveApplication") ??
+                      leave.leaveApplicationId
+                    }
+                    serial={
+                      (leaveState.pageNumber - 1) * leaveState.pageSize +
+                      index +
+                      1
+                    }
+                    title={
+                      leave.employeeName ??
+                      getLookupLabel(employeeOptions, leave.employeeId)
+                    }
+                    subtitle={
+                      leave.leaveTypeName ??
+                      getHrOptionLabel(
+                        HR_LEAVE_TYPE_OPTIONS,
+                        leave.leaveTypeId,
+                      )
+                    }
+                    status={<LeaveStatusPill status={leave.status} />}
+                    fields={[
+                      {
+                        key: "start",
+                        label: "Starts",
+                        value: formatHrDate(leave.startDate),
+                      },
+                      {
+                        key: "end",
+                        label: "Ends",
+                        value: formatHrDate(leave.endDate),
+                      },
+                      {
+                        key: "days",
+                        label: "Days",
+                        value: leave.totalDays ?? leave.days ?? "-",
+                      },
+                    ]}
+                    actionItems={[
+                      capabilities.canApprove
+                        ? {
+                            id: "approve",
+                            icon: CheckCircle2,
+                            label: "Approve leave",
+                            onClick: () => openAction("approve", leave),
+                          }
+                        : null,
+                      capabilities.canApprove
+                        ? {
+                            id: "reject",
+                            icon: XCircle,
+                            label: "Reject leave",
+                            tone: "danger",
+                            onClick: () => openAction("reject", leave),
+                          }
+                        : null,
+                      capabilities.canUpdate
+                        ? {
+                            id: "cancel",
+                            icon: XCircle,
+                            label: "Cancel leave",
+                            tone: "danger",
+                            onClick: () => openAction("cancel", leave),
+                          }
+                        : null,
+                    ].filter(Boolean)}
+                  />
+                ))}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
+            <table aria-label="Leave requests" className="w-full min-w-[980px] text-left">
               <thead className="bg-slate-50">
                 <tr>
                   {["#", "Employee", "Type", "Dates", "Days", "Status", "Actions"].map((heading) => (
-                    <th
+                    <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
                       key={heading}
                       className={[
                         "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -634,7 +765,7 @@ const LeavesPage = () => {
                     ))
                   : leaveState.list.map((leave, index) => (
                       <tr key={getHrRecordId(leave, "leaveApplication") ?? leave.leaveApplicationId} className="hover:bg-slate-50">
-                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                        <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                           {(leaveState.pageNumber - 1) * leaveState.pageSize + index + 1}
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
@@ -653,7 +784,7 @@ const LeavesPage = () => {
                           <LeaveStatusPill status={leave.status} />
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
-                          <div className="flex items-center justify-end gap-0.5">
+                          <div className="flex items-center justify-end gap-2 md:gap-0.5">
                             {capabilities.canApprove && (
                               <>
                                 <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>
@@ -695,6 +826,7 @@ const LeavesPage = () => {
           <h3 className="text-sm font-semibold text-slate-900">Leave Balance</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
             <AppSelect
+              label="Employee"
               value={balanceEmployeeId}
               onChange={setBalanceEmployeeId}
               options={[{ value: "", label: "Select employee" }, ...employeeOptions]}
@@ -712,6 +844,7 @@ const LeavesPage = () => {
           <h3 className="text-sm font-semibold text-slate-900">Pending Approvals</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
             <AppSelect
+              label="Manager"
               value={pendingManagerId}
               onChange={setPendingManagerId}
               options={[{ value: "", label: "All managers" }, ...employeeOptions]}

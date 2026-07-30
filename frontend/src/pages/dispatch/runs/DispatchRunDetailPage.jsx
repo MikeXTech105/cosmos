@@ -122,11 +122,11 @@ const StageStrip = ({ status }) => {
                       ? "bg-brand text-white ring-brand"
                       : complete
                         ? "bg-brand-light text-brand ring-brand/20"
-                        : "bg-slate-50 text-slate-400 ring-slate-200",
+                        : "bg-slate-50 text-slate-500 ring-slate-200",
                   ].join(" ")}
                 >
                   {complete ? (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                   ) : (
                     <span className="text-xs font-semibold">{index + 1}</span>
                   )}
@@ -143,7 +143,7 @@ const StageStrip = ({ status }) => {
       </div>
       {normalized === DISPATCH_RUN_STATUS.Cancelled ? (
         <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">
-          <Ban className="h-3.5 w-3.5" />
+          <Ban aria-hidden="true" className="h-3.5 w-3.5" />
           This run was cancelled and is read only.
         </div>
       ) : null}
@@ -474,19 +474,27 @@ const CompanyStockSnapshots = ({ snapshots }) => (
     </div>
     <DataTableShell
       columnCount={7}
+      mobileConfig={{
+        fields: [2, 3, 4, 5],
+        serial: 0,
+        status: 6,
+        title: 1,
+      }}
+      emptyContext="Company stock snapshots explain how allocatable stock was distributed across recommendations."
       emptyHint="Company stock snapshots appear after the one-shot allocation."
       emptyTitle={
         snapshots.length === 0 ? "No company stock snapshots yet" : undefined
       }
+      emptyVariant="empty"
       head={
         <>
-          <th className={DATA_TABLE_HEADER_CLASS}>#</th>
-          <th className={DATA_TABLE_HEADER_CLASS}>Item</th>
-          <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Available</th>
-          <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Reserved elsewhere</th>
-          <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocatable</th>
-          <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
-          <th className={DATA_TABLE_HEADER_CLASS}>Allocation</th>
+          <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
+          <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th>
+          <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Available</th>
+          <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Reserved elsewhere</th>
+          <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocatable</th>
+          <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
+          <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Allocation</th>
         </>
       }
       minWidth="min-w-[980px]"
@@ -500,7 +508,7 @@ const CompanyStockSnapshots = ({ snapshots }) => (
             : 0;
         return (
           <tr key={snapshot.id}>
-            <td className="text-xs font-semibold tabular-nums text-slate-400">
+            <td className="text-xs font-semibold tabular-nums text-slate-500">
               {index + 1}
             </td>
             <td>
@@ -719,6 +727,16 @@ const DispatchRunDetailPage = () => {
     Boolean(filters.Tier),
     filters.AllocatedOnly,
   ].filter(Boolean).length;
+  const clearRecommendationFilters = () => {
+    setFilterItem(null);
+    setFilters({
+      AllocatedOnly: false,
+      ItemId: "",
+      Search: "",
+      Tier: "",
+      WarehouseId: "",
+    });
+  };
   const snapshots = Array.isArray(run?.companyStockSnapshots)
     ? run.companyStockSnapshots
     : [];
@@ -732,7 +750,7 @@ const DispatchRunDetailPage = () => {
         />
         <SupplyChainInlineError message="This planning run could not be found." />
         <AppButton variant="secondary" onClick={() => navigate("/dispatch/runs")}>
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           Back to planning runs
         </AppButton>
       </section>
@@ -748,14 +766,14 @@ const DispatchRunDetailPage = () => {
               loadingText="Calculating…"
               onClick={() => void calculate()}
             >
-              <Calculator className="h-4 w-4" />
+              <Calculator aria-hidden="true" className="h-4 w-4" />
               Calculate
             </AppButton>
           )
         : (
             <DisabledDispatchAction reason={actions.reasons.calculate}>
               <AppButton disabled>
-                <Calculator className="h-4 w-4" />
+                <Calculator aria-hidden="true" className="h-4 w-4" />
                 Calculate
               </AppButton>
             </DisabledDispatchAction>
@@ -764,14 +782,14 @@ const DispatchRunDetailPage = () => {
         ? actions.allocate
           ? (
               <AppButton onClick={() => setAllocateOpen(true)}>
-                <Boxes className="h-4 w-4" />
+                <Boxes aria-hidden="true" className="h-4 w-4" />
                 Allocate
               </AppButton>
             )
           : (
               <DisabledDispatchAction reason={actions.reasons.allocate}>
                 <AppButton disabled>
-                  <Boxes className="h-4 w-4" />
+                  <Boxes aria-hidden="true" className="h-4 w-4" />
                   Allocate
                 </AppButton>
               </DisabledDispatchAction>
@@ -780,14 +798,14 @@ const DispatchRunDetailPage = () => {
           ? actions.finalize
             ? (
                 <AppButton onClick={() => setFinalizeOpen(true)}>
-                  <Send className="h-4 w-4" />
+                  <Send aria-hidden="true" className="h-4 w-4" />
                   Finalize
                 </AppButton>
               )
             : (
                 <DisabledDispatchAction reason={actions.reasons.finalize}>
                   <AppButton disabled>
-                    <Send className="h-4 w-4" />
+                    <Send aria-hidden="true" className="h-4 w-4" />
                     Finalize
                   </AppButton>
                 </DisabledDispatchAction>
@@ -805,13 +823,13 @@ const DispatchRunDetailPage = () => {
             {loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void loadAll()}>
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw aria-hidden="true" className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
@@ -820,7 +838,7 @@ const DispatchRunDetailPage = () => {
                 ? (
                     <DisabledDispatchAction reason="There are no recommendation rows in the current view to export.">
                       <AppButton disabled variant="secondary">
-                        <Download className="h-4 w-4" />
+                        <Download aria-hidden="true" className="h-4 w-4" />
                         Export
                       </AppButton>
                     </DisabledDispatchAction>
@@ -852,14 +870,14 @@ const DispatchRunDetailPage = () => {
                         })
                       }
                     >
-                      <Download className="h-4 w-4" />
+                      <Download aria-hidden="true" className="h-4 w-4" />
                       Export
                     </AppButton>
                   )
               : null}
             {!actions.immutable && actions.cancel ? (
               <AppButton variant="danger" onClick={() => setCancelOpen(true)}>
-                <Ban className="h-4 w-4" />
+                <Ban aria-hidden="true" className="h-4 w-4" />
                 Cancel
               </AppButton>
             ) : null}
@@ -874,7 +892,7 @@ const DispatchRunDetailPage = () => {
           variant="ghost"
           onClick={() => navigate("/dispatch/runs")}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           Planning runs
         </AppButton>
         {run ? <DispatchRunStatusPill status={run.status} /> : null}
@@ -933,7 +951,7 @@ const DispatchRunDetailPage = () => {
       configurationConflict ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             <div className="min-w-0">
               <p className="text-sm font-semibold">
                 Settings or packaging need attention
@@ -984,16 +1002,7 @@ const DispatchRunDetailPage = () => {
         <>
           <SupplyChainFilterBar
             activeFilterCount={activeFilterCount}
-            onClear={() => {
-              setFilterItem(null);
-              setFilters({
-                AllocatedOnly: false,
-                ItemId: "",
-                Search: "",
-                Tier: "",
-                WarehouseId: "",
-              });
-            }}
+            onClear={clearRecommendationFilters}
           >
             <AppInput
               className="min-w-56 flex-1"
@@ -1067,7 +1076,7 @@ const DispatchRunDetailPage = () => {
                 type="button"
                 onClick={() => setView("matrix")}
               >
-                <TableProperties className="h-3.5 w-3.5" />
+                <TableProperties aria-hidden="true" className="h-3.5 w-3.5" />
                 Matrix
               </button>
               <button
@@ -1075,7 +1084,7 @@ const DispatchRunDetailPage = () => {
                 type="button"
                 onClick={() => setView("flat")}
               >
-                <List className="h-3.5 w-3.5" />
+                <List aria-hidden="true" className="h-3.5 w-3.5" />
                 Flat
               </button>
             </div>
@@ -1083,15 +1092,17 @@ const DispatchRunDetailPage = () => {
 
           <DispatchRecommendationMatrix
             canOverride={status === DISPATCH_RUN_STATUS.Calculated && actions.override}
+            isFiltered={activeFilterCount > 0}
             loading={recommendationsLoading}
             recommendations={recommendations}
             view={view}
+            onClear={clearRecommendationFilters}
             onOverride={setOverrideTarget}
           />
         </>
       ) : (
         <div className="rounded-xl border border-slate-200 bg-white px-6 py-10 text-center shadow-sm">
-          <Calculator className="mx-auto h-8 w-8 text-slate-300" />
+          <Calculator aria-hidden="true" className="mx-auto h-8 w-8 text-slate-300" />
           <p className="mt-3 text-sm font-medium text-slate-900">
             Calculate this draft to create recommendations
           </p>
@@ -1136,7 +1147,7 @@ const DispatchRunDetailPage = () => {
       />
 
       {run ? (
-        <p className="text-[11px] text-slate-400">
+        <p className="text-[11px] text-slate-500">
           Created {formatDispatchDateTime(run.createdAtUtc)}
           {run.createdBy ? ` by ${run.createdBy}` : ""}. Finalize records an
           immutable recommendation only.

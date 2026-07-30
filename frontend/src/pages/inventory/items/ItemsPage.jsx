@@ -601,7 +601,7 @@ const ItemsPage = () => {
       <PageHeader
         badge={
           <>
-            <Package className="h-3.5 w-3.5" />
+            <Package aria-hidden="true" className="h-3.5 w-3.5" />
             Inventory / Item Master
           </>
         }
@@ -615,14 +615,14 @@ const ItemsPage = () => {
               disabled={itemsState.loading}
               onClick={loadItems}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${itemsState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Item
               </AppButton>
             )}
@@ -671,6 +671,7 @@ const ItemsPage = () => {
       <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div className="h-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <ItemTable
+            activeFilterCount={activeCount}
             actions={{
               ...capabilities,
               onDelete: (item) =>
@@ -686,6 +687,7 @@ const ItemsPage = () => {
             isLoading={itemsState.loading}
             items={itemsState.list}
             onCreate={capabilities.canCreate ? openCreate : undefined}
+            onClear={resetUrlFilters}
             onPageChange={(value) => setUrlFilter("page", value)}
             onPageSizeChange={(value) => setUrlFilter("size", value)}
             onRetry={loadItems}

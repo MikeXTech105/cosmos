@@ -25,14 +25,14 @@ const ReportSummary = ({ data, error, isLoading, onRetry, report }) => {
     return (
       <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-          <FileSearch className="h-6 w-6" />
+          <FileSearch aria-hidden="true" className="h-6 w-6" />
         </div>
         <h3 className="mt-4 text-base font-semibold text-slate-900">
           Unable to load report
         </h3>
         <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">{error}</p>
         <AppButton variant="secondary" className="mt-5 h-10" onClick={onRetry}>
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw aria-hidden="true" className="h-4 w-4" />
           Retry
         </AppButton>
       </div>
@@ -56,10 +56,10 @@ const ReportSummary = ({ data, error, isLoading, onRetry, report }) => {
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-                    <TrendingUp className="h-4 w-4" />
+                    <TrendingUp aria-hidden="true" className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                    <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
                       {kpi.label}
                     </p>
                     <p className="mt-0.5 truncate text-xl font-bold text-slate-900">
@@ -75,7 +75,7 @@ const ReportSummary = ({ data, error, isLoading, onRetry, report }) => {
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-light text-brand">
-              <BarChart3 className="h-4 w-4" />
+              <BarChart3 aria-hidden="true" className="h-4 w-4" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-slate-900">

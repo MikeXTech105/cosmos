@@ -260,13 +260,24 @@ const UnitsPage = () => {
     ...unitsState.filters,
     Search: searchInput,
   };
+  const activeFilterCount = [
+    searchInput.trim(),
+    unitsState.filters.IsActive === "all"
+      ? ""
+      : unitsState.filters.IsActive,
+  ].filter(Boolean).length;
+  const clearFilters = () => {
+    setSearchInput("");
+    dispatch(setUnitFilters({ Search: "", IsActive: "all" }));
+    dispatch(setUnitPage(1));
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <Scale className="h-3.5 w-3.5" />
+            <Scale aria-hidden="true" className="h-3.5 w-3.5" />
             Inventory / Unit Master
           </>
         }
@@ -280,14 +291,14 @@ const UnitsPage = () => {
               disabled={unitsState.loading}
               onClick={loadUnits}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${unitsState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Unit
               </AppButton>
             )}
@@ -308,13 +319,12 @@ const UnitsPage = () => {
           }
         }}
         onClear={() => {
-          setSearchInput("");
-          dispatch(setUnitFilters({ Search: "", IsActive: "all" }));
-          dispatch(setUnitPage(1));
+          clearFilters();
         }}
       />
 
       <UnitTable
+        activeFilterCount={activeFilterCount}
         actions={{
           ...capabilities,
           onDelete: (unit) =>
@@ -325,6 +335,7 @@ const UnitsPage = () => {
         error={unitsState.error}
         isLoading={unitsState.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
+        onClear={clearFilters}
         onPageChange={(value) => dispatch(setUnitPage(value))}
         onPageSizeChange={(value) => dispatch(setUnitPageSize(value))}
         onRetry={loadUnits}

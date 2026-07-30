@@ -138,7 +138,7 @@ const TransactionEntryModal = ({
     >
       <div className="flex items-start gap-3">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tone}`}>
-          <Icon className="h-5 w-5" />
+          <Icon aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -158,7 +158,7 @@ const TransactionEntryModal = ({
         )}
 
         <AppInput
-          autoFocus
+          data-autofocus="true"
           className="h-14 text-xl font-bold tabular-nums"
           error={errors.amount?.message}
           label="Amount"
@@ -177,6 +177,9 @@ const TransactionEntryModal = ({
               name="walletId"
               render={({ field }) => (
                 <AppSelect
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
                   error={errors.walletId?.message}
                   label="Wallet"
                   options={walletOptions}
@@ -194,6 +197,9 @@ const TransactionEntryModal = ({
               name="categoryId"
               render={({ field }) => (
                 <AppSelect
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
                   disabled={categoriesLoading}
                   error={errors.categoryId?.message}
                   label="Category"
@@ -219,6 +225,9 @@ const TransactionEntryModal = ({
               name="paymentMode"
               render={({ field }) => (
                 <AppSelect
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
                   label="Payment Mode"
                   options={PAYMENT_MODE_OPTIONS}
                   value={field.value}
@@ -264,7 +273,7 @@ const TransactionEntryModal = ({
           <AppInput label="Description" placeholder="What was this for?" {...register("description")} />
         </div>
 
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+        <div className="sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end md:static">
           <AppButton disabled={isSubmitting} variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>

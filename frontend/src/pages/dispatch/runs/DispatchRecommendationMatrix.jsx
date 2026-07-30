@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import EmptyState from "../../../components/common/EmptyState";
 import AppTooltip from "../../../components/common/AppTooltip";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import DataTableShell, {
   DATA_TABLE_HEADER_CLASS,
   DATA_TABLE_ROW_ACTION_CLASS,
@@ -35,7 +37,7 @@ const ServerValue = ({ label, value }) => (
 const Equation = ({ children, result, resultLabel }) => (
   <div className="flex flex-wrap items-center gap-2">
     {children}
-    <span className="text-sm font-semibold text-slate-400">=</span>
+    <span className="text-sm font-semibold text-slate-500">=</span>
     <ServerValue label={resultLabel} value={result} />
   </div>
 );
@@ -54,7 +56,7 @@ const CalculationStrip = ({ recommendation }) => (
           label="Sellable stock"
           value={recommendation.currentSellableQuantity}
         />
-        <span className="text-sm font-semibold text-slate-400">+</span>
+        <span className="text-sm font-semibold text-slate-500">+</span>
         <ServerValue
           label="Eligible inbound"
           value={recommendation.eligibleInboundQuantity}
@@ -68,7 +70,7 @@ const CalculationStrip = ({ recommendation }) => (
           label="Recent sales"
           value={recommendation.salesQuantity}
         />
-        <span className="text-sm font-semibold text-slate-400">× factor</span>
+        <span className="text-sm font-semibold text-slate-500">× factor</span>
       </Equation>
       <Equation
         result={recommendation.safetyStock}
@@ -78,7 +80,7 @@ const CalculationStrip = ({ recommendation }) => (
           label="Recurring demand"
           value={recommendation.recurringDemand}
         />
-        <span className="text-sm font-semibold text-slate-400">× factor</span>
+        <span className="text-sm font-semibold text-slate-500">× factor</span>
       </Equation>
       <Equation
         result={recommendation.reorderPoint}
@@ -88,7 +90,7 @@ const CalculationStrip = ({ recommendation }) => (
           label="Recurring demand"
           value={recommendation.recurringDemand}
         />
-        <span className="text-sm font-semibold text-slate-400">+</span>
+        <span className="text-sm font-semibold text-slate-500">+</span>
         <ServerValue
           label="Safety stock"
           value={recommendation.safetyStock}
@@ -112,7 +114,7 @@ const CalculationStrip = ({ recommendation }) => (
       </Equation>
     </div>
     <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-      <Database className="h-3.5 w-3.5" />
+      <Database aria-hidden="true" className="h-3.5 w-3.5" />
       <DispatchPill tone="sky">
         {getDispatchTierLabel(recommendation.tier)}
       </DispatchPill>
@@ -141,7 +143,7 @@ const CalculationStrip = ({ recommendation }) => (
         The server did not return a calculation explanation for this line.
       </p>
     )}
-    <p className="text-[11px] text-slate-400">
+    <p className="text-[11px] text-slate-500">
       Values are displayed exactly as returned by Dispatch Planning. The browser
       does not recalculate recommendations.
     </p>
@@ -189,7 +191,9 @@ const RecommendationQuantities = ({ recommendation }) => {
 
 const DispatchRecommendationMatrix = ({
   canOverride,
+  isFiltered,
   loading,
+  onClear,
   onOverride,
   recommendations,
   view,
@@ -245,25 +249,51 @@ const DispatchRecommendationMatrix = ({
     return (
       <DataTableShell
         columnCount={11}
-        emptyHint="Calculate the run or clear the current recommendation filters."
+        mobileConfig={{
+          actions: 10,
+          fields: [3, 4, 7, 9],
+          serial: 0,
+          subtitle: 2,
+          title: 1,
+        }}
+        emptyAction={
+          isFiltered ? (
+            <button
+              className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              type="button"
+              onClick={onClear}
+            >
+              Clear filters
+            </button>
+          ) : undefined
+        }
+        emptyContext="Recommendations allocate calculated item demand across eligible warehouses."
+        emptyHint={
+          isFiltered
+            ? "Clear the current recommendation filters to see other lines."
+            : "Calculate the run to create its first recommendations."
+        }
         emptyTitle={
           !loading && recommendations.length === 0
-            ? "No recommendations match these filters"
+            ? isFiltered
+              ? "No recommendations match these filters"
+              : "No recommendations yet"
             : undefined
         }
+        emptyVariant={isFiltered ? "filtered" : "empty"}
         head={
           <>
-            <th className={DATA_TABLE_HEADER_CLASS}>#</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Item</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Tier</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Sellable</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Inbound</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Calculated</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Final</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+            <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Warehouse</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Tier</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Sellable</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Inbound</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Calculated</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Final</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Allocated</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Boxes</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
           </>
         }
         loading={loading}
@@ -275,7 +305,7 @@ const DispatchRecommendationMatrix = ({
             Number(record.calculatedRecommendationQuantity);
           return (
             <tr key={record.id}>
-              <td className="text-xs font-semibold tabular-nums text-slate-400">
+              <td className="text-xs font-semibold tabular-nums text-slate-500">
                 {index + 1}
               </td>
               <td>
@@ -309,7 +339,7 @@ const DispatchRecommendationMatrix = ({
                         type="button"
                         onClick={() => onOverride(record)}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil aria-hidden="true" className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                   ) : null}
@@ -321,9 +351,9 @@ const DispatchRecommendationMatrix = ({
                       onClick={() => toggleExpanded(`record-${record.id}`)}
                     >
                       {expandedItems.has(`record-${record.id}`) ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown aria-hidden="true" className="h-4 w-4" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight aria-hidden="true" className="h-4 w-4" />
                       )}
                     </button>
                   </AppTooltip>
@@ -350,25 +380,32 @@ const DispatchRecommendationMatrix = ({
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="max-h-[68vh] overflow-auto">
+      <ResponsiveTableRegion
+        className="max-h-[68vh]"
+        mobileConfig={{
+          fields: [1, 2, 3],
+          serial: "generated",
+          title: 0,
+        }}
+      >
         <table
           className="w-max min-w-full border-separate border-spacing-0 text-sm"
           aria-label="Dispatch recommendation matrix"
         >
           <thead className="sticky top-0 z-20 bg-slate-50">
             <tr>
-              <th className="sticky left-0 z-30 min-w-64 border-b border-r border-slate-200 bg-slate-50 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+              <th scope="col" className="sticky left-0 z-30 min-w-64 border-b border-r border-slate-200 bg-slate-50 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
                 Item
               </th>
               {warehouses.map((warehouse) => (
-                <th
+                <th scope="col"
                   key={warehouse.id}
                   className="min-w-52 border-b border-slate-200 px-4 py-3.5 text-left"
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
                     {warehouse.code}
                   </p>
-                  <p className="mt-0.5 text-[10px] font-normal normal-case text-slate-400">
+                  <p className="mt-0.5 text-[10px] font-normal normal-case text-slate-500">
                     {warehouse.name}
                   </p>
                 </th>
@@ -391,10 +428,24 @@ const DispatchRecommendationMatrix = ({
                 ? (
                     <tr>
                       <td
-                        className="px-4 py-12 text-center text-sm text-slate-500"
+                        className="p-0"
                         colSpan={warehouses.length + 1}
                       >
-                        No recommendations match these filters.
+                        <EmptyState
+                          context="Recommendations allocate calculated item demand across eligible warehouses."
+                          hint={
+                            isFiltered
+                              ? "Clear the current recommendation filters to see other lines."
+                              : "Calculate the run to create its first recommendations."
+                          }
+                          title={
+                            isFiltered
+                              ? "No recommendations match these filters"
+                              : "No recommendations yet"
+                          }
+                          variant={isFiltered ? "filtered" : "empty"}
+                          onAction={isFiltered ? onClear : undefined}
+                        />
                       </td>
                     </tr>
                   )
@@ -415,9 +466,9 @@ const DispatchRecommendationMatrix = ({
                             onClick={() => toggleExpanded(item.id)}
                           >
                             {expanded ? (
-                              <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                              <ChevronDown aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
                             ) : (
-                              <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                              <ChevronRight aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
                             )}
                             <span>
                               <span className="block font-medium text-slate-900">
@@ -447,11 +498,11 @@ const DispatchRecommendationMatrix = ({
                                     <AppTooltip label="Override recommendation">
                                       <button
                                         aria-label={`Override ${item.code} for ${warehouse.code}`}
-                                        className="absolute -right-1 -top-1 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-400 opacity-0 shadow-sm ring-1 ring-slate-200 transition hover:text-brand group-hover:opacity-100 focus:opacity-100"
+                                        className="absolute -right-1 -top-1 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-500 opacity-0 shadow-sm ring-1 ring-slate-200 transition hover:text-brand group-hover:opacity-100 focus:opacity-100"
                                         type="button"
                                         onClick={() => onOverride(record)}
                                       >
-                                        <Pencil className="h-3.5 w-3.5" />
+                                        <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
                                       </button>
                                     </AppTooltip>
                                   ) : null}
@@ -487,7 +538,7 @@ const DispatchRecommendationMatrix = ({
                   })}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
     </div>
   );
 };

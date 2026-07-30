@@ -725,13 +725,26 @@ const EmployeesPage = () => {
     ...employeesState.filters,
     Search: searchInput,
   };
+  const clearEmployeeFilters = () => {
+    setSearchInput("");
+    dispatch(
+      setHrEmployeeFilters({
+        DepartmentId: "all",
+        DesignationId: "all",
+        IncludeResigned: false,
+        Search: "",
+        Status: "all",
+      }),
+    );
+    dispatch(setHrEmployeePage(1));
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <UsersRound className="h-3.5 w-3.5" />
+            <UsersRound aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Employees
           </>
         }
@@ -745,14 +758,14 @@ const EmployeesPage = () => {
               disabled={employeesState.loading}
               onClick={loadEmployees}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${employeesState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Employee
               </AppButton>
             )}
@@ -784,22 +797,25 @@ const EmployeesPage = () => {
           }
         }}
         onClear={() => {
-          setSearchInput("");
-          dispatch(
-            setHrEmployeeFilters({
-              DepartmentId: "all",
-              DesignationId: "all",
-              IncludeResigned: false,
-              Search: "",
-              Status: "all",
-            }),
-          );
-          dispatch(setHrEmployeePage(1));
+          clearEmployeeFilters();
         }}
       />
 
       <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(320px,0.9fr)_minmax(0,1.5fr)]">
         <EmployeeList
+          activeFilterCount={
+            [
+              searchInput.trim(),
+              employeesState.filters.DepartmentId === "all"
+                ? ""
+                : "department",
+              employeesState.filters.DesignationId === "all"
+                ? ""
+                : "designation",
+              employeesState.filters.Status === "all" ? "" : "status",
+              employeesState.filters.IncludeResigned ? "resigned" : "",
+            ].filter(Boolean).length
+          }
           actions={capabilities}
           departmentOptions={departmentOptions}
           designationOptions={designationOptions}
@@ -807,6 +823,7 @@ const EmployeesPage = () => {
           error={employeesState.error}
           isLoading={employeesState.loading}
           onCreate={capabilities.canCreate ? openCreate : undefined}
+          onClear={clearEmployeeFilters}
           onPageChange={(value) => dispatch(setHrEmployeePage(value))}
           onPageSizeChange={(value) => dispatch(setHrEmployeePageSize(value))}
           onRetry={loadEmployees}

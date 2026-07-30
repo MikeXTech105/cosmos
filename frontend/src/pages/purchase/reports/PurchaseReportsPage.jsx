@@ -4,9 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import AppTabs from "../../../components/common/AppTabs";
 import PageHeader from "../../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import { itemService } from "../../../services/inventory/itemService";
 import {
   fetchCategoryWiseExpense,
@@ -112,7 +115,16 @@ const formatCell = (key, value) => {
   return String(value);
 };
 
-const ReportTable = ({ emptyLabel, payload }) => {
+const ReportTable = ({
+  emptyHint,
+  emptyTitle,
+  emptyVariant,
+  error,
+  loading,
+  onClear,
+  onRetry,
+  payload,
+}) => {
   const rows = normalizeRows(payload);
   const columns = useMemo(() => {
     const columnSet = new Set();
@@ -126,23 +138,45 @@ const ReportTable = ({ emptyLabel, payload }) => {
     return Array.from(columnSet).slice(0, 8);
   }, [rows]);
 
-  if (!rows.length || !columns.length) {
+  if (loading) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-500 shadow-sm">
-        {emptyLabel}
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="h-11 animate-pulse rounded-lg bg-slate-100" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !rows.length || !columns.length) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <EmptyState
+          context="Purchase reports turn bills, supplier balances and expenses into reviewable summaries."
+          hint={error || emptyHint}
+          title={error ? "Couldn't load purchase report" : emptyTitle}
+          variant={error ? "error" : emptyVariant}
+          onAction={error ? onRetry : emptyVariant === "filtered" ? onClear : undefined}
+        />
       </div>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
+      <ResponsiveTableRegion
+        mobileConfig={{
+          fields: [2, 3, 4, 5],
+          serial: 0,
+          title: 1,
+        }}
+      >
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">#</th>
+              <th scope="col" aria-label="Row number" className="px-4 py-3 font-semibold"><span aria-hidden="true">#</span></th>
               {columns.map((column) => (
-                <th
+                <th scope="col"
                   key={column}
                   className={`px-4 py-3 font-semibold ${
                     isCurrencyColumn(column) ||
@@ -160,7 +194,7 @@ const ReportTable = ({ emptyLabel, payload }) => {
           <tbody>
             {rows.map((row, index) => (
               <tr key={index} className="border-t border-slate-100">
-                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                   {index + 1}
                 </td>
                 {columns.map((column) => (
@@ -179,7 +213,7 @@ const ReportTable = ({ emptyLabel, payload }) => {
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
     </div>
   );
 };
@@ -276,13 +310,21 @@ const PurchaseReportsPage = () => {
     "expenseSummary",
     "categoryWiseExpense",
   ].includes(activeTab);
+  const clearReportFilters = () =>
+    dispatch(
+      setPurchaseReportFilters({
+        FromDate: "",
+        ToDate: "",
+        itemId: "",
+      }),
+    );
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <BarChart3 className="h-3.5 w-3.5" />
+            <BarChart3 aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -295,7 +337,7 @@ const PurchaseReportsPage = () => {
             disabled={reports.loading}
             onClick={runReport}
           >
-            <RefreshCw
+            <RefreshCw aria-hidden="true"
               className={`h-4 w-4 ${reports.loading ? "animate-spin" : ""}`}
             />
             Refresh
@@ -304,30 +346,29 @@ const PurchaseReportsPage = () => {
       />
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-        <div className="flex min-w-max gap-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={[
-                "h-10 rounded-xl px-4 text-sm font-semibold transition-colors",
-                activeTab === tab.id
-                  ? "bg-brand text-white"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <AppTabs
+          active={activeTab}
+          aria-label="Purchase report sections"
+          className="min-w-max"
+          id="purchase-report-tabs"
+          tabClassName="h-10 rounded-xl px-4 text-sm font-semibold"
+          tabs={tabs}
+          onChange={setActiveTab}
+        />
       </div>
 
+      <div
+        id={`purchase-report-tabs-panel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`purchase-report-tabs-tab-${activeTab}`}
+        className="space-y-6"
+      >
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 md:grid-cols-[160px_160px_minmax(240px,1fr)_auto]">
           {showDateFilters ? (
             <>
               <AppInput
+                label="From date"
                 type="date"
                 value={dateFilters.FromDate}
                 onChange={(event) =>
@@ -335,10 +376,10 @@ const PurchaseReportsPage = () => {
                     setPurchaseReportFilters({ FromDate: event.target.value }),
                   )
                 }
-                aria-label="From date"
                 className="h-10"
               />
               <AppInput
+                label="To date"
                 type="date"
                 value={dateFilters.ToDate}
                 onChange={(event) =>
@@ -346,7 +387,6 @@ const PurchaseReportsPage = () => {
                     setPurchaseReportFilters({ ToDate: event.target.value }),
                   )
                 }
-                aria-label="To date"
                 className="h-10"
               />
             </>
@@ -358,13 +398,13 @@ const PurchaseReportsPage = () => {
           )}
           {activeTab === "itemPurchaseHistory" ? (
             <AppSelect
+              label="Item"
               value={reports.filters.itemId}
               onChange={(value) =>
                 dispatch(setPurchaseReportFilters({ itemId: value }))
               }
               options={itemOptions}
               placeholder="Select item"
-              aria-label="Select item"
             />
           ) : (
             <div />
@@ -395,21 +435,34 @@ const PurchaseReportsPage = () => {
       )}
 
       {reports.error && (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100">
+        <div role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100">
           {reports.error}
         </div>
       )}
 
       <ReportTable
-        payload={payload}
-        emptyLabel={
-          reports.loading
-            ? "Loading report..."
-            : activeTab === "itemPurchaseHistory" && !reports.filters.itemId
-              ? "Select an item to view purchase history."
-              : "No report data available."
+        emptyHint={
+          activeTab === "itemPurchaseHistory" && !reports.filters.itemId
+            ? "Choose an item above to load its purchase history."
+            : showDateFilters
+              ? "Clear the report filters to return to the current-month view."
+              : "Records will appear after purchase activity is posted."
         }
+        emptyTitle={
+          activeTab === "itemPurchaseHistory" && !reports.filters.itemId
+            ? "Select an item to view purchase history"
+            : showDateFilters
+              ? "No report rows match these filters"
+              : "No purchase report rows yet"
+        }
+        emptyVariant={showDateFilters ? "filtered" : "empty"}
+        error={reports.error}
+        loading={reports.loading}
+        onClear={clearReportFilters}
+        onRetry={runReport}
+        payload={payload}
       />
+      </div>
     </section>
   );
 };

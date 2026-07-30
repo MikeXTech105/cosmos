@@ -255,13 +255,47 @@ const TransactionsPage = () => {
     entryMode === "income" ? RojmelCategoryType.Income : RojmelCategoryType.Expense;
   const formCategories = myState.categoriesByType[formCategoryType] ?? [];
   const filterControls = { ...activeState.filters, Search: searchInput };
+  const defaultRange = getRojmelMonthRange();
+  const isFiltered = Boolean(
+    searchInput.trim() ||
+    activeState.filters.CategoryId !== "all" ||
+    activeState.filters.TransactionType !== "all" ||
+    activeState.filters.FromDate !== defaultRange.FromDate ||
+    activeState.filters.ToDate !== defaultRange.ToDate ||
+    (capabilities.isAdmin &&
+      (activeState.filters.LinkedUserId !== "all" ||
+        activeState.filters.Status !== "all" ||
+        activeState.filters.WalletId !== "all")),
+  );
+  const clearFilters = () => {
+    setSearchInput("");
+    const clearedFilters = {
+      ...defaultRange,
+      CategoryId: "all",
+      LinkedUserId: "all",
+      Search: "",
+      Status: "all",
+      TransactionType: "all",
+      WalletId: "all",
+    };
+    dispatch(
+      capabilities.isAdmin
+        ? setRojmelTransactionFilters(clearedFilters)
+        : setMyRojmelLedgerFilters(clearedFilters),
+    );
+    dispatch(
+      capabilities.isAdmin
+        ? setRojmelTransactionPage(1)
+        : setMyRojmelLedgerPage(1),
+    );
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <BookText className="h-3.5 w-3.5" />
+            <BookText aria-hidden="true" className="h-3.5 w-3.5" />
             Rojmel / Ledger
           </>
         }
@@ -274,20 +308,20 @@ const TransactionsPage = () => {
         actions={
           <>
             <AppButton className="h-10" disabled={activeState.loading} variant="secondary" onClick={loadTransactions}>
-              <RefreshCw className={`h-4 w-4 ${activeState.loading ? "animate-spin" : ""}`} />
+              <RefreshCw aria-hidden="true" className={`h-4 w-4 ${activeState.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <>
                 <AppButton className="h-10 bg-emerald-600 hover:bg-emerald-700" onClick={() => openEntry("income")}>
-                  <ArrowDownLeft className="h-4 w-4" /> Income
+                  <ArrowDownLeft aria-hidden="true" className="h-4 w-4" /> Income
                 </AppButton>
                 <AppButton className="h-10 bg-red-600 hover:bg-red-700" onClick={() => openEntry("expense")}>
-                  <ArrowUpRight className="h-4 w-4" /> Expense
+                  <ArrowUpRight aria-hidden="true" className="h-4 w-4" /> Expense
                 </AppButton>
                 {capabilities.isAdmin && (
                   <AppButton className="h-10" variant="secondary" onClick={() => openEntry("adjustment")}>
-                    <SlidersHorizontal className="h-4 w-4" /> Adjustment
+                    <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Adjustment
                   </AppButton>
                 )}
               </>
@@ -309,36 +343,20 @@ const TransactionsPage = () => {
         showWallet={capabilities.isAdmin}
         walletOptions={walletOptions}
         onChange={updateFilters}
-        onClear={() => {
-          setSearchInput("");
-          const clearedFilters = {
-            ...getRojmelMonthRange(),
-            CategoryId: "all",
-            LinkedUserId: "all",
-            Search: "",
-            Status: "all",
-            TransactionType: "all",
-            WalletId: "all",
-          };
-          dispatch(
-            capabilities.isAdmin
-              ? setRojmelTransactionFilters(clearedFilters)
-              : setMyRojmelLedgerFilters(clearedFilters),
-          );
-          dispatch(
-            capabilities.isAdmin
-              ? setRojmelTransactionPage(1)
-              : setMyRojmelLedgerPage(1),
-          );
-        }}
+        onClear={clearFilters}
       />
 
       <TransactionTable
         canCancel={capabilities.isAdmin && capabilities.canCancel}
         canView={capabilities.isAdmin && capabilities.canView}
+        createLabel="Add income"
+        emptyContext="The ledger records wallet income, expenses and reversals with a running balance."
         error={activeState.error}
+        isFiltered={isFiltered}
         isLoading={activeState.loading}
         onCancel={setReversal}
+        onClear={clearFilters}
+        onCreate={capabilities.canCreate ? () => openEntry("income") : undefined}
         onPageChange={(value) =>
           dispatch(
             capabilities.isAdmin

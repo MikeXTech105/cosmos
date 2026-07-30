@@ -21,7 +21,7 @@ export const TemplatePage = ({ children, className = "" }) => {
 export const CompanyBlock = ({ align = "left", company = COMPANY_PROFILE }) => {
   return (
     <div className={align === "right" ? "text-right" : ""}>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         Tax Invoice
       </p>
       <h2 className="mt-1 text-2xl font-bold text-slate-950">
@@ -46,7 +46,7 @@ export const CompanyBlock = ({ align = "left", company = COMPANY_PROFILE }) => {
 export const CustomerBlock = ({ invoice, title = "Bill To" }) => {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {title}
       </p>
       <h3 className="mt-2 text-base font-bold text-slate-950">
@@ -100,6 +100,7 @@ export const ItemsTable = ({
 }) => {
   return (
     <table
+      aria-label="Invoice line items"
       className={[
         "w-full table-fixed text-left",
         bordered ? "border border-slate-200" : "",
@@ -108,13 +109,13 @@ export const ItemsTable = ({
     >
       <thead className={accentClass}>
         <tr>
-          <th className="w-10 px-2 py-2 font-semibold">#</th>
-          <th className="px-2 py-2 font-semibold">Item</th>
-          <th className="w-20 px-2 py-2 text-right font-semibold">Qty</th>
-          <th className="w-24 px-2 py-2 text-right font-semibold">Rate (₹)</th>
-          <th className="w-24 px-2 py-2 text-right font-semibold">Disc</th>
-          <th className="w-20 px-2 py-2 text-right font-semibold">GST</th>
-          <th className="w-28 px-2 py-2 text-right font-semibold">Amount (₹)</th>
+          <th scope="col" aria-label="Row number" className="w-10 px-2 py-2 font-semibold"><span aria-hidden="true">#</span></th>
+          <th scope="col" className="px-2 py-2 font-semibold">Item</th>
+          <th scope="col" className="w-20 px-2 py-2 text-right font-semibold">Qty</th>
+          <th scope="col" className="w-24 px-2 py-2 text-right font-semibold">Rate (₹)</th>
+          <th scope="col" className="w-24 px-2 py-2 text-right font-semibold">Disc</th>
+          <th scope="col" className="w-20 px-2 py-2 text-right font-semibold">GST</th>
+          <th scope="col" className="w-28 px-2 py-2 text-right font-semibold">Amount (₹)</th>
         </tr>
       </thead>
       <tbody>
@@ -125,7 +126,7 @@ export const ItemsTable = ({
             </td>
             <td className="px-2 py-2 align-top">
               <p className="font-semibold text-slate-900">{item.name}</p>
-              <p className="mt-0.5 text-[10px] text-slate-400">
+              <p className="mt-0.5 text-[10px] text-slate-500">
                 {[item.hsn && `HSN ${item.hsn}`, item.unit]
                   .filter(Boolean)
                   .join(" | ")}
@@ -193,15 +194,15 @@ export const TaxBreakup = ({ invoice }) => {
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         Tax Breakup
       </p>
-      <table className="mt-2 w-full text-xs">
+      <table aria-label="Invoice totals" className="mt-2 w-full text-xs">
         <thead>
           <tr className="border-b border-slate-200 text-slate-500">
-            <th className="py-1 text-left font-semibold">GST</th>
-            <th className="py-1 text-right font-semibold">Taxable</th>
-            <th className="py-1 text-right font-semibold">Tax</th>
+            <th scope="col" className="py-1 text-left font-semibold">GST</th>
+            <th scope="col" className="py-1 text-right font-semibold">Taxable</th>
+            <th scope="col" className="py-1 text-right font-semibold">Tax</th>
           </tr>
         </thead>
         <tbody>
@@ -226,13 +227,13 @@ export const NotesAndTerms = ({ invoice }) => {
   return (
     <div className="grid gap-4 text-xs leading-5 text-slate-500 sm:grid-cols-2">
       <div>
-        <p className="font-semibold uppercase tracking-[0.16em] text-slate-400">
+        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">
           Notes
         </p>
         <p className="mt-2">{invoice.notes || "No additional notes."}</p>
       </div>
       <div>
-        <p className="font-semibold uppercase tracking-[0.16em] text-slate-400">
+        <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">
           Terms
         </p>
         <p className="mt-2">

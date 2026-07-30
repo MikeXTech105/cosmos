@@ -25,7 +25,7 @@ const CompactTemplate = ({ invoice }) => {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             Sale Invoice
           </p>
           <p className="mt-1 text-lg font-bold text-slate-950">
@@ -49,7 +49,7 @@ const CompactTemplate = ({ invoice }) => {
 
       <div className="mt-5 grid gap-5 sm:grid-cols-[1fr_290px]">
         <div className="text-[11px] leading-5 text-slate-500">
-          <p className="font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">
             Amount In Words
           </p>
           <p className="mt-1 font-medium text-slate-700">

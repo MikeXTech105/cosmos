@@ -2,11 +2,13 @@ import {
   ChevronDown,
   ChevronRight,
   FolderTree,
-  Plus,
-  RefreshCw,
 } from "lucide-react";
 import { createElement, memo, useMemo } from "react";
 
+import CommonEmptyState from "../../../components/common/EmptyState";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
 import { getIconComponent } from "../../../config/iconMap";
 import { PAGE_TABLE_COLUMNS } from "./pageColumns";
 import { buildPageTree, collectTreeIds } from "./pageHelpers";
@@ -37,7 +39,10 @@ export const IconPreview = ({ iconName }) => {
   return (
     <div className="flex items-center gap-2">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand ring-1 ring-inset ring-brand/10">
-        {createElement(getIconComponent(iconName), { className: "h-4 w-4" })}
+        {createElement(getIconComponent(iconName), {
+          "aria-hidden": true,
+          className: "h-4 w-4",
+        })}
       </span>
       <span className="truncate text-xs font-medium text-slate-500">
         {iconName || "pages"}
@@ -56,85 +61,74 @@ const TableSkeleton = () => {
   ));
 };
 
-const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
+const PageEmptyState = ({
+  activeFilterCount,
+  errorMessage,
+  hasError,
+  onClear,
+  onCreate,
+  onRetry,
+}) => {
+  const variant = hasError
+    ? "error"
+    : activeFilterCount > 0
+      ? "filtered"
+      : "empty";
+
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-        <FolderTree className="h-6 w-6" />
-      </div>
-      <h3 className="mt-4 text-base font-bold text-slate-950">
-        {hasError ? "Unable to load pages" : "No pages found"}
-      </h3>
-      <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-        {hasError
-          ? errorMessage ?? "Something went wrong while loading pages."
-          : "Create a page record or adjust your filters to find one."}
-      </p>
-      <div className="mt-5">
-        {hasError ? (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Retry
-          </button>
-        ) : onCreate ? (
-          <button
-            type="button"
-            onClick={onCreate}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            Create Page
-          </button>
-        ) : null}
-      </div>
-    </div>
+    <CommonEmptyState
+      actionLabel={variant === "empty" ? "Create Page" : undefined}
+      context={
+        variant === "empty"
+          ? "Page records define the application surfaces available to roles."
+          : undefined
+      }
+      hint={
+        hasError
+          ? errorMessage ?? "The page list could not be checked."
+          : variant === "filtered"
+            ? "Clear the current filters to see all page records."
+            : "Create the first page record to build the permission tree."
+      }
+      icon={FolderTree}
+      title={
+        hasError
+          ? "Couldn't load pages"
+          : variant === "filtered"
+            ? "No pages match these filters"
+            : "No pages yet"
+      }
+      variant={variant}
+      onAction={
+        hasError
+          ? onRetry
+          : variant === "filtered"
+            ? onClear
+            : onCreate
+      }
+    />
   );
 };
 
-const MobilePageCard = ({ actions, page, parentName }) => {
+const MobilePageCard = ({ actions, page, parentName, serialNumber }) => {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0">
-              {createElement(getIconComponent(page.icon), {
-                className: "h-4 w-4 text-brand",
-              })}
-            </span>
-            <p className="truncate text-sm font-bold text-slate-950">
-              {page.displayName}
-            </p>
-          </div>
-          <p className="mt-1 truncate font-mono text-xs text-slate-500">
-            {page.route || "No route"}
-          </p>
-        </div>
-        <PageActions page={page} {...actions} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <IconPreview iconName={page.icon} />
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
-            Parent
-          </p>
-          <p className="mt-1 truncate text-sm font-medium text-slate-700">
-            {parentName}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <PageStatusBadge isActive={page.isActive} />
-        <span className="text-xs font-medium text-slate-500">
-          Sort order {page.sortOrder}
-        </span>
-      </div>
-    </article>
+    <MobileRecordCard
+      serial={serialNumber}
+      title={page.displayName}
+      subtitle={page.route || "No route"}
+      status={<PageStatusBadge isActive={page.isActive} />}
+      fields={[
+        { key: "name", label: "Internal name", value: page.name },
+        {
+          key: "icon",
+          label: "Icon",
+          value: <IconPreview iconName={page.icon} />,
+        },
+        { key: "parent", label: "Parent", value: parentName },
+        { key: "sort", label: "Sort order", value: page.sortOrder },
+      ]}
+      actions={<PageActions page={page} {...actions} />}
+    />
   );
 };
 
@@ -179,12 +173,13 @@ const GroupHeaderRow = ({
           className="flex min-w-0 items-center gap-2 text-left"
         >
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
+            <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500" />
           ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+            <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500" />
           )}
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
             {createElement(getIconComponent(node.icon), {
+              "aria-hidden": true,
               className: "h-4 w-4",
             })}
           </span>
@@ -218,6 +213,7 @@ const PageRow = ({ actions, node, parentLookup }) => {
           )}
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand ring-1 ring-inset ring-brand/10">
             {createElement(getIconComponent(node.icon), {
+              "aria-hidden": true,
               className: "h-4 w-4",
             })}
           </span>
@@ -310,11 +306,13 @@ const renderRows = ({
 };
 
 const PageTable = ({
+  activeFilterCount = 0,
   actions,
   errorMessage,
   expandedGroupIds,
   hasError,
   isLoading,
+  onClear,
   onCreate,
   onExpandAllGroups,
   onRetry,
@@ -338,9 +336,11 @@ const PageTable = ({
   if (!isLoading && (hasError || pages.length === 0)) {
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <EmptyState
+        <PageEmptyState
+          activeFilterCount={activeFilterCount}
           errorMessage={errorMessage}
           hasError={hasError}
+          onClear={onClear}
           onCreate={onCreate}
           onRetry={onRetry}
         />
@@ -371,26 +371,24 @@ const PageTable = ({
         </button>
       </div>
 
-      <div className="grid gap-3 xl:hidden">
+      <div className="grid gap-3 md:hidden">
         {isLoading
           ? Array.from({ length: 5 }, (_, index) => (
-              <div
-                key={index}
-                className="h-48 animate-pulse rounded-2xl bg-slate-100"
-              />
+              <MobileRecordCardSkeleton key={index} />
             ))
-          : visibleMobileNodes.map(({ node, parentName }) => (
+          : visibleMobileNodes.map(({ node, parentName }, index) => (
               <MobilePageCard
                 key={node.id}
                 actions={actions}
                 page={node}
                 parentName={parentName}
+                serialNumber={index + 1}
               />
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:block">
-        <table className="w-full table-fixed border-separate border-spacing-0 text-left">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:block">
+        <table aria-label="Application pages" className="w-full table-fixed border-separate border-spacing-0 text-left">
           <colgroup>
             <col className="w-[26%]" />
             <col className="w-[14%]" />
@@ -403,7 +401,7 @@ const PageTable = ({
           <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
               {PAGE_TABLE_COLUMNS.map((column) => (
-                <th
+                <th scope="col" aria-label={column.label === "#" ? "Row number" : undefined}
                   key={column.key}
                   className={[
                     "whitespace-nowrap border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",

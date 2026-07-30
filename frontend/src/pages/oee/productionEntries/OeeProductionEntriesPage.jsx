@@ -16,7 +16,9 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { oeeDowntimeReasonService } from "../../../services/oee/oeeDowntimeReasonService";
 import { oeeMachineService } from "../../../services/oee/oeeMachineService";
@@ -133,7 +135,7 @@ const QuickCreateModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          {isMould ? <Plus className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+          {isMould ? <Plus aria-hidden="true" className="h-5 w-5" /> : <AlertTriangle aria-hidden="true" className="h-5 w-5" />}
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -274,7 +276,7 @@ const EditEntryModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <ClipboardList className="h-5 w-5" />
+          <ClipboardList aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -361,7 +363,7 @@ const EditEntryModal = ({
               rows={3}
               value={values.remarks}
               onChange={(event) => setValue("remarks", event.target.value)}
-              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>
 
@@ -380,10 +382,12 @@ const EditEntryModal = ({
 };
 
 const HistoryTable = ({
+  activeFilterCount = 0,
   actions,
   entries,
   error,
   isLoading,
+  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -411,37 +415,62 @@ const HistoryTable = ({
     return (
       <OeeEmptyState
         icon={ClipboardList}
-        title="No production entries found"
-        description="Saved daily machine entries will appear here for review and edits."
+        title={
+          activeFilterCount > 0
+            ? "No production entries match these filters"
+            : "No production entries yet"
+        }
+        description={
+          activeFilterCount > 0
+            ? "Clear the current filters to see all production entries."
+            : "Saved daily machine entries will appear here for review and edits."
+        }
         error={error}
+        errorTitle="Couldn't load production entries"
         onRetry={onRetry}
+        variant={activeFilterCount > 0 ? "filtered" : "empty"}
+        action={
+          activeFilterCount > 0 ? (
+            <AppButton variant="secondary" onClick={onClear}>
+              Clear filters
+            </AppButton>
+          ) : undefined
+        }
       />
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
+      <ResponsiveTableRegion
+        mobileConfig={{
+          actions: "Actions",
+          fields: ["Mould", "Shots", "OEE", "Downtime"],
+          serial: "#",
+          subtitle: "Date",
+          title: "Machine",
+        }}
+      >
         <table className="w-full min-w-[1100px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">#</th>
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 font-semibold">Machine</th>
-              <th className="px-4 py-3 font-semibold">Mould</th>
-              <th className="px-4 py-3 font-semibold">On-Time</th>
-              <th className="px-4 py-3 font-semibold">Shots</th>
-              <th className="px-4 py-3 font-semibold">Target</th>
-              <th className="px-4 py-3 font-semibold">OEE</th>
-              <th className="px-4 py-3 font-semibold">Downtime</th>
-              <th className="px-4 py-3 font-semibold">Remarks</th>
-              <th className="px-4 py-3 text-right font-semibold">Actions</th>
+              <th scope="col" aria-label="Row number" className="px-4 py-3 font-semibold"><span aria-hidden="true">#</span></th>
+              <th scope="col" className="px-4 py-3 font-semibold">Date</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Machine</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Mould</th>
+              <th scope="col" className="px-4 py-3 font-semibold">On-Time</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Shots</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Target</th>
+              <th scope="col" className="px-4 py-3 font-semibold">OEE</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Downtime</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Remarks</th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry, index) => (
               <tr key={getOeeRecordId(entry)} className="border-t border-slate-100">
-                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                   {(pageNumber - 1) * pageSize + index + 1}
                 </td>
                 <td className="px-4 py-3 text-slate-700">
@@ -491,9 +520,9 @@ const HistoryTable = ({
                         aria-label="Edit entry"
                         title="Edit entry"
                         onClick={() => actions.onEdit(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <Edit3 className="h-4 w-4" />
+                        <Edit3 aria-hidden="true" className="h-4 w-4" />
                       </button>
                     )}
                     {actions.canDelete && (
@@ -502,9 +531,9 @@ const HistoryTable = ({
                         aria-label="Delete entry"
                         title="Delete entry"
                         onClick={() => actions.onDelete(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
                       </button>
                     )}
                   </div>
@@ -513,7 +542,7 @@ const HistoryTable = ({
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
 
       <OeePagination
         disabled={isLoading}
@@ -913,7 +942,7 @@ const OeeProductionEntriesPage = () => {
       <PageHeader
         badge={
           <>
-            <ClipboardList className="h-3.5 w-3.5" />
+            <ClipboardList aria-hidden="true" className="h-3.5 w-3.5" />
             OEE / Production Entries
           </>
         }
@@ -927,7 +956,7 @@ const OeeProductionEntriesPage = () => {
               disabled={lookups.loading}
               onClick={loadLookups}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${lookups.loading ? "animate-spin" : ""}`}
               />
               Refresh Lookups
@@ -939,7 +968,7 @@ const OeeProductionEntriesPage = () => {
                 loadingText="Saving…"
                 onClick={saveAll}
               >
-                <Save className="h-4 w-4" />
+                <Save aria-hidden="true" className="h-4 w-4" />
                 Save All
               </AppButton>
             )}
@@ -953,11 +982,34 @@ const OeeProductionEntriesPage = () => {
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <MobileFilterSheet
+        activeCount={
+          [
+            production.filters.FromDate,
+            production.filters.ToDate,
+            production.filters.MachineId,
+            production.filters.MouldId,
+            production.filters.DowntimeReasonId,
+          ].filter(Boolean).length
+        }
+        onClear={() => {
+          dispatch(
+            setOeeProductionEntryFilters({
+              FromDate: "",
+              ToDate: "",
+              MachineId: "",
+              MouldId: "",
+              DowntimeReasonId: "",
+            }),
+          );
+          dispatch(setOeeProductionEntryPage(1));
+        }}
+      >
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-              <CalendarDays className="h-3.5 w-3.5" />
+              <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
               Bulk Daily Entry
             </div>
             <h2 className="mt-3 text-lg font-semibold text-slate-900">
@@ -1024,7 +1076,7 @@ const OeeProductionEntriesPage = () => {
                 </div>
                 <AppInput
                   id={`machineOnTime-${row.id}`}
-                  aria-label="Machine on-time"
+                  label="Machine on-time"
                   value={row.machineOnTime}
                   placeholder="12 HR"
                   onChange={(event) =>
@@ -1049,7 +1101,7 @@ const OeeProductionEntriesPage = () => {
                       });
                     }
                   }}
-                  aria-label="Mould"
+                  label="Mould"
                 />
                 <OeeNumberInput
                   id={`shotCount-${row.id}`}
@@ -1076,11 +1128,11 @@ const OeeProductionEntriesPage = () => {
                       });
                     }
                   }}
-                  aria-label="Downtime reason"
+                  label="Downtime reason"
                 />
                 <AppInput
                   id={`remarks-${row.id}`}
-                  aria-label="Remarks"
+                  label="Remarks"
                   value={row.remarks}
                   placeholder="Remarks"
                   onChange={(event) =>
@@ -1092,7 +1144,8 @@ const OeeProductionEntriesPage = () => {
             ))
           )}
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -1110,7 +1163,7 @@ const OeeProductionEntriesPage = () => {
             disabled={production.loading}
             onClick={loadHistory}
           >
-            <RefreshCw
+            <RefreshCw aria-hidden="true"
               className={`h-4 w-4 ${production.loading ? "animate-spin" : ""}`}
             />
             Refresh History
@@ -1127,7 +1180,7 @@ const OeeProductionEntriesPage = () => {
               );
               dispatch(setOeeProductionEntryPage(1));
             }}
-            aria-label="From date"
+            label="From date"
             className="h-10"
           />
           <AppInput
@@ -1139,7 +1192,7 @@ const OeeProductionEntriesPage = () => {
               );
               dispatch(setOeeProductionEntryPage(1));
             }}
-            aria-label="To date"
+            label="To date"
             className="h-10"
           />
           <AppSelect
@@ -1149,7 +1202,7 @@ const OeeProductionEntriesPage = () => {
               dispatch(setOeeProductionEntryPage(1));
             }}
             options={filterMachineOptions}
-            aria-label="Machine filter"
+            label="Machine filter"
           />
           <AppSelect
             value={production.filters.MouldId}
@@ -1158,7 +1211,7 @@ const OeeProductionEntriesPage = () => {
               dispatch(setOeeProductionEntryPage(1));
             }}
             options={filterMouldOptions}
-            aria-label="Mould filter"
+            label="Mould filter"
           />
           <AppSelect
             value={production.filters.DowntimeReasonId}
@@ -1169,7 +1222,7 @@ const OeeProductionEntriesPage = () => {
               dispatch(setOeeProductionEntryPage(1));
             }}
             options={filterReasonOptions}
-            aria-label="Downtime reason filter"
+            label="Downtime reason filter"
           />
           <AppButton
             variant="secondary"
@@ -1193,6 +1246,15 @@ const OeeProductionEntriesPage = () => {
       </div>
 
       <HistoryTable
+        activeFilterCount={
+          [
+            production.filters.FromDate,
+            production.filters.ToDate,
+            production.filters.MachineId,
+            production.filters.MouldId,
+            production.filters.DowntimeReasonId,
+          ].filter(Boolean).length
+        }
         actions={{
           ...capabilities,
           onDelete: (entry) =>
@@ -1206,6 +1268,18 @@ const OeeProductionEntriesPage = () => {
         entries={production.list}
         error={production.error}
         isLoading={production.loading}
+        onClear={() => {
+          dispatch(
+            setOeeProductionEntryFilters({
+              FromDate: "",
+              ToDate: "",
+              MachineId: "",
+              MouldId: "",
+              DowntimeReasonId: "",
+            }),
+          );
+          dispatch(setOeeProductionEntryPage(1));
+        }}
         onPageChange={(value) => dispatch(setOeeProductionEntryPage(value))}
         onPageSizeChange={(value) =>
           dispatch(setOeeProductionEntryPageSize(value))

@@ -2,6 +2,7 @@ import { Filter, RotateCcw, Search } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import AppSelect from "../../../components/common/AppSelect";
 import {
   ROJMEL_STATUS_OPTIONS,
@@ -32,16 +33,22 @@ const RojmelFilterBar = ({
     if (["SortBy", "SortDirection"].includes(key)) return false;
     return value !== "" && value !== "all" && value !== undefined;
   });
+  const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
+    if (["SortBy", "SortDirection"].includes(key)) return false;
+    return value !== "" && value !== "all" && value !== undefined;
+  }).length;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <MobileFilterSheet activeCount={activeFilterCount} onClear={onClear}>
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {Object.hasOwn(filters, "Search") && (
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
             <input
               aria-label="Search Rojmel records"
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
               placeholder="Search number, category or note…"
               value={filters.Search ?? ""}
               onChange={(event) => onChange({ Search: event.target.value })}
@@ -51,7 +58,7 @@ const RojmelFilterBar = ({
         {showDates && (
           <>
             <AppInput
-              aria-label="From date"
+              label="From date"
               className="h-10 px-3"
               max={filters.ToDate || undefined}
               type="date"
@@ -59,7 +66,7 @@ const RojmelFilterBar = ({
               onChange={(event) => onChange({ FromDate: event.target.value })}
             />
             <AppInput
-              aria-label="To date"
+              label="To date"
               className="h-10 px-3"
               min={filters.FromDate || undefined}
               type="date"
@@ -70,7 +77,7 @@ const RojmelFilterBar = ({
         )}
         {showWallet && (
           <AppSelect
-            aria-label="Filter by wallet"
+            label="Filter by wallet"
             options={withAll("All wallets", walletOptions)}
             value={filters.WalletId ?? "all"}
             onChange={(value) => onChange({ WalletId: value })}
@@ -78,7 +85,7 @@ const RojmelFilterBar = ({
         )}
         {showLinkedUser && (
           <AppSelect
-            aria-label="Filter by linked user"
+            label="Filter by linked user"
             options={withAll("All linked users", linkedUserOptions)}
             value={filters.LinkedUserId ?? "all"}
             onChange={(value) => onChange({ LinkedUserId: value })}
@@ -86,7 +93,7 @@ const RojmelFilterBar = ({
         )}
         {showCategory && (
           <AppSelect
-            aria-label="Filter by category"
+            label="Filter by category"
             options={withAll("All categories", categoryOptions)}
             value={filters.CategoryId ?? "all"}
             onChange={(value) => onChange({ CategoryId: value })}
@@ -94,7 +101,7 @@ const RojmelFilterBar = ({
         )}
         {showTransactionType && (
           <AppSelect
-            aria-label="Filter by transaction type"
+            label="Filter by transaction type"
             options={ROJMEL_TRANSACTION_TYPE_OPTIONS}
             value={filters.TransactionType ?? "all"}
             onChange={(value) => onChange({ TransactionType: value })}
@@ -102,7 +109,7 @@ const RojmelFilterBar = ({
         )}
         {showStatus && (
           <AppSelect
-            aria-label="Filter by status"
+            label="Filter by status"
             options={ROJMEL_STATUS_OPTIONS}
             value={filters.Status ?? "all"}
             onChange={(value) => onChange({ Status: value })}
@@ -110,7 +117,7 @@ const RojmelFilterBar = ({
         )}
         {showWalletType && (
           <AppSelect
-            aria-label="Filter by wallet type"
+            label="Filter by wallet type"
             options={ROJMEL_WALLET_TYPE_OPTIONS}
             value={filters.WalletType ?? "all"}
             onChange={(value) => onChange({ WalletType: value })}
@@ -118,7 +125,7 @@ const RojmelFilterBar = ({
         )}
         {showWalletStatus && (
           <AppSelect
-            aria-label="Filter wallets by status"
+            label="Filter wallets by status"
             options={[
               { label: "All status", value: "all" },
               { label: "Active", value: true },
@@ -134,15 +141,16 @@ const RojmelFilterBar = ({
           variant="secondary"
           onClick={onClear}
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw aria-hidden="true" className="h-4 w-4" />
           Clear
         </AppButton>
       </div>
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-        <Filter className="h-3.5 w-3.5" />
+        <Filter aria-hidden="true" className="h-3.5 w-3.5" />
         {resultCount} records on this page
       </div>
-    </div>
+      </div>
+    </MobileFilterSheet>
   );
 };
 

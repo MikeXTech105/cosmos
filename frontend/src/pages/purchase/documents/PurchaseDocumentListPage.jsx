@@ -16,9 +16,12 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
@@ -75,8 +78,8 @@ const getResponseRecord = (response, key) => {
 const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }) => {
   const buttonClass =
     tone === "danger"
-      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
-      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <button
@@ -87,7 +90,7 @@ const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }
       onClick={onClick}
       className={buttonClass}
     >
-      <Icon className="h-4 w-4" />
+      <Icon aria-hidden="true" className="h-4 w-4" />
     </button>
   );
 };
@@ -607,6 +610,30 @@ const PurchaseDocumentListPage = ({ config }) => {
     (Object.hasOwn(state.filters, "Status") && state.filters.Status !== "all") ||
     Boolean(state.filters.FromDate) ||
     Boolean(state.filters.ToDate);
+  const activeFilterCount =
+    Number(Boolean(searchInput)) +
+    Number(state.filters.SupplierId !== "all") +
+    Number(
+      Object.hasOwn(state.filters, "Status") &&
+        state.filters.Status !== "all",
+    ) +
+    Number(Boolean(state.filters.FromDate)) +
+    Number(Boolean(state.filters.ToDate));
+  const clearFilters = () => {
+    setSearchInput("");
+    dispatch(
+      config.setFilters({
+        Search: "",
+        SupplierId: "all",
+        Status: "all",
+        FromDate: "",
+        ToDate: "",
+        SortBy: "",
+        SortDirection: "",
+      }),
+    );
+    dispatch(config.setPage(1));
+  };
 
   const Icon = config.icon;
 
@@ -655,7 +682,7 @@ const PurchaseDocumentListPage = ({ config }) => {
       <PageHeader
         badge={
           <>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -669,14 +696,14 @@ const PurchaseDocumentListPage = ({ config }) => {
               disabled={state.loading}
               onClick={loadRecords}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 New
               </AppButton>
             )}
@@ -711,15 +738,17 @@ const PurchaseDocumentListPage = ({ config }) => {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet activeCount={activeFilterCount} onClear={clearFilters}>
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_220px_180px_160px_160px_auto]">
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder={`Search ${config.pluralLabel}...`}
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
           <AppSelect
@@ -729,7 +758,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               dispatch(config.setPage(1));
             }}
             options={[{ value: "all", label: "All suppliers" }, ...supplierOptions]}
-            aria-label="Filter by supplier"
+            label="Filter by supplier"
             creatable={canCreateSupplier}
             createLabel="Create new supplier"
             onCreateClick={() => openLookupCreate("supplier")}
@@ -742,7 +771,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                 dispatch(config.setPage(1));
               }}
               options={STATUS_OPTIONS}
-              aria-label="Filter by status"
+              label="Filter by status"
             />
           ) : (
             <div />
@@ -754,7 +783,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               dispatch(config.setFilters({ FromDate: event.target.value }));
               dispatch(config.setPage(1));
             }}
-            aria-label="From date"
+            label="From date"
             className="h-10"
           />
           <AppInput
@@ -764,65 +793,58 @@ const PurchaseDocumentListPage = ({ config }) => {
               dispatch(config.setFilters({ ToDate: event.target.value }));
               dispatch(config.setPage(1));
             }}
-            aria-label="To date"
+            label="To date"
             className="h-10"
           />
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
             disabled={!hasFilters}
-            onClick={() => {
-              setSearchInput("");
-              dispatch(
-                config.setFilters({
-                  Search: "",
-                  SupplierId: "all",
-                  Status: "all",
-                  FromDate: "",
-                  ToDate: "",
-                  SortBy: "",
-                  SortDirection: "",
-                }),
-              );
-              dispatch(config.setPage(1));
-            }}
+            onClick={clearFilters}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+        <ResponsiveTableRegion
+          mobileConfig={{
+            actions: 8,
+            fields: [2, 3, 4, 6],
+            serial: 0,
+            status: 7,
+            title: 1,
+          }}
+        >
           <table className="w-full min-w-[1080px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
-                  #
-                </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" aria-label="Row number" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"><span aria-hidden="true">#</span></th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Document #
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Supplier
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Date
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Total (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Paid (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Balance (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Status
                 </th>
-                <th className="w-52 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="w-52 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -840,15 +862,49 @@ const PurchaseDocumentListPage = ({ config }) => {
                 <tr>
                   <td
                     colSpan={9}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
+                    className="p-0"
                   >
-                    {state.error || `No ${config.pluralLabel} found.`}
+                    <EmptyState
+                      actionLabel={!state.error && !hasFilters ? "Create" : undefined}
+                      context={
+                        !state.error && !hasFilters
+                          ? `${config.label} keeps supplier, amount, payment, and status details together.`
+                          : undefined
+                      }
+                      hint={
+                        state.error
+                          ? state.error
+                          : hasFilters
+                            ? `Clear the current filters to see all ${config.pluralLabel}.`
+                            : `Create the first ${config.label.toLowerCase()} to begin.`
+                      }
+                      icon={Icon}
+                      title={
+                        state.error
+                          ? `Couldn't load ${config.pluralLabel}`
+                          : hasFilters
+                            ? `No ${config.pluralLabel} match these filters`
+                            : `No ${config.pluralLabel} yet`
+                      }
+                      variant={
+                        state.error ? "error" : hasFilters ? "filtered" : "empty"
+                      }
+                      onAction={
+                        state.error
+                          ? loadRecords
+                          : hasFilters
+                            ? clearFilters
+                            : capabilities.canCreate
+                              ? openCreate
+                              : undefined
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
                 state.list.map((record, index) => (
                   <tr key={record.id} className="hover:bg-slate-50">
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(state.pageNumber - 1) * state.pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm font-semibold text-slate-900">
@@ -923,7 +979,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               )}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTableRegion>
 
         <PurchasePagination
           disabled={state.loading}
@@ -945,7 +1001,7 @@ const PurchaseDocumentListPage = ({ config }) => {
         config={config}
         isLoading={modal.isLoading}
         isOpen={modal.isOpen}
-        itemEmptyMessage="No items found in inventory."
+        itemEmptyMessage="Add an inventory item before adding document lines."
         itemLoading={lookups.itemsLoading}
         itemOptions={itemOptions}
         itemsById={itemsById}

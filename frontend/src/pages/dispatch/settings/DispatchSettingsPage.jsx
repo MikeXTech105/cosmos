@@ -491,13 +491,13 @@ const DispatchSettingsPage = () => {
             {state.loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void load()}>
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw aria-hidden="true" className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
@@ -510,7 +510,7 @@ const DispatchSettingsPage = () => {
                 }
               >
                 <AppButton disabled variant="secondary">
-                  <Download className="h-4 w-4" />
+                  <Download aria-hidden="true" className="h-4 w-4" />
                   Export
                 </AppButton>
               </DisabledDispatchAction>
@@ -532,7 +532,7 @@ const DispatchSettingsPage = () => {
                   })
                 }
               >
-                <Download className="h-4 w-4" />
+                <Download aria-hidden="true" className="h-4 w-4" />
                 Export
               </AppButton>
             )}
@@ -540,13 +540,13 @@ const DispatchSettingsPage = () => {
               <AppButton
                 onClick={() => setModal({ mode: "create", record: null })}
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 New setting
               </AppButton>
             ) : (
               <DisabledDispatchAction reason="Creating settings requires SKU Settings create permission.">
                 <AppButton disabled>
-                  <Plus className="h-4 w-4" />
+                  <Plus aria-hidden="true" className="h-4 w-4" />
                   New setting
                 </AppButton>
               </DisabledDispatchAction>
@@ -676,28 +676,73 @@ const DispatchSettingsPage = () => {
           </colgroup>
         }
         columnCount={14}
-        emptyHint="Create a global policy or clear the current filters."
+        mobileConfig={{
+          actions: 13,
+          fields: [3, 4, 5, 11],
+          serial: 0,
+          status: 12,
+          subtitle: 2,
+          title: 1,
+        }}
+        emptyAction={
+          state.error ? (
+            <AppButton variant="secondary" onClick={load}>Retry</AppButton>
+          ) : activeFilterCount > 0 ? (
+            <AppButton
+              variant="secondary"
+              onClick={() => {
+                setFilterItem(null);
+                setFilters({
+                  ChannelId: "",
+                  EffectiveOn: "",
+                  IsActive: "",
+                  ItemId: "",
+                  Search: "",
+                });
+              }}
+            >
+              Clear filters
+            </AppButton>
+          ) : capabilities.canCreate ? (
+            <AppButton onClick={() => setModal({ mode: "create", record: null })}>
+              Create setting
+            </AppButton>
+          ) : undefined
+        }
+        emptyContext="SKU settings control safety stock, packaging and channel-specific dispatch policy."
+        emptyHint={
+          state.error
+            ? "Check the connection and try loading SKU settings again."
+            : activeFilterCount > 0
+              ? "Clear the current filters to see other SKU settings."
+              : "Create a global policy to establish the first dispatch rule."
+        }
         emptyTitle={
-          !state.loading && state.list.length === 0
-            ? "No dispatch settings yet"
+          !state.loading && (state.error || state.list.length === 0)
+            ? state.error
+              ? "Couldn't load SKU settings"
+              : activeFilterCount > 0
+                ? "No SKU settings match these filters"
+                : "No SKU settings yet"
             : undefined
         }
+        emptyVariant={state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"}
         head={
           <>
-            <th className={DATA_TABLE_HEADER_CLASS}>#</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Item</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Scope</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Tier</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Packaging</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Safety factor</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recurring factor</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Min qty</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Rounding</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Loose</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Priority</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Effective</th>
-            <th className={DATA_TABLE_HEADER_CLASS}>Status</th>
-            <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
+            <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Item</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Scope</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Tier</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Packaging</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Safety factor</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Recurring factor</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Min qty</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Rounding</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Loose</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Priority</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Effective</th>
+            <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th>
+            <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th>
           </>
         }
         loading={state.loading}
@@ -705,7 +750,7 @@ const DispatchSettingsPage = () => {
       >
         {state.list.map((row, index) => (
           <tr key={row.id}>
-            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+            <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
               {(state.pageNumber - 1) * state.pageSize + index + 1}
             </td>
             <td>
@@ -738,7 +783,7 @@ const DispatchSettingsPage = () => {
                     type="button"
                     onClick={() => setModal({ mode: "view", record: row })}
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye aria-hidden="true" className="h-4 w-4" />
                   </button>
                 </AppTooltip>
                 {capabilities.canEdit ? (
@@ -749,7 +794,7 @@ const DispatchSettingsPage = () => {
                       type="button"
                       onClick={() => setModal({ mode: "edit", record: row })}
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil aria-hidden="true" className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                 ) : null}
@@ -764,7 +809,7 @@ const DispatchSettingsPage = () => {
                         setDeleteTarget(row);
                       }}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 aria-hidden="true" className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                 ) : null}

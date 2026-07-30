@@ -33,7 +33,7 @@ const ProcurementCalculationStrip = ({ line }) => {
             {group.map((step, index) => (
               <div key={step.key} className="contents">
                 {index > 0 && (
-                  <span className="min-w-4 text-center text-sm font-semibold text-slate-400">
+                  <span className="min-w-4 text-center text-sm font-semibold text-slate-500">
                     {step.operatorBefore ?? "→"}
                   </span>
                 )}
@@ -52,7 +52,7 @@ const ProcurementCalculationStrip = ({ line }) => {
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
-        <Database className="h-3.5 w-3.5" />
+        <Database aria-hidden="true" className="h-3.5 w-3.5" />
         <span>Server calculation</span>
         {hasValue(line?.leadTimeSource) && (
           <ProcurementPill tone="brand">

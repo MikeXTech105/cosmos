@@ -14,9 +14,12 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
 import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
@@ -167,6 +170,8 @@ const ExpenseModal = ({
             name="categoryId"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Category"
                 required
                 value={field.value}
@@ -186,6 +191,8 @@ const ExpenseModal = ({
             name="paidToPartyId"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Paid To"
                 value={field.value}
                 onChange={field.onChange}
@@ -218,6 +225,8 @@ const ExpenseModal = ({
             name="paymentMode"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
                 label="Payment Mode"
                 value={field.value}
                 onChange={(value) => field.onChange(Number(value))}
@@ -264,7 +273,7 @@ const ExpenseModal = ({
           <textarea
             id="expenseNotes"
             rows={4}
-            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             {...register("notes")}
           />
           {errors.notes?.message && (
@@ -606,13 +615,32 @@ const ExpensesPage = () => {
     state.filters.CategoryId !== "all" ||
     Boolean(state.filters.FromDate) ||
     Boolean(state.filters.ToDate);
+  const activeFilterCount =
+    Number(Boolean(searchInput)) +
+    Number(state.filters.CategoryId !== "all") +
+    Number(Boolean(state.filters.FromDate)) +
+    Number(Boolean(state.filters.ToDate));
+  const clearFilters = () => {
+    setSearchInput("");
+    dispatch(
+      setExpenseFilters({
+        Search: "",
+        CategoryId: "all",
+        FromDate: "",
+        ToDate: "",
+        SortBy: "",
+        SortDirection: "",
+      }),
+    );
+    dispatch(setExpensePage(1));
+  };
 
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
-            <CircleDollarSign className="h-3.5 w-3.5" />
+            <CircleDollarSign aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -626,7 +654,7 @@ const ExpensesPage = () => {
               disabled={state.loading}
               onClick={loadExpenses}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -643,7 +671,7 @@ const ExpensesPage = () => {
                   })
                 }
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 New Expense
               </AppButton>
             )}
@@ -678,15 +706,17 @@ const ExpensesPage = () => {
         />
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <MobileFilterSheet activeCount={activeFilterCount} onClear={clearFilters}>
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
         <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_220px_160px_160px_auto]">
           <label className="relative block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <span className="mb-1.5 block text-xs font-semibold text-slate-700">Search</span>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 bottom-3 h-4 w-4 text-slate-500" />
             <input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Search expenses..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
           <AppSelect
@@ -696,7 +726,7 @@ const ExpensesPage = () => {
               dispatch(setExpensePage(1));
             }}
             options={[{ value: "all", label: "All categories" }, ...categoryOptions]}
-            aria-label="Filter by category"
+            label="Filter by category"
             creatable={canCreateCategory}
             createLabel="Create new expense category"
             onCreateClick={() => openLookupCreate("category")}
@@ -708,7 +738,7 @@ const ExpensesPage = () => {
               dispatch(setExpenseFilters({ FromDate: event.target.value }));
               dispatch(setExpensePage(1));
             }}
-            aria-label="From date"
+            label="From date"
             className="h-10"
           />
           <AppInput
@@ -718,61 +748,55 @@ const ExpensesPage = () => {
               dispatch(setExpenseFilters({ ToDate: event.target.value }));
               dispatch(setExpensePage(1));
             }}
-            aria-label="To date"
+            label="To date"
             className="h-10"
           />
           <AppButton
             variant="secondary"
             className="h-10 rounded-lg px-3"
             disabled={!hasFilters}
-            onClick={() => {
-              setSearchInput("");
-              dispatch(
-                setExpenseFilters({
-                  Search: "",
-                  CategoryId: "all",
-                  FromDate: "",
-                  ToDate: "",
-                  SortBy: "",
-                  SortDirection: "",
-                }),
-              );
-              dispatch(setExpensePage(1));
-            }}
+            onClick={clearFilters}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw aria-hidden="true" className="h-4 w-4" />
             Clear
           </AppButton>
         </div>
-      </div>
+        </div>
+      </MobileFilterSheet>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
+        <ResponsiveTableRegion
+          mobileConfig={{
+            actions: 7,
+            fields: [2, 3, 4, 5],
+            serial: 0,
+            subtitle: 6,
+            title: 1,
+          }}
+        >
           <table className="w-full min-w-[980px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
-                  #
-                </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" aria-label="Row number" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500"><span aria-hidden="true">#</span></th>
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Date
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Category
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Paid To
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Amount (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Tax (₹)
                 </th>
-                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Ref
                 </th>
-                <th className="w-36 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th scope="col" className="w-36 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -790,15 +814,55 @@ const ExpensesPage = () => {
                 <tr>
                   <td
                     colSpan={8}
-                    className="px-4 py-12 text-center text-sm text-slate-500"
+                    className="p-0"
                   >
-                    {state.error || "No expenses found."}
+                    <EmptyState
+                      actionLabel={!state.error && !hasFilters ? "New Expense" : undefined}
+                      context={
+                        !state.error && !hasFilters
+                          ? "Expenses track operating costs, tax, payment methods, and supporting files."
+                          : undefined
+                      }
+                      hint={
+                        state.error
+                          ? state.error
+                          : hasFilters
+                            ? "Clear the current filters to see all expenses."
+                            : "Record the first operating expense to begin."
+                      }
+                      icon={CircleDollarSign}
+                      title={
+                        state.error
+                          ? "Couldn't load expenses"
+                          : hasFilters
+                            ? "No expenses match these filters"
+                            : "No expenses yet"
+                      }
+                      variant={
+                        state.error ? "error" : hasFilters ? "filtered" : "empty"
+                      }
+                      onAction={
+                        state.error
+                          ? loadExpenses
+                          : hasFilters
+                            ? clearFilters
+                            : capabilities.canCreate
+                              ? () =>
+                                  setModal({
+                                    expense: null,
+                                    isLoading: false,
+                                    isOpen: true,
+                                    mode: "create",
+                                  })
+                              : undefined
+                      }
+                    />
                   </td>
                 </tr>
               ) : (
                 state.list.map((expense, index) => (
                   <tr key={expense.id} className="hover:bg-slate-50">
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(state.pageNumber - 1) * state.pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
@@ -854,7 +918,7 @@ const ExpensesPage = () => {
               )}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTableRegion>
 
         <PurchasePagination
           disabled={state.loading}

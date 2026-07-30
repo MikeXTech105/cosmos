@@ -1,6 +1,7 @@
 import { Eye, RotateCcw } from "lucide-react";
 
 import AppTooltip from "../../../components/common/AppTooltip";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import { RojmelTransactionStatus } from "../../../constants/rojmelEnums";
 import {
   formatRojmelDate,
@@ -19,14 +20,14 @@ const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => (
     <button
       type="button"
       aria-label={label}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 ${
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 ${
         tone === "warning"
           ? "hover:bg-amber-50 hover:text-amber-700"
           : "hover:bg-slate-100 hover:text-brand"
       }`}
       onClick={onClick}
     >
-      <Icon className="h-4 w-4" />
+      <Icon aria-hidden="true" className="h-4 w-4" />
     </button>
   </AppTooltip>
 );
@@ -34,9 +35,14 @@ const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => (
 const TransactionTable = ({
   canCancel,
   canView,
+  createLabel,
+  emptyContext,
   error,
+  isFiltered,
   isLoading,
   onCancel,
+  onClear,
+  onCreate,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -53,19 +59,33 @@ const TransactionTable = ({
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       {isLoading || error || rows.length === 0 ? (
         <RojmelState
+          context={emptyContext}
+          createLabel={createLabel}
           error={error}
+          isFiltered={isFiltered}
           isLoading={isLoading}
           noun="transactions"
+          onClear={onClear}
+          onCreate={onCreate}
           onRetry={onRetry}
         />
       ) : (
-        <div className="overflow-x-auto">
+        <ResponsiveTableRegion
+          mobileConfig={{
+            actions: showActions ? (showWallet ? 9 : 8) : undefined,
+            fields: showWallet ? [3, 4, 5, 6] : [3, 4, 5, 6],
+            serial: 0,
+            status: showWallet ? 8 : 7,
+            subtitle: 2,
+            title: 1,
+          }}
+        >
           <table className="w-full min-w-[1100px] table-fixed text-left">
             <thead className="bg-slate-50">
               <tr>
                 {["#", "Txn No", "Date", ...(showWallet ? ["Wallet"] : []), "Type", "Category", "Amount (₹)", "Balance After (₹)", "Status", ...(showActions ? ["Actions"] : [])].map(
                   (heading) => (
-                    <th
+                    <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
                       key={heading}
                       className={`border-b border-slate-200 px-3 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500 ${
                         ["Amount (₹)", "Balance After (₹)", "Actions"].includes(heading)
@@ -87,9 +107,9 @@ const TransactionTable = ({
                 return (
                   <tr
                     key={transaction.id ?? `${transaction.transactionNo}-${index}`}
-                    className={`transition-colors hover:bg-slate-50 ${cancelled ? "text-slate-400" : ""}`}
+                    className={`transition-colors hover:bg-slate-50 ${cancelled ? "text-slate-500" : ""}`}
                   >
-                    <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(pageNumber - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-semibold text-slate-800">
@@ -140,7 +160,7 @@ const TransactionTable = ({
               })}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTableRegion>
       )}
       {!isLoading && !error && rows.length > 0 && (
         <RojmelPagination

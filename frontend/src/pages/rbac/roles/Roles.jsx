@@ -217,7 +217,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl ${copy.iconClassName}`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon aria-hidden="true" className="h-5 w-5" />
               </div>
 
               <h2
@@ -699,7 +699,7 @@ const Roles = () => {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
             RBAC / Role Management
           </div>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
@@ -721,7 +721,7 @@ const Roles = () => {
               aria-label="Refresh Roles"
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -739,7 +739,7 @@ const Roles = () => {
                 aria-label="Export Roles"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
               >
-                <Download className="h-4 w-4" />
+                <Download aria-hidden="true" className="h-4 w-4" />
                 {isExporting ? "Exporting…" : "Export"}
               </button>
             </AppTooltip>
@@ -752,7 +752,7 @@ const Roles = () => {
                 aria-label="Add Role"
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Role
               </button>
             </AppTooltip>
@@ -775,11 +775,16 @@ const Roles = () => {
       />
 
       <RoleTable
+        activeFilterCount={
+          [searchInput.trim(), filters.status === "all" ? "" : filters.status]
+            .filter(Boolean).length
+        }
         actions={tableActions}
         currentPage={currentPage}
         errorMessage={errorMessage}
         hasError={Boolean(errorMessage)}
         isLoading={isLoading}
+        onClear={clearFilters}
         onCreate={capabilities.canCreate ? openCreateModal : undefined}
         onRetry={loadRoles}
         pageSize={pageSize}
@@ -803,7 +808,7 @@ const Roles = () => {
               onChange={handlePageSizeChange}
               options={PAGE_SIZE_OPTIONS}
               className="w-20"
-              aria-label="Rows per page"
+              label="Rows per page"
             />
           </div>
 

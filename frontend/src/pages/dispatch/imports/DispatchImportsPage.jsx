@@ -99,7 +99,7 @@ const statusTone = (status) => {
   return "amber";
 };
 
-const ErrorTable = ({ offset = 0, rows }) => (
+const ErrorTable = ({ isFiltered, offset = 0, onClear, rows }) => (
   <DataTableShell
     colGroup={
       <colgroup>
@@ -111,22 +111,34 @@ const ErrorTable = ({ offset = 0, rows }) => (
       </colgroup>
     }
     columnCount={5}
+    mobileConfig={{
+      fields: [1, 4],
+      serial: 0,
+      subtitle: 2,
+      title: 3,
+    }}
+    emptyAction={
+      isFiltered ? (
+        <AppButton variant="secondary" onClick={onClear}>Clear filters</AppButton>
+      ) : undefined
+    }
     emptyHint="The selected error category has no rows."
     emptyTitle={rows.length === 0 ? "No matching row errors" : undefined}
+    emptyVariant={isFiltered ? "filtered" : "empty"}
     head={
       <>
-        <th className={DATA_TABLE_HEADER_CLASS}>#</th>
-        <th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Row number</th>
-        <th className={DATA_TABLE_HEADER_CLASS}>Field</th>
-        <th className={DATA_TABLE_HEADER_CLASS}>Message</th>
-        <th className={DATA_TABLE_HEADER_CLASS}>Original value</th>
+        <th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th>
+        <th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Row number</th>
+        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Field</th>
+        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Message</th>
+        <th scope="col" className={DATA_TABLE_HEADER_CLASS}>Original value</th>
       </>
     }
     minWidth="min-w-[920px]"
   >
     {rows.map((row, index) => (
       <tr key={`${row.rowNumber}-${row.field}-${offset + index}`}>
-        <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+        <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
           {offset + index + 1}
         </td>
         <td className="text-right tabular-nums">
@@ -513,7 +525,7 @@ const ImportWizard = ({
             </code>
           </div>
           <label className="mt-5 flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center hover:border-brand/50 hover:bg-brand-light">
-            <Upload className="h-8 w-8 text-slate-400" />
+            <Upload aria-hidden="true" className="h-8 w-8 text-slate-500" />
             <span className="mt-3 text-sm font-semibold text-slate-800">
               {choice.file?.name ?? "Choose or drop a CSV file"}
             </span>
@@ -580,7 +592,9 @@ const ImportWizard = ({
             title="Validation could not be completed"
           />
           <ErrorTable
+            isFiltered={filter !== "all"}
             offset={(errorPage - 1) * errorPageSize}
+            onClear={() => setFilter("all")}
             rows={pagedErrors}
           />
           <SupplyChainPagination
@@ -670,7 +684,7 @@ const ImportWizard = ({
 
       {step === 4 && result ? (
         <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+          <CheckCircle2 aria-hidden="true" className="h-10 w-10 text-emerald-600" />
           <h2 className="mt-4 text-xl font-semibold text-slate-900">Snapshot committed</h2>
           <p className="mt-1 text-sm text-slate-500">
             {formatDispatchNumber(result.batch?.committedRows, "—", 0)} rows committed.
@@ -682,7 +696,7 @@ const ImportWizard = ({
             </div>
             <div>
               <dt className="text-xs text-slate-500">Correlation ID</dt>
-              <dd className="mt-1 flex items-center gap-2 break-all text-xs text-slate-400">
+              <dd className="mt-1 flex items-center gap-2 break-all text-xs text-slate-500">
                 {result.correlationId || "Not supplied"}
                 {result.correlationId ? (
                   <AppTooltip label="Copy correlation ID">
@@ -699,7 +713,7 @@ const ImportWizard = ({
                         }
                       }}
                     >
-                      <Clipboard className="h-4 w-4" />
+                      <Clipboard aria-hidden="true" className="h-4 w-4" />
                     </button>
                   </AppTooltip>
                 ) : null}
@@ -725,7 +739,7 @@ const ImportWizard = ({
         onClose={committing ? undefined : () => setConfirmDuplicate(false)}
       >
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <p className="text-sm leading-6">
             This file was previously committed. Continuing explicitly allows
             the duplicate hash and records the correction reason.
@@ -734,7 +748,7 @@ const ImportWizard = ({
         <p className="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
           {correctionReason}
         </p>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
           <AppButton variant="secondary" onClick={() => setConfirmDuplicate(false)}>Back</AppButton>
           <AppButton
             isLoading={committing}
@@ -826,13 +840,13 @@ const DispatchImportsPage = () => {
             {state.loading ? (
               <DisabledDispatchAction reason="Wait for the current refresh to finish.">
                 <AppButton disabled variant="secondary">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <RefreshCw aria-hidden="true" className="h-4 w-4 animate-spin" />
                   Refresh
                 </AppButton>
               </DisabledDispatchAction>
             ) : (
               <AppButton variant="secondary" onClick={() => void load()}>
-                <RefreshCw className="h-4 w-4" />
+                <RefreshCw aria-hidden="true" className="h-4 w-4" />
                 Refresh
               </AppButton>
             )}
@@ -845,7 +859,7 @@ const DispatchImportsPage = () => {
                 }
               >
                 <AppButton disabled variant="secondary">
-                  <Download className="h-4 w-4" />
+                  <Download aria-hidden="true" className="h-4 w-4" />
                   Export
                 </AppButton>
               </DisabledDispatchAction>
@@ -866,15 +880,15 @@ const DispatchImportsPage = () => {
                   })
                 }
               >
-                <Download className="h-4 w-4" />
+                <Download aria-hidden="true" className="h-4 w-4" />
                 Export
               </AppButton>
             )}
             {capabilities.canCreate ? (
-              <AppButton onClick={() => setTab("new")}><Plus className="h-4 w-4" />New import</AppButton>
+              <AppButton onClick={() => setTab("new")}><Plus aria-hidden="true" className="h-4 w-4" />New import</AppButton>
             ) : (
               <DisabledDispatchAction reason="Starting an import requires Imports create permission.">
-                <AppButton disabled><Plus className="h-4 w-4" />New import</AppButton>
+                <AppButton disabled><Plus aria-hidden="true" className="h-4 w-4" />New import</AppButton>
               </DisabledDispatchAction>
             )}
           </>
@@ -890,13 +904,20 @@ const DispatchImportsPage = () => {
       />
       <ProcurementTabs
         active={tab}
+        id="dispatch-import-tabs"
         tabs={[
           { id: "new", icon: Upload, label: "New import" },
           { id: "history", icon: History, label: "History" },
         ]}
         onChange={setTab}
       />
-      {tab === "new" ? (
+      <div
+        id={`dispatch-import-tabs-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`dispatch-import-tabs-tab-${tab}`}
+        className="space-y-6"
+      >
+        {tab === "new" ? (
         capabilities.canCreate ? (
           <ImportWizard
             canCreate={capabilities.canCreate}
@@ -946,15 +967,53 @@ const DispatchImportsPage = () => {
           <DataTableShell
             colGroup={<colgroup><col className="w-[56px]" /><col className="w-60" /><col className="w-40" /><col className="w-32" /><col className="w-24" /><col className="w-24" /><col className="w-24" /><col className="w-28" /><col className="w-28" /><col className="w-40" /><col className="w-32" /></colgroup>}
             columnCount={11}
-            emptyHint="Validated and committed dispatch snapshots will appear here."
-            emptyTitle={!state.loading && state.list.length === 0 ? "No dispatch imports yet" : undefined}
-            head={<><th className={DATA_TABLE_HEADER_CLASS}>#</th><th className={DATA_TABLE_HEADER_CLASS}>File name</th><th className={DATA_TABLE_HEADER_CLASS}>Type</th><th className={DATA_TABLE_HEADER_CLASS}>Channel</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Total</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Valid</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Invalid</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Committed</th><th className={DATA_TABLE_HEADER_CLASS}>Status</th><th className={DATA_TABLE_HEADER_CLASS}>Uploaded at</th><th className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
+            mobileConfig={{
+              actions: 10,
+              fields: [3, 4, 6, 9],
+              serial: 0,
+              status: 8,
+              subtitle: 2,
+              title: 1,
+            }}
+            emptyAction={
+              state.error ? (
+                <AppButton variant="secondary" onClick={load}>Retry</AppButton>
+              ) : activeFilterCount > 0 ? (
+                <AppButton
+                  variant="secondary"
+                  onClick={() => setFilters({ ChannelId: "", ImportType: "", Status: "" })}
+                >
+                  Clear filters
+                </AppButton>
+              ) : capabilities.canCreate ? (
+                <AppButton onClick={() => setTab("new")}>Start an import</AppButton>
+              ) : undefined
+            }
+            emptyContext="Dispatch imports validate sales or warehouse snapshots before they feed planning runs."
+            emptyHint={
+              state.error
+                ? "Check the connection and try loading import history again."
+                : activeFilterCount > 0
+                  ? "Clear the current filters to see other imports."
+                  : "Validate and commit the first dispatch snapshot to build this history."
+            }
+            emptyTitle={
+              !state.loading && (state.error || state.list.length === 0)
+                ? state.error
+                  ? "Couldn't load import history"
+                  : activeFilterCount > 0
+                    ? "No imports match these filters"
+                    : "No dispatch imports yet"
+                : undefined
+            }
+            emptyVariant={state.error ? "error" : activeFilterCount > 0 ? "filtered" : "empty"}
+            head={<><th scope="col" aria-label="Row number" className={DATA_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>File name</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Type</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Total</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Valid</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Invalid</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Committed</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={DATA_TABLE_HEADER_CLASS}>Uploaded at</th><th scope="col" className={`${DATA_TABLE_HEADER_CLASS} text-right`}>Actions</th></>}
             loading={state.loading}
             minWidth="min-w-[1420px]"
           >
             {state.list.map((batch, index) => (
               <tr key={getBatchId(batch)}>
-                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
                 <td className="truncate font-medium text-slate-900" title={batch.originalFileName}>{batch.originalFileName}</td>
                 <td>{getDispatchImportTypeLabel(batch.importType)}</td>
                 <td>{batch.channelCode}</td>
@@ -968,7 +1027,7 @@ const DispatchImportsPage = () => {
                   <div className="flex items-center justify-end gap-0.5">
                     <AppTooltip label="View batch">
                       <button aria-label="View batch" className={DATA_TABLE_ROW_ACTION_CLASS} type="button" onClick={() => setDetail(batch)}>
-                        <Eye className="h-4 w-4" />
+                        <Eye aria-hidden="true" className="h-4 w-4" />
                       </button>
                     </AppTooltip>
                     {capabilities.canDelete && !isCommitted(batch) && !isCancelled(batch) ? (
@@ -983,7 +1042,7 @@ const DispatchImportsPage = () => {
                             setCancelError("");
                           }}
                         >
-                          <XCircle className="h-4 w-4" />
+                          <XCircle aria-hidden="true" className="h-4 w-4" />
                         </button>
                       </AppTooltip>
                     ) : null}
@@ -1002,7 +1061,8 @@ const DispatchImportsPage = () => {
             onPageSizeChange={(value) => dispatch(setImportPageSize(value))}
           />
         </>
-      )}
+        )}
+      </div>
 
       <AppModal isOpen={Boolean(detail)} title="Dispatch import details" onClose={() => setDetail(null)}>
         {detail ? (
@@ -1019,7 +1079,7 @@ const DispatchImportsPage = () => {
             ))}
           </dl>
         ) : null}
-        <div className="mt-5 flex justify-end"><AppButton variant="secondary" onClick={() => setDetail(null)}>Close</AppButton></div>
+        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex justify-end border-t border-slate-200 bg-white px-4 pt-4 md:static md:mx-0 md:border-t-0 md:px-0"><AppButton variant="secondary" onClick={() => setDetail(null)}>Close</AppButton></div>
       </AppModal>
       <AppModal
         isBusy={cancelling}
@@ -1042,7 +1102,7 @@ const DispatchImportsPage = () => {
             }}
           />
         </div>
-        <div className="mt-5 flex justify-end gap-2">
+        <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:flex-row sm:justify-end md:static md:mx-0 md:border-t-0 md:px-0">
           <AppButton variant="secondary" onClick={() => setCancelTarget(null)}>Back</AppButton>
           {cancelReason.trim() ? (
             <AppButton isLoading={cancelling} loadingText="Cancelling…" variant="danger" onClick={cancelBatch}>Cancel import</AppButton>

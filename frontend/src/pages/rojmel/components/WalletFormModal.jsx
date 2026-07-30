@@ -116,7 +116,7 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
     >
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <WalletCards className="h-5 w-5" />
+          <WalletCards aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -145,7 +145,7 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
             />
           )}
           <AppInput
-            autoFocus={!isView}
+            data-autofocus={!isView ? "true" : undefined}
             disabled={isView}
             error={errors.walletName?.message}
             label="Wallet Name"
@@ -157,6 +157,9 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
             name="walletType"
             render={({ field }) => (
               <AppSelect
+                ref={field.ref}
+                name={field.name}
+                onBlur={field.onBlur}
                 disabled={isView || wallet?.isCompanyWallet}
                 error={errors.walletType?.message}
                 label="Wallet Type"
@@ -173,6 +176,9 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
               name="linkedUserId"
               render={({ field }) => (
                 <AppSelect
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
                   disabled={isView}
                   error={errors.linkedUserId?.message}
                   label="Linked User"
@@ -215,7 +221,7 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
           </div>
         )}
 
-        <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
+        <div className="sticky bottom-0 z-10 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-4 sm:flex-row sm:justify-end md:static">
           <AppButton variant="secondary" onClick={onClose}>
             {isView ? "Close" : "Cancel"}
           </AppButton>

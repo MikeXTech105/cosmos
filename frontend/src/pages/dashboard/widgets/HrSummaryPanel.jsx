@@ -56,7 +56,7 @@ const HrSummaryPanel = ({
           value={filters.attendanceDate ?? ""}
           onChange={(event) => onChange({ attendanceDate: event.target.value })}
           className="h-10 w-40"
-          aria-label="Attendance date"
+          label="Attendance date"
         />
       }
     >
@@ -99,10 +99,10 @@ const HrSummaryPanel = ({
                 >
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-light text-brand">
-                      <Icon className="h-4 w-4" />
+                      <Icon aria-hidden="true" className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
                         {stat.label}
                       </p>
                       <p className="text-sm font-bold text-slate-900">

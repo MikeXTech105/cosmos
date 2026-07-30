@@ -7,9 +7,9 @@ import {
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 import AppButton from "../../components/common/AppButton";
+import EmptyState from "../../components/common/EmptyState";
 import PageHeader from "../../components/common/PageHeader";
 import messages from "../../i18n/locales/en/actionCentre.json";
 import { getApiErrorMessage } from "../../utils/apiError";
@@ -36,7 +36,7 @@ const GROUPS = Object.freeze([
   },
   {
     id: "watch",
-    iconClassName: "bg-slate-50 text-slate-400",
+    iconClassName: "bg-slate-50 text-slate-500",
     label: messages.groups.watch,
   },
 ]);
@@ -55,7 +55,7 @@ const SignalSkeleton = ({ signal, tone }) => {
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tone}`}
       >
-        <Icon className="h-4 w-4" />
+        <Icon aria-hidden="true" className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="h-4 w-40 animate-pulse rounded bg-slate-100" />
@@ -81,7 +81,7 @@ const SignalRow = ({ onFix, onRetry, signal, state, tone }) => {
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${tone}`}
       >
-        <Icon className="h-4 w-4" />
+        <Icon aria-hidden="true" className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-slate-900">{signal.label}</p>
@@ -91,7 +91,7 @@ const SignalRow = ({ onFix, onRetry, signal, state, tone }) => {
       </div>
       {failed ? (
         <span
-          className="min-w-24 text-right text-xs font-medium text-slate-400"
+          className="min-w-24 text-right text-xs font-medium text-slate-500"
           title={state.message}
         >
           {messages.states.couldntLoad}
@@ -198,23 +198,24 @@ const ActionCentrePage = () => {
       (result) => signalRequestIdsRef.current[result.id] === requestId,
     );
 
-    activeResults
-      .filter((result) => result.status === "error")
-      .forEach((result) => {
+    const displayedResults = activeResults.map((result) => {
+      if (result.status === "error") {
         const signal = signals.find((candidate) => candidate.id === result.id);
         const message = getApiErrorMessage(
           result.error,
           `Unable to load ${signal?.label ?? "this signal"}.`,
         );
 
-        toast.error(message, { id: `action-centre-${result.id}` });
-        result.message = message;
-      });
+        return { ...result, message };
+      }
+
+      return result;
+    });
 
     setStates((current) => ({
       ...current,
       ...Object.fromEntries(
-        activeResults.map((result) => [result.id, result]),
+        displayedResults.map((result) => [result.id, result]),
       ),
     }));
   }, []);
@@ -274,7 +275,7 @@ const ActionCentrePage = () => {
       <PageHeader
         badge={
           <>
-            <BellRing className="h-3.5 w-3.5" />
+            <BellRing aria-hidden="true" className="h-3.5 w-3.5" />
             {messages.page.badge}
           </>
         }
@@ -285,7 +286,7 @@ const ActionCentrePage = () => {
             variant="secondary"
             onClick={() => void loadSignals(permittedSignals)}
           >
-            <RefreshCw
+            <RefreshCw aria-hidden="true"
               className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
             />
             {messages.actions.refresh}
@@ -307,14 +308,14 @@ const ActionCentrePage = () => {
       </div>
 
       <div
-        className="flex flex-wrap items-center gap-1"
+        className="flex flex-wrap items-center gap-2 md:gap-1"
         aria-label={messages.filters.label}
       >
         {FILTERS.map((filter) => (
           <button
             key={filter.id}
             type="button"
-            className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`min-w-11 rounded-lg px-3 py-2 text-sm font-medium transition-colors md:min-w-0 ${
               activeFilter === filter.id
                 ? "bg-slate-100 text-slate-900"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
@@ -354,14 +355,12 @@ const ActionCentrePage = () => {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
-          <CheckCircle2 className="mx-auto h-8 w-8 text-slate-300" />
-          <h2 className="mt-3 text-base font-semibold text-slate-900">
-            {messages.states.allClearTitle}
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            {messages.states.allClearHint}
-          </p>
+        <div className="rounded-2xl border border-slate-200 bg-white px-6 shadow-sm">
+          <EmptyState
+            hint={messages.states.allClearHint}
+            icon={CheckCircle2}
+            title={messages.states.allClearTitle}
+          />
         </div>
       )}
     </section>

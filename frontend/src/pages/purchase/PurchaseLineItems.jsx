@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppSelect from "../../components/common/AppSelect";
+import ResponsiveTableRegion from "../../components/common/ResponsiveTableRegion";
 import {
   formatCurrency,
   formatNumber,
@@ -144,37 +145,44 @@ const PurchaseLineItems = ({
           className="h-9 rounded-lg px-3"
           onClick={() => append(getDefaultLine())}
         >
-          <Plus className="h-4 w-4" />
+          <Plus aria-hidden="true" className="h-4 w-4" />
           Add Row
         </AppButton>
       </div>
 
-      <div className="overflow-x-auto">
+      <ResponsiveTableRegion
+        mobileConfig={{
+          actions: 7,
+          fields: [1, 2, 3, 6],
+          serial: "generated",
+          title: 0,
+        }}
+      >
         <table className="w-full min-w-[1040px] table-fixed text-left">
           <thead>
             <tr className="border-b border-slate-100 bg-white">
-              <th className="w-[28%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="w-[28%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Item
               </th>
-              <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Qty
               </th>
-              <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Price (₹)
               </th>
-              <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Disc %
               </th>
-              <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Disc Amt (₹)
               </th>
-              <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Tax %
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <th scope="col" className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Line Total (₹)
               </th>
-              <th className="w-12 px-2 py-2" />
+              <th scope="col" className="w-12 px-2 py-2" />
             </tr>
           </thead>
           <tbody>
@@ -190,6 +198,9 @@ const PurchaseLineItems = ({
                       name={`${name}.${index}.itemId`}
                       render={({ field: itemField }) => (
                         <AppSelect
+                          aria-label={`Item for purchase line ${index + 1}`}
+                          ref={itemField.ref}
+                          name={itemField.name}
                           value={itemField.value}
                           onChange={(value) => {
                             itemField.onChange(Number(value));
@@ -261,9 +272,9 @@ const PurchaseLineItems = ({
                         disabled={fields.length === 1}
                         title={fields.length === 1 ? "A purchase document requires at least one line" : undefined}
                         onClick={() => remove(index)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
@@ -272,7 +283,7 @@ const PurchaseLineItems = ({
             })}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
 
       <div className="flex flex-col gap-2 bg-slate-50 px-4 py-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-end">
         <span>Subtotal: {formatCurrency(totals.subTotal)}</span>

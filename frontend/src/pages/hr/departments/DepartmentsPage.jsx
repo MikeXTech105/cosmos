@@ -297,7 +297,7 @@ const DepartmentsPage = () => {
       <PageHeader
         badge={
           <>
-            <Building2 className="h-3.5 w-3.5" />
+            <Building2 aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Departments
           </>
         }
@@ -311,14 +311,14 @@ const DepartmentsPage = () => {
               disabled={departmentsState.loading}
               onClick={loadDepartments}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${departmentsState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Department
               </AppButton>
             )}
@@ -346,6 +346,12 @@ const DepartmentsPage = () => {
       />
 
       <DepartmentTable
+        activeFilterCount={
+          [
+            searchInput.trim(),
+            departmentsState.filters.IsActive === "all" ? "" : "status",
+          ].filter(Boolean).length
+        }
         actions={{
           ...capabilities,
           canEdit: capabilities.canEdit,
@@ -362,6 +368,11 @@ const DepartmentsPage = () => {
         error={departmentsState.error}
         isLoading={departmentsState.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(setHrDepartmentFilters({ Search: "", IsActive: "all" }));
+          dispatch(setHrDepartmentPage(1));
+        }}
         onPageChange={(value) => dispatch(setHrDepartmentPage(value))}
         onPageSizeChange={(value) => dispatch(setHrDepartmentPageSize(value))}
         onRetry={loadDepartments}

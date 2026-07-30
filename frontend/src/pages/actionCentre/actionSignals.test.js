@@ -10,6 +10,7 @@ describe("Action Centre signal registry", () => {
     const signals = [
       { id: "allowed", permission: { key: "inventory" } },
       { id: "restricted", permission: { key: "dispatch" } },
+      { id: "missing-permission" },
     ];
 
     expect(

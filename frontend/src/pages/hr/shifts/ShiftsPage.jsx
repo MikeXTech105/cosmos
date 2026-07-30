@@ -284,7 +284,7 @@ const ShiftsPage = () => {
       <PageHeader
         badge={
           <>
-            <Clock className="h-3.5 w-3.5" />
+            <Clock aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Shifts
           </>
         }
@@ -298,14 +298,14 @@ const ShiftsPage = () => {
               disabled={shiftsState.loading}
               onClick={loadShifts}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${shiftsState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Shift
               </AppButton>
             )}
@@ -333,6 +333,12 @@ const ShiftsPage = () => {
       />
 
       <ShiftGrid
+        activeFilterCount={
+          [
+            searchInput.trim(),
+            shiftsState.filters.IsActive === "all" ? "" : "status",
+          ].filter(Boolean).length
+        }
         actions={{
           ...capabilities,
           onDelete: (shift) =>
@@ -347,6 +353,11 @@ const ShiftsPage = () => {
         error={shiftsState.error}
         isLoading={shiftsState.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(setHrShiftFilters({ Search: "", IsActive: "all" }));
+          dispatch(setHrShiftPage(1));
+        }}
         onPageChange={(value) => dispatch(setHrShiftPage(value))}
         onPageSizeChange={(value) => dispatch(setHrShiftPageSize(value))}
         onRetry={loadShifts}

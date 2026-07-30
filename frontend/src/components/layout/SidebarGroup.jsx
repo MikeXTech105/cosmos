@@ -27,7 +27,7 @@ const SidebarGroup = ({
         aria-expanded={Boolean(open)}
         onClick={() => onToggle(item.id)}
         className={clsx(
-          "group relative flex h-10 w-full items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors",
+          "group relative flex h-11 w-full items-center gap-3 rounded-lg text-[13px] font-medium outline-none transition-colors lg:h-10",
           `${depthPadding[Math.min(depth, depthPadding.length - 1)]} pr-3`,
           active ? themeClasses.navGroupActive : themeClasses.navInactive,
           "focus-visible:ring-2 focus-visible:ring-brand/40",
@@ -39,11 +39,11 @@ const SidebarGroup = ({
             active ? themeClasses.iconActive : themeClasses.iconInactive,
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon aria-hidden="true" className="h-4 w-4" />
         </span>
 
         <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
-        <ChevronDown
+        <ChevronDown aria-hidden="true"
           className={clsx(
             "h-4 w-4 text-current transition-transform duration-200",
             open && "rotate-180",
@@ -60,7 +60,7 @@ const SidebarGroup = ({
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="mt-1 space-y-1">
+            <div className="mt-2 space-y-2 lg:mt-1 lg:space-y-1">
               {item.children.map((child) =>
                 child.children.length > 0 ? (
                   <SidebarGroup

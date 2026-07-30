@@ -19,6 +19,7 @@ const AppInput = forwardRef((componentProps, ref) => {
     id,
     isDisabled = false,
     label,
+    inputMode,
     required,
     size = "md",
     type = "text",
@@ -30,18 +31,29 @@ const AppInput = forwardRef((componentProps, ref) => {
   const errorId = `${inputId}-error`;
   const hintId = `${inputId}-hint`;
   const resolvedDisabled = Boolean(disabled || isDisabled);
+  const numericStep = Number(componentProps.step);
+  const numberInputMode =
+    componentProps.step === "any" ||
+    (Number.isFinite(numericStep) && !Number.isInteger(numericStep))
+      ? "decimal"
+      : "numeric";
+  const resolvedInputMode =
+    inputMode ?? (type === "number" ? numberInputMode : undefined);
   const resolvedHint = hint ?? helperText;
   const hasValueProp = Object.prototype.hasOwnProperty.call(
     componentProps,
     "value",
   );
-  const describedBy = [
-    ariaDescribedBy,
-    resolvedHint ? hintId : "",
-    error ? errorId : "",
-  ]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  const describedBy =
+    [
+      ...new Set(
+        [
+          ariaDescribedBy,
+          resolvedHint ? hintId : "",
+          error ? errorId : "",
+        ].filter(Boolean),
+      ),
+    ].join(" ") || undefined;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -51,7 +63,14 @@ const AppInput = forwardRef((componentProps, ref) => {
           className="text-[13px] font-medium text-slate-700"
         >
           {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
+          {required && (
+            <>
+              <span aria-hidden="true" className="ml-0.5 text-red-600">
+                *
+              </span>
+              <span className="sr-only"> (required)</span>
+            </>
+          )}
         </label>
       )}
       <input
@@ -59,6 +78,7 @@ const AppInput = forwardRef((componentProps, ref) => {
         ref={ref}
         id={inputId}
         type={type}
+        inputMode={resolvedInputMode}
         disabled={resolvedDisabled}
         title={
           resolvedDisabled
@@ -72,7 +92,7 @@ const AppInput = forwardRef((componentProps, ref) => {
         {...(hasValueProp ? { value: value ?? "" } : {})}
         className={twMerge(
           clsx(
-            "w-full rounded-lg border bg-white text-sm text-slate-800 placeholder:text-slate-400",
+            "w-full min-h-11 rounded-lg border bg-white text-base text-slate-800 placeholder:text-slate-500 md:min-h-0 md:text-sm",
             "outline-none transition-all",
             "focus:border-brand focus:ring-2 focus:ring-brand/20",
             sizes[size] ?? sizes.md,
@@ -87,7 +107,7 @@ const AppInput = forwardRef((componentProps, ref) => {
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-[12px] text-red-500">
+        <p id={errorId} role="alert" className="text-[12px] text-red-700">
           {error}
         </p>
       )}

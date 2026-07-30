@@ -54,9 +54,10 @@ const sanitizeInvoiceListParams = (params = {}) => {
 };
 
 export const invoiceService = {
-  getInvoices: async (params) => {
+  getInvoices: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.SALES_INVOICES, {
       params: normalizeParams(sanitizeInvoiceListParams(params)),
+      ...(signal ? { signal } : {}),
     });
 
     return unwrapResponse(response);

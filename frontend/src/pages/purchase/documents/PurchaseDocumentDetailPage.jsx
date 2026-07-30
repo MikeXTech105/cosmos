@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../../components/common/ResponsiveTableRegion";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { itemService } from "../../../services/inventory/itemService";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
@@ -322,7 +323,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               className="h-10"
               onClick={() => navigate(config.listPath)}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               Back
             </AppButton>
           }
@@ -336,7 +337,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       <PageHeader
         badge={
           <>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon aria-hidden="true" className="h-3.5 w-3.5" />
             Purchase & Expense
           </>
         }
@@ -349,7 +350,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               className="h-10"
               onClick={() => navigate(config.listPath)}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               Back
             </AppButton>
             <AppButton
@@ -358,7 +359,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               disabled={state.detailLoading}
               onClick={loadRecord}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.detailLoading ? "animate-spin" : ""}`}
               />
               Refresh
@@ -373,7 +374,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
             <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Supplier
                   </p>
                   <p className="mt-1 font-semibold text-slate-900">
@@ -381,7 +382,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Date
                   </p>
                   <p className="mt-1 font-semibold text-slate-900">
@@ -389,7 +390,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Total
                   </p>
                   <p className="mt-1 font-semibold text-slate-900">
@@ -397,7 +398,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Status
                   </p>
                   <div className="mt-1">
@@ -415,7 +416,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     className="h-10 rounded-lg px-3"
                     onClick={openEdit}
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Pencil aria-hidden="true" className="h-4 w-4" />
                     Edit
                   </AppButton>
                 )}
@@ -424,7 +425,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     className="h-10 rounded-lg px-3"
                     onClick={() => openAction("confirm")}
                   >
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
                     Confirm
                   </AppButton>
                 )}
@@ -434,7 +435,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     className="h-10 rounded-lg px-3"
                     onClick={() => openAction("cancel")}
                   >
-                    <Ban className="h-4 w-4" />
+                    <Ban aria-hidden="true" className="h-4 w-4" />
                     Cancel
                   </AppButton>
                 )}
@@ -448,16 +449,22 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                 Line Items
               </h2>
             </div>
-            <div className="overflow-x-auto">
+            <ResponsiveTableRegion
+              mobileConfig={{
+                fields: [1, 2, 3, 5],
+                serial: "generated",
+                title: 0,
+              }}
+            >
               <table className="w-full min-w-[920px] table-fixed text-left text-sm">
                 <thead className="bg-white text-xs uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th className="px-3 py-3 font-semibold">Item</th>
-                    <th className="px-3 py-3 text-right font-semibold">Qty</th>
-                    <th className="px-3 py-3 text-right font-semibold">Price (₹)</th>
-                    <th className="px-3 py-3 text-right font-semibold">Discount</th>
-                    <th className="px-3 py-3 text-right font-semibold">Tax</th>
-                    <th className="px-3 py-3 text-right font-semibold">Total (₹)</th>
+                    <th scope="col" className="px-3 py-3 font-semibold">Item</th>
+                    <th scope="col" className="px-3 py-3 text-right font-semibold">Qty</th>
+                    <th scope="col" className="px-3 py-3 text-right font-semibold">Price (₹)</th>
+                    <th scope="col" className="px-3 py-3 text-right font-semibold">Discount</th>
+                    <th scope="col" className="px-3 py-3 text-right font-semibold">Tax</th>
+                    <th scope="col" className="px-3 py-3 text-right font-semibold">Total (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -489,7 +496,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                   })}
                 </tbody>
               </table>
-            </div>
+            </ResponsiveTableRegion>
           </section>
 
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -559,7 +566,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
             config={config}
             isLoading={modal.isLoading}
             isOpen={modal.isOpen}
-            itemEmptyMessage="No items found in inventory."
+            itemEmptyMessage="Add an inventory item before adding document lines."
             itemLoading={lookups.itemsLoading}
             itemOptions={itemOptions}
             itemsById={itemsById}

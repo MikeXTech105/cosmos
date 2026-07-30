@@ -1,6 +1,9 @@
-import { Plus, RefreshCw, Scale } from "lucide-react";
+import { Scale } from "lucide-react";
 
-import AppButton from "../../../components/common/AppButton";
+import EmptyState from "../../../components/common/EmptyState";
+import MobileRecordCard, {
+  MobileRecordCardSkeleton,
+} from "../../../components/common/MobileRecordCard";
 import {
   InventoryPagination,
   InventoryStatusPill,
@@ -10,9 +13,11 @@ import UnitActions from "./UnitActions";
 
 const UnitTable = ({
   actions,
+  activeFilterCount = 0,
   error,
   isLoading,
   onCreate,
+  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -23,43 +28,84 @@ const UnitTable = ({
   units,
 }) => {
   if (!isLoading && (error || units.length === 0)) {
+    const variant = error
+      ? "error"
+      : activeFilterCount > 0
+        ? "filtered"
+        : "empty";
+
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
-            <Scale className="h-6 w-6" />
-          </div>
-          <h3 className="mt-4 text-base font-semibold text-slate-900">
-            {error ? "Unable to load units" : "No units found"}
-          </h3>
-          <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
-            {error
+        <EmptyState
+          actionLabel={variant === "empty" ? "Add Unit" : undefined}
+          context={
+            variant === "empty"
+              ? "Units keep quantities consistent across inventory, sales, and purchasing."
+              : undefined
+          }
+          hint={
+            error
               ? error
-              : "Create the first unit of measure or adjust the current filters."}
-          </p>
-          {(error || actions.canCreate) && (
-            <AppButton
-              variant={error ? "secondary" : "primary"}
-              className="mt-5 h-10"
-              onClick={error ? onRetry : onCreate}
-            >
-              {error ? (
-                <RefreshCw className="h-4 w-4" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              {error ? "Retry" : "Add Unit"}
-            </AppButton>
-          )}
-        </div>
+              : variant === "filtered"
+                ? "Clear the current filters to see your units."
+                : "Create a unit of measure before adding stock items."
+          }
+          icon={Scale}
+          title={
+            error
+              ? "Couldn't load units"
+              : variant === "filtered"
+                ? "No units match these filters"
+                : "No units yet"
+          }
+          variant={variant}
+          onAction={
+            error
+              ? onRetry
+              : variant === "filtered"
+                ? onClear
+                : actions.canCreate
+                  ? onCreate
+                  : undefined
+          }
+        />
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-[860px] w-full table-fixed text-left">
+    <div className="overflow-hidden md:rounded-2xl md:border md:border-slate-200 md:bg-white md:shadow-sm">
+      <div className="grid gap-3 pb-3 md:hidden">
+        {isLoading
+          ? Array.from({ length: 5 }, (_, index) => (
+              <MobileRecordCardSkeleton key={index} fields={3} />
+            ))
+          : units.map((unit, index) => (
+              <MobileRecordCard
+                key={unit.id}
+                serial={(pageNumber - 1) * pageSize + index + 1}
+                title={unit.name}
+                subtitle={unit.description || "No description"}
+                status={<InventoryStatusPill isActive={unit.isActive} />}
+                fields={[
+                  {
+                    key: "shortName",
+                    label: "Short name",
+                    value: unit.shortName || "-",
+                  },
+                  {
+                    key: "created",
+                    label: "Created",
+                    value: formatDate(unit.createdAt),
+                  },
+                ]}
+                actions={<UnitActions unit={unit} {...actions} />}
+              />
+            ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
+        <table aria-label="Units of measure" className="min-w-[860px] w-full table-fixed text-left">
           <thead className="bg-slate-50">
             <tr>
               {[
@@ -71,7 +117,7 @@ const UnitTable = ({
                 "Created Date",
                 "Actions",
               ].map((heading) => (
-                <th
+                <th scope="col" aria-label={heading === "#" ? "Row number" : undefined}
                   key={heading}
                   className={[
                     "border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
@@ -97,7 +143,7 @@ const UnitTable = ({
                     key={unit.id}
                     className="transition-colors hover:bg-slate-50"
                   >
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                       {(pageNumber - 1) * pageSize + index + 1}
                     </td>
                     <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">

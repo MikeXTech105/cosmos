@@ -53,7 +53,7 @@ describe("component primitive contracts", () => {
     );
     const classes = getClassNames(markup);
     const inputClassName = classes.find((className) =>
-      className.includes("placeholder:text-slate-400"),
+      className.includes("placeholder:text-slate-500"),
     );
 
     expect(markup).toContain('for="supplier-name"');
@@ -61,9 +61,9 @@ describe("component primitive contracts", () => {
     expect(markup).toContain('id="supplier-name-error"');
     expect(markup).toContain("disabled");
     expect(inputClassName).toContain("h-9");
+    expect(inputClassName).toContain("min-h-11");
     expect(inputClassName).toContain("px-3");
     expect(inputClassName).toContain("border-red-400");
-    expect(inputClassName).not.toContain("h-11");
   });
 
   it("lets callers override AppInput and AppSelect container utilities", () => {
@@ -77,7 +77,7 @@ describe("component primitive contracts", () => {
       ),
     );
     const inputClassName = inputClasses.find((className) =>
-      className.includes("placeholder:text-slate-400"),
+      className.includes("placeholder:text-slate-500"),
     );
     const selectClassName = getClassNames(
       renderToStaticMarkup(
@@ -86,13 +86,25 @@ describe("component primitive contracts", () => {
     )[0];
 
     expect(inputClassName).toContain("h-8");
+    expect(inputClassName).toContain("min-h-11");
     expect(inputClassName).toContain("border-slate-900");
     expect(inputClassName).toContain("px-2");
-    expect(inputClassName).not.toContain("h-11");
     expect(inputClassName).not.toContain("border-slate-200");
     expect(inputClassName).not.toContain("px-4");
     expect(selectClassName).toContain("min-w-full");
     expect(selectClassName).not.toContain("min-w-0");
+  });
+
+  it("uses mobile keyboard hints that match numeric precision", () => {
+    const integerMarkup = renderToStaticMarkup(
+      <AppInput type="number" step="1" />,
+    );
+    const decimalMarkup = renderToStaticMarkup(
+      <AppInput type="number" step="0.01" />,
+    );
+
+    expect(integerMarkup).toContain('inputMode="numeric"');
+    expect(decimalMarkup).toContain('inputMode="decimal"');
   });
 
   it("normalizes AppSelect values and renders its field contract", () => {
@@ -165,7 +177,7 @@ describe("component primitive contracts", () => {
       <DataTableShell
         className="min-w-0 table-auto"
         columnCount={1}
-        head={<th>Reference</th>}
+        head={<th scope="col">Reference</th>}
         scrollerClassName="overflow-x-hidden"
       >
         <tr>

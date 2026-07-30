@@ -1,7 +1,9 @@
 import { ACTION_CENTRE_PERMISSION_TARGETS } from "../pages/actionCentre/actionCentrePermissions";
+import { GETTING_STARTED_PERMISSION_TARGETS } from "../pages/gettingStarted/gettingStartedConfig";
 
 export const enabledModules = [
   "dashboard",
+  "gettingStarted",
   "actionCentre",
   "users",
   "roles",
@@ -145,12 +147,21 @@ export const sidebarModules = {
     icon: "dashboard",
     sortOrder: 10,
   },
+  gettingStarted: {
+    id: "gettingStarted",
+    label: "Getting started",
+    route: "/getting-started",
+    icon: "tasks",
+    sortOrder: 20,
+    preservePresentation: true,
+    permissionTargets: GETTING_STARTED_PERMISSION_TARGETS,
+  },
   actionCentre: {
     id: "actionCentre",
     label: "Action centre",
     route: "/action-centre",
     icon: "bell",
-    sortOrder: 20,
+    sortOrder: 15,
     preservePresentation: true,
     permissionTargets: ACTION_CENTRE_PERMISSION_TARGETS,
   },
@@ -382,6 +393,12 @@ export const sidebarModules = {
     categoryId: "procurement",
     sortOrder: 10,
     preservePresentation: true,
+    permissionTargets: [
+      {
+        label: "ProcurementPlanning.SalesImport",
+        route: "/procurement/sales-import",
+      },
+    ],
   },
   ppSkuMapping: {
     id: "ppSkuMapping",
@@ -423,6 +440,12 @@ export const sidebarModules = {
     categoryId: "procurement",
     sortOrder: 20,
     preservePresentation: true,
+    permissionTargets: [
+      {
+        label: "ProcurementPlanning.PlanningHistory",
+        route: "/procurement/planning-history",
+      },
+    ],
   },
   ppSetup: {
     id: "ppSetup",

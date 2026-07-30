@@ -504,7 +504,7 @@ const Permissions = () => {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-            <ShieldCheck className="h-3.5 w-3.5" />
+            <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
             RBAC / Permission Management
           </div>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
@@ -532,7 +532,7 @@ const Permissions = () => {
               aria-label="Save Permissions"
               className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
             >
-              <Save className="h-4 w-4" />
+              <Save aria-hidden="true" className="h-4 w-4" />
               {isSaving ? "Saving..." : "Save Permissions"}
             </button>
           </AppTooltip>

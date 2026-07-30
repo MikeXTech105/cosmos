@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
+import GettingStartedCard from "../gettingStarted/GettingStartedCard";
 import {
   fetchDashboard,
   fetchDashboardWidget,
@@ -106,13 +107,15 @@ const DashboardPage = () => {
       <PageHeader
         badge={
           <>
-            <BarChart3 className="h-3.5 w-3.5" />
+            <BarChart3 aria-hidden="true" className="h-3.5 w-3.5" />
             Dashboard
           </>
         }
         title="Analytics Overview"
         description="Live platform metrics, trends, top lists, alerts, and workforce signals."
       />
+
+      <GettingStartedCard />
 
       <DashboardFilters
         filters={filters}

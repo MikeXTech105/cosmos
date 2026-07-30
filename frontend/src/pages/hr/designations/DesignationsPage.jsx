@@ -378,7 +378,7 @@ const DesignationsPage = () => {
       <PageHeader
         badge={
           <>
-            <BadgeCheck className="h-3.5 w-3.5" />
+            <BadgeCheck aria-hidden="true" className="h-3.5 w-3.5" />
             HR / Designations
           </>
         }
@@ -392,14 +392,14 @@ const DesignationsPage = () => {
               disabled={designationsState.loading}
               onClick={loadDesignations}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${designationsState.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Add Designation
               </AppButton>
             )}
@@ -427,6 +427,12 @@ const DesignationsPage = () => {
       />
 
       <DesignationTable
+        activeFilterCount={
+          [
+            searchInput.trim(),
+            designationsState.filters.IsActive === "all" ? "" : "status",
+          ].filter(Boolean).length
+        }
         actions={{
           ...capabilities,
           onDelete: (designation) =>
@@ -443,6 +449,11 @@ const DesignationsPage = () => {
         error={designationsState.error}
         isLoading={designationsState.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(setHrDesignationFilters({ Search: "", IsActive: "all" }));
+          dispatch(setHrDesignationPage(1));
+        }}
         onPageChange={(value) => dispatch(setHrDesignationPage(value))}
         onPageSizeChange={(value) => dispatch(setHrDesignationPageSize(value))}
         onRetry={loadDesignations}

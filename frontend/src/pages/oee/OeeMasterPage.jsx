@@ -14,7 +14,9 @@ import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
+import MobileFilterSheet from "../../components/common/MobileFilterSheet";
 import PageHeader from "../../components/common/PageHeader";
+import ResponsiveTableRegion from "../../components/common/ResponsiveTableRegion";
 import useLatestRequest from "../../hooks/useLatestRequest";
 import { applyApiErrorsToForm } from "../../utils/formApiErrors";
 import { getApiStatus } from "../../utils/apiError";
@@ -158,7 +160,7 @@ const OeeMasterFormModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <Icon className="h-5 w-5" />
+          <Icon aria-hidden="true" className="h-5 w-5" />
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
@@ -273,16 +275,20 @@ const OeeMasterFilters = ({
   onChange,
   onClear,
 }) => {
+  const activeFilterCount =
+    Number(Boolean(filters.Search)) + Number(filters.IsActive !== "all");
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <MobileFilterSheet activeCount={activeFilterCount} onClear={onClear}>
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_180px_auto]">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             value={filters.Search}
             onChange={(event) => onChange({ Search: event.target.value })}
             placeholder="Search records"
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-500 focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </div>
 
@@ -290,7 +296,7 @@ const OeeMasterFilters = ({
           value={filters.IsActive}
           onChange={(value) => onChange({ IsActive: value })}
           options={OEE_STATUS_OPTIONS}
-          aria-label="Status filter"
+          label="Status filter"
         />
 
         <div className="flex items-center justify-between gap-3">
@@ -306,15 +312,16 @@ const OeeMasterFilters = ({
           </AppButton>
         </div>
       </div>
-    </div>
+      </div>
+    </MobileFilterSheet>
   );
 };
 
 const ActionButton = ({ children, disabled, label, onClick, tone = "default" }) => {
   const buttonClass =
     tone === "danger"
-      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
-      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <button
@@ -331,12 +338,14 @@ const ActionButton = ({ children, disabled, label, onClick, tone = "default" }) 
 };
 
 const OeeMasterTable = ({
+  activeFilterCount = 0,
   actions,
   columns,
   config,
   error,
   isLoading,
   onCreate,
+  onClear,
   onPageChange,
   onPageSizeChange,
   onRetry,
@@ -364,15 +373,30 @@ const OeeMasterTable = ({
   if (error || records.length === 0) {
     return (
       <OeeEmptyState
+        context={config.emptyDescription}
         icon={config.icon}
-        title={`No ${config.pluralLabel.toLowerCase()} found`}
-        description={config.emptyDescription}
+        title={
+          activeFilterCount > 0
+            ? `No ${config.pluralLabel.toLowerCase()} match these filters`
+            : `No ${config.pluralLabel.toLowerCase()} yet`
+        }
+        description={
+          activeFilterCount > 0
+            ? `Clear the current filters to see all ${config.pluralLabel.toLowerCase()}.`
+            : config.emptyDescription
+        }
         error={error}
+        errorTitle={`Couldn't load ${config.pluralLabel.toLowerCase()}`}
         onRetry={onRetry}
+        variant={activeFilterCount > 0 ? "filtered" : "empty"}
         action={
-          actions.canCreate ? (
+          activeFilterCount > 0 ? (
+            <AppButton variant="secondary" onClick={onClear}>
+              Clear filters
+            </AppButton>
+          ) : actions.canCreate ? (
             <AppButton className="mt-5 h-10" onClick={onCreate}>
-              <Plus className="h-4 w-4" />
+              <Plus aria-hidden="true" className="h-4 w-4" />
               {config.addLabel}
             </AppButton>
           ) : null
@@ -383,23 +407,30 @@ const OeeMasterTable = ({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
+      <ResponsiveTableRegion
+        mobileConfig={{
+          actions: columns.length + 1,
+          fields: [2, 3, 4],
+          serial: 0,
+          title: 1,
+        }}
+      >
         <table className="w-full min-w-[780px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">#</th>
+              <th scope="col" aria-label="Row number" className="px-4 py-3 font-semibold"><span aria-hidden="true">#</span></th>
               {columns.map((column) => (
-                <th key={column.key} className="px-4 py-3 font-semibold">
+                <th scope="col" aria-label={column.label === "#" ? "Row number" : undefined} key={column.key} className="px-4 py-3 font-semibold">
                   {column.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-right font-semibold">Actions</th>
+              <th scope="col" className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {records.map((record, index) => (
               <tr key={getOeeRecordId(record)} className="border-t border-slate-100">
-                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-500">
                   {(pageNumber - 1) * pageSize + index + 1}
                 </td>
                 {columns.map((column) => (
@@ -414,7 +445,7 @@ const OeeMasterTable = ({
                         label={`View ${config.entityLabel}`}
                         onClick={() => actions.onView(record)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye aria-hidden="true" className="h-4 w-4" />
                       </ActionButton>
                     )}
                     {actions.canEdit && (
@@ -422,7 +453,7 @@ const OeeMasterTable = ({
                         label={`Edit ${config.entityLabel}`}
                         onClick={() => actions.onEdit(record)}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil aria-hidden="true" className="h-4 w-4" />
                       </ActionButton>
                     )}
                     {actions.canDelete && (
@@ -431,7 +462,7 @@ const OeeMasterTable = ({
                         onClick={() => actions.onDelete(record)}
                         tone="danger"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
                       </ActionButton>
                     )}
                   </div>
@@ -440,7 +471,7 @@ const OeeMasterTable = ({
             ))}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTableRegion>
 
       <OeePagination
         disabled={isLoading}
@@ -732,7 +763,7 @@ const OeeMasterPage = ({ config }) => {
       <PageHeader
         badge={
           <>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon aria-hidden="true" className="h-3.5 w-3.5" />
             OEE / {config.pluralLabel}
           </>
         }
@@ -746,14 +777,14 @@ const OeeMasterPage = ({ config }) => {
               disabled={state.loading}
               onClick={loadRecords}
             >
-              <RefreshCw
+              <RefreshCw aria-hidden="true"
                 className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`}
               />
               Refresh
             </AppButton>
             {capabilities.canCreate && (
               <AppButton className="h-10" onClick={openCreate}>
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 {config.addLabel}
               </AppButton>
             )}
@@ -806,6 +837,12 @@ const OeeMasterPage = ({ config }) => {
       />
 
       <OeeMasterTable
+        activeFilterCount={
+          [
+            searchInput.trim(),
+            state.filters.IsActive === "all" ? "" : "status",
+          ].filter(Boolean).length
+        }
         actions={{
           ...capabilities,
           onDelete: (record) =>
@@ -822,6 +859,11 @@ const OeeMasterPage = ({ config }) => {
         error={state.error}
         isLoading={state.loading}
         onCreate={capabilities.canCreate ? openCreate : undefined}
+        onClear={() => {
+          setSearchInput("");
+          dispatch(config.setFilters({ Search: "", IsActive: "all" }));
+          dispatch(config.setPage(1));
+        }}
         onPageChange={(value) => dispatch(config.setPage(value))}
         onPageSizeChange={(value) => dispatch(config.setPageSize(value))}
         onRetry={loadRecords}

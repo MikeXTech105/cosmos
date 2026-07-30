@@ -38,7 +38,7 @@ const MinimalTemplate = ({ invoice }) => {
 
       <div className="mt-8 grid gap-6 sm:grid-cols-[1fr_300px]">
         <div className="text-xs leading-5 text-slate-500">
-          <p className="font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <p className="font-semibold uppercase tracking-[0.16em] text-slate-500">
             Amount In Words
           </p>
           <p className="mt-2">{invoice.amountInWords}</p>

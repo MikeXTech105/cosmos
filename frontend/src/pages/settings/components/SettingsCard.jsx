@@ -25,7 +25,7 @@ const SettingsCard = ({
               "bg-brand-light text-brand ring-brand/10",
             ].join(" ")}
           >
-            <Icon className="h-5 w-5" />
+            <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
 
           <div className="min-w-0">

@@ -8,10 +8,10 @@ const StatCard = ({ colorClass, icon: Icon, label, loading, value }) => {
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
         >
-          <Icon className="h-4 w-4" />
+          <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
             {label}
           </p>
           {loading ? (

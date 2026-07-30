@@ -17,6 +17,7 @@ import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import MaterialTypePill from "../../../components/common/MaterialTypePill";
+import MobileFilterSheet from "../../../components/common/MobileFilterSheet";
 import PageHeader from "../../../components/common/PageHeader";
 import { skuMappingService } from "../../../services/procurement/skuMappingService";
 import {
@@ -233,7 +234,7 @@ export const MappingModal = ({
         />
         {legacyItem && (
           <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
               <p className="text-sm font-semibold">Legacy material type</p>
               <p className="mt-0.5 text-xs leading-5">
@@ -257,10 +258,10 @@ export const MappingModal = ({
         )}
         <ProcurementInlineError message={errors.form} />
       </div>
-      <div className="mt-5 flex justify-end gap-2">
+      <div className="sticky bottom-0 z-10 -mx-4 mt-5 flex flex-col-reverse gap-2 border-t border-slate-200 bg-white px-4 pt-4 sm:mx-0 sm:flex-row sm:justify-end sm:border-t-0 sm:px-0 md:static">
         <AppButton variant="secondary" onClick={onClose}>Cancel</AppButton>
         <AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>
-          <Link2 className="h-4 w-4" />Save mapping
+          <Link2 aria-hidden="true" className="h-4 w-4" />Save mapping
         </AppButton>
       </div>
     </AppModal>
@@ -378,6 +379,13 @@ const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
     Boolean(channelId),
     tab === "all" && activeFilter !== "all",
   ].filter(Boolean).length;
+  const clearFilters = () => {
+    setSearch("");
+    setChannelId("");
+    setActiveFilter("all");
+    setUnmappedPage(1);
+    setMappingPage(1);
+  };
 
   const tabs = useMemo(
     () => [
@@ -390,24 +398,24 @@ const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
   return (
     <section className="min-w-0 space-y-5">
       {!embedded && <PageHeader
-        badge={<><Link2 className="h-3.5 w-3.5" />Procurement Planning</>}
+        badge={<><Link2 aria-hidden="true" className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Channel SKU Mapping"
         description="Clear unresolved channel SKUs like an inbox so every sales row resolves to a finished product."
         actions={
           <>
             <AppButton variant="secondary" disabled={currentLoading} onClick={() => tab === "unmapped" ? void loadUnmapped() : void loadMappings()}>
-              <RotateCw className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
+              <RotateCw aria-hidden="true" className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
             <AppButton
               disabled={mappingRows.length === 0}
               variant="secondary"
               onClick={() => downloadMappingsCsv(mappingRows)}
             >
-              <Download className="h-4 w-4" />Export
+              <Download aria-hidden="true" className="h-4 w-4" />Export
             </AppButton>
             <Link to="/supply-chain/item-mappings">
               <AppButton>
-                <Link2 className="h-4 w-4" />Manage in Supply Chain
+                <Link2 aria-hidden="true" className="h-4 w-4" />Manage in Supply Chain
               </AppButton>
             </Link>
           </>
@@ -440,7 +448,7 @@ const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
       <div className="rounded-xl border border-brand/20 bg-brand-light px-4 py-3 text-sm text-slate-700">
         This is a read-only compatibility view.{" "}
         <Link
-          className="font-semibold text-brand hover:underline"
+          className="inline-flex min-h-11 items-center font-semibold text-brand hover:underline md:min-h-0"
           to="/supply-chain/item-mappings"
         >
           Mappings are managed in Supply Chain → Item Mappings
@@ -448,16 +456,30 @@ const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
       </div>
       {unmappedCount > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="text-sm font-semibold">{unmappedCount} channel SKU{unmappedCount === 1 ? "" : "s"} still block planning</p>
             <p className="mt-0.5 text-xs leading-5">Map the most frequently seen SKUs first to unlock the largest share of sales history.</p>
           </div>
         </div>
       )}
-      <ProcurementTabs active={tab} tabs={tabs} onChange={(value) => { setTab(value); setSearch(""); setChannelId(""); }} />
+      <ProcurementTabs
+        active={tab}
+        id="procurement-sku-mapping-tabs"
+        tabs={tabs}
+        onChange={(value) => { setTab(value); setSearch(""); setChannelId(""); }}
+      />
+      <div
+        id={`procurement-sku-mapping-tabs-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`procurement-sku-mapping-tabs-tab-${tab}`}
+      >
       <ProcurementSectionCard>
-        <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <MobileFilterSheet
+          activeCount={activeFilterCount}
+          onClear={clearFilters}
+        >
+          <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px_180px]">
           <AppInput label="Search" placeholder="Channel SKU, product, or item" value={search} onChange={(event) => { setSearch(event.target.value); setUnmappedPage(1); setMappingPage(1); }} />
           <ProcurementChannelSelect channels={channels} label="Sales channel" placeholder="All active channels" value={channelId} onChange={(value) => { setChannelId(value); setUnmappedPage(1); setMappingPage(1); }} />
@@ -465,36 +487,59 @@ const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p>
-            {activeFilterCount > 0 && <AppButton variant="ghost" onClick={() => { setSearch(""); setChannelId(""); setActiveFilter("all"); setUnmappedPage(1); setMappingPage(1); }}>Clear</AppButton>}
+            {activeFilterCount > 0 && <AppButton variant="ghost" onClick={clearFilters}>Clear</AppButton>}
           </div>
-        </div>
+          </div>
+        </MobileFilterSheet>
         {channelsError && <div className="p-4 pb-0"><ProcurementInlineError title="Channels unavailable" message={getProcurementError(channelsError)} /></div>}
         {currentError ? <ProcurementErrorState error={currentError} onRetry={tab === "unmapped" ? loadUnmapped : loadMappings} /> : tab === "unmapped" ? (
           <ProcurementTable
             columnCount={7}
+            mobileConfig={{
+              actions: 6,
+              fields: [3, 4, 5],
+              serial: 0,
+              subtitle: 1,
+              title: 2,
+            }}
+            emptyAction={activeFilterCount > 0 ? <AppButton variant="secondary" onClick={clearFilters}>Clear filters</AppButton> : undefined}
+            emptyContext="The unmapped inbox contains channel SKUs that have appeared in retained sales history."
             emptyIcon={CheckCircle2}
-            emptyHint="Every channel SKU in retained sales history has an active product mapping."
-            emptyTitle={!unmappedLoading && unmappedRows.length === 0 ? "Unmapped inbox is clear" : undefined}
-            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Product name</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Occurrences</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Seen between</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            emptyHint={activeFilterCount > 0 ? "Clear the current filters to review the full unmapped inbox." : "Every channel SKU in retained sales history has an active product mapping."}
+            emptyTitle={!unmappedLoading && unmappedRows.length === 0 ? activeFilterCount > 0 ? "No unmatched SKUs match these filters" : "No unmatched SKUs" : undefined}
+            emptyVariant={activeFilterCount > 0 ? "filtered" : "empty"}
+            head={<><th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Product name</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Occurrences</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Seen between</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
             loading={unmappedLoading}
             minWidth="min-w-[980px]"
           >
-            {unmappedRows.map((row, index) => <tr key={`${row.salesChannelId ?? row.channelCode}-${row.channelSku}`}><td className="text-xs font-semibold tabular-nums text-slate-400">{(unmappedPage - 1) * pageSize + index + 1}</td><td><ProcurementPill tone="slate">{row.channelCode ?? row.channelName}</ProcurementPill></td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementInteger(row.occurrenceCount ?? row.count)}</td><td className="text-xs">{formatProcurementDate(row.firstSeenDate ?? row.fromDate)} – {formatProcurementDate(row.lastSeenDate ?? row.toDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this SKU in Supply Chain"><Link aria-label="Manage SKU in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 className="h-4 w-4" /></Link></AppTooltip></div></td></tr>)}
+            {unmappedRows.map((row, index) => <tr key={`${row.salesChannelId ?? row.channelCode}-${row.channelSku}`}><td className="text-xs font-semibold tabular-nums text-slate-500">{(unmappedPage - 1) * pageSize + index + 1}</td><td><ProcurementPill tone="slate">{row.channelCode ?? row.channelName}</ProcurementPill></td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementInteger(row.occurrenceCount ?? row.count)}</td><td className="text-xs">{formatProcurementDate(row.firstSeenDate ?? row.fromDate)} – {formatProcurementDate(row.lastSeenDate ?? row.toDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this SKU in Supply Chain"><Link aria-label="Manage SKU in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 aria-hidden="true" className="h-4 w-4" /></Link></AppTooltip></div></td></tr>)}
           </ProcurementTable>
         ) : (
           <ProcurementTable
             columnCount={8}
-            emptyHint="Mappings created in Supply Chain will appear here. Clear the current filters if needed."
-            emptyTitle={!mappingLoading && mappingRows.length === 0 ? "No SKU mappings yet" : undefined}
-            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel product</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Resolved item</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Material type</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            mobileConfig={{
+              actions: 7,
+              fields: [3, 4, 5],
+              serial: 0,
+              status: 6,
+              subtitle: 1,
+              title: 2,
+            }}
+            emptyAction={activeFilterCount > 0 ? <AppButton variant="secondary" onClick={clearFilters}>Clear filters</AppButton> : undefined}
+            emptyContext="SKU mappings resolve each channel product code to a COSMOS inventory item."
+            emptyHint={activeFilterCount > 0 ? "Clear the current filters to see other SKU mappings." : "Mappings created in Supply Chain will appear here."}
+            emptyTitle={!mappingLoading && mappingRows.length === 0 ? activeFilterCount > 0 ? "No SKU mappings match these filters" : "No SKU mappings yet" : undefined}
+            emptyVariant={activeFilterCount > 0 ? "filtered" : "empty"}
+            head={<><th scope="col" aria-label="Row number" className={PROCUREMENT_TABLE_HEADER_CLASS}><span aria-hidden="true">#</span></th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel product</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Resolved item</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Material type</th><th scope="col" className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th scope="col" className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
             loading={mappingLoading}
             minWidth="min-w-[980px]"
           >
-            {mappingRows.map((row, index) => { const active = getProcurementBoolean(row.isActive, true); const classification = row.procurementClassification ?? row.item?.procurementClassification; return <tr key={getRecordId(row, ["skuMappingId"])}><td className="text-xs font-semibold tabular-nums text-slate-400">{(mappingPage - 1) * pageSize + index + 1}</td><td>{row.channelCode ?? row.channelName}</td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td><p className="font-medium text-slate-800">{getItemCode(row.item) || row.itemCode}</p><p className="text-xs text-slate-500">{getItemName(row.item) || row.itemName}</p></td><td><MaterialTypePill value={classification} /></td><td><ProcurementPill tone={active ? "emerald" : "slate"}>{active ? "Active" : "Inactive"}</ProcurementPill></td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this mapping in Supply Chain"><Link aria-label="Manage mapping in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 className="h-4 w-4" /></Link></AppTooltip></div></td></tr>; })}
+            {mappingRows.map((row, index) => { const active = getProcurementBoolean(row.isActive, true); const classification = row.procurementClassification ?? row.item?.procurementClassification; return <tr key={getRecordId(row, ["skuMappingId"])}><td className="text-xs font-semibold tabular-nums text-slate-500">{(mappingPage - 1) * pageSize + index + 1}</td><td>{row.channelCode ?? row.channelName}</td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td><p className="font-medium text-slate-800">{getItemCode(row.item) || row.itemCode}</p><p className="text-xs text-slate-500">{getItemName(row.item) || row.itemName}</p></td><td><MaterialTypePill value={classification} /></td><td><ProcurementPill tone={active ? "emerald" : "slate"}>{active ? "Active" : "Inactive"}</ProcurementPill></td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this mapping in Supply Chain"><Link aria-label="Manage mapping in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 aria-hidden="true" className="h-4 w-4" /></Link></AppTooltip></div></td></tr>; })}
           </ProcurementTable>
         )}
         {tab === "unmapped" ? <ProcurementPagination disabled={unmappedLoading} {...unmappedPagination} onPageChange={setUnmappedPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setUnmappedPage(1); }} /> : <ProcurementPagination disabled={mappingLoading} {...mappingPagination} onPageChange={setMappingPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setMappingPage(1); }} />}
       </ProcurementSectionCard>
+      </div>
     </section>
   );
 };
