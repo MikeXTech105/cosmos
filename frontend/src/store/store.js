@@ -10,6 +10,13 @@ import hrLeaveReducer from "./slices/hr/leaveSlice";
 import hrPayrollReducer from "./slices/hr/payrollSlice";
 import hrShiftReducer from "./slices/hr/shiftSlice";
 import itemReducer from "./slices/inventory/itemSlice";
+import dispatchImportsReducer from "./slices/dispatch/importSlice";
+import dispatchReportsReducer from "./slices/dispatch/reportSlice";
+import dispatchRunsReducer from "./slices/dispatch/runSlice";
+import dispatchSettingsReducer from "./slices/dispatch/settingSlice";
+import shipmentImportsReducer from "./slices/shipments/importSlice";
+import shipmentReportsReducer from "./slices/shipments/reportSlice";
+import shipmentsReducer from "./slices/shipments/shipmentSlice";
 import oeeDashboardReducer from "./slices/oee/oeeDashboardSlice";
 import oeeDowntimeReasonReducer from "./slices/oee/oeeDowntimeReasonSlice";
 import oeeMachineReducer from "./slices/oee/oeeMachineSlice";
@@ -22,6 +29,11 @@ import procurementSalesChannelsReducer from "./slices/procurement/salesChannelSl
 import procurementSalesImportReducer from "./slices/procurement/salesImportSlice";
 import procurementSettingsReducer from "./slices/procurement/procurementSettingSlice";
 import procurementSkuMappingsReducer from "./slices/procurement/skuMappingSlice";
+import supplyChainChannelsReducer from "./slices/supplyChain/channelSlice";
+import supplyChainImportsReducer from "./slices/supplyChain/importSlice";
+import supplyChainItemMappingsReducer from "./slices/supplyChain/itemMappingSlice";
+import supplyChainPackagingProfilesReducer from "./slices/supplyChain/packagingProfileSlice";
+import supplyChainWarehousesReducer from "./slices/supplyChain/warehouseSlice";
 import expenseCategoryReducer from "./slices/purchase/expenseCategorySlice";
 import expenseReducer from "./slices/purchase/expenseSlice";
 import purchaseBillReducer from "./slices/purchase/purchaseBillSlice";
@@ -46,6 +58,13 @@ export const store = configureStore({
     auth: authReducer,
     categories: categoryReducer,
     dashboard: dashboardReducer,
+    dispatchImports: dispatchImportsReducer,
+    dispatchReports: dispatchReportsReducer,
+    dispatchRuns: dispatchRunsReducer,
+    dispatchSettings: dispatchSettingsReducer,
+    shipmentImports: shipmentImportsReducer,
+    shipmentReports: shipmentReportsReducer,
+    shipments: shipmentsReducer,
     expenseCategories: expenseCategoryReducer,
     expenses: expenseReducer,
     hrAttendance: hrAttendanceReducer,
@@ -83,6 +102,11 @@ export const store = configureStore({
     salesInvoices: salesInvoiceReducer,
     sidebar: sidebarReducer,
     supplierPayments: supplierPaymentReducer,
+    supplyChainChannels: supplyChainChannelsReducer,
+    supplyChainImports: supplyChainImportsReducer,
+    supplyChainItemMappings: supplyChainItemMappingsReducer,
+    supplyChainPackagingProfiles: supplyChainPackagingProfilesReducer,
+    supplyChainWarehouses: supplyChainWarehousesReducer,
     units: unitReducer,
   },
 });

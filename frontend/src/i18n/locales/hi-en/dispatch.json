@@ -1,0 +1,47 @@
+{
+  "category": "Dispatch Planning",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "runs": "Planning Runs",
+    "imports": "Imports",
+    "settings": "SKU Settings",
+    "reports": "Reports"
+  },
+  "dashboard": {
+    "title": "Dispatch dashboard",
+    "description": "Channel, period aur warehouse ke hisaab se finalized recommendations monitor karein."
+  },
+  "runs": {
+    "title": "Planning runs",
+    "new": "Naya run",
+    "calculate": "Calculate",
+    "allocate": "Allocate",
+    "finalize": "Finalize",
+    "cancel": "Run cancel karein",
+    "immutable": "Finalized runs badle nahi ja sakte."
+  },
+  "imports": {
+    "title": "Imports",
+    "csvOnly": "XLSX support aa raha hai. Abhi sheet ko CSV mein save karein.",
+    "exactMapping": "SKUs sirf exact active channel mapping se resolve hote hain.",
+    "duplicateAudit": "Duplicate rows audit preview mein rahenge, par committed snapshots mein include nahi honge."
+  },
+  "settings": {
+    "title": "SKU settings",
+    "global": "Global",
+    "allChannels": "Sabhi channels (global)",
+    "finishedProductsOnly": "Sirf finished products",
+    "finishedProductsHelp": "Legacy Item classification incomplete ho to is filter ko off karein."
+  },
+  "reports": {
+    "title": "Recommendation reports",
+    "exportCap": "Current filters se matching maximum 500 rows export honge."
+  },
+  "domain": {
+    "recommendation": "Recommendation",
+    "tier": "Tier",
+    "boxes": "Boxes",
+    "sellableStock": "Sellable stock",
+    "eligibleInbound": "Eligible inbound"
+  }
+}

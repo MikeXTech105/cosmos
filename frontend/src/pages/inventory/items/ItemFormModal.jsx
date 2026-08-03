@@ -18,6 +18,7 @@ import {
   buildItemPayload,
   generateItemCode,
   getItemDefaultValues,
+  ITEM_CLASSIFICATION_OPTIONS,
   ITEM_TYPE,
   ITEM_TYPE_OPTIONS,
   GST_RATE_OPTIONS,
@@ -25,9 +26,10 @@ import {
 
 const ITEM_FIELDS = [
   "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
-  "purchasePrice", "salesPrice", "hsnCode", "gstRate", "trackInventory",
-  "openingStock", "openingStockValue", "currentStock", "reservedStock",
-  "minimumStock", "description", "isActive", "imageFile",
+  "procurementClassification", "purchasePrice", "salesPrice", "hsnCode",
+  "gstRate", "trackInventory", "openingStock", "openingStockValue",
+  "currentStock", "reservedStock", "minimumStock", "description", "isActive",
+  "imageFile",
 ];
 
 const ToggleRow = ({
@@ -263,35 +265,69 @@ const ItemFormModal = ({
                 {errors.root.server.message}
               </p>
             )}
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-              {ITEM_TYPE_OPTIONS.map((option) => {
-                const type = option.value;
-                const isActive = itemType === type;
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  Item type
+                </p>
+                <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                  {ITEM_TYPE_OPTIONS.map((option) => {
+                    const type = option.value;
+                    const isActive = itemType === type;
 
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => {
-                      setValue("itemType", type, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                      if (type === ITEM_TYPE.SERVICE) {
-                        setActiveTab("pricing");
-                      }
-                    }}
-                    className={[
-                      "h-9 rounded-lg px-5 text-sm font-semibold transition-colors",
-                      isActive
-                        ? "bg-brand text-white shadow-sm"
-                        : "text-slate-500 hover:bg-white hover:text-slate-900",
-                    ].join(" ")}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          setValue("itemType", type, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          if (type === ITEM_TYPE.SERVICE) {
+                            setActiveTab("pricing");
+                          }
+                        }}
+                        className={[
+                          "h-9 rounded-lg px-5 text-sm font-semibold transition-colors",
+                          isActive
+                            ? "bg-brand text-white shadow-sm"
+                            : "text-slate-500 hover:bg-white hover:text-slate-900",
+                        ].join(" ")}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <Controller
+                  control={control}
+                  name="procurementClassification"
+                  render={({ field }) => (
+                    <AppSelect
+                      id="itemMaterialType"
+                      label="Material type"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      options={[
+                        { value: "", label: "Not classified" },
+                        ...ITEM_CLASSIFICATION_OPTIONS,
+                      ]}
+                      aria-describedby="itemMaterialTypeHelp"
+                    />
+                  )}
+                />
+                <p
+                  id="itemMaterialTypeHelp"
+                  className="mt-1.5 text-xs text-slate-500"
+                >
+                  Used by procurement planning to decide what to buy.
+                </p>
+              </div>
             </div>
 
             <section>

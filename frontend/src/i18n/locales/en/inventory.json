@@ -1,0 +1,12 @@
+{
+  "items": {
+    "materialType": "Material type",
+    "allMaterialTypes": "All material types",
+    "notClassified": "Not classified",
+    "finishedProduct": "Finished product",
+    "rawMaterial": "Raw material",
+    "component": "Component",
+    "packingMaterial": "Packing material",
+    "materialTypeHelper": "Used by procurement planning to decide what to buy."
+  }
+}

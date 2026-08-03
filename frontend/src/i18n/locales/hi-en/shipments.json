@@ -1,0 +1,24 @@
+{
+  "module": "Shipment Operations",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "workList": "Kaam ki list",
+    "freight": "Freight",
+    "transporters": "Transporters",
+    "imports": "Purana shipment import",
+    "reports": "Reports"
+  },
+  "inventory": {
+    "dispatchWarning": "Isse shipment dispatch hoga aur stock kam hoga. Is action ko undo nahi kiya ja sakta.",
+    "returnWarning": "Sirf restockable quantity stock mein wapas add hogi.",
+    "noEffect": "Yeh action sirf shipment operation record karta hai. Current stock change nahi hota.",
+    "historicalImport": "Historical import se current stock kabhi change nahi hota."
+  },
+  "errors": {
+    "conflictTitle": "Server par shipment badal chuka hai",
+    "refresh": "Refresh karke resolve karein",
+    "notFound": "Shipment nahi mila",
+    "forbidden": "Aapke paas is shipment action ki permission nahi hai."
+  },
+  "freightBoundary": "Approval se Rojmel expense create nahi hota. Posting ek alag explicit action hai."
+}

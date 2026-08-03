@@ -126,6 +126,12 @@ const ItemsPage = () => {
             itemsState.filters.CategoryId === "all"
               ? undefined
               : serializeId(itemsState.filters.CategoryId),
+          ProcurementClassification:
+            itemsState.filters.ProcurementClassification === "all"
+              ? undefined
+              : serializeId(
+                  itemsState.filters.ProcurementClassification,
+                ),
         },
       }),
     [itemsState.filters, itemsState.pageNumber, itemsState.pageSize],
@@ -614,6 +620,7 @@ const ItemsPage = () => {
               Search: "",
               IsActive: "all",
               CategoryId: "all",
+              ProcurementClassification: "all",
               Barcode: "",
               ItemCode: "",
             }),
