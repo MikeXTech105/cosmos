@@ -91,20 +91,71 @@ const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
 const ProcurementSalesImport = lazy(
   () => import("../pages/procurement/salesImport/index.js"),
 );
-const ProcurementSkuMapping = lazy(
-  () => import("../pages/procurement/skuMapping/index.js"),
+const ProcurementHome = lazy(
+  () => import("../pages/procurement/home/index.js"),
 );
-const ProcurementBomMapping = lazy(
-  () => import("../pages/procurement/bomMapping/index.js"),
-);
-const ProcurementSettings = lazy(
-  () => import("../pages/procurement/settings/index.js"),
+const ProcurementSetup = lazy(
+  () => import("../pages/procurement/setup/index.js"),
 );
 const ProcurementGeneratePlan = lazy(
   () => import("../pages/procurement/generatePlan/index.js"),
 );
 const ProcurementPlanningHistory = lazy(
   () => import("../pages/procurement/planningHistory/index.js"),
+);
+const SupplyChainChannels = lazy(
+  () => import("../pages/supplyChain/channels/index.js"),
+);
+const SupplyChainWarehouses = lazy(
+  () => import("../pages/supplyChain/warehouses/index.js"),
+);
+const SupplyChainItemMappings = lazy(
+  () => import("../pages/supplyChain/itemMappings/index.js"),
+);
+const SupplyChainPackagingProfiles = lazy(
+  () => import("../pages/supplyChain/packagingProfiles/index.js"),
+);
+const SupplyChainImports = lazy(
+  () => import("../pages/supplyChain/imports/index.js"),
+);
+const DispatchDashboard = lazy(
+  () => import("../pages/dispatch/dashboard/index.js"),
+);
+const DispatchRuns = lazy(
+  () => import("../pages/dispatch/runs/index.js"),
+);
+const DispatchRunDetail = lazy(
+  () => import("../pages/dispatch/runs/DispatchRunDetailPage.jsx"),
+);
+const DispatchImports = lazy(
+  () => import("../pages/dispatch/imports/index.js"),
+);
+const DispatchSettings = lazy(
+  () => import("../pages/dispatch/settings/index.js"),
+);
+const DispatchReports = lazy(
+  () => import("../pages/dispatch/reports/index.js"),
+);
+const ShipmentDashboard = lazy(
+  () => import("../pages/shipments/dashboard/index.js"),
+);
+const ShipmentWorkList = lazy(
+  () => import("../pages/shipments/workList/index.js"),
+);
+const ShipmentDetail = lazy(
+  () => import("../pages/shipments/detail/index.js"),
+);
+const ShipmentFreight = lazy(
+  () => import("../pages/shipments/freight/index.js"),
+);
+const ShipmentTransporters = lazy(
+  () => import("../pages/shipments/transporters/index.js"),
+);
+const ShipmentImports = lazy(
+  () => import("../pages/shipments/imports/index.js"),
+);
+const ShipmentReports = lazy(
+  () => import("../pages/shipments/reports/index.js"),
 );
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
@@ -564,6 +615,72 @@ const AppRoutes = () => {
             }
           />
           <Route
+            path="/supply-chain/channels"
+            element={
+              <PermissionGuard
+                route="/supply-chain/channels"
+                pageName="SupplyChain.Channels"
+              >
+                <SupplyChainChannels />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/warehouses"
+            element={
+              <PermissionGuard
+                route="/supply-chain/warehouses"
+                pageName="SupplyChain.Warehouses"
+              >
+                <SupplyChainWarehouses />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/item-mappings"
+            element={
+              <PermissionGuard
+                route="/supply-chain/item-mappings"
+                pageName="SupplyChain.ItemMappings"
+              >
+                <SupplyChainItemMappings />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/packaging-profiles"
+            element={
+              <PermissionGuard
+                route="/supply-chain/packaging-profiles"
+                pageName="SupplyChain.PackagingProfiles"
+              >
+                <SupplyChainPackagingProfiles />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/imports"
+            element={
+              <PermissionGuard
+                route="/supply-chain/imports"
+                pageName="SupplyChain.Imports"
+              >
+                <SupplyChainImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/procurement"
+            element={
+              <PermissionGuard
+                route="/procurement/generate-plan"
+                pageName="ProcurementPlanning.GeneratePlan"
+              >
+                <ProcurementHome />
+              </PermissionGuard>
+            }
+          />
+          <Route
             path="/procurement/sales-import"
             element={
               <PermissionGuard
@@ -581,7 +698,7 @@ const AppRoutes = () => {
                 route="/procurement/sku-mapping"
                 pageName="ProcurementPlanning.SkuMapping"
               >
-                <ProcurementSkuMapping />
+                <Navigate replace to="/procurement/setup?tab=sku" />
               </PermissionGuard>
             }
           />
@@ -592,7 +709,7 @@ const AppRoutes = () => {
                 route="/procurement/bom-mapping"
                 pageName="ProcurementPlanning.BomMapping"
               >
-                <ProcurementBomMapping />
+                <Navigate replace to="/procurement/setup?tab=bom" />
               </PermissionGuard>
             }
           />
@@ -603,9 +720,13 @@ const AppRoutes = () => {
                 route="/procurement/settings"
                 pageName="ProcurementPlanning.Settings"
               >
-                <ProcurementSettings />
+                <Navigate replace to="/procurement/setup?tab=settings" />
               </PermissionGuard>
             }
+          />
+          <Route
+            path="/procurement/setup"
+            element={<ProcurementSetup />}
           />
           <Route
             path="/procurement/generate-plan"
@@ -626,6 +747,157 @@ const AppRoutes = () => {
                 pageName="ProcurementPlanning.PlanningHistory"
               >
                 <ProcurementPlanningHistory />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch"
+            element={<Navigate replace to="/dispatch/dashboard" />}
+          />
+          <Route
+            path="/dispatch/dashboard"
+            element={
+              <PermissionGuard
+                route="/dispatch/dashboard"
+                pageName="DispatchPlanning.Reports"
+              >
+                <DispatchDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/runs"
+            element={
+              <PermissionGuard
+                route="/dispatch/runs"
+                pageName="DispatchPlanning.PlanningRuns"
+              >
+                <DispatchRuns />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/runs/:id"
+            element={
+              <PermissionGuard
+                route="/dispatch/runs"
+                pageName="DispatchPlanning.PlanningRuns"
+              >
+                <DispatchRunDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/imports"
+            element={
+              <PermissionGuard
+                route="/dispatch/imports"
+                pageName="DispatchPlanning.Imports"
+              >
+                <DispatchImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/settings"
+            element={
+              <PermissionGuard
+                route="/dispatch/settings"
+                pageName="DispatchPlanning.SkuSettings"
+              >
+                <DispatchSettings />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/reports"
+            element={
+              <PermissionGuard
+                route="/dispatch/reports"
+                pageName="DispatchPlanning.Reports"
+              >
+                <DispatchReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments"
+            element={<Navigate replace to="/shipments/dashboard" />}
+          />
+          <Route
+            path="/shipments/dashboard"
+            element={
+              <PermissionGuard
+                route="/shipments/dashboard"
+                pageName="ShipmentOperations.Reports"
+              >
+                <ShipmentDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentWorkList />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list/:id"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/freight"
+            element={
+              <PermissionGuard
+                route="/shipments/freight"
+                pageName="ShipmentOperations.Freight"
+              >
+                <ShipmentFreight />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/transporters"
+            element={
+              <PermissionGuard
+                route="/shipments/transporters"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ShipmentTransporters />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/imports"
+            element={
+              <PermissionGuard
+                route="/shipments/imports"
+                pageName="ShipmentOperations.Imports"
+              >
+                <ShipmentImports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/reports"
+            element={
+              <PermissionGuard
+                route="/shipments/reports"
+                pageName="ShipmentOperations.Reports"
+              >
+                <ShipmentReports />
               </PermissionGuard>
             }
           />

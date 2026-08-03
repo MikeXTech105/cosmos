@@ -68,6 +68,13 @@ export const planningService = {
     );
     return unwrapResponse(response);
   },
+  cancel: async (id, reason) => {
+    const response = await axiosInstance.post(
+      ENDPOINTS.PP_PLAN_RUN_CANCEL(id),
+      { reason },
+    );
+    return unwrapResponse(response);
+  },
   exportRun: (id) =>
     downloadFile(axiosInstance, {
       fallbackFilename: `procurement-plan-${id}.xlsx`,

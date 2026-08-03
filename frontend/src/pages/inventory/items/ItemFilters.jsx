@@ -2,6 +2,7 @@ import { Filter, RotateCcw, Search } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
 import AppSelect from "../../../components/common/AppSelect";
+import { ITEM_CLASSIFICATION_OPTIONS } from "../../../utils/itemClassification";
 import { STATUS_OPTIONS } from "../inventoryHelpers";
 
 const ItemFilters = ({
@@ -13,14 +14,17 @@ const ItemFilters = ({
   onClear,
   resultCount,
 }) => {
-  const hasActiveFilters =
-    Boolean(filters.Search) ||
-    filters.IsActive !== "all" ||
-    filters.CategoryId !== "all";
+  const activeFilterCount = [
+    Boolean(filters.Search?.trim()),
+    filters.IsActive !== "all",
+    filters.CategoryId !== "all",
+    (filters.ProcurementClassification ?? "all") !== "all",
+  ].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_220px_180px_auto]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_200px_190px_160px_auto]">
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -45,6 +49,18 @@ const ItemFilters = ({
         />
 
         <AppSelect
+          value={filters.ProcurementClassification ?? "all"}
+          onChange={(value) =>
+            onChange({ ProcurementClassification: value })
+          }
+          options={[
+            { value: "all", label: "All material types" },
+            ...ITEM_CLASSIFICATION_OPTIONS,
+          ]}
+          aria-label="Filter items by material type"
+        />
+
+        <AppSelect
           value={filters.IsActive}
           onChange={(value) => onChange({ IsActive: value })}
           options={STATUS_OPTIONS}
@@ -62,9 +78,15 @@ const ItemFilters = ({
         </AppButton>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         <Filter className="h-3.5 w-3.5" />
-        {resultCount} items on this page
+        <span>{resultCount} items on this page</span>
+        {activeFilterCount > 0 && (
+          <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
+            {activeFilterCount} active{" "}
+            {activeFilterCount === 1 ? "filter" : "filters"}
+          </span>
+        )}
       </div>
     </div>
   );

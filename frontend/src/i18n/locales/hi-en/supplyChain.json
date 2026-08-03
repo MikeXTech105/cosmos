@@ -1,0 +1,30 @@
+{
+  "category": "Supply Chain",
+  "channels": {
+    "title": "Channels",
+    "description": "Imports aur procurement planning ke shared sales channels manage karein.",
+    "empty": "Abhi koi channel nahi hai"
+  },
+  "warehouses": {
+    "title": "Warehouses",
+    "description": "Warehouse code guess kiye bina operational warehouses ko channels se map karein.",
+    "empty": "Abhi koi warehouse nahi hai"
+  },
+  "itemMappings": {
+    "title": "Item mappings",
+    "description": "Channel SKUs ko existing authoritative Items se resolve karein.",
+    "empty": "Abhi koi item mapping nahi hai",
+    "unmatchedEmpty": "Koi unmatched SKU nahi hai"
+  },
+  "packagingProfiles": {
+    "title": "Packaging profiles",
+    "description": "Channel-aware packaging data manage karein.",
+    "empty": "Abhi koi packaging profile nahi hai"
+  },
+  "imports": {
+    "title": "Imports",
+    "description": "Staged sales-history imports ko validate, review aur explicitly commit karein.",
+    "empty": "Abhi koi import batch nahi hai",
+    "commitApprovalRequired": "Commit ke liye Supply Chain Imports approval permission chahiye."
+  }
+}

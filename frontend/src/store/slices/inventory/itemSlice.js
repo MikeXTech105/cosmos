@@ -28,6 +28,7 @@ const initialState = {
     Search: "",
     IsActive: "all",
     CategoryId: "all",
+    ProcurementClassification: "all",
     Barcode: "",
     ItemCode: "",
     SortBy: "",

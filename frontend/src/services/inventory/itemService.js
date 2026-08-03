@@ -1,9 +1,23 @@
 import axiosInstance from "../../api/axios";
 import { ENDPOINTS } from "../../api/endpoints";
+import { normalizeItemClassification } from "../../utils/itemClassification";
 import { sanitizeInventoryListParams } from "../../utils/inventoryQuery";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 const ITEM_SORT_FIELDS = ["name", "itemCode", "createdAt"];
+
+const ITEM_LIST_PARAM_KEYS = [
+  "Search",
+  "Barcode",
+  "ItemCode",
+  "CategoryId",
+  "ProcurementClassification",
+  "IsActive",
+  "PageNumber",
+  "PageSize",
+  "SortBy",
+  "SortDirection",
+];
 
 const ITEM_CREATE_FORM_FIELDS = [
   ["Name", "name"],
@@ -12,6 +26,7 @@ const ITEM_CREATE_FORM_FIELDS = [
   ["CategoryId", "categoryId"],
   ["UnitId", "unitId"],
   ["ItemType", "itemType"],
+  ["ProcurementClassification", "procurementClassification"],
   ["PurchasePrice", "purchasePrice"],
   ["SalesPrice", "salesPrice"],
   ["HSNCode", "hsnCode"],
@@ -49,18 +64,39 @@ const buildItemCreateFormData = (payload) => {
 };
 
 const buildItemCommandBody = (payload) => {
-  const commandBody = { ...payload };
+  const commandBody = {
+    ...payload,
+    // Unlike create, update must send null so clearing does not preserve the old value.
+    procurementClassification: normalizeItemClassification(
+      payload?.procurementClassification,
+    ),
+  };
 
   delete commandBody.imageFile;
 
   return commandBody;
 };
 
+const getItemListParams = (params = {}) => {
+  return Object.fromEntries(
+    ITEM_LIST_PARAM_KEYS.map((key) => [
+      key,
+      key === "ProcurementClassification" &&
+      params[key] === "all"
+        ? undefined
+        : params[key],
+    ]),
+  );
+};
+
 export const itemService = {
   getItems: async (params) => {
     const response = await axiosInstance.get(ENDPOINTS.ITEMS, {
       params: normalizeParams(
-        sanitizeInventoryListParams(params, ITEM_SORT_FIELDS),
+        sanitizeInventoryListParams(
+          getItemListParams(params),
+          ITEM_SORT_FIELDS,
+        ),
       ),
     });
 

@@ -2,9 +2,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   GitBranch,
+  Layers3,
   ListPlus,
   PackageSearch,
-  RefreshCw,
+  PackageX,
+  RotateCw,
   Save,
   Search,
   Trash2,
@@ -17,6 +19,7 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import { ProcurementItemClassification } from "../../../constants/procurementEnums";
 import { itemService } from "../../../services/inventory/itemService";
@@ -29,6 +32,7 @@ import {
   ProcurementLoadingRows,
   ProcurementPill,
   ProcurementSectionCard,
+  ProcurementTabs,
 } from "../ProcurementShared";
 import {
   formatProcurementDate,
@@ -44,6 +48,12 @@ import {
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import useLatestRequest from "../../../hooks/useLatestRequest";
+import ProcurementStatCards from "../ProcurementStatCards";
+import ProcurementTable, {
+  PROCUREMENT_ROW_ACTION_CLASS,
+  PROCUREMENT_ROW_ACTION_DANGER_CLASS,
+  PROCUREMENT_TABLE_HEADER_CLASS,
+} from "../ProcurementTable";
 
 const emptyLine = () => ({ componentItem: null, quantityRequired: "" });
 
@@ -63,7 +73,26 @@ const toFormLines = (payload) => {
   }));
 };
 
-const BomMappingPage = () => {
+const isMissingBomIssue = (issue) => {
+  const text = [
+    issue?.issueType,
+    issue?.issueTypeName,
+    issue?.code,
+    issue?.message,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+
+  return (
+    text.includes("MISSING") ||
+    text.includes("NO BOM") ||
+    text.includes("WITHOUT") ||
+    text.includes("NO_ACTIVE_BOM")
+  );
+};
+
+const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [productSearch, setProductSearch] = useState("");
@@ -78,6 +107,7 @@ const BomMappingPage = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [view, setView] = useState("products");
   const capabilities = useProcurementCapabilities({
     label: "ProcurementPlanning.BomMapping",
     resource: "ProcurementPlanning.BomMapping",
@@ -114,7 +144,7 @@ const BomMappingPage = () => {
         IsActive: true,
         PageNumber: 1,
         PageSize: 200,
-        procurementClassification:
+        ProcurementClassification:
           ProcurementItemClassification.FinishedProduct,
       });
       if (isLatestProductsRequest(requestId)) {
@@ -330,26 +360,76 @@ const BomMappingPage = () => {
   );
 
   const canSave = capabilities.canEdit || capabilities.canCreate;
+  const missingBomIssues = issues.filter(isMissingBomIssue);
+  const missingProductIds = new Set(
+    missingBomIssues
+      .map((issue) => getRecordId(issue, ["productId", "itemId"]))
+      .filter((id) => id !== null)
+      .map(String),
+  );
+  const productsWithBom =
+    products.length > 0
+      ? Math.max(0, products.length - missingProductIds.size)
+      : 0;
+  const tabs = [
+    { id: "products", label: "Products", icon: GitBranch },
+    { id: "issues", label: "Issues", icon: AlertTriangle, count: issues.length },
+  ];
 
   return (
     <section className="min-w-0 space-y-5">
-      <PageHeader
+      {!embedded && <PageHeader
         badge={<><GitBranch className="h-3.5 w-3.5" />Procurement Planning</>}
         title="BOM Mapping"
         description="Define the active material recipe for each finished product with explicit replace-all semantics and issue-driven navigation."
         actions={
-          <AppButton variant="secondary" onClick={() => { void loadProducts(); void loadIssues(); }}>
-            <RefreshCw className="h-4 w-4" />Refresh
+          <AppButton variant="secondary" disabled={productsLoading || issuesLoading} onClick={() => { void loadProducts(); void loadIssues(); }}>
+            <RotateCw className={`h-4 w-4 ${productsLoading || issuesLoading ? "animate-spin" : ""}`} />Refresh
           </AppButton>
         }
+      />}
+      <ProcurementStatCards
+        cards={[
+          productsLoading || issuesLoading || (!productsError && !issuesError)
+            ? {
+                icon: CheckCircle2,
+                label: "Products with BOM",
+                loading: productsLoading || issuesLoading,
+                value: productsWithBom,
+              }
+            : null,
+          bomLoading || selectedProduct
+            ? {
+                icon: Layers3,
+                label: "Components mapped",
+                loading: bomLoading,
+                value: fields.length,
+                hint: "Selected product",
+              }
+            : null,
+          issuesLoading || !issuesError
+            ? {
+                icon: PackageX,
+                label: "BOM configuration issues",
+                loading: issuesLoading,
+                value: issues.length,
+              }
+            : null,
+        ]}
       />
+      {moduleTabs}
+      <ProcurementTabs active={view} tabs={tabs} onChange={setView} />
 
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+      {view === "products" && <div className="grid min-w-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <ProcurementSectionCard title="Finished products" description="Active items classified as finished products.">
-          <div className="border-b border-slate-100 p-3">
+          <div className="m-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <div className="relative">
               <AppInput placeholder="Search products" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} />
               <Search className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
+            </div>
+            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+              <p className="text-xs text-slate-500">{productSearch.trim() ? "1 active filter" : "0 active filters"}</p>
+              {productSearch.trim() && <AppButton variant="ghost" onClick={() => setProductSearch("")}>Clear</AppButton>}
             </div>
           </div>
           {productsLoading ? <ProcurementLoadingRows columns={1} rows={8} /> : productsError ? <ProcurementErrorState error={productsError} onRetry={loadProducts} /> : filteredProducts.length === 0 ? <ProcurementEmptyState title="No finished products" description="Classify active products in Item Master before building their BOMs." /> : (
@@ -375,7 +455,7 @@ const BomMappingPage = () => {
                   {fields.map((field, index) => {
                     const selectedItem = componentValues[index]?.componentItem;
                     const unit = selectedItem?.unitName ?? selectedItem?.unit?.name ?? selectedItem?.unitCode ?? "-";
-                    return <div key={field.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 md:grid-cols-[minmax(0,1fr)_180px_120px_44px] md:items-start"><ProcurementItemAutocomplete disabled={!canSave} error={errors.components?.[index]?.componentItem?.message} excludeItemId={getRecordId(selectedProduct, ["itemId", "productId"])} label={`Component ${index + 1}`} mode="component" required value={selectedItem} onChange={(item) => setValue(`components.${index}.componentItem`, item, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled={!canSave} error={errors.components?.[index]?.quantityRequired?.message} label="Quantity required" min="0" step="any" type="number" required value={componentValues[index]?.quantityRequired ?? ""} onChange={(event) => setValue(`components.${index}.quantityRequired`, event.target.value, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled label="Unit" value={unit} /><div className="pt-6"><AppButton className="h-10 w-10 px-0 text-red-600" disabled={!canSave} variant="ghost" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></AppButton></div></div>;
+                    return <div key={field.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 md:grid-cols-[minmax(0,1fr)_180px_120px_44px] md:items-start"><ProcurementItemAutocomplete disabled={!canSave} error={errors.components?.[index]?.componentItem?.message} excludeItemId={getRecordId(selectedProduct, ["itemId", "productId"])} label={`Component ${index + 1}`} mode="component" required value={selectedItem} onChange={(item) => setValue(`components.${index}.componentItem`, item, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled={!canSave} error={errors.components?.[index]?.quantityRequired?.message} label="Quantity required" min="0" step="any" type="number" required value={componentValues[index]?.quantityRequired ?? ""} onChange={(event) => setValue(`components.${index}.quantityRequired`, event.target.value, { shouldDirty: true, shouldValidate: true })} /><AppInput disabled label="Unit" value={unit} /><div className="pt-6"><AppTooltip label="Remove component"><button type="button" aria-label="Remove component" className={PROCUREMENT_ROW_ACTION_DANGER_CLASS} disabled={!canSave} onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></button></AppTooltip></div></div>;
                   })}
                 </div>
               )}
@@ -384,13 +464,23 @@ const BomMappingPage = () => {
             </div>
           )}
         </ProcurementSectionCard>
-      </div>
+      </div>}
 
-      <ProcurementSectionCard title="BOM issues" description="Sold products without an active BOM and active BOMs containing inactive components appear here.">
-        {issuesLoading ? <ProcurementLoadingRows columns={5} rows={4} /> : issuesError ? <ProcurementErrorState error={issuesError} onRetry={loadIssues} /> : issues.length === 0 ? <ProcurementEmptyState icon={CheckCircle2} title="No BOM issues" description="All sold finished products have usable active BOMs." /> : (
-          <div className="overflow-x-auto"><table className="min-w-[760px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">#</th><th className="px-4 py-3">Product</th><th className="px-4 py-3">Issue</th><th className="px-4 py-3">Last sale</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{issues.map((issue, index) => <tr key={getRecordId(issue, ["productId", "itemId"]) ?? index}><td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{index + 1}</td><td className="px-4 py-3"><p className="font-semibold text-slate-800">{issue.productCode ?? issue.itemCode}</p><p className="text-xs text-slate-500">{issue.productName ?? issue.itemName}</p></td><td className="px-4 py-3"><ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{issue.issueTypeName ?? issue.issueType ?? "Needs attention"}</ProcurementPill><p className="mt-1 text-xs text-slate-600">{issue.message ?? issue.description}</p></td><td className="px-4 py-3 text-slate-600">{formatProcurementDate(issue.lastSalesDate ?? issue.lastSoldDate)}</td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-0.5"><AppButton className="h-8 px-3" variant="secondary" onClick={() => { const productId = getRecordId(issue, ["productId", "itemId"]); const product = products.find((item) => String(getRecordId(item, ["itemId", "productId"])) === String(productId)) ?? { itemCode: issue.productCode, itemId: productId, itemName: issue.productName }; selectProduct(product); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Open editor</AppButton></div></td></tr>)}</tbody></table></div>
+      {view === "issues" && <ProcurementSectionCard title="BOM issues" description="Sold products without an active BOM and active BOMs containing inactive components appear here.">
+        {issuesError ? <ProcurementErrorState error={issuesError} onRetry={loadIssues} /> : (
+          <ProcurementTable
+            columnCount={5}
+            emptyIcon={CheckCircle2}
+            emptyHint="All sold finished products have usable active BOMs."
+            emptyTitle={!issuesLoading && issues.length === 0 ? "No BOM issues" : undefined}
+            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Product</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Issue</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Last sale</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            loading={issuesLoading}
+            minWidth="min-w-[760px]"
+          >
+            {issues.map((issue, index) => <tr key={getRecordId(issue, ["productId", "itemId"]) ?? index}><td className="text-xs font-semibold tabular-nums text-slate-400">{index + 1}</td><td><p className="font-semibold text-slate-800">{issue.productCode ?? issue.itemCode}</p><p className="text-xs text-slate-500">{issue.productName ?? issue.itemName}</p></td><td><ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{issue.issueTypeName ?? issue.issueType ?? "Needs attention"}</ProcurementPill><p className="mt-1 text-xs text-slate-600">{issue.message ?? issue.description}</p></td><td>{formatProcurementDate(issue.lastSalesDate ?? issue.lastSoldDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Open BOM editor"><button type="button" aria-label="Open BOM editor" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => { const productId = getRecordId(issue, ["productId", "itemId"]); const product = products.find((item) => String(getRecordId(item, ["itemId", "productId"])) === String(productId)) ?? { itemCode: issue.productCode, itemId: productId, itemName: issue.productName }; selectProduct(product); setView("products"); window.scrollTo({ top: 0, behavior: "smooth" }); }}><GitBranch className="h-4 w-4" /></button></AppTooltip></div></td></tr>)}
+          </ProcurementTable>
         )}
-      </ProcurementSectionCard>
+      </ProcurementSectionCard>}
 
       <AppModal isBusy={saving} isOpen={confirmOpen} title="Replace this product's active BOM?" onClose={() => !saving && setConfirmOpen(false)}>
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><p className="text-sm font-semibold">Replace-all operation</p><p className="mt-0.5 text-xs leading-5">The submitted component list becomes the entire active BOM. Existing rows not in this list are made inactive and retained in backend history.</p></div></div>

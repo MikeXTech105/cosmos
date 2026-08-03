@@ -5,6 +5,8 @@ import {
   HR_ATTENDANCE_STATUS,
   HR_GENDER,
 } from "./hrEnums";
+import { ProcurementItemClassification } from "../constants/procurementEnums";
+import { normalizeItemClassification } from "./itemClassification";
 import { ITEM_TYPE } from "./itemTypes";
 
 export const loginSchema = z.object({
@@ -322,6 +324,12 @@ export const itemSchema = z
     categoryId: lookupId,
     unitId: lookupId,
     itemType: itemTypeSchema,
+    procurementClassification: z
+      .preprocess(
+        normalizeItemClassification,
+        z.nativeEnum(ProcurementItemClassification).nullable(),
+      )
+      .optional(),
     salesPrice: nonNegativeNumber("Sales price"),
     purchasePrice: nonNegativeNumber("Purchase price"),
     hsnCode: z.string().trim().optional(),

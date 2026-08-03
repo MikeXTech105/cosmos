@@ -1,28 +1,29 @@
 import {
   AlertTriangle,
   CheckCircle2,
+  Download,
   Inbox,
   Link2,
-  Pencil,
-  RefreshCw,
+  ListChecks,
+  RotateCw,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import AppTooltip from "../../../components/common/AppTooltip";
+import MaterialTypePill from "../../../components/common/MaterialTypePill";
 import PageHeader from "../../../components/common/PageHeader";
-import { PROCUREMENT_ITEM_CLASSIFICATION_LABELS } from "../../../constants/procurementEnums";
 import { skuMappingService } from "../../../services/procurement/skuMappingService";
 import {
   ProcurementChannelSelect,
-  ProcurementEmptyState,
   ProcurementErrorState,
   ProcurementInlineError,
   ProcurementItemAutocomplete,
-  ProcurementLoadingRows,
   ProcurementPagination,
   ProcurementPill,
   ProcurementSectionCard,
@@ -41,9 +42,13 @@ import {
   getProcurementError,
   getRecordId,
 } from "../procurementHelpers";
-import useProcurementCapabilities from "../useProcurementCapabilities";
 import useActiveSalesChannels from "../useProcurementChannels";
 import useLatestRequest from "../../../hooks/useLatestRequest";
+import ProcurementStatCards from "../ProcurementStatCards";
+import ProcurementTable, {
+  PROCUREMENT_ROW_ACTION_CLASS,
+  PROCUREMENT_TABLE_HEADER_CLASS,
+} from "../ProcurementTable";
 
 const emptyForm = () => ({
   channelProductName: "",
@@ -53,7 +58,32 @@ const emptyForm = () => ({
   salesChannelId: "",
 });
 
-const MappingModal = ({
+const downloadMappingsCsv = (rows) => {
+  const escape = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+  const csvRows = [
+    ["Channel", "Channel SKU", "Channel product", "Resolved item", "Status"],
+    ...rows.map((row) => [
+      row.channelCode ?? row.channelName,
+      row.channelSku,
+      row.channelProductName,
+      getItemCode(row.item) || row.itemCode,
+      getProcurementBoolean(row.isActive, true) ? "Active" : "Inactive",
+    ]),
+  ];
+  const url = URL.createObjectURL(
+    new Blob(
+      [`\uFEFF${csvRows.map((row) => row.map(escape).join(",")).join("\r\n")}`],
+      { type: "text/csv;charset=utf-8" },
+    ),
+  );
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "procurement-sku-mappings.csv";
+  anchor.click();
+  URL.revokeObjectURL(url);
+};
+
+export const MappingModal = ({
   channels,
   isOpen,
   onClose,
@@ -205,9 +235,9 @@ const MappingModal = ({
           <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <p className="text-sm font-semibold">Legacy item classification</p>
+              <p className="text-sm font-semibold">Legacy material type</p>
               <p className="mt-0.5 text-xs leading-5">
-                This item has no procurement classification. It remains selectable for compatibility, but classify it as a finished product in Item Master.
+                This item has no material type. It remains selectable for compatibility, but classify it as a finished product in Item Master.
               </p>
             </div>
           </div>
@@ -237,7 +267,7 @@ const MappingModal = ({
   );
 };
 
-const SkuMappingPage = () => {
+const SkuMappingPage = ({ embedded = false, moduleTabs = null }) => {
   const [tab, setTab] = useState("unmapped");
   const [unmappedData, setUnmappedData] = useState(null);
   const [mappingData, setMappingData] = useState(null);
@@ -251,7 +281,6 @@ const SkuMappingPage = () => {
   const [search, setSearch] = useState("");
   const [channelId, setChannelId] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [modal, setModal] = useState({ open: false, record: null });
   const {
     beginRequest: beginUnmappedRequest,
     isLatestRequest: isLatestUnmappedRequest,
@@ -261,12 +290,6 @@ const SkuMappingPage = () => {
     isLatestRequest: isLatestMappingRequest,
   } = useLatestRequest();
   const { channels, error: channelsError } = useActiveSalesChannels();
-  const capabilities = useProcurementCapabilities({
-    label: "ProcurementPlanning.SkuMapping",
-    resource: "ProcurementPlanning.SkuMapping",
-    route: "/procurement/sku-mapping",
-  });
-
   const loadUnmapped = useCallback(async () => {
     const requestId = beginUnmappedRequest();
     setUnmappedLoading(true);
@@ -329,10 +352,6 @@ const SkuMappingPage = () => {
     return () => window.clearTimeout(timeout);
   }, [beginMappingRequest, beginUnmappedRequest, loadMappings, loadUnmapped, tab]);
 
-  const refreshAll = useCallback(async () => {
-    await Promise.all([loadUnmapped(), loadMappings()]);
-  }, [loadMappings, loadUnmapped]);
-
   const unmappedRows = getCollection(unmappedData, ["unmapped", "unmappedSkus"]);
   const mappingRows = getCollection(mappingData, ["mappings", "skuMappings"]);
   const unmappedPagination = getPagination(unmappedData, unmappedRows.length);
@@ -340,34 +359,93 @@ const SkuMappingPage = () => {
   const unmappedCount = unmappedPagination.totalCount;
   const currentLoading = tab === "unmapped" ? unmappedLoading : mappingLoading;
   const currentError = tab === "unmapped" ? unmappedError : mappingError;
+  const totalMappings =
+    mappingData?.totalCount ??
+    mappingData?.summary?.totalCount ??
+    mappingPagination.totalCount;
+  const activeMappings =
+    mappingData?.activeCount ??
+    mappingData?.summary?.activeCount ??
+    (activeFilter === "active"
+      ? mappingPagination.totalCount
+      : mappingData !== null &&
+          activeFilter === "all" &&
+          mappingPagination.totalCount === mappingRows.length
+        ? mappingRows.filter((row) => getProcurementBoolean(row.isActive, true)).length
+        : null);
+  const activeFilterCount = [
+    Boolean(search.trim()),
+    Boolean(channelId),
+    tab === "all" && activeFilter !== "all",
+  ].filter(Boolean).length;
 
   const tabs = useMemo(
     () => [
-      { id: "unmapped", label: "Unmapped queue", icon: Inbox, count: unmappedCount },
-      { id: "all", label: "All mappings", icon: Link2 },
+      { id: "all", label: "Mappings", icon: Link2 },
+      { id: "unmapped", label: "Unmapped", icon: Inbox, count: unmappedCount },
     ],
     [unmappedCount],
   );
 
   return (
     <section className="min-w-0 space-y-5">
-      <PageHeader
+      {!embedded && <PageHeader
         badge={<><Link2 className="h-3.5 w-3.5" />Procurement Planning</>}
         title="Channel SKU Mapping"
         description="Clear unresolved channel SKUs like an inbox so every sales row resolves to a finished product."
         actions={
           <>
             <AppButton variant="secondary" disabled={currentLoading} onClick={() => tab === "unmapped" ? void loadUnmapped() : void loadMappings()}>
-              <RefreshCw className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
+              <RotateCw className={`h-4 w-4 ${currentLoading ? "animate-spin" : ""}`} />Refresh
             </AppButton>
-            {capabilities.canCreate && (
-              <AppButton onClick={() => setModal({ open: true, record: null })}>
-                <Link2 className="h-4 w-4" />New mapping
+            <AppButton
+              disabled={mappingRows.length === 0}
+              variant="secondary"
+              onClick={() => downloadMappingsCsv(mappingRows)}
+            >
+              <Download className="h-4 w-4" />Export
+            </AppButton>
+            <Link to="/supply-chain/item-mappings">
+              <AppButton>
+                <Link2 className="h-4 w-4" />Manage in Supply Chain
               </AppButton>
-            )}
+            </Link>
           </>
         }
+      />}
+      <ProcurementStatCards
+        cards={[
+          mappingLoading || mappingData !== null
+            ? {
+                icon: ListChecks,
+                label: "Total mappings",
+                loading: mappingLoading || mappingData === null,
+                value: totalMappings,
+              }
+            : null,
+          activeMappings === null || activeMappings === undefined
+            ? null
+            : { icon: CheckCircle2, label: "Active", value: activeMappings },
+          unmappedLoading || unmappedData !== null
+            ? {
+                icon: Inbox,
+                label: "Unmapped SKUs",
+                loading: unmappedLoading,
+                value: unmappedCount,
+              }
+            : null,
+        ]}
       />
+      {moduleTabs}
+      <div className="rounded-xl border border-brand/20 bg-brand-light px-4 py-3 text-sm text-slate-700">
+        This is a read-only compatibility view.{" "}
+        <Link
+          className="font-semibold text-brand hover:underline"
+          to="/supply-chain/item-mappings"
+        >
+          Mappings are managed in Supply Chain → Item Mappings
+        </Link>
+      </div>
       {unmappedCount > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -379,22 +457,44 @@ const SkuMappingPage = () => {
       )}
       <ProcurementTabs active={tab} tabs={tabs} onChange={(value) => { setTab(value); setSearch(""); setChannelId(""); }} />
       <ProcurementSectionCard>
-        <div className="grid gap-3 border-b border-slate-100 p-4 md:grid-cols-[minmax(0,1fr)_260px_180px]">
+        <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px_180px]">
           <AppInput label="Search" placeholder="Channel SKU, product, or item" value={search} onChange={(event) => { setSearch(event.target.value); setUnmappedPage(1); setMappingPage(1); }} />
           <ProcurementChannelSelect channels={channels} label="Sales channel" placeholder="All active channels" value={channelId} onChange={(value) => { setChannelId(value); setUnmappedPage(1); setMappingPage(1); }} />
           {tab === "all" && <AppSelect label="Status" options={[{ label: "All status", value: "all" }, { label: "Active", value: "active" }, { label: "Inactive", value: "inactive" }]} value={activeFilter} onChange={(value) => { setActiveFilter(value); setMappingPage(1); }} />}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+            <p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p>
+            {activeFilterCount > 0 && <AppButton variant="ghost" onClick={() => { setSearch(""); setChannelId(""); setActiveFilter("all"); setUnmappedPage(1); setMappingPage(1); }}>Clear</AppButton>}
+          </div>
         </div>
         {channelsError && <div className="p-4 pb-0"><ProcurementInlineError title="Channels unavailable" message={getProcurementError(channelsError)} /></div>}
-        {currentLoading ? <ProcurementLoadingRows columns={tab === "unmapped" ? 7 : 8} /> : currentError ? <ProcurementErrorState error={currentError} onRetry={tab === "unmapped" ? loadUnmapped : loadMappings} /> : tab === "unmapped" ? (
-          unmappedRows.length === 0 ? <ProcurementEmptyState icon={CheckCircle2} title="Unmapped inbox is clear" description="Every channel SKU in retained sales history has an active product mapping." /> : (
-            <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">#</th><th className="px-4 py-3">Channel</th><th className="px-4 py-3">Channel SKU</th><th className="px-4 py-3">Product name</th><th className="px-4 py-3 text-right">Occurrences</th><th className="px-4 py-3">Seen between</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{unmappedRows.map((row, index) => <tr key={`${row.salesChannelId ?? row.channelCode}-${row.channelSku}`} className="hover:bg-amber-50/40"><td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(unmappedPage - 1) * pageSize + index + 1}</td><td className="px-4 py-3"><ProcurementPill tone="slate">{row.channelCode ?? row.channelName}</ProcurementPill></td><td className="px-4 py-3 font-semibold text-slate-800">{row.channelSku}</td><td className="max-w-72 px-4 py-3 text-slate-600">{row.channelProductName ?? "-"}</td><td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-900">{formatProcurementInteger(row.occurrenceCount ?? row.count)}</td><td className="px-4 py-3 text-xs text-slate-600">{formatProcurementDate(row.firstSeenDate ?? row.fromDate)} – {formatProcurementDate(row.lastSeenDate ?? row.toDate)}</td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-0.5">{capabilities.canCreate && <AppButton className="h-8 px-3" onClick={() => setModal({ open: true, record: row })}><Link2 className="h-4 w-4" />Map</AppButton>}</div></td></tr>)}</tbody></table></div>
-          )
-        ) : mappingRows.length === 0 ? <ProcurementEmptyState title="No SKU mappings found" /> : (
-          <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-left"><thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">#</th><th className="px-4 py-3">Channel</th><th className="px-4 py-3">Channel SKU</th><th className="px-4 py-3">Channel product</th><th className="px-4 py-3">Resolved item</th><th className="px-4 py-3">Classification</th><th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y divide-slate-100 text-sm">{mappingRows.map((row, index) => { const active = getProcurementBoolean(row.isActive, true); const classification = row.procurementClassification ?? row.item?.procurementClassification; return <tr key={getRecordId(row, ["skuMappingId"])}><td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(mappingPage - 1) * pageSize + index + 1}</td><td className="px-4 py-3 text-slate-600">{row.channelCode ?? row.channelName}</td><td className="px-4 py-3 font-semibold text-slate-800">{row.channelSku}</td><td className="px-4 py-3 text-slate-600">{row.channelProductName ?? "-"}</td><td className="px-4 py-3"><p className="font-medium text-slate-800">{getItemCode(row.item) || row.itemCode}</p><p className="text-xs text-slate-500">{getItemName(row.item) || row.itemName}</p></td><td className="px-4 py-3"><ProcurementPill tone={classification == null ? "amber" : "slate"}>{classification == null ? "Legacy / unclassified" : PROCUREMENT_ITEM_CLASSIFICATION_LABELS[classification] ?? classification}</ProcurementPill></td><td className="px-4 py-3"><ProcurementPill tone={active ? "emerald" : "slate"}>{active ? "Active" : "Inactive"}</ProcurementPill></td><td className="px-4 py-3 text-right"><div className="flex items-center justify-end gap-0.5">{capabilities.canEdit && <AppButton className="h-8 px-3" variant="secondary" onClick={() => setModal({ open: true, record: row })}><Pencil className="h-4 w-4" />Edit</AppButton>}</div></td></tr>; })}</tbody></table></div>
+        {currentError ? <ProcurementErrorState error={currentError} onRetry={tab === "unmapped" ? loadUnmapped : loadMappings} /> : tab === "unmapped" ? (
+          <ProcurementTable
+            columnCount={7}
+            emptyIcon={CheckCircle2}
+            emptyHint="Every channel SKU in retained sales history has an active product mapping."
+            emptyTitle={!unmappedLoading && unmappedRows.length === 0 ? "Unmapped inbox is clear" : undefined}
+            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Product name</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Occurrences</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Seen between</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            loading={unmappedLoading}
+            minWidth="min-w-[980px]"
+          >
+            {unmappedRows.map((row, index) => <tr key={`${row.salesChannelId ?? row.channelCode}-${row.channelSku}`}><td className="text-xs font-semibold tabular-nums text-slate-400">{(unmappedPage - 1) * pageSize + index + 1}</td><td><ProcurementPill tone="slate">{row.channelCode ?? row.channelName}</ProcurementPill></td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementInteger(row.occurrenceCount ?? row.count)}</td><td className="text-xs">{formatProcurementDate(row.firstSeenDate ?? row.fromDate)} – {formatProcurementDate(row.lastSeenDate ?? row.toDate)}</td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this SKU in Supply Chain"><Link aria-label="Manage SKU in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 className="h-4 w-4" /></Link></AppTooltip></div></td></tr>)}
+          </ProcurementTable>
+        ) : (
+          <ProcurementTable
+            columnCount={8}
+            emptyHint="Mappings created in Supply Chain will appear here. Clear the current filters if needed."
+            emptyTitle={!mappingLoading && mappingRows.length === 0 ? "No SKU mappings yet" : undefined}
+            head={<><th className={PROCUREMENT_TABLE_HEADER_CLASS}>#</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel SKU</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Channel product</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Resolved item</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Material type</th><th className={PROCUREMENT_TABLE_HEADER_CLASS}>Status</th><th className={`${PROCUREMENT_TABLE_HEADER_CLASS} text-right`}>Action</th></>}
+            loading={mappingLoading}
+            minWidth="min-w-[980px]"
+          >
+            {mappingRows.map((row, index) => { const active = getProcurementBoolean(row.isActive, true); const classification = row.procurementClassification ?? row.item?.procurementClassification; return <tr key={getRecordId(row, ["skuMappingId"])}><td className="text-xs font-semibold tabular-nums text-slate-400">{(mappingPage - 1) * pageSize + index + 1}</td><td>{row.channelCode ?? row.channelName}</td><td className="font-semibold text-slate-800">{row.channelSku}</td><td>{row.channelProductName ?? "-"}</td><td><p className="font-medium text-slate-800">{getItemCode(row.item) || row.itemCode}</p><p className="text-xs text-slate-500">{getItemName(row.item) || row.itemName}</p></td><td><MaterialTypePill value={classification} /></td><td><ProcurementPill tone={active ? "emerald" : "slate"}>{active ? "Active" : "Inactive"}</ProcurementPill></td><td><div className="flex items-center justify-end gap-0.5"><AppTooltip label="Manage this mapping in Supply Chain"><Link aria-label="Manage mapping in Supply Chain" className={PROCUREMENT_ROW_ACTION_CLASS} to="/supply-chain/item-mappings"><Link2 className="h-4 w-4" /></Link></AppTooltip></div></td></tr>; })}
+          </ProcurementTable>
         )}
         {tab === "unmapped" ? <ProcurementPagination disabled={unmappedLoading} {...unmappedPagination} onPageChange={setUnmappedPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setUnmappedPage(1); }} /> : <ProcurementPagination disabled={mappingLoading} {...mappingPagination} onPageChange={setMappingPage} onPageSizeChange={(value) => { setPageSize(Number(value)); setMappingPage(1); }} />}
       </ProcurementSectionCard>
-      <MappingModal channels={channels} isOpen={modal.open} record={modal.record} onClose={() => setModal({ open: false, record: null })} onSaved={refreshAll} />
     </section>
   );
 };

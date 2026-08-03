@@ -19,6 +19,10 @@ export const unwrapResponse = (response) => {
   const data = hasDataEnvelope ? responseData.data : responseData;
 
   return {
+    correlationId:
+      responseData?.correlationId ??
+      data?.correlationId ??
+      null,
     data,
     message: responseData?.message ?? data?.message,
     meta:

@@ -323,6 +323,188 @@ export const ENDPOINTS = {
   PP_PLAN_RUN_EXPORT: (id) =>
     `/api/v1/procurement-planning/plans/runs/${id}/export`,
 
+  PP_PLAN_RUN_CANCEL: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/cancel`,
+
+  // Supply Chain - shared masters
+  SC_CHANNELS: "/api/v1/supply-chain/channels",
+
+  SC_CHANNEL_BY_ID: (id) => `/api/v1/supply-chain/channels/${id}`,
+
+  SC_CHANNEL_STATUS: (id) => `/api/v1/supply-chain/channels/${id}/status`,
+
+  SC_WAREHOUSES: "/api/v1/supply-chain/warehouses",
+
+  SC_WAREHOUSE_BY_ID: (id) => `/api/v1/supply-chain/warehouses/${id}`,
+
+  SC_WAREHOUSE_STATUS: (id) =>
+    `/api/v1/supply-chain/warehouses/${id}/status`,
+
+  SC_WAREHOUSE_DROPDOWN: "/api/v1/supply-chain/warehouses/dropdown",
+
+  SC_ITEM_MAPPINGS: "/api/v1/supply-chain/item-mappings",
+
+  SC_ITEM_MAPPING_BY_ID: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}`,
+
+  SC_ITEM_MAPPING_STATUS: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}/status`,
+
+  SC_ITEM_MAPPINGS_UNMATCHED:
+    "/api/v1/supply-chain/item-mappings/unmatched",
+
+  SC_PACKAGING_PROFILES: "/api/v1/supply-chain/packaging-profiles",
+
+  SC_PACKAGING_PROFILE_BY_ID: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}`,
+
+  SC_PACKAGING_PROFILE_SET_DEFAULT: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}/set-default`,
+
+  SC_IMPORT_VALIDATE: "/api/v1/supply-chain/imports/validate",
+
+  SC_IMPORTS: "/api/v1/supply-chain/imports",
+
+  SC_IMPORT_BY_ID: (id) => `/api/v1/supply-chain/imports/${id}`,
+
+  SC_IMPORT_ERRORS: (id) => `/api/v1/supply-chain/imports/${id}/errors`,
+
+  SC_IMPORT_ERROR_EXPORT: (id) =>
+    `/api/v1/supply-chain/imports/${id}/error-export`,
+
+  SC_IMPORT_COMMIT: (id) => `/api/v1/supply-chain/imports/${id}/commit`,
+
+  SC_IMPORT_CANCEL: (id) => `/api/v1/supply-chain/imports/${id}/cancel`,
+
+  // Dispatch Planning
+  DP_SETTINGS: "/api/v1/dispatch-planning/settings",
+
+  DP_SETTING_BY_ID: (id) => `/api/v1/dispatch-planning/settings/${id}`,
+
+  DP_IMPORT_VALIDATE: "/api/v1/dispatch-planning/imports/validate",
+
+  DP_IMPORTS: "/api/v1/dispatch-planning/imports",
+
+  DP_IMPORT_COMMIT: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/commit`,
+
+  DP_IMPORT_CANCEL: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/cancel`,
+
+  DP_RUNS: "/api/v1/dispatch-planning/runs",
+
+  DP_RUN_BY_ID: (id) => `/api/v1/dispatch-planning/runs/${id}`,
+
+  DP_RUN_CALCULATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/calculate`,
+
+  DP_RUN_RECOMMENDATIONS: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/recommendations`,
+
+  DP_RUN_RECOMMENDATION: (runId, recommendationId) =>
+    `/api/v1/dispatch-planning/runs/${runId}/recommendations/${recommendationId}`,
+
+  DP_RUN_ALLOCATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/allocate`,
+
+  DP_RUN_FINALIZE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/finalize`,
+
+  DP_RUN_CANCEL: (id) => `/api/v1/dispatch-planning/runs/${id}/cancel`,
+
+  DP_RECOMMENDATION_REPORTS:
+    "/api/v1/dispatch-planning/reports/recommendations",
+
+  DP_RECOMMENDATION_REPORT_EXPORT:
+    "/api/v1/dispatch-planning/reports/recommendations/export",
+
+  // Shipment Operations
+  SO_SHIPMENTS: "/api/v1/shipment-operations/shipments",
+
+  SO_SHIPMENT_BY_ID: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}`,
+
+  SO_SHIPMENTS_MANUAL:
+    "/api/v1/shipment-operations/shipments/manual",
+
+  SO_SHIPMENTS_FROM_DISPATCH:
+    "/api/v1/shipment-operations/shipments/from-dispatch-planning",
+
+  SO_SHIPMENT_TRANSITION: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/transition`,
+
+  SO_SHIPMENT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/cancel`,
+
+  SO_PACKING_SUGGESTIONS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packing-suggestions`,
+
+  SO_PACKAGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packages`,
+
+  SO_DOCKETS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/dockets`,
+
+  SO_APPOINTMENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/appointments`,
+
+  SO_TRACKING_EVENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/tracking-events`,
+
+  SO_DELIVERY_ATTEMPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/delivery-attempts`,
+
+  SO_RECEIPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/receipts`,
+
+  SO_RETURNS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/returns`,
+
+  SO_RETURN_RECEIVE: (id) =>
+    `/api/v1/shipment-operations/returns/${id}/receive`,
+
+  SO_FREIGHT_CHARGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/freight-charges`,
+
+  SO_FREIGHT_SUBMIT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/submit`,
+
+  SO_FREIGHT_APPROVE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/approve`,
+
+  SO_FREIGHT_REJECT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/reject`,
+
+  SO_FREIGHT_MARK_PAID: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/mark-paid`,
+
+  SO_FREIGHT_ROJMEL_EXPENSE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/rojmel-expense`,
+
+  SO_TRANSPORTERS: "/api/v1/shipment-operations/transporters",
+
+  SO_TRANSPORTER_BY_ID: (partyId) =>
+    `/api/v1/shipment-operations/transporters/${partyId}`,
+
+  SO_REPORTS: "/api/v1/shipment-operations/reports",
+
+  SO_REPORTS_DASHBOARD:
+    "/api/v1/shipment-operations/reports/dashboard",
+
+  SO_REPORTS_EXPORT:
+    "/api/v1/shipment-operations/reports/export",
+
+  SO_IMPORT_VALIDATE:
+    "/api/v1/shipment-operations/imports/validate",
+
+  SO_IMPORTS: "/api/v1/shipment-operations/imports",
+
+  SO_IMPORT_COMMIT: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/commit`,
+
+  SO_IMPORT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/cancel`,
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",

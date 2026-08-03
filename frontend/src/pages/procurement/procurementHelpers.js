@@ -73,16 +73,32 @@ export const toNumberOrNull = (value) => {
   return Number.isFinite(number) ? number : null;
 };
 
-export const formatProcurementDecimal = (value, fallback = EMPTY_VALUE) => {
+export const formatProcurementDecimal = (
+  value,
+  fallback = EMPTY_VALUE,
+  options = {},
+) => {
+  const hasOptionsAsFallback =
+    fallback !== null && typeof fallback === "object" && !Array.isArray(fallback);
+  const resolvedFallback = hasOptionsAsFallback ? EMPTY_VALUE : fallback;
+  const resolvedOptions = hasOptionsAsFallback ? fallback : options;
+  const requestedMaximum = Number(resolvedOptions?.maxFractionDigits);
+  const maximumFractionDigits = Number.isFinite(requestedMaximum)
+    ? Math.min(6, Math.max(0, Math.trunc(requestedMaximum)))
+    : 2;
   const number = toNumberOrNull(value);
 
   return number === null
-    ? fallback
+    ? resolvedFallback
     : number.toLocaleString("en-IN", {
-        maximumFractionDigits: 6,
+        maximumFractionDigits,
+        minimumFractionDigits: 0,
         useGrouping: true,
       });
 };
+
+export const formatProcurementQuantity = (value, fallback = EMPTY_VALUE) =>
+  formatProcurementDecimal(value, fallback, { maxFractionDigits: 2 });
 
 export const formatProcurementInteger = (value, fallback = EMPTY_VALUE) => {
   const number = toNumberOrNull(value);
@@ -257,13 +273,13 @@ export const getPlanningFixRoute = (message) => {
   const code = String(message?.code ?? message?.messageCode ?? "").toUpperCase();
 
   if (code.includes("BOM")) {
-    return "/procurement/bom-mapping";
+    return "/procurement/setup?tab=bom";
   }
   if (code.includes("SKU") || code.includes("UNMAPPED")) {
-    return "/procurement/sku-mapping";
+    return "/procurement/setup?tab=sku";
   }
   if (code.includes("SETTING") || code.includes("LEAD_TIME")) {
-    return "/procurement/settings";
+    return "/procurement/setup?tab=settings";
   }
 
   return null;
@@ -293,4 +309,4 @@ export const hasDecimalPrecision = (value, maximum = 6) => {
 
 export const PROCUREMENT_PAGE_SIZE_OPTIONS = [20, 50, 100, 200];
 export const INVENTORY_BASIS_MESSAGE =
-  "Planning uses global physical on-hand inventory. Inbound stock, open purchase orders, and reservations are not included.";
+  "Planning uses global Items.CurrentStock plus the latest valid inbound snapshot. This is not warehouse-level allocation.";
