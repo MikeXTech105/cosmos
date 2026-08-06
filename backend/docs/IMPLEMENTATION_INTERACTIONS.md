@@ -1,5 +1,17 @@
 # Implementation Interactions
 
+## 2026-08-03 - Staging Database Cleanup Assets
+
+Added repository-reviewed, SQL Server staging-cleanup assets without changing application code, migrations, stored-procedure business logic, or existing setup scripts:
+
+- `backend/database/staging/20260803_prepare_clean_staging_database.sql`
+- `backend/database/staging/20260803_verify_clean_staging_database.sql`
+- `backend/docs/STAGING_DATABASE_CLEANUP.md`
+
+The cleanup script defaults to dry run and classifies every current repository application table as preserve, selective, transactional deletion, or fail-closed unresolved. It requires an exact target database name, verified backup acknowledgement, a flag-detected System Owner, a separately configured staging administrator/role, trusted constraints, and review of any extension table before destructive execution. It preserves schema/program objects, roles/pages/permissions, master/configuration data and selected master policies while clearing operational data, sessions/tokens, financial/stock history, planning/dispatch/shipment imports and snapshots. It rolls back on error or in-transaction post-check failure and restores the append-only shipment-tracking trigger state.
+
+The companion verification script is read-only and returns PASS/FAIL/WARNING for account protection, transactional emptiness, stock/balance policy, master counts, session removal, constraint/trigger state, FK orphans, role/page links, and supply-chain mapping integrity. Neither cleanup nor verification was executed against a database as part of creating these assets.
+
 ## 2026-07-16 - Protected System Owner
 
 Original requirement:

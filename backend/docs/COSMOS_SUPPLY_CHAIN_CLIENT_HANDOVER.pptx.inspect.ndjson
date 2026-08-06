@@ -1,0 +1,158 @@
+{"kind":"deck","id":"pr/012qgs","name":"Deck"}
+{"kind":"layout","layoutId":"2e617b2e-415d-4c61-bcb8-25f8f6083a06","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"54357eb9-3f1a-46ec-b4d1-984247e32a23","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/uxcntf","slide":1,"title":"COSMOS ERP","textShapes":6}
+{"kind":"shape","id":"sh/ovud8vil","slide":1,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/nulwfah0","slide":1,"bbox":[0,0,670,720]}
+{"kind":"shape","id":"sh/mtcv650v","slide":1,"bbox":[0,0,14,720]}
+{"kind":"textbox","id":"sh/07ad4vip","slide":1,"text":"COSMOS ERP","textPreview":"COSMOS ERP","textChars":10,"textLines":1,"bbox":[72,68,230,32]}
+{"kind":"textbox","id":"sh/z61wbq14","slide":1,"text":"Supply Chain\nmade simple","textPreview":"Supply Chain | made simple","textChars":24,"textLines":2,"bbox":[72,158,540,175]}
+{"kind":"textbox","id":"sh/e5sv2l0j","slide":1,"text":"A client-friendly overview of how planning, dispatch and shipments work together.","textPreview":"A client-friendly overview of how planning, dispatch and shipments work together.","textChars":81,"textLines":1,"bbox":[72,364,500,95]}
+{"kind":"shape","id":"sh/d4je9gjy","slide":1,"bbox":[72,520,490,88]}
+{"kind":"textbox","id":"sh/c3ad0bid","slide":1,"text":"Plan better  →  Send clearly  →  Know what changed","textPreview":"Plan better  →  Send clearly  →  Know what changed","textChars":50,"textLines":1,"bbox":[98,546,438,34]}
+{"kind":"textbox","id":"sh/mpw3yx8z","slide":1,"text":"COSMOS ERP  |  Client handover overview","textPreview":"COSMOS ERP  |  Client handover overview","textChars":39,"textLines":1,"bbox":[48,678,420,20]}
+{"kind":"textbox","id":"sh/nq5kr294","slide":1,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[1190,678,40,20]}
+{"kind":"image","id":"im/83atszy1","slide":1,"name":"","geometry":"rect","alt":"Orderly warehouse and dispatch team preparing a shipment","bbox":[670,0,610,720]}
+{"kind":"notes","id":"nt/uxcntf","slide":1,"text":""}
+{"kind":"slide","id":"sl/kbdzj8","slide":2,"title":"2","textShapes":5}
+{"kind":"textbox","id":"sh/1cbe9ob6","slide":2,"name":"Google-Shape-532-p58-2","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/epkve9cv","slide":2,"name":"Google-Shape-533-p58-3","text":"Three jobs, one connected process","textPreview":"Three jobs, one connected process","textChars":33,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"textbox","id":"sh/fqtw7et0","slide":2,"name":"Google-Shape-558-p61-4","text":"Procurement\nWhat should we arrange or buy?","textPreview":"Procurement | What should we arrange or buy?","textChars":42,"textLines":2,"bbox":[41.33,421.33,374.67,208]}
+{"kind":"textbox","id":"sh/ofmdk3ax","slide":2,"name":"Google-Shape-559-p61-5","text":"Dispatch\nWhere should available stock go?","textPreview":"Dispatch | Where should available stock go?","textChars":41,"textLines":2,"bbox":[453.33,421.33,374.67,208]}
+{"kind":"textbox","id":"sh/pgved8bi","slide":2,"name":"Google-Shape-560-p61-6","text":"Shipment Operations\nHas it left, arrived or returned?","textPreview":"Shipment Operations | Has it left, arrived or returned?","textChars":53,"textLines":2,"bbox":[864.28,421.33,374.67,208]}
+{"kind":"shape","id":"sh/2dkvitcr","slide":2,"name":"Google-Shape-561-p61-7","bbox":[449.33,355.1,33.13,37.15]}
+{"kind":"shape","id":"sh/netwbytc","slide":2,"name":"Google-Shape-562-p61-8","bbox":[42.14,354.67,34.34,38.01]}
+{"kind":"shape","id":"sh/cjmxo3at","slide":2,"name":"Google-Shape-563-p61-9","bbox":[864.21,357.67,35.55,28.44]}
+{"kind":"notes","id":"nt/kbdzj8","slide":2,"text":""}
+{"kind":"slide","id":"sl/vjr8qz","slide":3,"title":"3","textShapes":8}
+{"kind":"textbox","id":"sh/tkzidwne","slide":3,"name":"Slide-Number-Placeholder-3-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/6hoziho3","slide":3,"name":"Title-10-3","text":"From planning to proven delivery","textPreview":"From planning to proven delivery","textChars":32,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"shape","id":"sh/7ix0bm5o","slide":3,"name":"Google-Shape-2259-p159-4","bbox":[35.46,354.2,1285.61,0.03]}
+{"kind":"shape","id":"sh/kf6hg76x","slide":3,"name":"Google-Shape-2260-p159-5","bbox":[35.46,348.58,11.24,11.24]}
+{"kind":"shape","id":"sh/lgfi9cni","slide":3,"name":"Google-Shape-2261-p159-6","bbox":[446.38,348.58,11.24,11.24]}
+{"kind":"shape","id":"sh/ytozehor","slide":3,"name":"Google-Shape-2262-p159-7","bbox":[858.38,348.58,11.24,11.24]}
+{"kind":"textbox","id":"sh/jex0725c","slide":3,"name":"Content-Placeholder-15-8","text":"1. Prepare","textPreview":"1. Prepare","textChars":10,"textLines":1,"bbox":[41.33,298.51,169.33,27.55]}
+{"kind":"textbox","id":"sh/4ba1sbm1","slide":3,"name":"Content-Placeholder-15-9","text":"2. Decide","textPreview":"2. Decide","textChars":9,"textLines":1,"bbox":[450.83,298.51,169.33,27.55]}
+{"kind":"textbox","id":"sh/5cjilgnm","slide":3,"name":"Content-Placeholder-15-10","text":"3. Confirm","textPreview":"3. Confirm","textChars":10,"textLines":1,"bbox":[863.33,298.51,169.33,27.55]}
+{"kind":"textbox","id":"sh/d8z6lgnu","slide":3,"name":"Text-Placeholder-16-11","text":"Protected plans\n\nThe team reviews recommendations before acting.","textPreview":"Protected plans |  | The team reviews recommendations before acting.","textChars":64,"textLines":3,"bbox":[453.24,401.33,331.35,166.54]}
+{"kind":"textbox","id":"sh/c7q5cbm9","slide":3,"name":"Text-Placeholder-16-12","text":"Clean inputs\n\nProducts, warehouses, sales history and rules.","textPreview":"Clean inputs |  | Products, warehouses, sales history and rules.","textChars":60,"textLines":3,"bbox":[41.98,401.33,331.35,166.54]}
+{"kind":"textbox","id":"sh/r6h4jq5o","slide":3,"name":"Text-Placeholder-16-13","text":"Real proof\n\nShipment, receipt and return events create the history.","textPreview":"Real proof |  | Shipment, receipt and return events create the history.","textChars":67,"textLines":3,"bbox":[858.57,401.33,331.35,166.54]}
+{"kind":"notes","id":"nt/vjr8qz","slide":3,"text":""}
+{"kind":"slide","id":"sl/d2fhau","slide":4,"title":"4","textShapes":7}
+{"kind":"textbox","id":"sh/0nyhs72p","slide":4,"name":"Google-Shape-532-p58-2","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/fmpgz2l4","slide":4,"name":"Google-Shape-533-p58-3","text":"Start with reliable operating data","textPreview":"Start with reliable operating data","textChars":34,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"shape","id":"sh/e1gzqxkj","slide":4,"name":"Rounded-Rectangle-6-4","bbox":[657.68,248.8,580.99,172]}
+{"kind":"textbox","id":"sh/psri5c36","slide":4,"name":"Content-Placeholder-10-5","text":"Channels and warehouses\n\nWhere products are sold, held or supplied.","textPreview":"Channels and warehouses |  | Where products are sold, held or supplied.","textChars":67,"textLines":3,"bbox":[688.89,279.77,523.56,110.07]}
+{"kind":"shape","id":"sh/oryhwr2l","slide":4,"name":"Rounded-Rectangle-8-6","bbox":[42.94,248.8,580.99,172]}
+{"kind":"textbox","id":"sh/nqpg3ml0","slide":4,"name":"Content-Placeholder-10-7","text":"Products and ingredients\n\nWhat each finished product contains.","textPreview":"Products and ingredients |  | What each finished product contains.","textChars":62,"textLines":3,"bbox":[74.15,279.77,523.56,110.07]}
+{"kind":"shape","id":"sh/2pgzuhkf","slide":4,"name":"Rounded-Rectangle-1-8","bbox":[657.68,458.8,580.99,172]}
+{"kind":"textbox","id":"sh/5wnyts32","slide":4,"name":"Content-Placeholder-10-9","text":"Planning rules\n\nPack sizes, lead times and safety stock targets.","textPreview":"Planning rules |  | Pack sizes, lead times and safety stock targets.","textChars":64,"textLines":3,"bbox":[688.89,489.77,523.56,110.07]}
+{"kind":"shape","id":"sh/4vehkn2h","slide":4,"name":"Rounded-Rectangle-3-10","bbox":[42.94,458.8,580.99,172]}
+{"kind":"textbox","id":"sh/ix4fqhkj","slide":4,"name":"Content-Placeholder-10-11","text":"SKU mapping\n\nThe same item must be recognised everywhere.","textPreview":"SKU mapping |  | The same item must be recognised everywhere.","textChars":57,"textLines":3,"bbox":[74.15,489.77,523.56,110.07]}
+{"kind":"textbox","id":"sh/3ydgzm14","slide":4,"name":"Content-Placeholder-15-12","text":"One source of truth\n\nGood plans depend on clear product, location and packaging information.","textPreview":"One source of truth |  | Good plans depend on clear product, location and packaging information.","textChars":92,"textLines":3,"bbox":[42.09,111.02,1197.33,106.27]}
+{"kind":"notes","id":"nt/d2fhau","slide":4,"text":""}
+{"kind":"slide","id":"sl/braxpk","slide":5,"title":"5","textShapes":7}
+{"kind":"textbox","id":"sh/a90ny9kn","slide":5,"name":"Google-Shape-532-p58-2","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/xcr6t4jy","slide":5,"name":"Google-Shape-533-p58-3","text":"Planning makes recommendations — it does not move stock","textPreview":"Planning makes recommendations — it does not move stock","textChars":55,"textLines":1,"bbox":[41.33,36.17,1197.33,67.64]}
+{"kind":"shape","id":"sh/wbi50z2d","slide":5,"name":"Rounded-Rectangle-1-4","bbox":[41.68,350.56,580.99,138.67]}
+{"kind":"textbox","id":"sh/n6ponu1w","slide":5,"name":"Content-Placeholder-10-5","text":"Procurement\nrecommendation","textPreview":"Procurement | recommendation","textChars":26,"textLines":2,"bbox":[72.89,376.69,523.56,92.16]}
+{"kind":"textbox","id":"sh/m5gnupkb","slide":5,"name":"Content-Placeholder-15-6","text":"Uses demand, stock and supply inputs.\n\nSuggests what to arrange or buy.\n\nNo purchase order or stock change is created.","textPreview":"Uses demand, stock and supply inputs. |  | Suggests what to arrange or buy. |  | No purchase order or stock change is created.","textChars":118,"textLines":5,"bbox":[72.89,506.94,549.78,102.67]}
+{"kind":"shape","id":"sh/98r6p4j2","slide":5,"name":"Rounded-Rectangle-7-7","bbox":[657.3,350.56,580.99,138.67]}
+{"kind":"textbox","id":"sh/87i5wz2h","slide":5,"name":"Content-Placeholder-10-8","text":"Dispatch\nrecommendation","textPreview":"Dispatch | recommendation","textChars":23,"textLines":2,"bbox":[688.51,376.69,523.56,92.16]}
+{"kind":"textbox","id":"sh/72tozy10","slide":5,"name":"Content-Placeholder-15-9","text":"Uses channel need and company stock.\n\nSuggests where stock should be allocated.\n\nNo stock is deducted until a shipment is dispatched.","textPreview":"Uses channel need and company stock. |  | Suggests where stock should be allocated. |  | No stock is deducted until a shipment is dispatc...","textChars":133,"textLines":5,"bbox":[688.51,506.94,549.78,102.67]}
+{"kind":"textbox","id":"sh/61k76tkf","slide":5,"name":"Content-Placeholder-15-10","text":"Why this matters\n\nBoth planning activities produce a reviewed proposal for the team.\n They are saved as a clear snapshot, not as an automatic warehouse transaction.","textPreview":"Why this matters |  | Both planning activities produce a reviewed proposal for the team. |  They are saved as a clear snapshot, not as an...","textChars":164,"textLines":4,"bbox":[42.09,121.52,1197.33,171.05]}
+{"kind":"notes","id":"nt/braxpk","slide":5,"text":""}
+{"kind":"slide","id":"sl/ipx8zt","slide":6,"title":"6","textShapes":8}
+{"kind":"textbox","id":"sh/72dcnml4","slide":6,"name":"Slide-Number-Placeholder-3-2","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/snmdwr2p","slide":6,"name":"Title-10-3","text":"Shipment Operations turns the plan into a real delivery","textPreview":"Shipment Operations turns the plan into a real delivery","textChars":55,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"shape","id":"sh/tovupw3a","slide":6,"name":"Google-Shape-2259-p159-4","bbox":[35.46,560.8,1285.61,0.03]}
+{"kind":"shape","id":"sh/up4vy1kf","slide":6,"name":"Google-Shape-2260-p159-5","bbox":[35.46,555.18,11.24,11.24]}
+{"kind":"shape","id":"sh/fqdcr6l0","slide":6,"name":"Google-Shape-2261-p159-6","bbox":[446.38,555.18,11.24,11.24]}
+{"kind":"shape","id":"sh/grmd0b2l","slide":6,"name":"Google-Shape-2262-p159-7","bbox":[858.38,555.18,11.24,11.24]}
+{"kind":"shape","id":"sh/hsvutw36","slide":6,"name":"Rounded-Rectangle-19-8","bbox":[41.33,147.17,374.67,380]}
+{"kind":"textbox","id":"sh/2tov21kr","slide":6,"name":"Content-Placeholder-8-9","text":"Prepare\n\nCreate the shipment, add items, record the carrier and pack the goods.","textPreview":"Prepare |  | Create the shipment, add items, record the carrier and pack the goods.","textChars":79,"textLines":3,"bbox":[73.85,189.69,309.64,269.48]}
+{"kind":"shape","id":"sh/3uxcv6lc","slide":6,"name":"Rounded-Rectangle-21-10","bbox":[452.33,147.17,374.67,380]}
+{"kind":"textbox","id":"sh/zi5c325k","slide":6,"name":"Content-Placeholder-8-11","text":"Dispatch\n\nConfirm that goods have left. This is the stock-out moment.","textPreview":"Dispatch |  | Confirm that goods have left. This is the stock-out moment.","textChars":69,"textLines":3,"bbox":[484.85,189.69,309.64,269.48]}
+{"kind":"shape","id":"sh/ehwvaxoz","slide":6,"name":"Rounded-Rectangle-23-12","bbox":[864.83,147.17,374.67,380]}
+{"kind":"textbox","id":"sh/1knu5cna","slide":6,"name":"Content-Placeholder-8-13","text":"Close the loop\n\nRecord delivery, then record any restockable return.","textPreview":"Close the loop |  | Record delivery, then record any restockable return.","textChars":68,"textLines":3,"bbox":[897.35,189.69,309.64,269.48]}
+{"kind":"textbox","id":"sh/0jedc765","slide":6,"name":"Text-Placeholder-16-14","text":"Dispatch","textPreview":"Dispatch","textChars":8,"textLines":1,"bbox":[446.38,588.18,272.54,41.15]}
+{"kind":"textbox","id":"sh/rulczi58","slide":6,"name":"Text-Placeholder-16-15","text":"Draft","textPreview":"Draft","textChars":5,"textLines":1,"bbox":[41.04,588.18,272.54,41.15]}
+{"kind":"textbox","id":"sh/qtcv6xon","slide":6,"name":"Text-Placeholder-16-16","text":"Receipt / return","textPreview":"Receipt / return","textChars":16,"textLines":1,"bbox":[863.56,588.18,272.54,41.15]}
+{"kind":"notes","id":"nt/ipx8zt","slide":6,"text":""}
+{"kind":"slide","id":"sl/pulh29","slide":7,"title":"Two moments change stock","textShapes":22}
+{"kind":"textbox","id":"sh/8ruxojyt","slide":7,"text":"Two moments change stock","textPreview":"Two moments change stock","textChars":24,"textLines":1,"bbox":[42,38,870,72]}
+{"kind":"textbox","id":"sh/76lwfeh8","slide":7,"text":"The system separates planning from the real-world events that affect stock.","textPreview":"The system separates planning from the real-world events that affect stock.","textChars":75,"textLines":1,"bbox":[42,116,920,42]}
+{"kind":"shape","id":"sh/m5cfm9gn","slide":7,"bbox":[42,196,460,398]}
+{"kind":"textbox","id":"sh/hwnel8za","slide":7,"text":"Planning and preparation","textPreview":"Planning and preparation","textChars":24,"textLines":1,"bbox":[72,226,370,38]}
+{"kind":"textbox","id":"sh/wvexs3yp","slide":7,"text":"Helpful work — but stock stays the same","textPreview":"Helpful work — but stock stays the same","textChars":39,"textLines":1,"bbox":[72,268,360,30]}
+{"kind":"shape","id":"sh/vu5wjyhk","slide":7,"bbox":[72,322,40,40]}
+{"kind":"textbox","id":"sh/utwfqtgz","slide":7,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[82,330,20,20]}
+{"kind":"textbox","id":"sh/507ep8zm","slide":7,"text":"Procurement recommendation","textPreview":"Procurement recommendation","textChars":26,"textLines":1,"bbox":[128,329,305,30]}
+{"kind":"shape","id":"sh/4zexw3y1","slide":7,"bbox":[72,398,40,40]}
+{"kind":"textbox","id":"sh/ehc7ad0r","slide":7,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[82,406,20,20]}
+{"kind":"textbox","id":"sh/zil8jihc","slide":7,"text":"Dispatch allocation proposal","textPreview":"Dispatch allocation proposal","textChars":28,"textLines":1,"bbox":[128,405,305,30]}
+{"kind":"shape","id":"sh/0jupc3ix","slide":7,"bbox":[72,474,40,40]}
+{"kind":"textbox","id":"sh/l43ql8zi","slide":7,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[82,482,20,20]}
+{"kind":"textbox","id":"sh/m5cred03","slide":7,"text":"Shipment draft, packing or docket","textPreview":"Shipment draft, packing or docket","textChars":33,"textLines":1,"bbox":[128,481,305,30]}
+{"kind":"textbox","id":"sh/n658niho","slide":7,"text":"No stock deduction yet","textPreview":"No stock deduction yet","textChars":22,"textLines":1,"bbox":[72,548,240,24]}
+{"kind":"shape","id":"sh/87e9gni9","slide":7,"bbox":[540,196,698,398]}
+{"kind":"textbox","id":"sh/98nqpsze","slide":7,"text":"Real operating events","textPreview":"Real operating events","textChars":21,"textLines":1,"bbox":[574,226,390,38]}
+{"kind":"textbox","id":"sh/29s72t0z","slide":7,"text":"These are the two points where stock can move.","textPreview":"These are the two points where stock can move.","textChars":46,"textLines":1,"bbox":[574,268,470,30]}
+{"kind":"shape","id":"sh/3a18byh4","slide":7,"bbox":[574,326,300,184]}
+{"kind":"textbox","id":"sh/7ux4juxw","slide":7,"text":"Confirmed dispatch","textPreview":"Confirmed dispatch","textChars":18,"textLines":1,"bbox":[602,354,250,30]}
+{"kind":"textbox","id":"sh/6tonapgr","slide":7,"text":"Goods have left.\nStock goes down.","textPreview":"Goods have left. | Stock goes down.","textChars":33,"textLines":2,"bbox":[602,402,230,52]}
+{"kind":"textbox","id":"sh/tgzmlkf2","slide":7,"text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[806,402,42,60]}
+{"kind":"shape","id":"sh/sfq5czyh","slide":7,"bbox":[908,326,300,184]}
+{"kind":"textbox","id":"sh/jqx4fax0","slide":7,"text":"Restockable return receipt","textPreview":"Restockable return receipt","textChars":26,"textLines":1,"bbox":[936,354,252,30]}
+{"kind":"textbox","id":"sh/ipon65gf","slide":7,"text":"Usable goods came back.\nStock goes up.","textPreview":"Usable goods came back. | Stock goes up.","textChars":38,"textLines":2,"bbox":[936,402,215,52]}
+{"kind":"textbox","id":"sh/5sfmhkf6","slide":7,"text":"↑","textPreview":"↑","textChars":1,"textLines":1,"bbox":[1132,402,42,60]}
+{"kind":"textbox","id":"sh/kr658fyl","slide":7,"text":"The record keeps a clear history of who confirmed each event.","textPreview":"The record keeps a clear history of who confirmed each event.","textChars":61,"textLines":1,"bbox":[574,540,570,25]}
+{"kind":"textbox","id":"sh/3mhorex4","slide":7,"text":"COSMOS ERP  |  Client handover overview","textPreview":"COSMOS ERP  |  Client handover overview","textChars":39,"textLines":1,"bbox":[48,678,420,20]}
+{"kind":"textbox","id":"sh/2l8ni9gj","slide":7,"text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1190,678,40,20]}
+{"kind":"notes","id":"nt/pulh29","slide":7,"text":""}
+{"kind":"slide","id":"sl/sdkax7","slide":8,"title":"8","textShapes":10}
+{"kind":"textbox","id":"sh/grq58rex","slide":8,"name":"Slide-Number-Placeholder-3-2","text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/fqhofmdc","slide":8,"name":"Title-10-3","text":"Everyone has a clear part to play","textPreview":"Everyone has a clear part to play","textChars":33,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"textbox","id":"sh/up8n6hwr","slide":8,"name":"Content-Placeholder-15-4","text":"Delivery team\n\nRecords receipt and delivery outcome.","textPreview":"Delivery team |  | Records receipt and delivery outcome.","textChars":52,"textLines":3,"bbox":[41.33,436.86,272.54,148.62]}
+{"kind":"textbox","id":"sh/pwj6lwvu","slide":8,"name":"Text-Placeholder-16-5","text":"Returns team\n\nMarks what can safely go back into stock.","textPreview":"Returns team |  | Marks what can safely go back into stock.","textChars":55,"textLines":3,"bbox":[350.13,436.86,272.54,148.62]}
+{"kind":"textbox","id":"sh/4vapcre9","slide":8,"name":"Content-Placeholder-17-6","text":"Managers\n\nUse the dashboard and exports to follow activity.","textPreview":"Managers |  | Use the dashboard and exports to follow activity.","textChars":59,"textLines":3,"bbox":[657.68,436.86,272.54,148.62]}
+{"kind":"textbox","id":"sh/3u1oj6do","slide":8,"name":"Text-Placeholder-18-7","text":"Access owner\n\nGives each person the right level of access.","textPreview":"Access owner |  | Gives each person the right level of access.","textChars":58,"textLines":3,"bbox":[966.48,436.86,272.54,148.62]}
+{"kind":"textbox","id":"sh/2tsna1w3","slide":8,"name":"Content-Placeholder-15-8","text":"Administrator\n\nMaintains products, mappings and operating rules.","textPreview":"Administrator |  | Maintains products, mappings and operating rules.","textChars":64,"textLines":3,"bbox":[41.33,231.82,272.54,148.62]}
+{"kind":"textbox","id":"sh/50z69cva","slide":8,"name":"Text-Placeholder-16-9","text":"Planner\n\nReviews what to buy or arrange.","textPreview":"Planner |  | Reviews what to buy or arrange.","textChars":40,"textLines":3,"bbox":[350.13,231.82,272.54,148.62]}
+{"kind":"textbox","id":"sh/kz6507ep","slide":8,"name":"Content-Placeholder-17-10","text":"Channel team\n\nConfirms local needs and priorities.","textPreview":"Channel team |  | Confirms local needs and priorities.","textChars":50,"textLines":3,"bbox":[657.68,231.82,272.54,148.62]}
+{"kind":"textbox","id":"sh/2poji1ob","slide":8,"name":"Text-Placeholder-18-11","text":"Warehouse\n\nPacks goods and confirms dispatch.","textPreview":"Warehouse |  | Packs goods and confirms dispatch.","textChars":45,"textLines":3,"bbox":[966.48,231.82,272.54,148.62]}
+{"kind":"notes","id":"nt/sdkax7","slide":8,"text":""}
+{"kind":"slide","id":"sl/3x9vdl","slide":9,"title":"9","textShapes":7}
+{"kind":"textbox","id":"sh/214zml0z","slide":9,"name":"Google-Shape-532-p58-2","text":"9","textPreview":"9","textChars":1,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/pofix0zq","slide":9,"name":"Google-Shape-533-p58-3","text":"Simple reports support daily decisions","textPreview":"Simple reports support daily decisions","textChars":38,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"shape","id":"sh/on6hovi5","slide":9,"name":"Rounded-Rectangle-6-4","bbox":[657.68,248.8,580.99,172]}
+{"kind":"textbox","id":"sh/bqx0zahw","slide":9,"name":"Content-Placeholder-10-5","text":"Dispatch proposal\n\nWhere available company stock should go.","textPreview":"Dispatch proposal |  | Where available company stock should go.","textChars":59,"textLines":3,"bbox":[688.89,279.77,523.56,110.07]}
+{"kind":"shape","id":"sh/qpozq50b","slide":9,"name":"Rounded-Rectangle-8-6","bbox":[42.94,248.8,580.99,172]}
+{"kind":"textbox","id":"sh/dsfi1kzm","slide":9,"name":"Content-Placeholder-10-7","text":"Procurement plan\n\nWhat the business should arrange or buy.","textPreview":"Procurement plan |  | What the business should arrange or buy.","textChars":58,"textLines":3,"bbox":[74.15,279.77,523.56,110.07]}
+{"kind":"shape","id":"sh/cr6hsfih","slide":9,"name":"Rounded-Rectangle-1-8","bbox":[657.68,458.8,580.99,172]}
+{"kind":"textbox","id":"sh/7utgn61c","slide":9,"name":"Content-Placeholder-10-9","text":"CSV / Excel exports\n\nEasy sharing, follow-up and record keeping.","textPreview":"CSV / Excel exports |  | Easy sharing, follow-up and record keeping.","textChars":64,"textLines":3,"bbox":[688.89,489.77,523.56,110.07]}
+{"kind":"shape","id":"sh/6tkzu10r","slide":9,"name":"Rounded-Rectangle-3-10","bbox":[42.94,458.8,580.99,172]}
+{"kind":"textbox","id":"sh/cb2h0vy9","slide":9,"name":"Content-Placeholder-10-11","text":"Shipment activity\n\nWhat went out, arrived or returned.","textPreview":"Shipment activity |  | What went out, arrived or returned.","textChars":54,"textLines":3,"bbox":[74.15,489.77,523.56,110.07]}
+{"kind":"textbox","id":"sh/dcbit0zu","slide":9,"name":"Content-Placeholder-15-12","text":"Built for conversations\n\nExports give teams a simple way to review the plan, allocation and shipment activity together.","textPreview":"Built for conversations |  | Exports give teams a simple way to review the plan, allocation and shipment activity together.","textChars":119,"textLines":3,"bbox":[42.09,111.02,1197.33,106.27]}
+{"kind":"notes","id":"nt/3x9vdl","slide":9,"text":""}
+{"kind":"slide","id":"sl/ev3rpt","slide":10,"title":"10","textShapes":9}
+{"kind":"textbox","id":"sh/4fyp8jqh","slide":10,"name":"Google-Shape-532-p58-2","text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1184.18,659.24,54.48,25.33]}
+{"kind":"textbox","id":"sh/jepoze9w","slide":10,"name":"Google-Shape-533-p58-3","text":"Before go-live, agree these five things","textPreview":"Before go-live, agree these five things","textChars":39,"textLines":1,"bbox":[41.33,36.12,1197.33,109.97]}
+{"kind":"textbox","id":"sh/idg7698b","slide":10,"name":"Google-Shape-534-p58-4","text":"When these are agreed, run one realistic test journey from planning through a possible return.","textPreview":"When these are agreed, run one realistic test journey from planning through a possible return.","textChars":94,"textLines":1,"bbox":[41.33,180.83,581.33,90.83]}
+{"kind":"textbox","id":"sh/hc76xorq","slide":10,"name":"Content-Placeholder-10-5","text":"Product and SKU mapping","textPreview":"Product and SKU mapping","textChars":23,"textLines":1,"bbox":[828,313.94,410.67,57.61]}
+{"kind":"shape","id":"sh/wbyp4jql","slide":10,"name":"Google-Shape-340-p61-6","bbox":[788.21,316.55,22.32,22.31]}
+{"kind":"textbox","id":"sh/vapove90","slide":10,"name":"TextBox-11-7","text":"Confirm the owner, the data source and the expected approval for each item.\n\nAlso agree how teams will use the system day to day.","textPreview":"Confirm the owner, the data source and the expected approval for each item. |  | Also agree how teams will use the system day to day.","textChars":129,"textLines":3,"bbox":[41.33,313.94,581.33,302.85]}
+{"kind":"textbox","id":"sh/u9w7298f","slide":10,"name":"Content-Placeholder-10-8","text":"Planning rules","textPreview":"Planning rules","textChars":14,"textLines":1,"bbox":[828,377.94,410.67,57.61]}
+{"kind":"shape","id":"sh/98n6t4ru","slide":10,"name":"Google-Shape-340-p61-9","bbox":[788.21,380.55,22.32,22.31]}
+{"kind":"textbox","id":"sh/87ep0zq9","slide":10,"name":"Content-Placeholder-10-10","text":"Meaning of company stock","textPreview":"Meaning of company stock","textChars":24,"textLines":1,"bbox":[828,442.5,410.67,57.61]}
+{"kind":"shape","id":"sh/epszm5c3","slide":10,"name":"Google-Shape-340-p61-11","bbox":[788.21,445.1,22.32,22.31]}
+{"kind":"textbox","id":"sh/fqlgfado","slide":10,"name":"Content-Placeholder-10-12","text":"Shipping and return rules","textPreview":"Shipping and return rules","textChars":25,"textLines":1,"bbox":[828,506.49,410.67,57.61]}
+{"kind":"shape","id":"sh/gruhofu9","slide":10,"name":"Google-Shape-340-p61-13","bbox":[788.21,509.1,22.32,22.31]}
+{"kind":"textbox","id":"sh/1s3yhkvu","slide":10,"name":"Content-Placeholder-10-14","text":"User access and reports","textPreview":"User access and reports","textChars":23,"textLines":1,"bbox":[828,571.83,410.67,57.61]}
+{"kind":"shape","id":"sh/61szi5c7","slide":10,"name":"Google-Shape-340-p61-15","bbox":[788.21,574.44,22.32,22.31]}
+{"kind":"notes","id":"nt/ev3rpt","slide":10,"text":""}
+{"kind":"slide","id":"sl/4wkt5n","slide":11,"title":"Success means a","textShapes":3}
+{"kind":"textbox","id":"sh/xcv2xwvy","slide":11,"name":"Title-3-1","text":"Success means a\ntested, shared process","textPreview":"Success means a | tested, shared process","textChars":38,"textLines":2,"bbox":[41.33,182.55,992,261.57]}
+{"kind":"textbox","id":"sh/a9k3mhcn","slide":11,"name":"Subtitle-4-2","text":"Agree the data and ownership.\n\nTest one complete journey.\n","textPreview":"Agree the data and ownership. |  | Test one complete journey. |","textChars":58,"textLines":4,"bbox":[41.33,522.13,374.67,113.41]}
+{"kind":"textbox","id":"sh/vadkvmd8","slide":11,"name":"Subtitle-4-3","text":"COSMOS ERP","textPreview":"COSMOS ERP","textChars":10,"textLines":1,"bbox":[41.33,41.18,169.33,68.15]}
+{"kind":"notes","id":"nt/4wkt5n","slide":11,"text":""}
