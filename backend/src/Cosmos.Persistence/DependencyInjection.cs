@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IDispatchPlanningRepository, DispatchPlanningRepository>();
         services.AddScoped<IShipmentOperationsRepository, ShipmentOperationsRepository>();
         services.AddScoped<ISupplyChainRepository, SupplyChainRepository>();
+        services.AddScoped<IDataBookRepository, DataBookRepository>();
         services.AddScoped<IRojmelRepository, RojmelRepository>();
         services.AddScoped<IGstRepository, GstRepository>();
         return services;

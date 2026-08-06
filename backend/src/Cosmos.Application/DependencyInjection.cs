@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IShipmentPackingSuggestionService, ShipmentPackingSuggestionService>();
         services.AddScoped<ShipmentStatusTransitionService>();
         services.AddScoped<ISupplyChainService, SupplyChainService>();
+        services.AddScoped<IDataBookService, DataBookService>();
         services.AddScoped<IRojmelWalletService, RojmelWalletService>();
         services.AddScoped<IRojmelTransactionService, RojmelTransactionService>();
         services.AddScoped<IRojmelTransferService, RojmelTransferService>();

@@ -1434,3 +1434,21 @@ Status: Implemented / Build Verified / Tests Verified / Disposable SQL Verified 
 - Added JWT/page-action protected `/api/v1/shipment-operations` endpoints in Swagger group `shipment-operations` plus contracts, validators, Dapper repository/service flow, audit events, and focused tests.
 - The referenced `Copy of WORK LIST.xlsx` was not present in the workspace or attachment payload. Workbook-specific mapping/formula/status assumptions are documented as confirmations, not claimed as implemented facts.
 - Local LocalDB verification completed for the dependency migration chain, structural verification, and transactional operational smoke paths. The locally served Swagger document contained all 30 expected module paths, Bearer security, and named string shipment-status values. No shared staging or production database was changed.
+
+# Supply Chain Client Handover Guide - 2026-08-03
+
+Status: Completed documentation deliverable; no application or SQL behaviour was changed.
+
+- Added `backend/docs/SUPPLY_CHAIN_CLIENT_HANDOVER_GUIDE.md`, a client-facing operational handover guide covering the Shared Supply Chain foundation, Procurement Planning, Dispatch Planning, and Shipment Operations / Work List flow.
+- The guide records verified planning/stock rules, state transitions, permissions, reports/exports, deployment verification, go-live checklist, exception handling, and acceptance scenarios.
+- It explicitly distinguishes implemented behaviour from configuration and client confirmation points, including unavailable original Dispatch/Work List workbooks, absent module frontend screens, global stock limitations, and file-import boundaries.
+
+# Data Book Module Update - 2026-08-06
+
+Status: Implemented / Build Verified / Tests Verified (175/175) / SQL and runtime Swagger verification pending.
+
+- Added a JWT/page-action protected Data Book backend in Swagger group `data-book`, including public shared entries, owner-private entries, CSV export, optimistic concurrency, soft delete, and immutable transactional business history.
+- SQL visibility is enforced for every list, detail, update, delete, history, and export path: public rows plus only the current user's private rows. SuperAdmin and System Owner receive no private-row bypass; inaccessible private IDs resolve as 404.
+- Added `backend/database/migrations/20260806_data_book_module.sql`, `backend/database/verify_data_book_module.sql`, and `backend/database/data_book_smoke_tests.sql`. These assets were created but have not been executed against a SQL Server in this update.
+- Added frontend/module/tracker documentation. Data Book history uses the existing `View` action because the permission model has no History action. Values are not written to normal logs, but remain plaintext in SQL/history JSON pending a shared encryption/key-management capability.
+- `dotnet build backend/Cosmos.slnx --no-restore -m:1` passed and `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore -m:1` passed 175/175. Existing Microsoft.OpenApi NU1903 and Infrastructure NU1510 package warnings remain.
