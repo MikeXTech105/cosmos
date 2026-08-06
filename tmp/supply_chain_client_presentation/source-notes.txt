@@ -1,0 +1,11 @@
+Primary source: D:/Work/My_Projects/cosmos/backend/docs/SUPPLY_CHAIN_CLIENT_HANDOVER_GUIDE.md
+
+Audience: client stakeholders and operational users; avoid implementation jargon.
+
+Key facts retained in the deck:
+- Procurement and Dispatch recommend what to buy or allocate; they do not themselves change stock.
+- Confirmed shipment dispatch decreases stock. A restockable return receipt increases stock.
+- Correct product, channel, warehouse, SKU, packaging and planning data are essential before go-live.
+- Reports cover procurement plans, allocation proposals and shipment activity.
+
+Visual asset: supply-chain-handover-cover.png, generated specifically for this presentation with OpenAI ImageGen. No external source is used.

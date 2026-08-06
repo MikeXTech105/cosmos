@@ -45,6 +45,7 @@ var swaggerModules = new[]
     new SwaggerModule("dispatch-planning", "Cosmos ERP - Dispatch Planning API", "Dispatch Planning"),
     new SwaggerModule("shipment-operations", "Cosmos ERP - Shipment Operations API", "Shipment Operations"),
     new SwaggerModule("supply-chain", "Cosmos ERP - Supply Chain Foundation API", "Supply Chain Foundation"),
+    new SwaggerModule("data-book", "Cosmos ERP - Data Book API", "Data Book"),
     new SwaggerModule("rojmel", "Cosmos ERP - Rojmel / Wallet API", "Rojmel / Wallet"),
     new SwaggerModule("settings", "Cosmos ERP - Settings API", "Settings API"),
     new SwaggerModule("general", "Cosmos ERP - General API", "General API")
