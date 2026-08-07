@@ -2,6 +2,8 @@ import clsx from "clsx";
 import { forwardRef, useId } from "react";
 import { twMerge } from "tailwind-merge";
 
+import AppDateInput from "./AppDateInput";
+
 const AppInput = forwardRef(({
   "aria-describedby": ariaDescribedBy,
   className = "",
@@ -24,6 +26,8 @@ const AppInput = forwardRef(({
   ]
     .filter(Boolean)
     .join(" ") || undefined;
+  const isCalendarInput = type === "date" || type === "datetime-local";
+  const InputComponent = isCalendarInput ? AppDateInput : "input";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -36,7 +40,7 @@ const AppInput = forwardRef(({
           {required && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
-      <input
+      <InputComponent
         {...props}
         ref={ref}
         id={inputId}

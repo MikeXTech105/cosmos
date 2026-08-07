@@ -34,7 +34,7 @@ const InvoiceTemplateSection = () => {
         </span>
       }
       bodyAriaLabel="Default invoice template"
-      bodyClassName="grid gap-3 p-5 sm:grid-cols-2 xl:grid-cols-5"
+      bodyClassName="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3 p-4"
       bodyRole="radiogroup"
     >
       {invoiceTemplates.map((template) => (
