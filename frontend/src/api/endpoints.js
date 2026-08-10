@@ -549,6 +549,13 @@ export const ENDPOINTS = {
 
   OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
 
+  // Data Book
+  DATA_BOOK_ENTRIES: "/api/v1/data-book/entries",
+  DATA_BOOK_ENTRY_BY_ID: (id) => `/api/v1/data-book/entries/${id}`,
+  DATA_BOOK_ENTRY_HISTORY: (id) =>
+    `/api/v1/data-book/entries/${id}/history`,
+  DATA_BOOK_ENTRIES_EXPORT: "/api/v1/data-book/entries/export",
+
   // --- Rojmel (Daily Cash Book) ---
   // My Wallet (current user)
   ROJMEL_MY_WALLET: "/api/v1/rojmel/my-wallet",

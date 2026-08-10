@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 import dashboardReducer from "./slices/dashboard/dashboardSlice";
+import dataBookReducer from "./slices/dataBookSlice";
 import categoryReducer from "./slices/inventory/categorySlice";
 import hrAttendanceReducer from "./slices/hr/attendanceSlice";
 import hrDepartmentReducer from "./slices/hr/departmentSlice";
@@ -58,6 +59,7 @@ export const store = configureStore({
     auth: authReducer,
     categories: categoryReducer,
     dashboard: dashboardReducer,
+    dataBook: dataBookReducer,
     dispatchImports: dispatchImportsReducer,
     dispatchReports: dispatchReportsReducer,
     dispatchRuns: dispatchRunsReducer,
