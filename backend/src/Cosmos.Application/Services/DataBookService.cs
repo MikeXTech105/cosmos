@@ -7,6 +7,7 @@ using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace Cosmos.Application.Services;
 
@@ -20,6 +21,7 @@ public sealed class DataBookService : IDataBookService
     private readonly IValidator<DeleteDataBookEntryRequest> _deleteValidator;
     private readonly IValidator<DataBookEntryListQuery> _listValidator;
     private readonly IValidator<DataBookExportRequest> _exportValidator;
+    private readonly ILogger<DataBookService> _logger;
 
     public DataBookService(
         IDataBookRepository repository,
@@ -29,7 +31,8 @@ public sealed class DataBookService : IDataBookService
         IValidator<UpdateDataBookEntryRequest> updateValidator,
         IValidator<DeleteDataBookEntryRequest> deleteValidator,
         IValidator<DataBookEntryListQuery> listValidator,
-        IValidator<DataBookExportRequest> exportValidator)
+        IValidator<DataBookExportRequest> exportValidator,
+        ILogger<DataBookService> logger)
     {
         _repository = repository;
         _currentUser = currentUser;
@@ -39,6 +42,7 @@ public sealed class DataBookService : IDataBookService
         _deleteValidator = deleteValidator;
         _listValidator = listValidator;
         _exportValidator = exportValidator;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<PagedResult<DataBookEntryListItemDto>>> GetListAsync(DataBookEntryListQuery query, CancellationToken ct)
@@ -119,7 +123,8 @@ public sealed class DataBookService : IDataBookService
         var userId = CurrentUserId();
         var entry = await FindVisibleAsync(id, userId, ct);
         EnsurePrivateOwner(entry, userId);
-        return ApiResponse<IReadOnlyCollection<DataBookEntryHistoryDto>>.Success(await _repository.GetHistoryAsync(id, userId, ct));
+        var history = await _repository.GetHistoryAsync(id, userId, ct);
+        return ApiResponse<IReadOnlyCollection<DataBookEntryHistoryDto>>.Success(history.Select(NormalizeHistory).ToArray());
     }
 
     public async Task<ApiResponse<IReadOnlyCollection<DataBookExportDto>>> ExportAsync(DataBookExportRequest request, CancellationToken ct)
@@ -158,6 +163,26 @@ public sealed class DataBookService : IDataBookService
 
     private static bool IsPrivateOwner(DataBookEntryListItemDto entry, int userId) =>
         !entry.IsPrivate || entry.OwnerUserId == userId;
+
+    private DataBookEntryHistoryDto NormalizeHistory(DataBookEntryHistoryRow row)
+    {
+        var normalization = DataBookHistoryNormalizer.Normalize(row);
+        if (normalization.HasMalformedJson)
+        {
+            _logger.LogWarning(
+                "Data Book history JSON was malformed and was safely degraded. {EntryId} {HistoryId} {ActionType} {ChangedByUserId} {CorrelationId} {ChangedFieldsMalformed} {OldDataMalformed} {NewDataMalformed}",
+                row.EntryId,
+                row.Id,
+                row.ActionType,
+                row.ChangedByUserId,
+                row.CorrelationId,
+                normalization.HasMalformedChangedFields,
+                normalization.HasMalformedOldData,
+                normalization.HasMalformedNewData);
+        }
+
+        return normalization.History;
+    }
 
     private static CreateDataBookEntryRequest Normalize(CreateDataBookEntryRequest request) =>
         request with { Name = request.Name.Trim(), Value = request.Value.Trim(), Description = TrimToNull(request.Description), Category = TrimToNull(request.Category) };

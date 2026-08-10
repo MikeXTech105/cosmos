@@ -54,10 +54,10 @@ public sealed class DataBookRepository(ISqlConnectionFactory connectionFactory) 
         }, ct);
     }
 
-    public async Task<IReadOnlyCollection<DataBookEntryHistoryDto>> GetHistoryAsync(long id, int currentUserId, CancellationToken ct)
+    public async Task<IReadOnlyCollection<DataBookEntryHistoryRow>> GetHistoryAsync(long id, int currentUserId, CancellationToken ct)
     {
         using var connection = await connectionFactory.CreateOpenConnectionAsync(ct);
-        return await StoredProcedureExecutor.QueryAsync<DataBookEntryHistoryDto>(connection, "usp_DataBookEntry_GetHistory", new { Id = id, CurrentUserId = currentUserId }, ct);
+        return await StoredProcedureExecutor.QueryAsync<DataBookEntryHistoryRow>(connection, "usp_DataBookEntry_GetHistory", new { Id = id, CurrentUserId = currentUserId }, ct);
     }
 
     public async Task<IReadOnlyCollection<DataBookExportDto>> ExportAsync(DataBookExportRequest request, int currentUserId, CancellationToken ct)

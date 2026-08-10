@@ -71,7 +71,7 @@ All successful JSON responses use COSMOS `ApiResponse<T>`. List `data` is a page
 
 ## History, transitions, and errors
 
-History responses contain `actionType`, `changedFieldsJson`, `oldDataJson`, `newDataJson`, actor name/time, and correlation ID. Parse the JSON fields only for authorized visible entries. Show values carefully because their history can contain confidential content.
+History responses now contain `actionType`, `changedFields` (`string[]`), structured `oldData`/`newData` snapshots, actor name/time, and correlation ID. Use `changedFields` with the same Pascal-case snapshot keys (for example `oldData["Value"]`). `changedAtUtc` is UTC. `changedFieldsJson`, `oldDataJson`, and `newDataJson` remain temporarily for compatibility with the currently deployed client, but new frontend code should not parse them. Show values carefully because history can contain confidential content.
 
 Changing public to private transfers private ownership to the editor and immediately removes it from other users' lists. Changing private to public is valid only for the owner. Do not implement a “transfer private owner” UI.
 

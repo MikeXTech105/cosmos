@@ -51,7 +51,49 @@ public sealed record DataBookEntryHistoryDto(
     int ChangedByUserId,
     string? ChangedByName,
     DateTime ChangedAtUtc,
-    string ChangedFieldsJson,
+    IReadOnlyList<string> ChangedFields,
+    DataBookEntryHistorySnapshotDto? OldData,
+    DataBookEntryHistorySnapshotDto? NewData,
+    string? CorrelationId)
+{
+    /// <summary>Legacy JSON storage representation retained during the frontend contract transition.</summary>
+    [Obsolete("Use ChangedFields. This property is retained temporarily for existing clients.")]
+    public string? ChangedFieldsJson { get; init; }
+
+    /// <summary>Legacy JSON storage representation retained during the frontend contract transition.</summary>
+    [Obsolete("Use OldData. This property is retained temporarily for existing clients.")]
+    public string? OldDataJson { get; init; }
+
+    /// <summary>Legacy JSON storage representation retained during the frontend contract transition.</summary>
+    [Obsolete("Use NewData. This property is retained temporarily for existing clients.")]
+    public string? NewDataJson { get; init; }
+}
+
+/// <summary>Immutable Data Book entry snapshot exposed by a history record.</summary>
+public sealed record DataBookEntryHistorySnapshotDto(
+    [property: JsonPropertyName("Name")] string? Name,
+    [property: JsonPropertyName("Value")] string? Value,
+    [property: JsonPropertyName("Description")] string? Description,
+    [property: JsonPropertyName("Category")] string? Category,
+    [property: JsonPropertyName("IsPrivate")] bool? IsPrivate,
+    [property: JsonPropertyName("OwnerUserId")] int? OwnerUserId,
+    [property: JsonPropertyName("CreatedBy")] int? CreatedBy,
+    [property: JsonPropertyName("CreatedAtUtc")] DateTime? CreatedAtUtc,
+    [property: JsonPropertyName("UpdatedBy")] int? UpdatedBy,
+    [property: JsonPropertyName("UpdatedAtUtc")] DateTime? UpdatedAtUtc,
+    [property: JsonPropertyName("DeletedBy")] int? DeletedBy,
+    [property: JsonPropertyName("DeletedAtUtc")] DateTime? DeletedAtUtc,
+    [property: JsonPropertyName("IsDeleted")] bool? IsDeleted);
+
+/// <summary>Raw Dapper row used only between the Data Book repository and application mapper.</summary>
+public sealed record DataBookEntryHistoryRow(
+    long Id,
+    long EntryId,
+    string ActionType,
+    int ChangedByUserId,
+    string? ChangedByName,
+    DateTime ChangedAtUtc,
+    string? ChangedFieldsJson,
     string? OldDataJson,
     string? NewDataJson,
     string? CorrelationId);
