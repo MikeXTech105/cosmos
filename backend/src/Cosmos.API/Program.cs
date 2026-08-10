@@ -1,4 +1,5 @@
 using System.Reflection;
+using Cosmos.API.Audit;
 using Cosmos.API.Middleware;
 using Cosmos.Application;
 using Cosmos.Application.Services;
@@ -32,6 +33,7 @@ var allowedOrigins = builder.Configuration
 var swaggerModules = new[]
 {
     new SwaggerModule("dashboard", "Cosmos ERP - Dashboard API", "Dashboard API"),
+    new SwaggerModule("activity-logs", "Cosmos ERP - Activity Logs API", "Activity Logs API"),
     new SwaggerModule("masters", "Cosmos ERP - Masters API", "Masters API"),
     new SwaggerModule("items", "Cosmos ERP - Items API", "Items API"),
     new SwaggerModule("parties", "Cosmos ERP - Parties API", "Parties API"),
@@ -65,6 +67,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Cosmos.Contracts.Audit.IAuditRequestContext, HttpAuditRequestContext>();
 builder.Services.AddScoped<ICurrentUser>(provider =>
 {
     var accessor = provider.GetRequiredService<IHttpContextAccessor>();

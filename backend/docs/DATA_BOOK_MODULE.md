@@ -21,7 +21,7 @@ History storage and API representation are intentionally separate. SQL retains i
 
 The original update procedure used `FOR JSON PATH` over a one-column table, which generated object elements while create/delete used string arrays. Migration `20260810_data_book_history_contract_fix.sql` corrects only future update records to store the canonical scalar array. It does not update, delete, or otherwise rewrite immutable history rows.
 
-The shared HTTP audit middleware records only request method, path, and status. No Data Book request bodies, values, descriptions, old values, or new values are put into application logs or generic audit metadata.
+The shared HTTP audit middleware no longer persists every mutation as a generic database audit row; request logging remains technical telemetry. Each successful Data Book create, update, and soft delete now also writes one safe, high-level centralized `AuditLogs` activity event (actor/context/action and entry reference only). No Data Book value, description, old value, or new value is put into that central event.
 
 There is no existing database encryption abstraction in COSMOS. Consequently, Data Book values and the functional old/new history JSON are stored in SQL Server plaintext and protected by database access controls/backups. Encryption-at-rest/key-management decisions are deferred to platform-level security work; no ad-hoc encryption was introduced.
 

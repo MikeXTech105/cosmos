@@ -1,10 +1,12 @@
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Abstractions.Security;
 using Cosmos.Application.Abstractions.Services;
+using Cosmos.Contracts.Audit;
 using Cosmos.Contracts.Auth;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace Cosmos.Application.Services;
 
@@ -14,6 +16,8 @@ public sealed class AuthService : IAuthService
     private readonly IUserRepository _userRepository;
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IAuditRepository _auditRepository;
+    private readonly ILogger<AuthService> _logger;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshTokenRequest> _refreshValidator;
     private readonly IValidator<LogoutRequest> _logoutValidator;
@@ -27,6 +31,8 @@ public sealed class AuthService : IAuthService
         IUserRepository userRepository,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
+        IAuditRepository auditRepository,
+        ILogger<AuthService> logger,
         IValidator<LoginRequest> loginValidator,
         IValidator<RefreshTokenRequest> refreshValidator,
         IValidator<LogoutRequest> logoutValidator,
@@ -39,6 +45,8 @@ public sealed class AuthService : IAuthService
         _userRepository = userRepository;
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
+        _auditRepository = auditRepository;
+        _logger = logger;
         _loginValidator = loginValidator;
         _refreshValidator = refreshValidator;
         _logoutValidator = logoutValidator;
@@ -55,10 +63,12 @@ public sealed class AuthService : IAuthService
         var user = await _authRepository.GetUserForLoginAsync(request.UsernameOrEmail, cancellationToken);
         if (user is null || !user.IsActive || user.IsDeleted || !_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
+            await TryWriteSecurityAuditAsync(null, request.UsernameOrEmail, AuditActions.LoginFailed, "Failed login attempt.", cancellationToken);
             throw new UnauthorizedCosmosException("Invalid username or password.");
         }
 
         var response = await BuildLoginResponseAsync(user, cancellationToken);
+        await TryWriteSecurityAuditAsync(user.Id, user.Username, AuditActions.LoginSucceeded, "Login succeeded.", cancellationToken, user.FullName);
         return ApiResponse<LoginResponse>.Success(response, "Login successful.");
     }
 
@@ -111,15 +121,17 @@ public sealed class AuthService : IAuthService
         await _userRepository.UpdateSelfAsync(userId, request.Email.Trim(), request.FullName.Trim(), cancellationToken);
         var updated = await _userRepository.GetEntityByIdAsync(userId, cancellationToken)
             ?? throw new UnauthorizedCosmosException("Authentication identity is no longer valid.");
+        await TryWriteSecurityAuditAsync(userId, updated.Username, AuditActions.Updated, "Profile updated.", cancellationToken, updated.FullName);
         return ApiResponse<CurrentUserProfileDto>.Success(
             await BuildCurrentUserProfileAsync(updated, cancellationToken),
             "Profile updated.");
     }
 
-    public async Task<ApiResponse> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
+    public async Task<ApiResponse> LogoutAsync(int userId, LogoutRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_logoutValidator, request, cancellationToken);
         await _authRepository.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
+        await TryWriteSecurityAuditAsync(userId, null, AuditActions.Logout, "Logout succeeded.", cancellationToken);
         return ApiResponse.Success("Logged out successfully.");
     }
 
@@ -139,6 +151,7 @@ public sealed class AuthService : IAuthService
             throw new CosmosException(result.Message, result.StatusCode);
         }
 
+        await TryWriteSecurityAuditAsync(userId, user.Username, AuditActions.PasswordChanged, "Password changed.", cancellationToken, user.FullName);
         return ApiResponse.Success("Password changed successfully.");
     }
 
@@ -162,6 +175,7 @@ public sealed class AuthService : IAuthService
             throw new CosmosException(result.Message, result.StatusCode);
         }
 
+        await TryWriteSecurityAuditAsync(null, request.Email, AuditActions.PasswordChanged, "Password reset completed.", cancellationToken);
         return ApiResponse.Success("Password reset successfully.");
     }
 
@@ -199,5 +213,30 @@ public sealed class AuthService : IAuthService
             user.IsActive,
             isSuperAdmin,
             roles);
+    }
+
+    private async Task TryWriteSecurityAuditAsync(int? userId, string? username, string action, string description, CancellationToken cancellationToken, string? displayName = null)
+    {
+        try
+        {
+            await _auditRepository.AddAsync(new AuditEntryRequest(
+                "Authentication",
+                userId?.ToString() ?? "Anonymous",
+                action,
+                null,
+                null,
+                userId,
+                AuditModules.Security,
+                "Authentication",
+                username,
+                description,
+                ActorUsername: username,
+                ActorDisplayName: displayName), cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            // Authentication results must not be changed by a secondary audit-write failure.
+            _logger.LogWarning(exception, "Security activity audit write failed for {Action}.", action);
+        }
     }
 }

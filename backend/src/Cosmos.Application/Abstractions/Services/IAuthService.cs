@@ -9,7 +9,7 @@ public interface IAuthService
     Task<ApiResponse<LoginResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<CurrentUserProfileDto>> GetCurrentUserProfileAsync(int userId, CancellationToken cancellationToken);
     Task<ApiResponse<CurrentUserProfileDto>> UpdateCurrentUserProfileAsync(int userId, UpdateCurrentUserProfileRequest request, CancellationToken cancellationToken);
-    Task<ApiResponse> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken);
+    Task<ApiResponse> LogoutAsync(int userId, LogoutRequest request, CancellationToken cancellationToken);
     Task<ApiResponse> ChangePasswordAsync(int userId, ChangePasswordRequest request, CancellationToken cancellationToken);
     Task<ApiResponse> ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken);
     Task<ApiResponse> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken);

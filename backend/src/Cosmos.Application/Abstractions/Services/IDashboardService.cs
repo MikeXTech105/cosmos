@@ -12,4 +12,5 @@ public interface IDashboardService
     Task<ApiResponse<IReadOnlyCollection<DashboardTopPartyDto>>> GetTopPartiesAsync(DashboardTopPartiesRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<DashboardAlertsDto>> GetAlertsAsync(DashboardAlertsRequest request, CancellationToken cancellationToken);
     Task<ApiResponse<DashboardHrSummaryDto>> GetHrSummaryAsync(DashboardHrSummaryRequest request, CancellationToken cancellationToken);
+    Task<ApiResponse<IReadOnlyCollection<DashboardRecentActivityDto>>> GetRecentActivityAsync(DashboardRecentActivityRequest request, CancellationToken cancellationToken);
 }

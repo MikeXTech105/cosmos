@@ -10,7 +10,7 @@
 | History contract fix | Implemented | Centralized read normalization supports legacy object-form and canonical string-form metadata; public history now has typed fields/snapshots while legacy raw JSON remains temporarily available. |
 | History SQL migration | Added | `20260810_data_book_history_contract_fix.sql` alters only update history serialization for future rows; existing append-only rows are not rewritten. |
 | Verification assets | Added | Read-only verification and transactional rollback smoke scripts. |
-| Tests | Verified | Added history normalizer, raw Dapper-row, migration-contract, owner, privileged non-owner privacy, and OpenAPI metadata coverage. Current run: Data Book 32/32 and full suite 190/190 passed. |
+| Tests | Verified | Added history normalizer, raw Dapper-row, migration-contract, owner, privileged non-owner privacy, and OpenAPI metadata coverage. After centralized activity companion events, current run: Data Book 32/32 and full suite 204/204 passed. |
 | Live SQL / runtime Swagger | Pending | No database or API process was changed/started by this implementation. |
 
 ## Verification commands
@@ -22,7 +22,7 @@ dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore -m:1
 
 Apply the migration twice to a disposable SQL Server database, run `verify_data_book_module.sql`, then run `data_book_smoke_tests.sql`. The smoke script requires two active users and rolls back all test rows.
 
-`dotnet restore Cosmos.slnx`, `dotnet build Cosmos.slnx --no-restore -m:1`, and `dotnet test tests/Cosmos.Tests/Cosmos.Tests.csproj --no-build --no-restore -m:1` passed on 2026-08-10. The focused Data Book run passed 32/32 and the full suite passed 190/190. The build retained the repository's existing `Microsoft.OpenApi` NU1903 and Infrastructure NU1510 package warnings. Live SQL and runtime Swagger were not run because the configured database is not a local disposable environment.
+`dotnet build Cosmos.slnx --no-restore`, focused Data Book testing, and the full suite passed on 2026-08-10. The focused Data Book run passed 32/32 and the full suite passed 204/204. The build retained the repository's existing `Microsoft.OpenApi` NU1903 and Infrastructure NU1510 package warnings. Live SQL and runtime Swagger were not run because the configured database is not a local disposable environment.
 
 ## Deployment order
 
