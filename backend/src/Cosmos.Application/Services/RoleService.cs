@@ -64,9 +64,13 @@ public sealed class RoleService : IRoleService
             "isactive" => descending ? roles.OrderByDescending(role => role.IsActive).ThenBy(role => role.Id) : roles.OrderBy(role => role.IsActive).ThenBy(role => role.Id),
             _ => descending ? roles.OrderByDescending(role => role.Name).ThenBy(role => role.Id) : roles.OrderBy(role => role.Name).ThenBy(role => role.Id)
         };
-        return ApiResponse<IReadOnlyCollection<RoleExportDto>>.Success(roles
+        var exported = roles
             .Select(role => new RoleExportDto(role.Name, role.Description, role.IsActive ? "Active" : "Inactive", role.CreatedOn))
-            .ToArray());
+            .ToArray();
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "Roles", "Export", AuditActions.Exported, null, null, _currentUser.UserId,
+            AuditModules.Security, "RoleExport", null, "Exported roles."), cancellationToken);
+        return ApiResponse<IReadOnlyCollection<RoleExportDto>>.Success(exported);
     }
 
     public async Task<ApiResponse<RoleDetailDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>

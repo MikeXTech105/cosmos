@@ -17,7 +17,8 @@ public sealed class DashboardServiceTests
         MaxDateRangeDays = 366,
         DefaultTrendMonths = 6,
         MaxTopRows = 20,
-        MaxAlertPreviewRows = 20
+        MaxAlertPreviewRows = 20,
+        MaxRecentActivityRows = 50
     };
 
     [Fact]
@@ -111,6 +112,19 @@ public sealed class DashboardServiceTests
         Assert.Equal(5, hr.Data!.ActiveEmployees);
     }
 
+    [Fact]
+    public async Task Recent_activity_uses_the_bounded_requested_limit()
+    {
+        var repository = new Mock<IDashboardRepository>();
+        repository.Setup(x => x.GetRecentActivityAsync(12, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new DashboardRecentActivityDto { ActivityId = 4, Action = "Created", Module = "Items" }]);
+
+        var response = await CreateService(repository.Object).GetRecentActivityAsync(new DashboardRecentActivityRequest { Limit = 12 }, CancellationToken.None);
+
+        Assert.Equal(4, Assert.Single(response.Data!).ActivityId);
+        repository.Verify(x => x.GetRecentActivityAsync(12, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     private static DashboardService CreateService(IDashboardRepository repository)
     {
         var options = Options.Create(DashboardOptions);
@@ -123,6 +137,7 @@ public sealed class DashboardServiceTests
             new DashboardTopItemsRequestValidator(options),
             new DashboardTopPartiesRequestValidator(options),
             new DashboardAlertsRequestValidator(options),
-            new DashboardHrSummaryRequestValidator());
+            new DashboardHrSummaryRequestValidator(),
+            new DashboardRecentActivityRequestValidator(options));
     }
 }

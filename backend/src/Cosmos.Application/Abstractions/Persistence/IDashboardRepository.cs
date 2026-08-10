@@ -11,4 +11,5 @@ public interface IDashboardRepository
     Task<IReadOnlyCollection<DashboardTopPartyDto>> GetTopPartiesAsync(DashboardTopPartiesParameters parameters, CancellationToken cancellationToken);
     Task<DashboardAlertsDto> GetAlertsAsync(DashboardAlertsParameters parameters, CancellationToken cancellationToken);
     Task<DashboardHrSummaryDto> GetHrSummaryAsync(DateOnly attendanceDate, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<DashboardRecentActivityDto>> GetRecentActivityAsync(int limit, CancellationToken cancellationToken);
 }

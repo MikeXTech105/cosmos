@@ -71,8 +71,11 @@ public sealed class UserService : IUserService
                 new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortDirection"] = new[] { "Allowed values: ASC, DESC." } });
         }
 
-        return ApiResponse<IReadOnlyCollection<UserExportDto>>.Success(
-            await _repository.ExportAsync(search, isActive, roleId, normalizedSort, sortDirection, cancellationToken));
+        var rows = await _repository.ExportAsync(search, isActive, roleId, normalizedSort, sortDirection, cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "Users", "Export", AuditActions.Exported, null, null, _currentUser.UserId,
+            AuditModules.Security, "UserExport", null, "Exported users."), cancellationToken);
+        return ApiResponse<IReadOnlyCollection<UserExportDto>>.Success(rows);
     }
 
     public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
@@ -132,7 +135,7 @@ public sealed class UserService : IUserService
         }
         var result = await _repository.AssignRolesAsync(id, request.RoleIds, cancellationToken);
         if (!result.Succeeded) throw new CosmosException(result.Message, result.StatusCode);
-        await _auditRepository.AddAsync(new AuditEntryRequest("UserRoles", id.ToString(), "Update", null, AuditSerializer.Serialize(request), _currentUser.UserId), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("UserRoles", id.ToString(), request.RoleIds.Count == 0 ? AuditActions.Unassigned : AuditActions.Assigned, null, AuditSerializer.Serialize(request), _currentUser.UserId), cancellationToken);
         return ApiResponse.Success(result.Message);
     }
 

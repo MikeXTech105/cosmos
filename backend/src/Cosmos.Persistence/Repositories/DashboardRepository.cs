@@ -78,6 +78,12 @@ public sealed class DashboardRepository : IDashboardRepository
             ?? new DashboardHrSummaryDto { AttendanceDate = attendanceDate };
     }
 
+    public async Task<IReadOnlyCollection<DashboardRecentActivityDto>> GetRecentActivityAsync(int limit, CancellationToken cancellationToken)
+    {
+        using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return (await connection.QueryAsync<DashboardRecentActivityDto>(Command("usp_Dashboard_GetRecentActivity", new { Limit = limit }, cancellationToken))).AsList();
+    }
+
     private static CommandDefinition Command(string storedProcedure, object parameters, CancellationToken cancellationToken) =>
         new(storedProcedure, parameters, commandType: CommandType.StoredProcedure, cancellationToken: cancellationToken);
 

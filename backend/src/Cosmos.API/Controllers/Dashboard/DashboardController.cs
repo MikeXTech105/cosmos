@@ -65,4 +65,11 @@ public sealed class DashboardController(IDashboardService service) : ApiControll
     [ProducesResponseType(typeof(ApiResponse<DashboardHrSummaryDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> HrSummary([FromQuery] DashboardHrSummaryRequest request, CancellationToken ct) =>
         FromResponse(await service.GetHrSummaryAsync(request, ct));
+
+    /// <summary>Gets a compact feed of recent permanent business and security activity.</summary>
+    [HttpGet("recent-activity")]
+    [RequirePermission("Dashboard", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<DashboardRecentActivityDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RecentActivity([FromQuery] DashboardRecentActivityRequest request, CancellationToken ct) =>
+        FromResponse(await service.GetRecentActivityAsync(request, ct));
 }

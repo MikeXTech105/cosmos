@@ -27,7 +27,6 @@ Not included in Phase 1:
 - Frontend implementation.
 - Export endpoints.
 - Widget configuration or user-personalized dashboard layout.
-- Recent activity timeline. No common activity/audit feed exists yet.
 - Company/branch filters. No general company/branch dimension exists across source tables.
 
 ## API Catalogue
@@ -43,6 +42,7 @@ Base route: `api/v1/dashboard`
 | GET | `/top-parties` | Top customers or suppliers for the selected period. |
 | GET | `/alerts` | Inventory, receivable, payable, and GST alert groups. |
 | GET | `/hr-summary` | HR active employee and attendance summary for one date. |
+| GET | `/recent-activity` | Compact permanent business/security activity feed. |
 
 ## Query Parameters
 
@@ -81,6 +81,10 @@ HR summary:
 
 - `attendanceDate`
 
+Recent activity:
+
+- `limit` (1–`Dashboard:MaxRecentActivityRows`, default 10)
+
 ## Defaults And Validation
 
 - Overview defaults to the current business month through the current business date.
@@ -91,6 +95,7 @@ HR summary:
 - Date ranges are capped by `Dashboard:MaxDateRangeDays`.
 - Top rows are capped by `Dashboard:MaxTopRows`.
 - Alert preview rows are capped by `Dashboard:MaxAlertPreviewRows`.
+- Recent activity rows are capped by `Dashboard:MaxRecentActivityRows` (default 50).
 - Business date is calculated from `Dashboard:BusinessTimeZone`; invalid time zone config falls back to UTC.
 
 ## KPI Definitions
@@ -186,6 +191,7 @@ Migration script: `backend/database/migrations/20260710_dashboard_phase1.sql`
 - `sp_Dashboard_TopParties`
 - `sp_Dashboard_Alerts`
 - `sp_Dashboard_HrSummary`
+- `usp_Dashboard_GetRecentActivity` (added by `20260810_activity_logs_module.sql`)
 
 The migration reuses or seeds the `Dashboard` page and grants `SuperAdmin` view permission by role-name lookup. No hard-coded role IDs are used.
 
@@ -228,6 +234,7 @@ Recommended first screen:
 - Top-selling items and top parties tables.
 - Alert panel from `/alerts`.
 - HR widget from `/hr-summary`.
+- Compact activity widget from `/recent-activity`; it is permanent business/security activity, not request telemetry.
 
 Use `Dashboard.View` from login permissions to show the general dashboard. Do not mix OEE dashboard APIs into the general dashboard unless the user explicitly selects manufacturing/OEE context.
 
@@ -258,7 +265,7 @@ Database verification status:
 ## Known Limitations
 
 - Live SQL Server execution is pending.
-- Recent activity is deferred until a common audit/activity source exists.
+- Recent activity is sourced from `dbo.vw_ActivityLogs` and excludes legacy technical `HttpRequests` rows.
 - Branch/company filters are not available.
 - Stock valuation is purchase-price based, not weighted average or FIFO.
 - Late arrivals are returned as `null` because the current attendance data model does not expose a reliable expected check-in comparison in the dashboard procedure.

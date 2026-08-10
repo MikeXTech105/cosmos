@@ -34,6 +34,7 @@ public sealed class JwtTokenServiceTests
         Assert.Contains(jwt.Claims, c => c.Type == "UserId" && c.Value == "7");
         Assert.Contains(jwt.Claims, c => c.Type == "Username" && c.Value == "admin");
         Assert.Contains(jwt.Claims, c => c.Type == "Email" && c.Value == "admin@cosmoserp.com");
+        Assert.Contains(jwt.Claims, c => c.Type == "FullName" && c.Value == "Admin");
         Assert.DoesNotContain(jwt.Claims, c => c.Type.Contains("role", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(jwt.Claims, c => c.Type.Contains("permission", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(jwt.Claims, c => c.Type.Contains("page", StringComparison.OrdinalIgnoreCase));
