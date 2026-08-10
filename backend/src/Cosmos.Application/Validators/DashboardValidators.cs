@@ -85,3 +85,9 @@ public sealed class DashboardAlertsRequestValidator : AbstractValidator<Dashboar
 public sealed class DashboardHrSummaryRequestValidator : AbstractValidator<DashboardHrSummaryRequest>
 {
 }
+
+public sealed class DashboardRecentActivityRequestValidator : AbstractValidator<DashboardRecentActivityRequest>
+{
+    public DashboardRecentActivityRequestValidator(IOptions<DashboardOptions> options) =>
+        RuleFor(x => x.Limit).InclusiveBetween(1, Math.Max(1, options.Value.MaxRecentActivityRows));
+}

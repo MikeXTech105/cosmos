@@ -26,7 +26,7 @@ Architecture decisions:
 - Generated owner login/refresh pages dynamically from active `Pages` with all six existing action flags.
 - Provisioned through a .NET startup service using existing BCrypt hashing and a transaction/application-lock SQL procedure.
 - Returned ordinary not-found behavior for protected user/role administration and added stored-procedure guards.
-- Reused `AuditLogs`; provisioning and safe HTTP mutation metadata preserve actor attribution without sensitive payloads.
+- Reused `AuditLogs`; System Owner provisioning remains auditable. Generic HTTP mutation metadata is now technical logging only, while permanent activity is written by successful business/security operations with actor attribution and sensitive-field redaction.
 
 Migration:
 
@@ -235,7 +235,7 @@ Database verification result:
 Known limitations:
 
 - Live SQL execution and KPI validation with representative data are pending.
-- Recent activity timeline is pending.
+- Recent activity is now supplied by the centralized Activity Logs read model; the dashboard feed excludes technical request rows.
 - Export endpoints are pending.
 - Stock valuation remains purchase-price based.
 - Late-arrival count is not calculated yet.

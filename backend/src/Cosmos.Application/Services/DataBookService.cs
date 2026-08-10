@@ -1,6 +1,7 @@
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Contracts.Common;
+using Cosmos.Contracts.Audit;
 using Cosmos.Contracts.DataBook;
 using Cosmos.Domain.Security;
 using Cosmos.Shared.Exceptions;
@@ -14,6 +15,7 @@ namespace Cosmos.Application.Services;
 public sealed class DataBookService : IDataBookService
 {
     private readonly IDataBookRepository _repository;
+    private readonly IAuditRepository _auditRepository;
     private readonly ICurrentUser _currentUser;
     private readonly IPermissionService _permissions;
     private readonly IValidator<CreateDataBookEntryRequest> _createValidator;
@@ -25,6 +27,7 @@ public sealed class DataBookService : IDataBookService
 
     public DataBookService(
         IDataBookRepository repository,
+        IAuditRepository auditRepository,
         ICurrentUser currentUser,
         IPermissionService permissions,
         IValidator<CreateDataBookEntryRequest> createValidator,
@@ -35,6 +38,7 @@ public sealed class DataBookService : IDataBookService
         ILogger<DataBookService> logger)
     {
         _repository = repository;
+        _auditRepository = auditRepository;
         _currentUser = currentUser;
         _permissions = permissions;
         _createValidator = createValidator;
@@ -75,6 +79,7 @@ public sealed class DataBookService : IDataBookService
         await ValidationRunner.ValidateAsync(_createValidator, request, ct);
         var userId = CurrentUserId();
         var entry = await _repository.CreateAsync(Normalize(request), userId, NormalizeCorrelationId(correlationId), ct);
+        await AddActivityAsync(entry, AuditActions.Created, userId, ct);
         return ApiResponse<DataBookEntryDto>.Success(await ApplyAffordancesAsync(entry, userId, ct), "Data Book entry created.");
     }
 
@@ -88,6 +93,7 @@ public sealed class DataBookService : IDataBookService
         try
         {
             var updated = await _repository.UpdateAsync(id, Normalize(request), Convert.FromBase64String(request.RowVersion), userId, NormalizeCorrelationId(correlationId), ct);
+            await AddActivityAsync(updated, AuditActions.Updated, userId, ct);
             return ApiResponse<DataBookEntryDto>.Success(await ApplyAffordancesAsync(updated, userId, ct), "Data Book entry updated.");
         }
         catch (CosmosException exception) when (exception.StatusCode == 404)
@@ -115,6 +121,9 @@ public sealed class DataBookService : IDataBookService
         }
         if (!result.Succeeded) throw new CosmosException(result.Message, result.StatusCode);
 
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "DataBookEntries", id.ToString(), AuditActions.SoftDeleted, null, null, userId,
+            AuditModules.DataBook, "DataBookEntry", current.Name, $"Soft deleted Data Book entry {current.Name}"), ct);
         return ApiResponse.Success(result.Message);
     }
 
@@ -130,8 +139,12 @@ public sealed class DataBookService : IDataBookService
     public async Task<ApiResponse<IReadOnlyCollection<DataBookExportDto>>> ExportAsync(DataBookExportRequest request, CancellationToken ct)
     {
         await ValidationRunner.ValidateAsync(_exportValidator, request, ct);
-        return ApiResponse<IReadOnlyCollection<DataBookExportDto>>.Success(
-            await _repository.ExportAsync(Normalize(request), CurrentUserId(), ct));
+        var userId = CurrentUserId();
+        var rows = await _repository.ExportAsync(Normalize(request), userId, ct);
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "DataBookEntries", "Export", AuditActions.Exported, null, null, userId,
+            AuditModules.DataBook, "DataBookExport", null, "Exported Data Book entries."), ct);
+        return ApiResponse<IReadOnlyCollection<DataBookExportDto>>.Success(rows);
     }
 
     private int CurrentUserId() => _currentUser.UserId ?? throw new UnauthorizedCosmosException("An authenticated user is required for Data Book operations.");
@@ -199,4 +212,9 @@ public sealed class DataBookService : IDataBookService
     private static string? TrimToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static string NormalizeVisibility(string? value) => string.IsNullOrWhiteSpace(value) ? "all" : value.Trim().ToLowerInvariant();
     private static string? NormalizeCorrelationId(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim()[..Math.Min(value.Trim().Length, 128)];
+
+    private Task AddActivityAsync(DataBookEntryDto entry, string action, int userId, CancellationToken ct) =>
+        _auditRepository.AddAsync(new AuditEntryRequest(
+            "DataBookEntries", entry.Id.ToString(), action, null, null, userId,
+            AuditModules.DataBook, "DataBookEntry", entry.Name, $"{action} Data Book entry {entry.Name}"), ct);
 }

@@ -41,6 +41,11 @@ public sealed class DashboardHrSummaryRequest
     public DateOnly? AttendanceDate { get; set; }
 }
 
+public sealed class DashboardRecentActivityRequest
+{
+    public int Limit { get; set; } = 10;
+}
+
 public sealed class DashboardOverviewParameters
 {
     public DateOnly FromDate { get; set; }

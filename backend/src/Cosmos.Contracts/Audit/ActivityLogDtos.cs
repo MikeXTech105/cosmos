@@ -1,0 +1,118 @@
+using System.ComponentModel;
+using System.Text.Json;
+
+namespace Cosmos.Contracts.Audit;
+
+public sealed record ActivityLogListQuery(
+    string? Search = null,
+    int? UserId = null,
+    string? Username = null,
+    string? Module = null,
+    string? Action = null,
+    string? EntityType = null,
+    string? EntityId = null,
+    DateTime? FromDate = null,
+    DateTime? ToDate = null,
+    string? HttpMethod = null,
+    int? StatusCode = null,
+    string? CorrelationId = null,
+    int PageNumber = 1,
+    int PageSize = 50,
+    string? SortBy = null,
+    string? SortDirection = null);
+
+public sealed record ActivityLogExportRequest(
+    string? Search = null,
+    int? UserId = null,
+    string? Username = null,
+    string? Module = null,
+    string? Action = null,
+    string? EntityType = null,
+    string? EntityId = null,
+    DateTime? FromDate = null,
+    DateTime? ToDate = null,
+    string? HttpMethod = null,
+    int? StatusCode = null,
+    string? CorrelationId = null,
+    string? SortBy = null,
+    string? SortDirection = null);
+
+public sealed record ActivityLogListItemDto(
+    long Id,
+    DateTime TimestampUtc,
+    int? UserId,
+    string? Username,
+    string? UserDisplayName,
+    string Action,
+    string Module,
+    string EntityType,
+    string? EntityId,
+    string? EntityDisplayValue,
+    string? Description,
+    string? HttpMethod,
+    string? RequestPath,
+    int? HttpStatusCode,
+    string? CorrelationId,
+    int TotalCount);
+
+public sealed record ActivityLogDetailRow(
+    long Id,
+    DateTime TimestampUtc,
+    int? UserId,
+    string? Username,
+    string? UserDisplayName,
+    string Action,
+    string Module,
+    string EntityType,
+    string? EntityId,
+    string? EntityDisplayValue,
+    string? Description,
+    string? OldValues,
+    string? NewValues,
+    string? ChangedFieldsJson,
+    string? HttpMethod,
+    string? RequestPath,
+    int? HttpStatusCode,
+    string? CorrelationId,
+    string? IpAddress,
+    string? UserAgent,
+    string? Source);
+
+public sealed record ActivityLogDetailDto(
+    long Id,
+    DateTime TimestampUtc,
+    int? UserId,
+    string? Username,
+    string? UserDisplayName,
+    string Action,
+    string Module,
+    string EntityType,
+    string? EntityId,
+    string? EntityDisplayValue,
+    string? Description,
+    JsonElement? OldValues,
+    JsonElement? NewValues,
+    IReadOnlyList<string> ChangedFields,
+    string? HttpMethod,
+    string? RequestPath,
+    int? HttpStatusCode,
+    string? CorrelationId,
+    string? IpAddress,
+    string? UserAgent,
+    string? Source);
+
+public sealed record ActivityLogExportDto(
+    [property: DisplayName("Timestamp (UTC)")] DateTime TimestampUtc,
+    [property: DisplayName("User")] string? UserDisplayName,
+    [property: DisplayName("Username")] string? Username,
+    [property: DisplayName("Module")] string Module,
+    [property: DisplayName("Action")] string Action,
+    [property: DisplayName("Entity Type")] string EntityType,
+    [property: DisplayName("Entity ID")] string? EntityId,
+    [property: DisplayName("Entity Reference")] string? EntityDisplayValue,
+    [property: DisplayName("Description")] string? Description,
+    [property: DisplayName("HTTP Method")] string? HttpMethod,
+    [property: DisplayName("Request Path")] string? RequestPath,
+    [property: DisplayName("Status")] int? HttpStatusCode,
+    [property: DisplayName("IP Address")] string? IpAddress,
+    [property: DisplayName("Correlation ID")] string? CorrelationId);

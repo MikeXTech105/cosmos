@@ -20,6 +20,7 @@ public sealed class DashboardService : IDashboardService
     private readonly IValidator<DashboardTopPartiesRequest> _topPartiesValidator;
     private readonly IValidator<DashboardAlertsRequest> _alertsValidator;
     private readonly IValidator<DashboardHrSummaryRequest> _hrValidator;
+    private readonly IValidator<DashboardRecentActivityRequest> _recentActivityValidator;
 
     public DashboardService(
         IDashboardRepository repository,
@@ -30,7 +31,8 @@ public sealed class DashboardService : IDashboardService
         IValidator<DashboardTopItemsRequest> topItemsValidator,
         IValidator<DashboardTopPartiesRequest> topPartiesValidator,
         IValidator<DashboardAlertsRequest> alertsValidator,
-        IValidator<DashboardHrSummaryRequest> hrValidator)
+        IValidator<DashboardHrSummaryRequest> hrValidator,
+        IValidator<DashboardRecentActivityRequest> recentActivityValidator)
     {
         _repository = repository;
         _options = options.Value;
@@ -41,6 +43,7 @@ public sealed class DashboardService : IDashboardService
         _topPartiesValidator = topPartiesValidator;
         _alertsValidator = alertsValidator;
         _hrValidator = hrValidator;
+        _recentActivityValidator = recentActivityValidator;
     }
 
     public async Task<ApiResponse<DashboardOverviewDto>> GetOverviewAsync(DashboardOverviewRequest request, CancellationToken cancellationToken)
@@ -151,6 +154,13 @@ public sealed class DashboardService : IDashboardService
         await ValidationRunner.ValidateAsync(_hrValidator, request, cancellationToken);
         return ApiResponse<DashboardHrSummaryDto>.Success(
             await _repository.GetHrSummaryAsync(request.AttendanceDate ?? GetBusinessToday(), cancellationToken));
+    }
+
+    public async Task<ApiResponse<IReadOnlyCollection<DashboardRecentActivityDto>>> GetRecentActivityAsync(DashboardRecentActivityRequest request, CancellationToken cancellationToken)
+    {
+        await ValidationRunner.ValidateAsync(_recentActivityValidator, request, cancellationToken);
+        return ApiResponse<IReadOnlyCollection<DashboardRecentActivityDto>>.Success(
+            await _repository.GetRecentActivityAsync(request.Limit, cancellationToken));
     }
 
     private DashboardTrendParameters NormalizeTrend(DashboardTrendRequest request)

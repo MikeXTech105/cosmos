@@ -113,6 +113,7 @@ public sealed class DataBookServicePrivacyTests
         permissions.Setup(x => x.UserHasPermissionAsync(userId, DataBookPermissions.Entries, It.IsAny<PermissionAction>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
         return new DataBookService(
             repository,
+            Mock.Of<IAuditRepository>(),
             new StubCurrentUser(userId),
             permissions.Object,
             new CreateDataBookEntryRequestValidator(),

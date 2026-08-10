@@ -192,6 +192,16 @@ public sealed class DashboardAlertPreviewDto
     public string? RelatedRoute { get; set; }
 }
 
+public sealed class DashboardRecentActivityDto
+{
+    public long ActivityId { get; set; }
+    public DateTime TimestampUtc { get; set; }
+    public string? UserName { get; set; }
+    public string Module { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
 public sealed class DashboardOverviewData
 {
     public DashboardSalesSummaryDto Sales { get; set; } = new();
