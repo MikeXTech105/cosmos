@@ -62,6 +62,7 @@ export const enabledModules = [
   "inventoryReports",
   "partyReports",
   "expenseReports",
+  "dataBook",
   "settings",
 ];
 
@@ -750,6 +751,13 @@ export const sidebarModules = {
     icon: "settings",
     categoryId: "system",
     sortOrder: 10,
+  },
+  dataBook: {
+    id: "dataBook",
+    label: "Data Book",
+    route: "/data-book",
+    icon: "notebook",
+    sortOrder: 45,
   },
 };
 

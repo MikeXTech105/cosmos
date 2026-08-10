@@ -18,6 +18,15 @@ describe("CSV parsing", () => {
     expect(result.errors).toEqual([]);
   });
 
+  it("supports a tab delimiter without changing the CSV default", () => {
+    const result = parseCsv('Name\tNote\r\nBox\t"Has\ta tab"\r\n', {
+      delimiter: "\t",
+    });
+
+    expect(result.headers).toEqual(["Name", "Note"]);
+    expect(result.rows).toEqual([["Box", "Has\ta tab"]]);
+  });
+
   it("computes lowercase SHA-256 hex for a known vector", async () => {
     expect(await sha256Hex("abc")).toBe(
       "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
