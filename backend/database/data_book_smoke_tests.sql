@@ -30,9 +30,15 @@ BEGIN TRY
     IF NOT EXISTS (SELECT 1 FROM #DataBookSmokeDetail) THROW 52402, N'Other user cannot read a public entry.', 1;
     TRUNCATE TABLE #DataBookSmokeDetail;
 
-    EXEC dbo.usp_DataBookEntry_Update @Id=@PublicId,@Name=N'Data Book public '+@Token,@Value=N'public smoke value updated',@Description=N'Updated by second user',@Category=N'Smoke',@IsPrivate=0,@ExpectedRowVersion=@ExpectedRowVersion,@CurrentUserId=@OtherUserId,@CorrelationId=N'data-book-smoke';
+    EXEC dbo.usp_DataBookEntry_Update @Id=@PublicId,@Name=N'Data Book public '+@Token,@Value=N'public smoke value updated',@Description=N'Smoke test',@Category=N'Smoke',@IsPrivate=0,@ExpectedRowVersion=@ExpectedRowVersion,@CurrentUserId=@OtherUserId,@CorrelationId=N'data-book-smoke';
     SELECT @UpdatedBy=UpdatedBy, @ExpectedRowVersion=CONVERT(VARBINARY(8),RowVersion) FROM dbo.DataBookEntries WHERE Id=@PublicId;
-    IF @UpdatedBy<>@OtherUserId OR NOT EXISTS (SELECT 1 FROM dbo.DataBookEntryHistory WHERE DataBookEntryId=@PublicId AND ActionType=N'Updated' AND ChangedByUserId=@OtherUserId)
+    IF @UpdatedBy<>@OtherUserId OR NOT EXISTS
+       (
+           SELECT 1
+           FROM dbo.DataBookEntryHistory
+           WHERE DataBookEntryId=@PublicId AND ActionType=N'Updated' AND ChangedByUserId=@OtherUserId
+             AND ChangedFieldsJson=N'["Value"]' AND ISJSON(OldDataJson)=1 AND ISJSON(NewDataJson)=1
+       )
         THROW 52403, N'Public update or history verification failed.', 1;
 
     EXEC dbo.usp_DataBookEntry_Create @Name=N'Data Book private '+@Token, @Value=N'private smoke value', @Description=N'Private smoke test', @Category=N'Smoke', @IsPrivate=1, @CurrentUserId=@OwnerUserId, @CorrelationId=N'data-book-smoke';

@@ -17,6 +17,10 @@ Data Book stores small name-and-value business records. An entry is either publi
 
 Every successful create, update, visibility transition, and soft delete writes a `DataBookEntryHistory` row in the same SQL transaction. History records action, field names, prior/new JSON state, actor, UTC time, and correlation ID. The history table has an append-only trigger.
 
+History storage and API representation are intentionally separate. SQL retains immutable `ChangedFieldsJson`, `OldDataJson`, and `NewDataJson` strings. The history API normalizes `changedFields` to a string array and exposes `oldData`/`newData` as structured snapshots, including the existing immutable audit fields. Existing rows with either `[{"FieldName":"Value"}]` or `["Value"]` normalize to `changedFields: ["Value"]`; malformed metadata degrades to an empty list without failing the whole response. The raw JSON properties remain temporarily in the response for the deployed frontend transition and must not be used by new consumers.
+
+The original update procedure used `FOR JSON PATH` over a one-column table, which generated object elements while create/delete used string arrays. Migration `20260810_data_book_history_contract_fix.sql` corrects only future update records to store the canonical scalar array. It does not update, delete, or otherwise rewrite immutable history rows.
+
 The shared HTTP audit middleware records only request method, path, and status. No Data Book request bodies, values, descriptions, old values, or new values are put into application logs or generic audit metadata.
 
 There is no existing database encryption abstraction in COSMOS. Consequently, Data Book values and the functional old/new history JSON are stored in SQL Server plaintext and protected by database access controls/backups. Encryption-at-rest/key-management decisions are deferred to platform-level security work; no ad-hoc encryption was introduced.
@@ -31,6 +35,11 @@ Migration: `backend/database/migrations/20260806_data_book_module.sql`
 - Procedures: `usp_DataBookEntry_Create`, `GetList`, `GetById`, `Update`, `Delete`, `GetHistory`, and `Export`
 - Page seed: `DataBook.Entries` at `/data-book/entries`; full standard permissions seed by `SuperAdmin` role name lookup
 
+Follow-on migration: `backend/database/migrations/20260810_data_book_history_contract_fix.sql`
+
+- Replaces only `usp_DataBookEntry_Update` with the same visibility/concurrency behaviour and scalar JSON array generation for changed fields.
+- No table/schema migration and no historical data mutation are required.
+
 `backend/database/verify_data_book_module.sql` is read-only. `backend/database/data_book_smoke_tests.sql` requires two active users and rolls all smoke data back.
 
 ## API
@@ -44,10 +53,16 @@ All endpoints require JWT authentication and the specified page action.
 | GET | `/api/v1/data-book/entries/{id}` | View | Returns full value; hidden private IDs return 404. |
 | PUT | `/api/v1/data-book/entries/{id}` | Edit | Uses `rowVersion`; applies ownership transition rules. |
 | DELETE | `/api/v1/data-book/entries/{id}` | Delete | Body contains `rowVersion`; soft deletes. |
-| GET | `/api/v1/data-book/entries/{id}/history` | View | Shows immutable history under the same visibility rule. |
+| GET | `/api/v1/data-book/entries/{id}/history` | View | Shows immutable history under the same visibility rule, with normalized fields and structured snapshots. |
 | GET | `/api/v1/data-book/entries/export` | Export | UTF-8 BOM CSV, using the same visibility/filter scope. |
 
 Lists and export support `search`, `category`, `visibility` (`all`, `public`, `my-private`), `createdByUserId`, `updatedByUserId`, `fromDate`, `toDate`, `sortBy` (`name`, `category`, `createdAtUtc`, `updatedAtUtc`), and `sortDirection` (`asc`, `desc`). Page size is 1-200. Sorting includes a deterministic ID tie breaker.
+
+### History response contract
+
+`GET /api/v1/data-book/entries/{id}/history` now returns `changedFields` as `string[]`, plus `oldData` and `newData` object snapshots. Snapshot property names preserve the stored CLR/API names (`Name`, `Value`, `Description`, `Category`, `IsPrivate`, `OwnerUserId`, and audit fields), so a changed field can directly index the corresponding snapshot key. `changedAtUtc` is emitted as UTC.
+
+For a transition period the response also retains `changedFieldsJson`, `oldDataJson`, and `newDataJson` exactly as stored. This is solely to avoid breaking the deployed frontend described in `DATA_BOOK_FRONTEND_INTEGRATION.md`; the next frontend release should switch to the normalized fields, after which removal can be planned as a separate versioned API change.
 
 ## Phase 2 candidates
 

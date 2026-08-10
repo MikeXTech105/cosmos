@@ -35,6 +35,35 @@ public sealed class DataBookDapperAndSqlContractTests
         Assert.Contains("CREATE OR ALTER TRIGGER dbo.TR_DataBookEntryHistory_AppendOnly", script, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void History_row_materializes_raw_json_before_centralized_normalization()
+    {
+        var row = Materialize<DataBookEntryHistoryRow>(
+            ("Id", typeof(long), 15L), ("EntryId", typeof(long), 5L), ("ActionType", typeof(string), "Updated"),
+            ("ChangedByUserId", typeof(int), 3), ("ChangedByName", typeof(string), "System Owner"),
+            ("ChangedAtUtc", typeof(DateTime), new DateTime(2026, 8, 10, 5, 19, 14)),
+            ("ChangedFieldsJson", typeof(string), "[{\"FieldName\":\"Value\"}]"),
+            ("OldDataJson", typeof(string), "{\"Value\":\"Old\"}"), ("NewDataJson", typeof(string), "{\"Value\":\"New\"}"),
+            ("CorrelationId", typeof(string), "correlation"));
+
+        Assert.Equal(15, row.Id);
+        Assert.Equal("[{\"FieldName\":\"Value\"}]", row.ChangedFieldsJson);
+        Assert.Equal("correlation", row.CorrelationId);
+    }
+
+    [Fact]
+    public void History_contract_fix_migration_serializes_update_fields_as_json_strings_without_rewriting_history()
+    {
+        var script = ReadBackendFile("database", "migrations", "20260810_data_book_history_contract_fix.sql");
+
+        Assert.Contains("CREATE OR ALTER PROCEDURE dbo.usp_DataBookEntry_Update", script, StringComparison.Ordinal);
+        Assert.Contains("STRING_AGG(N'\"'+STRING_ESCAPE(FieldName,'json')+N'\"',N',')", script, StringComparison.Ordinal);
+        Assert.Contains("WITHIN GROUP (ORDER BY ChangeSequence)", script, StringComparison.Ordinal);
+        Assert.Contains("Existing append-only history is intentionally untouched.", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("UPDATE dbo.DataBookEntryHistory", script, StringComparison.Ordinal);
+        Assert.DoesNotContain("DELETE FROM dbo.DataBookEntryHistory", script, StringComparison.Ordinal);
+    }
+
     private static int Count(string value, string token)
     {
         var count = 0;
