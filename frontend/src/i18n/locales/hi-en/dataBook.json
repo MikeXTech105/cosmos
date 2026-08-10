@@ -1,0 +1,53 @@
+{
+  "navigation": {
+    "title": "Data Book"
+  },
+  "page": {
+    "title": "Data Book",
+    "description": "Team ke frequently-used reference values ek jagah rakhein.",
+    "refresh": "Refresh karein",
+    "export": "Export karein",
+    "newEntry": "Nayi entry",
+    "exportScope": "Public entries aur aapki khud ki private entries export hoti hain."
+  },
+  "tabs": {
+    "all": "Sabhi",
+    "public": "Public",
+    "myPrivate": "Meri private",
+    "recent": "Recently updated"
+  },
+  "grid": {
+    "gridView": "Grid",
+    "listView": "List",
+    "referenceWorkspace": "Reference workspace",
+    "sheetWorkspace": "Sheet workspace",
+    "allEntryDirectory": "Saari entries ki directory",
+    "sheets": "Sheets",
+    "newSheet": "Nayi sheet",
+    "pickSheet": "Koi sheet chunein, ya nayi banayein",
+    "uncategorised": "Bina category",
+    "pasteHint": "Excel se paste karein ya typing shuru karein. Pehli row save hone ke baad sheet yahan rahegi.",
+    "pasteRows": "Rows paste karein",
+    "activeSheet": "Active sheet",
+    "saveAll": "Sab save karein",
+    "addRow": "Row jodein",
+    "pastePreview": "Pasted cells ka preview",
+    "skipHeaders": "Pehli row (headers) skip karein",
+    "changedElsewhere": "Kisi aur ne isse badal diya hai.",
+    "keepMine": "Mere changes rakhein",
+    "useTheirs": "Saved changes use karein"
+  },
+  "privacy": {
+    "private": "Private",
+    "public": "Public",
+    "notFound": "Entry nahi mili.",
+    "help": "Private information sirf aapko dikhti hai. Public information Data Book access wale sabhi users ko dikhti hai aur Edit permission wale users ise edit kar sakte hain.",
+    "makePrivate": "Yeh aapki private entry ban jayegi aur baaki users ki list se turant hat jayegi.",
+    "makePublic": "Yeh Data Book access wale sabhi users ko dikhne lagegi."
+  },
+  "conflict": {
+    "message": "Aapke edit karte waqt kisi aur ne is entry ko badal diya.",
+    "keepMine": "Mere changes rakhein",
+    "discardMine": "Mere changes hata dein"
+  }
+}

@@ -157,6 +157,7 @@ const ShipmentImports = lazy(
 const ShipmentReports = lazy(
   () => import("../pages/shipments/reports/index.js"),
 );
+const DataBook = lazy(() => import("../pages/dataBook/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
 const Preferences = lazy(() => import("../pages/preferences/index.js"));
@@ -898,6 +899,14 @@ const AppRoutes = () => {
                 pageName="ShipmentOperations.Reports"
               >
                 <ShipmentReports />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/data-book"
+            element={
+              <PermissionGuard route="/data-book" pageName="DataBook.Entries">
+                <DataBook />
               </PermissionGuard>
             }
           />

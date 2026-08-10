@@ -6,7 +6,11 @@ import {
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-export const parseCsv = (source) => {
+export const parseCsv = (source, { delimiter = "," } = {}) => {
+  if (typeof delimiter !== "string" || delimiter.length !== 1) {
+    throw new TypeError("CSV delimiter must be a single character.");
+  }
+
   const text = String(source ?? "").replace(/^\uFEFF/, "");
   const rows = [];
   let field = "";
@@ -27,7 +31,7 @@ export const parseCsv = (source) => {
       }
     } else if (character === '"') {
       quoted = true;
-    } else if (character === ",") {
+    } else if (character === delimiter) {
       row.push(field);
       field = "";
     } else if (character === "\r" || character === "\n") {

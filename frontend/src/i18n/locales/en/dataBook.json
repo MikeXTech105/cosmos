@@ -1,0 +1,53 @@
+{
+  "navigation": {
+    "title": "Data Book"
+  },
+  "page": {
+    "title": "Data Book",
+    "description": "Shared reference values your team keeps looking up.",
+    "refresh": "Refresh",
+    "export": "Export",
+    "newEntry": "New entry",
+    "exportScope": "Exports public entries and your own private entries."
+  },
+  "tabs": {
+    "all": "All",
+    "public": "Public",
+    "myPrivate": "My private",
+    "recent": "Recently updated"
+  },
+  "grid": {
+    "gridView": "Grid",
+    "listView": "List",
+    "referenceWorkspace": "Reference workspace",
+    "sheetWorkspace": "Sheet workspace",
+    "allEntryDirectory": "All-entry directory",
+    "sheets": "Sheets",
+    "newSheet": "New sheet",
+    "pickSheet": "Pick a sheet, or create one",
+    "uncategorised": "Uncategorised",
+    "pasteHint": "Paste from Excel or start typing. This sheet appears once you save a row.",
+    "pasteRows": "Paste rows",
+    "activeSheet": "Active sheet",
+    "saveAll": "Save all",
+    "addRow": "Add row",
+    "pastePreview": "Preview pasted cells",
+    "skipHeaders": "Skip first row (headers)",
+    "changedElsewhere": "Changed by someone else.",
+    "keepMine": "Keep mine",
+    "useTheirs": "Use theirs"
+  },
+  "privacy": {
+    "private": "Private",
+    "public": "Public",
+    "notFound": "Entry not found.",
+    "help": "Private information is visible only to you. Public information is visible to all users who have Data Book access and may be edited by users with Edit permission.",
+    "makePrivate": "This will become your private entry and will disappear from everyone else's list.",
+    "makePublic": "This will become visible to everyone with Data Book access."
+  },
+  "conflict": {
+    "message": "Someone else changed this entry while you were editing.",
+    "keepMine": "Keep my changes",
+    "discardMine": "Discard mine"
+  }
+}
