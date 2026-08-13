@@ -1,6 +1,7 @@
 using System.Net;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
+using Cosmos.API.WebsiteManagement;
 
 namespace Cosmos.API.Middleware;
 
@@ -68,6 +69,22 @@ public sealed class GlobalExceptionMiddleware
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
         var correlationId = context.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value) ? value?.ToString() : null;
+        if (PublicWebsiteResponse.IsPublicWebsiteRequest(context))
+        {
+            var code = statusCode switch
+            {
+                StatusCodes.Status400BadRequest => "VALIDATION_FAILED",
+                StatusCodes.Status401Unauthorized => "UNAUTHORIZED",
+                StatusCodes.Status403Forbidden => "FORBIDDEN",
+                StatusCodes.Status404NotFound => "NOT_FOUND",
+                StatusCodes.Status409Conflict => "CONFLICT",
+                StatusCodes.Status429TooManyRequests => "RATE_LIMITED",
+                _ => "INTERNAL_ERROR"
+            };
+            await context.Response.WriteAsJsonAsync(PublicWebsiteResponse.Error(message, code, fieldErrors, correlationId), context.RequestAborted);
+            return;
+        }
+
         var response = fieldErrors is { Count: > 0 }
             ? ApiResponse.Failure(message, fieldErrors, correlationId, data)
             : ApiResponse.Failure(message, errors, correlationId, data);

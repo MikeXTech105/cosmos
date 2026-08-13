@@ -1,6 +1,9 @@
 using System.Reflection;
+using System.Threading.RateLimiting;
 using Cosmos.API.Audit;
 using Cosmos.API.Middleware;
+using Cosmos.API.WebsiteManagement;
+using Cosmos.Contracts.WebsiteManagement;
 using Cosmos.Application;
 using Cosmos.Application.Services;
 using Cosmos.Infrastructure;
@@ -48,6 +51,8 @@ var swaggerModules = new[]
     new SwaggerModule("shipment-operations", "Cosmos ERP - Shipment Operations API", "Shipment Operations"),
     new SwaggerModule("supply-chain", "Cosmos ERP - Supply Chain Foundation API", "Supply Chain Foundation"),
     new SwaggerModule("data-book", "Cosmos ERP - Data Book API", "Data Book"),
+    new SwaggerModule("website-management", "Cosmos ERP - Website Management API", "Website Management"),
+    new SwaggerModule("website-public", "WEWEL Public Website API", "WEWEL Public Website"),
     new SwaggerModule("rojmel", "Cosmos ERP - Rojmel / Wallet API", "Rojmel / Wallet"),
     new SwaggerModule("settings", "Cosmos ERP - Settings API", "Settings API"),
     new SwaggerModule("general", "Cosmos ERP - General API", "General API")
@@ -95,9 +100,40 @@ builder.Services.AddControllers()
             var correlationId = context.HttpContext.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value)
                 ? value?.ToString()
                 : null;
+            if (PublicWebsiteResponse.IsPublicWebsiteRequest(context.HttpContext))
+            {
+                var publicErrors = errors.ToDictionary(pair => pair.Key, pair => pair.Value.FirstOrDefault() ?? "The supplied value is invalid.", StringComparer.Ordinal);
+                return new BadRequestObjectResult(new WebsitePublicErrorResponse("Validation failed.", "VALIDATION_FAILED", publicErrors, correlationId));
+            }
             return new BadRequestObjectResult(ApiResponse.Failure("Validation failed.", errors, correlationId));
         };
     });
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("website-public-write", context =>
+    {
+        var clientKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(clientKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 8,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0,
+            AutoReplenishment = true
+        });
+    });
+    options.OnRejected = async (context, ct) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        var correlationId = context.HttpContext.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value) ? value?.ToString() : null;
+        if (PublicWebsiteResponse.IsPublicWebsiteRequest(context.HttpContext))
+        {
+            await context.HttpContext.Response.WriteAsJsonAsync(new WebsitePublicErrorResponse("Too many requests. Please wait a moment and try again.", "RATE_LIMITED", null, correlationId), ct);
+            return;
+        }
+        await context.HttpContext.Response.WriteAsJsonAsync(ApiResponse.Failure("Too many requests.", new[] { "Too many requests." }, correlationId), ct);
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
 builder.Services.Configure<DashboardOptions>(builder.Configuration.GetSection("Dashboard"));
@@ -201,6 +237,7 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseMiddleware<JwtClaimsMiddleware>();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseMiddleware<AuditMiddleware>();
 
 app.MapControllers();

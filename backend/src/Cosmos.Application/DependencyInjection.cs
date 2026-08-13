@@ -40,6 +40,13 @@ public static class DependencyInjection
         services.AddScoped<ShipmentStatusTransitionService>();
         services.AddScoped<ISupplyChainService, SupplyChainService>();
         services.AddScoped<IDataBookService, DataBookService>();
+        services.AddScoped<IWebsiteProductService, WebsiteProductService>();
+        services.AddScoped<IWebsiteBlogService, WebsiteBlogService>();
+        services.AddScoped<IWebsiteAnnouncementService, WebsiteAnnouncementService>();
+        services.AddScoped<IWebsiteWarrantyService, WebsiteWarrantyService>();
+        services.AddScoped<IWebsiteSettingsService, WebsiteSettingsService>();
+        services.AddScoped<IWebsiteDashboardService, WebsiteDashboardService>();
+        services.AddScoped<IWebsiteContactService, WebsiteContactService>();
         services.AddScoped<IRojmelWalletService, RojmelWalletService>();
         services.AddScoped<IRojmelTransactionService, RojmelTransactionService>();
         services.AddScoped<IRojmelTransferService, RojmelTransferService>();

@@ -8,17 +8,29 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cosmos.API.Controllers;
 
 [Authorize]
-[ApiExplorerSettings(GroupName = "items")]
 [Route("api/uploads")]
 public sealed class ImageUploadsController(IWebHostEnvironment environment) : ApiControllerBase
 {
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
     [HttpPost("images")]
+    [ApiExplorerSettings(GroupName = "items")]
     [Consumes("multipart/form-data")]
     [RequirePermission("Items", PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<ImageUploadDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> UploadImage([FromForm] ImageUploadRequest request, CancellationToken cancellationToken)
+        => await UploadImageAsync(request, "items", cancellationToken);
+
+    /// <summary>Uploads public CMS images for Website Products and Blog Posts; warranty evidence never uses this endpoint.</summary>
+    [HttpPost("website/images")]
+    [ApiExplorerSettings(GroupName = "website-management")]
+    [Consumes("multipart/form-data")]
+    [RequirePermission(WebsiteManagementPermissions.Media, PermissionAction.Create)]
+    [ProducesResponseType(typeof(ApiResponse<ImageUploadDto>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> UploadWebsiteImage([FromForm] ImageUploadRequest request, CancellationToken cancellationToken)
+        => await UploadImageAsync(request, "website", cancellationToken);
+
+    private async Task<IActionResult> UploadImageAsync(ImageUploadRequest request, string requiredFolder, CancellationToken cancellationToken)
     {
         var file = request.File;
         if (file is null || file.Length == 0)
@@ -31,10 +43,10 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
             throw InvalidFile("Image size must be 5 MB or less.");
         }
 
-        var uploadFolder = string.IsNullOrWhiteSpace(request.Folder) ? "items" : request.Folder.Trim().ToLowerInvariant();
-        if (!string.Equals(uploadFolder, "items", StringComparison.Ordinal))
+        var uploadFolder = string.IsNullOrWhiteSpace(request.Folder) ? requiredFolder : request.Folder.Trim().ToLowerInvariant();
+        if (!string.Equals(uploadFolder, requiredFolder, StringComparison.Ordinal))
         {
-            throw InvalidFile("Only the items upload folder is allowed.");
+            throw InvalidFile($"Only the {requiredFolder} upload folder is allowed.");
         }
 
         var imageType = await DetectImageTypeAsync(file, cancellationToken) ?? throw InvalidFile("The file signature is not a supported image.");
