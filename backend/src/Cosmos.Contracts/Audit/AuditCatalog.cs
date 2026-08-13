@@ -75,6 +75,7 @@ public static class AuditModules
     public const string DispatchPlanning = "DispatchPlanning";
     public const string ShipmentOperations = "ShipmentOperations";
     public const string DataBook = "DataBook";
+    public const string WebsiteManagement = "WebsiteManagement";
     public const string General = "General";
 
     public static string Infer(string? tableName)
@@ -97,6 +98,7 @@ public static class AuditModules
             "CompanyGstRegistrations" or "GstApiLogs" => Gst,
             "Wallets" or "WalletTransactions" or "WalletTransfers" => Rojmel,
             "DataBookEntries" => DataBook,
+            "WebsiteProducts" or "WebsiteProductBenefits" or "WebsiteProductMedia" or "WebsiteBlogPosts" or "WebsiteBlogCategories" or "WebsiteAnnouncements" or "WebsiteWarrantyClaims" or "WebsiteWarrantyClaimAttachments" or "WebsiteWarrantyClaimHistory" or "WebsiteWarrantyClaimNotes" or "WebsiteWarrantyClaimCustomerMessages" or "WebsiteSettings" => WebsiteManagement,
             "Users" or "Roles" or "UserRoles" or "RolePermissions" or "Pages" or "Authentication" => Security,
             _ => General
         };
