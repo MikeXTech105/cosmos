@@ -3,6 +3,7 @@ using Cosmos.Application.Abstractions.Security;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Infrastructure.Gst;
 using Cosmos.Infrastructure.Security;
+using Cosmos.Infrastructure.WebsiteManagement;
 using Cosmos.Shared.Options;
 using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,6 +30,7 @@ public static class DependencyInjection
 
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IWebsiteFileStorage, LocalWebsiteFileStorage>();
         services.AddHttpClient<IGstZenProviderService, GstZenProviderService>((provider, client) =>
         {
             var gstZenOptions = provider.GetRequiredService<IOptions<GstZenOptions>>().Value;
