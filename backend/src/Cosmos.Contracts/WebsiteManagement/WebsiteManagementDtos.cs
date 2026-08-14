@@ -34,7 +34,6 @@ public sealed record WebsiteProductDto(
     byte[]? RowVersion = null)
 {
     public IReadOnlyList<string> Benefits => WebsiteJson.ReadStrings(BenefitsJson);
-    [JsonIgnore] public int TotalCount { get; set; }
 }
 
 public sealed record WebsiteProductMediaDto(long Id, long WebsiteProductId, string PublicUrl, string? AltText, int SortOrder, bool IsPrimary, DateTime CreatedAtUtc);
@@ -55,10 +54,7 @@ public sealed record SaveWebsiteBlogCategoryRequest(string Name, string Slug, st
 public sealed record WebsiteBlogPostDto(
     long Id, string Title, string Slug, string Excerpt, string Content, string? CoverImageUrl, string ReadTime, long CategoryId,
     string? CategoryName, string PublishStatus, DateTime? PublishedAtUtc, string? SeoTitle, string? SeoDescription,
-    string? OpenGraphImageUrl, bool IsFeatured, int SortOrder, byte[]? RowVersion = null)
-{
-    [JsonIgnore] public int TotalCount { get; set; }
-}
+    string? OpenGraphImageUrl, bool IsFeatured, int SortOrder, byte[]? RowVersion = null);
 public sealed record SaveWebsiteBlogPostRequest(
     string Title, string Slug, string Excerpt, string Content, string? CoverImageUrl, string ReadTime, long CategoryId,
     WebsitePublishStatus PublishStatus, DateTime? PublishedAtUtc, string? SeoTitle, string? SeoDescription,
@@ -67,10 +63,7 @@ public sealed record WebsiteBlogPostListQuery(string? Search = null, long? Categ
 
 public sealed record WebsiteAnnouncementDto(
     long Id, string? Title, string Message, string Placement, string? CtaLabel, string? CtaUrl, int Priority,
-    DateTime? StartsAtUtc, DateTime? EndsAtUtc, bool IsActive, string DismissalVersion, int SortOrder, byte[]? RowVersion = null)
-{
-    [JsonIgnore] public int TotalCount { get; set; }
-}
+    DateTime? StartsAtUtc, DateTime? EndsAtUtc, bool IsActive, string DismissalVersion, int SortOrder, byte[]? RowVersion = null);
 public sealed record SaveWebsiteAnnouncementRequest(
     string? Title, string Message, AnnouncementPlacement Placement, string? CtaLabel, string? CtaUrl, int Priority,
     DateTime? StartsAtUtc, DateTime? EndsAtUtc, bool IsActive, string? DismissalVersion, int SortOrder, string? RowVersion = null);
@@ -89,7 +82,7 @@ public sealed record WebsiteWarrantyClaimListQuery(
     int PageNumber = 1, int PageSize = 20, string? SortBy = null, string? SortDirection = null);
 public sealed record WebsiteWarrantyClaimListItemDto(
     long Id, string ReferenceId, string FullName, string Email, string OrderNumber, DateOnly PurchaseDate, string Status,
-    string? ResolutionType, int? AssignedToUserId, string? AssignedToUserName, DateTime SubmittedAtUtc, DateTime? UpdatedAtUtc, [property: JsonIgnore] int TotalCount);
+    string? ResolutionType, int? AssignedToUserId, string? AssignedToUserName, DateTime SubmittedAtUtc, DateTime? UpdatedAtUtc);
 public sealed record WebsiteWarrantyClaimDto(
     long Id, string ReferenceId, string FullName, string Email, string OrderNumber, DateOnly PurchaseDate, string Description,
     string Source, bool ConsentAccepted, DateTime ConsentAcceptedAtUtc, long? WebsiteProductId, string Status, string? ResolutionType,

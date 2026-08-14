@@ -11,10 +11,11 @@
 | Permissions/audit | Implemented | Existing actions/pages and centralized sanitized audit logs. |
 | Rate limit/error compatibility | Implemented | Public write policy and frontend-compatible direct JSON errors. |
 | Migration/verification/smoke | Added | `20260813_website_management_module.sql`, `verify_website_management_module.sql`, `website_management_smoke_tests.sql`. |
-| Tests | Added | Validators, public claim metadata handling, workflow, permission annotations, and SQL contract boundary. |
+| Tests | Added | Validators, public claim metadata handling, workflow, permission annotations, SQL contract boundary, and Announcement Dapper/paging regression coverage. |
+| Announcement list mapping | Fixed | List procedures materialize into internal mutable persistence rows; explicit mapping produces public DTOs and keeps `TotalCount` solely in `PagedResult` metadata. This also removes the same positional-record/extra-column risk from product, blog-post, and warranty list queries. |
 | Blog tags/product categories/public tracking | Deferred | No current frontend consumer; client confirmation required. |
-| SQL runtime verification | Pending | Requires approved disposable SQL Server; no database was modified by this work. |
-| Runtime Swagger verification | Pending | Requires API startup with valid System Owner/database environment. |
+| SQL runtime verification | Verified read-only | Configured staging procedure definitions and result metadata for Products, Blog Posts, Announcements, and Warranty Claims match `20260813_website_management_module.sql`. The Announcement list procedure executed successfully but staging contains zero announcement rows; no database data was modified. |
+| Runtime API/Swagger verification | Verified locally | The locally built API started against the already-provisioned staging schema. Authenticated `GET /api/v1/website-management/announcements` returned HTTP 200 with an empty items collection and `TotalCount` 0; `/swagger/website-management/swagger.json` returned HTTP 200 and includes the Announcement route. |
 
 ## Deployment order
 
