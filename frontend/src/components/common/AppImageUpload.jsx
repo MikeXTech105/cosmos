@@ -43,6 +43,7 @@ const AppImageUpload = ({
   label,
   onChange,
   onFileChange,
+  uploadHandler,
   value,
 }) => {
   const inputRef = useRef(null);
@@ -86,7 +87,7 @@ const AppImageUpload = ({
     setPreviewNotice("");
 
     try {
-      if (!isImageUploadConfigured()) {
+      if (!uploadHandler && !isImageUploadConfigured()) {
         const nextPreviewUrl = URL.createObjectURL(file);
 
         setLocalPreviewUrl(nextPreviewUrl);
@@ -99,7 +100,8 @@ const AppImageUpload = ({
         return;
       }
 
-      const imageUrl = await uploadService.uploadImage(file, (event) => {
+      const uploader = uploadHandler ?? uploadService.uploadImage;
+      const imageUrl = await uploader(file, (event) => {
         if (!event.total) {
           return;
         }

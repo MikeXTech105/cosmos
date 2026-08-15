@@ -158,6 +158,16 @@ const ShipmentReports = lazy(
   () => import("../pages/shipments/reports/index.js"),
 );
 const DataBook = lazy(() => import("../pages/dataBook/index.js"));
+const ActivityLogs = lazy(() => import("../pages/activityLogs/index.js"));
+const WebsiteDashboard = lazy(() => import("../pages/website/dashboard/index.js"));
+const WebsiteProducts = lazy(() => import("../pages/website/products/index.js"));
+const WebsiteProductForm = lazy(() => import("../pages/website/products/WebsiteProductFormPage.jsx"));
+const WebsiteBlog = lazy(() => import("../pages/website/blog/index.js"));
+const WebsiteBlogPostForm = lazy(() => import("../pages/website/blog/WebsiteBlogPostFormPage.jsx"));
+const WebsiteAnnouncements = lazy(() => import("../pages/website/announcements/index.js"));
+const WebsiteWarranty = lazy(() => import("../pages/website/warranty/index.js"));
+const WebsiteWarrantyDetail = lazy(() => import("../pages/website/warranty/WebsiteWarrantyDetailPage.jsx"));
+const WebsiteSettings = lazy(() => import("../pages/website/settings/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
 const Preferences = lazy(() => import("../pages/preferences/index.js"));
@@ -909,6 +919,58 @@ const AppRoutes = () => {
                 <DataBook />
               </PermissionGuard>
             }
+          />
+          <Route
+            path="/activity-logs"
+            element={
+              <PermissionGuard route="/activity-logs" pageName="ActivityLogs">
+                <ActivityLogs />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/website/dashboard"
+            element={<PermissionGuard route="/website/dashboard" pageName="WebsiteManagement.Dashboard"><WebsiteDashboard /></PermissionGuard>}
+          />
+          <Route
+            path="/website/products"
+            element={<PermissionGuard route="/website/products" pageName="WebsiteManagement.Products"><WebsiteProducts /></PermissionGuard>}
+          />
+          <Route
+            path="/website/products/new"
+            element={<PermissionGuard route="/website/products" pageName="WebsiteManagement.Products"><WebsiteProductForm /></PermissionGuard>}
+          />
+          <Route
+            path="/website/products/:id/edit"
+            element={<PermissionGuard route="/website/products" pageName="WebsiteManagement.Products"><WebsiteProductForm /></PermissionGuard>}
+          />
+          <Route
+            path="/website/blog"
+            element={<PermissionGuard route="/website/blog" pageName="WebsiteManagement.Blogs"><WebsiteBlog /></PermissionGuard>}
+          />
+          <Route
+            path="/website/blog/new"
+            element={<PermissionGuard route="/website/blog" pageName="WebsiteManagement.Blogs"><WebsiteBlogPostForm /></PermissionGuard>}
+          />
+          <Route
+            path="/website/blog/:id/edit"
+            element={<PermissionGuard route="/website/blog" pageName="WebsiteManagement.Blogs"><WebsiteBlogPostForm /></PermissionGuard>}
+          />
+          <Route
+            path="/website/announcements"
+            element={<PermissionGuard route="/website/announcements" pageName="WebsiteManagement.Announcements"><WebsiteAnnouncements /></PermissionGuard>}
+          />
+          <Route
+            path="/website/warranty"
+            element={<PermissionGuard route="/website/warranty" pageName="WebsiteManagement.WarrantyClaims"><WebsiteWarranty /></PermissionGuard>}
+          />
+          <Route
+            path="/website/warranty/:id"
+            element={<PermissionGuard route="/website/warranty" pageName="WebsiteManagement.WarrantyClaims"><WebsiteWarrantyDetail /></PermissionGuard>}
+          />
+          <Route
+            path="/website/settings"
+            element={<PermissionGuard route="/website/settings" pageName="WebsiteManagement.Settings"><WebsiteSettings /></PermissionGuard>}
           />
           <Route
             path="/settings"

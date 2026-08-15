@@ -62,7 +62,14 @@ export const enabledModules = [
   "inventoryReports",
   "partyReports",
   "expenseReports",
+  "wmDashboard",
+  "wmProducts",
+  "wmBlogs",
+  "wmAnnouncements",
+  "wmWarranty",
+  "wmSettings",
   "dataBook",
+  "activityLogs",
   "settings",
 ];
 
@@ -128,6 +135,12 @@ export const sidebarCategories = [
     sortOrder: 60,
   },
   {
+    id: "website",
+    label: "Website",
+    icon: "app",
+    sortOrder: 70,
+  },
+  {
     id: "oee",
     label: "OEE",
     icon: "oee",
@@ -148,6 +161,54 @@ export const sidebarCategories = [
 ];
 
 export const sidebarModules = {
+  wmDashboard: {
+    id: "wmDashboard",
+    label: "Dashboard",
+    route: "/website/dashboard",
+    icon: "dashboard",
+    categoryId: "website",
+    sortOrder: 10,
+  },
+  wmProducts: {
+    id: "wmProducts",
+    label: "Products",
+    route: "/website/products",
+    icon: "package",
+    categoryId: "website",
+    sortOrder: 20,
+  },
+  wmBlogs: {
+    id: "wmBlogs",
+    label: "Blog",
+    route: "/website/blog",
+    icon: "fileText",
+    categoryId: "website",
+    sortOrder: 30,
+  },
+  wmAnnouncements: {
+    id: "wmAnnouncements",
+    label: "Announcements",
+    route: "/website/announcements",
+    icon: "megaphone",
+    categoryId: "website",
+    sortOrder: 40,
+  },
+  wmWarranty: {
+    id: "wmWarranty",
+    label: "Warranty Claims",
+    route: "/website/warranty",
+    icon: "shield",
+    categoryId: "website",
+    sortOrder: 50,
+  },
+  wmSettings: {
+    id: "wmSettings",
+    label: "Site Settings",
+    route: "/website/settings",
+    icon: "settings2",
+    categoryId: "website",
+    sortOrder: 60,
+  },
   dashboard: {
     id: "dashboard",
     label: "Dashboard",
@@ -751,6 +812,14 @@ export const sidebarModules = {
     icon: "settings",
     categoryId: "system",
     sortOrder: 10,
+  },
+  activityLogs: {
+    id: "activityLogs",
+    label: "Activity Logs",
+    route: "/activity-logs",
+    icon: "activity",
+    categoryId: "system",
+    sortOrder: 30,
   },
   dataBook: {
     id: "dataBook",

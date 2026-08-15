@@ -28,8 +28,11 @@ export const HR_EMPLOYEE_STATUS_KEY = {
 export const HR_ATTENDANCE_STATUS = {
   PRESENT: 1,
   ABSENT: 2,
-  LATE: 3,
+  HALF_DAY: 3,
   ON_LEAVE: 4,
+  HOLIDAY: 5,
+  WEEK_OFF: 6,
+  WFH: 7,
 };
 
 export const HR_LEAVE_STATUS = {
@@ -76,8 +79,11 @@ export const HR_EMPLOYEE_STATUS_FILTER_OPTIONS = [
 export const HR_ATTENDANCE_STATUS_OPTIONS = [
   { value: HR_ATTENDANCE_STATUS.PRESENT, label: "Present" },
   { value: HR_ATTENDANCE_STATUS.ABSENT, label: "Absent" },
-  { value: HR_ATTENDANCE_STATUS.LATE, label: "Late" },
+  { value: HR_ATTENDANCE_STATUS.HALF_DAY, label: "Half Day" },
   { value: HR_ATTENDANCE_STATUS.ON_LEAVE, label: "On Leave" },
+  { value: HR_ATTENDANCE_STATUS.HOLIDAY, label: "Holiday" },
+  { value: HR_ATTENDANCE_STATUS.WEEK_OFF, label: "Week Off" },
+  { value: HR_ATTENDANCE_STATUS.WFH, label: "Work From Home" },
 ];
 
 export const HR_LEAVE_STATUS_OPTIONS = [
@@ -108,11 +114,16 @@ const EMPLOYEE_STATUS_KEY_BY_VALUE = {
 };
 
 const EMPLOYEE_STATUS_LABEL_BY_KEY = Object.fromEntries(
-  HR_EMPLOYEE_STATUS_FILTER_OPTIONS.map((option) => [option.value, option.label]),
+  HR_EMPLOYEE_STATUS_FILTER_OPTIONS.map((option) => [
+    option.value,
+    option.label,
+  ]),
 );
 
 export const getEmployeeStatusKey = (status, statusName) => {
-  const statusText = String(statusName ?? status ?? "").trim().toLowerCase();
+  const statusText = String(statusName ?? status ?? "")
+    .trim()
+    .toLowerCase();
 
   if (statusText) {
     if (statusText.includes("resign")) {
@@ -137,7 +148,11 @@ export const getEmployeeStatusKey = (status, statusName) => {
   return EMPLOYEE_STATUS_KEY_BY_VALUE[numericStatus] ?? "";
 };
 
-export const getEmployeeStatusLabel = (status, statusName, fallback = "Unknown") => {
+export const getEmployeeStatusLabel = (
+  status,
+  statusName,
+  fallback = "Unknown",
+) => {
   const key = getEmployeeStatusKey(status, statusName);
 
   return statusName || EMPLOYEE_STATUS_LABEL_BY_KEY[key] || fallback;

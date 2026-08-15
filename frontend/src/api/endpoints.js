@@ -233,6 +233,8 @@ export const ENDPOINTS = {
 
   DASHBOARD_HR_SUMMARY: "/api/v1/dashboard/hr-summary",
 
+  DASHBOARD_RECENT_ACTIVITY: "/api/v1/dashboard/recent-activity",
+
   // Procurement Planning - Channels
   PP_CHANNELS: "/api/v1/procurement-planning/channels",
 
@@ -555,6 +557,48 @@ export const ENDPOINTS = {
   DATA_BOOK_ENTRY_HISTORY: (id) =>
     `/api/v1/data-book/entries/${id}/history`,
   DATA_BOOK_ENTRIES_EXPORT: "/api/v1/data-book/entries/export",
+
+  ACTIVITY_LOGS: "/api/v1/activity-logs",
+
+  ACTIVITY_LOG_BY_ID: (id) => `/api/v1/activity-logs/${id}`,
+
+  ACTIVITY_LOGS_EXPORT: "/api/v1/activity-logs/export",
+
+  // Website Management admin console. Public /api/website routes intentionally
+  // remain separate and are not used by this module.
+  WEBSITE_DASHBOARD_OVERVIEW:
+    "/api/v1/website-management/dashboard/overview",
+  WEBSITE_PRODUCTS: "/api/v1/website-management/products",
+  WEBSITE_PRODUCT_BY_ID: (id) =>
+    `/api/v1/website-management/products/${id}`,
+  WEBSITE_BLOG_POSTS: "/api/v1/website-management/blog-posts",
+  WEBSITE_BLOG_POST_BY_ID: (id) =>
+    `/api/v1/website-management/blog-posts/${id}`,
+  WEBSITE_BLOG_CATEGORIES: "/api/v1/website-management/blog-categories",
+  WEBSITE_BLOG_CATEGORY_BY_ID: (id) =>
+    `/api/v1/website-management/blog-categories/${id}`,
+  WEBSITE_ANNOUNCEMENTS: "/api/v1/website-management/announcements",
+  WEBSITE_ANNOUNCEMENT_BY_ID: (id) =>
+    `/api/v1/website-management/announcements/${id}`,
+  WEBSITE_SETTINGS: "/api/v1/website-management/settings",
+  WEBSITE_WARRANTY_CLAIMS: "/api/v1/website-management/warranty-claims",
+  WEBSITE_WARRANTY_CLAIM_BY_ID: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}`,
+  WEBSITE_WARRANTY_HISTORY: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/history`,
+  WEBSITE_WARRANTY_ATTACHMENTS: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/attachments`,
+  WEBSITE_WARRANTY_ATTACHMENT_DOWNLOAD: (attachmentId) =>
+    `/api/v1/website-management/warranty-claims/attachments/${attachmentId}/download`,
+  WEBSITE_WARRANTY_ACTION: (id, action) =>
+    `/api/v1/website-management/warranty-claims/${id}/${action}`,
+  WEBSITE_WARRANTY_NOTES: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/notes`,
+  WEBSITE_WARRANTY_MESSAGES: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/customer-messages`,
+  WEBSITE_WARRANTY_SUMMARY:
+    "/api/v1/website-management/warranty-claims/reports/summary",
+  WEBSITE_IMAGE_UPLOAD: "/api/uploads/website/images",
 
   // --- Rojmel (Daily Cash Book) ---
   // My Wallet (current user)

@@ -1,0 +1,9 @@
+{
+  "navigation": { "website": "Website", "dashboard": "Dashboard", "products": "Products", "blog": "Blog", "announcements": "Announcements", "warrantyClaims": "Warranty claims", "siteSettings": "Site settings" },
+  "common": { "refresh": "Refresh", "clear": "Clear", "save": "Save", "cancel": "Cancel", "actions": "Actions", "active": "Active", "inactive": "Inactive", "supportReference": "Support reference" },
+  "products": { "title": "Products", "catalogueNote": "Website catalogue. Not linked to ERP inventory or stock.", "publicWarning": "These values appear publicly. Confirm with the client before publishing.", "comparisonGroup": "Used by the website comparison tool" },
+  "blog": { "title": "Blog", "posts": "Posts", "categories": "Categories", "plainBodyNote": "Body is stored as plain/Markdown text and rendered by the website." },
+  "announcements": { "title": "Announcements", "live": "Live", "notLive": "Not live", "dismissalHelp": "Change this to re-show the bar to visitors who dismissed the previous version." },
+  "warranty": { "title": "Warranty claims", "internalHeader": "Internal — not visible to the customer.", "customerHeader": "Visible to the customer.", "sendConfirmation": "This message will be sent to the customer.", "historyImmutable": "Immutable, append-only claim activity." },
+  "settings": { "title": "Site settings", "publicWarning": "This value will be readable by anyone on the public website.", "confirmation": "These values appear on the public website. Confirm before making public." }
+}

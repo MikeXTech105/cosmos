@@ -47,4 +47,44 @@ describe("Data Book service contract", () => {
 
     expect(axiosInstance.put.mock.calls[0][1].rowVersion).toBe(rowVersion);
   });
+
+  it("normalizes canonical and legacy history records at the API boundary", async () => {
+    axiosInstance.get.mockResolvedValue({
+      data: {
+        data: [
+          {
+            actionType: "Updated",
+            changedFields: ["Value"],
+            newData: { Value: "canonical-new" },
+            oldData: { Value: "canonical-old" },
+          },
+          {
+            actionType: "Updated",
+            changedFieldsJson: '[{"FieldName":"Value"}]',
+            newDataJson: '{"Value":"legacy-new"}',
+            oldDataJson: '{"Value":"legacy-old"}',
+          },
+        ],
+      },
+    });
+
+    const result = await dataBookService.getEntryHistory(5);
+
+    expect(axiosInstance.get).toHaveBeenCalledWith(
+      "/api/v1/data-book/entries/5/history",
+    );
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        changedFields: ["Value"],
+        newData: { Value: "canonical-new" },
+        oldData: { Value: "canonical-old" },
+      }),
+      expect.objectContaining({
+        changedFields: ["Value"],
+        newData: { Value: "legacy-new" },
+        oldData: { Value: "legacy-old" },
+      }),
+    ]);
+    expect(result.data[1]).not.toHaveProperty("changedFieldsJson");
+  });
 });

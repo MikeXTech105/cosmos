@@ -21,6 +21,9 @@ export const dashboardService = {
   getOverview: (params, config) =>
     getDashboard(ENDPOINTS.DASHBOARD_OVERVIEW, params, config),
 
+  getRecentActivity: (params, config) =>
+    getDashboard(ENDPOINTS.DASHBOARD_RECENT_ACTIVITY, params, config),
+
   getRevenueExpenseTrend: (params, config) =>
     getDashboard(
       ENDPOINTS.DASHBOARD_REVENUE_EXPENSE_TREND,
