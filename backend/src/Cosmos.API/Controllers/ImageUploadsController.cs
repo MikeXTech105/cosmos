@@ -58,7 +58,7 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
 
         if (!Request.IsHttps && !environment.IsDevelopment())
         {
-            throw InvalidFile("Image uploads require HTTPS outside development.");
+            throw HttpsRequired();
         }
 
         var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
@@ -105,6 +105,10 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
         {
             ["file"] = new[] { message }
         });
+
+    private static CosmosException HttpsRequired() =>
+        new("Image uploads require HTTPS outside development.", StatusCodes.Status403Forbidden,
+            new[] { "Image uploads require HTTPS outside development." });
 
     private sealed record ImageType(string Extension, string ContentType);
 }

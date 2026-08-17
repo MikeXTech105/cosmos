@@ -174,7 +174,7 @@ Current deployment evidence:
 - Dockerfile builds only the API publish artifact.
 - Database scripts are separate and must be applied outside the container.
 - Runtime environment defaults to Production and port 8080.
-- No reverse proxy, Kubernetes, CI/CD, or database migration automation is present in the repository.
+- No deployed reverse proxy, Kubernetes, CI/CD, or database migration automation is present in the repository. A hardened Nginx example for TLS termination and trusted forwarded headers is available at `deploy/nginx/cosmos-api.conf.example`; deployment owners must supply the actual trusted proxy IP/CIDR.
 
 ## Observability
 

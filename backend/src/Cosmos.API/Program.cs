@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Threading.RateLimiting;
 using Cosmos.API.Audit;
+using Cosmos.API.Hosting;
 using Cosmos.API.Middleware;
 using Cosmos.API.WebsiteManagement;
 using Cosmos.Contracts.WebsiteManagement;
@@ -12,10 +13,18 @@ using Cosmos.Shared.Options;
 using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+var reverseProxyOptions = builder.Configuration.GetSection(ReverseProxyOptions.SectionName).Get<ReverseProxyOptions>() ?? new ReverseProxyOptions();
+ReverseProxyForwarding.Validate(reverseProxyOptions);
+
+if (reverseProxyOptions.IsEnabled)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options => ReverseProxyForwarding.Configure(options, reverseProxyOptions));
+}
 
 builder.Host.UseSerilog((context, loggerConfiguration) =>
 {
@@ -195,6 +204,11 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+app.Logger.LogInformation(
+    "Cosmos API starting in {EnvironmentName}. Trusted reverse-proxy forwarding enabled: {ReverseProxyForwardingEnabled}",
+    app.Environment.EnvironmentName,
+    reverseProxyOptions.IsEnabled);
+
 try
 {
     await using var scope = app.Services.CreateAsyncScope();
@@ -207,6 +221,13 @@ catch (SystemOwnerProvisioningValidationException exception)
         "System Owner startup provisioning failed validation. {ValidationSummary}",
         exception.Message);
     throw;
+}
+
+// Must run before scheme-sensitive middleware and controllers so a trusted TLS proxy
+// can establish Request.IsHttps from X-Forwarded-Proto.
+if (reverseProxyOptions.IsEnabled)
+{
+    app.UseForwardedHeaders();
 }
 
 app.UseMiddleware<CorrelationIdMiddleware>();
