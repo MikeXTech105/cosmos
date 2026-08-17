@@ -350,11 +350,12 @@ const AppDateInput = forwardRef(({
   return (
     <>
       <input
-        defaultValue={defaultValue}
         form={form}
         name={name}
+        readOnly
         ref={assignInputRef}
         type="hidden"
+        value={currentValue}
       />
       <button
         {...buttonProps}

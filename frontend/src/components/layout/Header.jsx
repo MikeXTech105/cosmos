@@ -10,7 +10,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 shadow-[0_8px_30px_-28px_rgba(15,23,42,0.5)] backdrop-blur-xl">
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-1.5 px-3 sm:gap-3 sm:px-4 md:grid-cols-[minmax(180px,1fr)_minmax(260px,560px)_minmax(180px,1fr)] md:px-5 xl:px-6">
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-1.5">
@@ -31,7 +31,7 @@ const Header = () => {
           <button
             type="button"
             onClick={openCommand}
-            className="hidden h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-400 transition-all hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
+            className="hidden h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 text-left text-sm text-slate-400 shadow-inner shadow-slate-200/30 transition-all hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
           >
             <span className="flex min-w-0 items-center gap-2">
               <Search className="h-4 w-4 shrink-0" />

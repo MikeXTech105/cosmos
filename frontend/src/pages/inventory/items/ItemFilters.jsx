@@ -1,6 +1,7 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
+import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import { ITEM_CLASSIFICATION_OPTIONS } from "../../../utils/itemClassification";
 import { STATUS_OPTIONS } from "../inventoryHelpers";
@@ -23,17 +24,14 @@ const ItemFilters = ({
   const hasActiveFilters = activeFilterCount > 0;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
       <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_200px_190px_160px_auto]">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            value={filters.Search}
-            onChange={(event) => onChange({ Search: event.target.value })}
-            placeholder="Search name, item code or barcode..."
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
-          />
-        </label>
+        <AppInput
+          leadingIcon={Search}
+          value={filters.Search}
+          onChange={(event) => onChange({ Search: event.target.value })}
+          placeholder="Search name, item code or barcode..."
+        />
 
         <AppSelect
           value={filters.CategoryId}
@@ -69,7 +67,7 @@ const ItemFilters = ({
 
         <AppButton
           variant="secondary"
-          className="h-10 rounded-lg px-3"
+          className="px-3"
           disabled={!hasActiveFilters}
           onClick={onClear}
         >

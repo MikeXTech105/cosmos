@@ -31,7 +31,7 @@ const ActivityLogPagination = ({
   const last = Math.min(pageNumber * pageSize, totalCount);
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white px-5 py-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.35)] lg:flex-row lg:items-center lg:justify-between">
       <p className="text-sm text-slate-500">
         Showing <span className="font-semibold tabular-nums text-slate-700">{first.toLocaleString("en-IN")}</span>
         {" to "}
@@ -73,4 +73,3 @@ const ActivityLogPagination = ({
 };
 
 export default ActivityLogPagination;
-

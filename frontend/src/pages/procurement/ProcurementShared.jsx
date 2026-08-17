@@ -37,10 +37,10 @@ export const ProcurementSectionCard = ({
   title,
 }) => (
   <section
-    className={`min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm ${className}`}
+    className={`min-w-0 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_12px_36px_-24px_rgba(15,23,42,0.4)] ring-1 ring-slate-950/[0.02] ${className}`}
   >
     {(title || description || actions) && (
-      <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/45 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           {title && (
             <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
@@ -87,9 +87,9 @@ export const ProcurementStatTile = ({
     </>
   );
   const classes = [
-    "flex w-full items-center gap-3 rounded-xl border bg-white p-4 shadow-sm transition-all",
+    "group relative flex w-full items-center gap-3 overflow-hidden rounded-2xl border bg-white p-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)] transition-all",
     active ? "border-brand ring-2 ring-brand/10" : "border-slate-200",
-    onClick ? "hover:border-brand/40 hover:shadow-md" : "",
+    onClick ? "hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-md" : "",
   ].join(" ");
 
   return onClick ? (
@@ -202,16 +202,16 @@ export const ProcurementErrorState = ({ error, onRetry }) => (
 );
 
 export const ProcurementTabs = ({ active, onChange, tabs }) => (
-  <div className="flex gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+  <div className="flex gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-100/80 p-1.5 shadow-inner shadow-slate-200/40">
     {tabs.map((tab) => (
       <button
         key={tab.id}
         type="button"
         onClick={() => onChange(tab.id)}
-        className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-3.5 text-sm font-medium transition-colors ${
+        className={`flex h-9 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition-all ${
           active === tab.id
-            ? "bg-brand text-white shadow-sm"
-            : "text-slate-600 hover:bg-slate-50"
+            ? "bg-white text-brand shadow-sm ring-1 ring-slate-200"
+            : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
         }`}
       >
         {tab.icon && <tab.icon className="h-4 w-4" />}
@@ -220,7 +220,7 @@ export const ProcurementTabs = ({ active, onChange, tabs }) => (
           <span
             className={`rounded-full px-1.5 py-0.5 text-[10px] ${
               active === tab.id
-                ? "bg-brand-dark text-white"
+                ? "bg-brand-light text-brand"
                 : "bg-slate-100 text-slate-600"
             }`}
           >
@@ -283,7 +283,7 @@ export const ProcurementPagination = ({
   totalCount,
   totalPages,
 }) => (
-  <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+  <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
     <p className="text-xs text-slate-500">
       Showing{" "}
       {formatProcurementInteger(

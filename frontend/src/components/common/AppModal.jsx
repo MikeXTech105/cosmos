@@ -117,7 +117,7 @@ const AppModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-4 backdrop-blur-sm sm:py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-2 py-3 backdrop-blur-md sm:px-4 sm:py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -136,7 +136,7 @@ const AppModal = ({
             aria-busy={isBusy || undefined}
             tabIndex={-1}
             className={[
-              "flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-visible rounded-2xl border border-slate-200 bg-white shadow-xl outline-none sm:max-h-[calc(100dvh-3rem)]",
+              "flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-visible rounded-3xl border border-white/70 bg-white shadow-[0_32px_90px_-24px_rgba(15,23,42,0.55)] ring-1 ring-slate-950/10 outline-none sm:max-h-[calc(100dvh-3rem)]",
               maxWidth,
             ].join(" ")}
             initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -145,9 +145,9 @@ const AppModal = ({
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="min-h-0 overflow-y-auto p-6">
+            <div className="min-h-0 overflow-y-auto p-5 sm:p-6">
               {!hideHeader && (title || onClose) && (
-                <div className="mb-5 flex items-start justify-between gap-4">
+                <div className="mb-6 flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
                   {title && (
                     <h2
                       id={titleId}
@@ -161,7 +161,7 @@ const AppModal = ({
                       type="button"
                       onClick={onClose}
                       disabled={isBusy}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-slate-400 transition-all hover:border-slate-200 hover:bg-slate-50 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
                       aria-label="Close"
                     >
                       <X className="h-4 w-4" />
