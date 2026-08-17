@@ -28,11 +28,16 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="relative flex h-[70px] items-center justify-between px-4">
+      <div
+        className={[
+          "relative flex h-[72px] items-center justify-between border-b px-4",
+          classes.footer,
+        ].join(" ")}
+      >
         <div className="flex min-w-0 items-center gap-3">
           <div
             className={[
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ring-1 ring-white/10",
               classes.brandTile,
             ].join(" ")}
           >
@@ -57,11 +62,11 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
               Enterprise Resource Platform
             </p>
           </div>
-          {closeAction}
         </div>
+        {closeAction}
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-3 py-3">
         <label className="relative block">
           <Search
             className={[
@@ -70,6 +75,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
             ].join(" ")}
           />
           <input
+            aria-label="Search navigation"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             onKeyDown={(event) => {
@@ -84,6 +90,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
             ].join(" ")}
           />
           <span
+            aria-hidden="true"
             className={[
               "absolute right-2 top-1/2 inline-flex h-6 -translate-y-1/2 items-center gap-1 rounded-md border px-1.5 text-[10px] font-semibold",
               classes.searchShortcut,
@@ -94,7 +101,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
         </label>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 pb-4">
+      <div className="sidebar-scroll flex-1 overflow-y-auto px-3 pb-4 pt-1">
         <p
           className={[
             "mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em]",
@@ -104,7 +111,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
           Menu
         </p>
 
-        <nav className="space-y-1" aria-label="Primary navigation">
+        <nav className="isolate space-y-1" aria-label="Primary navigation">
           {menuTree.map((item) =>
             item.children.length > 0 ? (
               <SidebarGroup
@@ -156,7 +163,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
         )}
       </div>
 
-      <div className={["border-t p-4", classes.footer].join(" ")}>
+      <div className={["border-t p-3", classes.footer].join(" ")}>
         <div className={["rounded-xl p-3", classes.userCard].join(" ")}>
           <div className="flex items-center gap-3">
             <div

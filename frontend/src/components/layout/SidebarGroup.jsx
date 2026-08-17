@@ -59,7 +59,19 @@ const SidebarGroup = ({
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="mt-1 space-y-1">
+            <div className="relative mt-1 space-y-1">
+              <span
+                aria-hidden="true"
+                className={[
+                  "pointer-events-none absolute bottom-2 top-2 border-l",
+                  depth === 0
+                    ? "left-6"
+                    : depth === 1
+                      ? "left-10"
+                      : "left-[52px]",
+                  themeClasses.groupRail,
+                ].join(" ")}
+              />
               {item.children.map((child) =>
                 child.children.length > 0 ? (
                   <SidebarGroup

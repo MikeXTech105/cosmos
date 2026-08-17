@@ -70,6 +70,24 @@ main textarea:focus-visible {
   background: transparent;
 }
 
+.sidebar-scroll {
+  scrollbar-color: rgba(148, 163, 184, 0.32) transparent;
+  scrollbar-gutter: stable;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.32);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
 @layer utilities {
   .flex-center {
     display: flex;
