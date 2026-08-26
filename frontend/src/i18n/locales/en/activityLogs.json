@@ -1,0 +1,69 @@
+{
+  "navigation": {
+    "title": "Activity Logs"
+  },
+  "page": {
+    "title": "Activity Logs",
+    "description": "Who changed what, and when.",
+    "refresh": "Refresh",
+    "export": "Export",
+    "exportScope": "Exports up to 50,000 rows matching your current filters.",
+    "exportWarning": "Narrow your filters — only the first 50,000 rows will be exported."
+  },
+  "filters": {
+    "search": "Search",
+    "module": "Module",
+    "action": "Action",
+    "actor": "Actor",
+    "username": "Username",
+    "fromUtc": "From (UTC)",
+    "toUtc": "To (UTC)",
+    "support": "Support filters",
+    "entityType": "Entity type",
+    "entityId": "Entity ID",
+    "httpMethod": "HTTP method",
+    "statusCode": "Status code",
+    "correlationId": "Correlation ID",
+    "clear": "Clear",
+    "timezoneNote": "Timestamps are stored in UTC and shown in your local time. Date bounds are inclusive."
+  },
+  "table": {
+    "time": "Time",
+    "actor": "Actor",
+    "module": "Module",
+    "action": "Action",
+    "entity": "Entity",
+    "description": "Description",
+    "status": "Status",
+    "view": "View activity details",
+    "emptyTitle": "No activity found",
+    "emptyHint": "Try widening the date range or clearing filters."
+  },
+  "detail": {
+    "title": "Activity details",
+    "changedFields": "Changed fields",
+    "noChangedFields": "No field-level changes recorded",
+    "beforeAfter": "Before / After",
+    "notAvailable": "Not available for this record",
+    "showRaw": "Show raw JSON",
+    "requestContext": "Request context",
+    "requestNote": "Request details aren't recorded for older or non-HTTP events.",
+    "ipCaveat": "Server-observed address. Behind a proxy this may be the proxy's IP.",
+    "supportReference": "Support reference",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "errors": {
+    "forbidden": "You don't have access to activity logs.",
+    "load": "Unable to load activity logs.",
+    "detail": "Unable to load activity details.",
+    "export": "Unable to export activity logs."
+  },
+  "dashboard": {
+    "title": "Recent activity",
+    "description": "The latest recorded changes across COSMOS.",
+    "viewAll": "View all activity",
+    "empty": "No recent activity recorded."
+  }
+}
+

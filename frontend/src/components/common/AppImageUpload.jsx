@@ -13,6 +13,7 @@ import {
   isImageUploadConfigured,
   uploadService,
 } from "../../services/uploadService";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set([
@@ -43,6 +44,7 @@ const AppImageUpload = ({
   label,
   onChange,
   onFileChange,
+  uploadHandler,
   value,
 }) => {
   const inputRef = useRef(null);
@@ -86,7 +88,7 @@ const AppImageUpload = ({
     setPreviewNotice("");
 
     try {
-      if (!isImageUploadConfigured()) {
+      if (!uploadHandler && !isImageUploadConfigured()) {
         const nextPreviewUrl = URL.createObjectURL(file);
 
         setLocalPreviewUrl(nextPreviewUrl);
@@ -99,7 +101,8 @@ const AppImageUpload = ({
         return;
       }
 
-      const imageUrl = await uploadService.uploadImage(file, (event) => {
+      const uploader = uploadHandler ?? uploadService.uploadImage;
+      const imageUrl = await uploader(file, (event) => {
         if (!event.total) {
           return;
         }
@@ -112,7 +115,7 @@ const AppImageUpload = ({
       setProgress(100);
     } catch (uploadErrorResponse) {
       setUploadError(
-        uploadErrorResponse?.message ?? "Unable to upload image.",
+        getApiErrorMessage(uploadErrorResponse, "Unable to upload image."),
       );
     } finally {
       setIsUploading(false);

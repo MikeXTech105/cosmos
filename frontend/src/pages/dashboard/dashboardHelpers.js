@@ -285,6 +285,7 @@ export const buildDashboardApiParams = {
       ToDate: normalized.toDate || undefined,
     };
   },
+  recentActivity: () => ({ limit: 10 }),
   revenueExpenseTrend: (filters) => {
     const normalized = normalizeDashboardFilters(filters);
 

@@ -53,7 +53,7 @@ export const SupplyChainFilterBar = ({
   children,
   onClear,
 }) => (
-  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
     <div className="flex flex-wrap items-end gap-3">{children}</div>
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
       <p className="text-xs text-slate-500">
@@ -82,7 +82,7 @@ export const SupplyChainPagination = ({
   const to = Math.min(pageNumber * pageSize, totalCount);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white px-5 py-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.35)] sm:flex-row sm:items-center sm:justify-between">
       <p className="text-xs text-slate-500">
         Showing {formatSupplyChainNumber(from, "0", 0)} to{" "}
         {formatSupplyChainNumber(to, "0", 0)} of{" "}

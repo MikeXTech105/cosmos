@@ -1,6 +1,8 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
 import { memo } from "react";
 
+import AppButton from "../../../components/common/AppButton";
+import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 
 const STATUS_OPTIONS = [
@@ -22,17 +24,15 @@ const UserFilters = ({
     filters.search || filters.status !== "all" || filters.roleId !== "all";
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
       <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
-        <label className="relative block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            value={filters.search}
-            onChange={(event) => onChange({ search: event.target.value })}
-            placeholder="Search by username, name, or email..."
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
-          />
-        </label>
+        <AppInput
+          aria-label="Search users"
+          leadingIcon={Search}
+          value={filters.search}
+          onChange={(event) => onChange({ search: event.target.value })}
+          placeholder="Search by username, name, or email..."
+        />
 
         <AppSelect
           value={filters.status}
@@ -62,15 +62,15 @@ const UserFilters = ({
           aria-label="Filter by role"
         />
 
-        <button
-          type="button"
+        <AppButton
+          variant="secondary"
           onClick={onClear}
           disabled={!hasActiveFilters}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="px-3"
         >
           <RotateCcw className="h-4 w-4" />
           Clear
-        </button>
+        </AppButton>
       </div>
 
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">

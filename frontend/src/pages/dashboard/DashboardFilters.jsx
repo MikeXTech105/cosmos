@@ -17,7 +17,7 @@ const DashboardFilters = ({
   onRefresh,
 }) => {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
       <div className="flex flex-wrap items-start gap-3">
         <div className="grid min-w-0 gap-3 sm:grid-cols-[160px_150px_150px]">
           <AppSelect
@@ -49,7 +49,6 @@ const DashboardFilters = ({
               })
             }
             aria-label="Dashboard from date"
-            className="h-10"
           />
           <AppInput
             type="date"
@@ -61,7 +60,6 @@ const DashboardFilters = ({
               })
             }
             aria-label="Dashboard to date"
-            className="h-10"
           />
         </div>
 
@@ -83,7 +81,7 @@ const DashboardFilters = ({
 
         <AppButton
           variant="secondary"
-          className="h-10 rounded-lg px-3"
+          className="px-3"
           disabled={isRefreshing}
           onClick={onRefresh}
         >

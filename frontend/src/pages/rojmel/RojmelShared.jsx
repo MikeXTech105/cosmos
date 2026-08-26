@@ -8,7 +8,7 @@ import {
 
 import AppButton from "../../components/common/AppButton";
 import AppSelect from "../../components/common/AppSelect";
-import StatScopeBadge from "../../components/common/StatScopeBadge";
+import MetricCard from "../../components/common/MetricCard";
 import {
   getTransactionStatusLabel,
   getTransactionTypeLabel,
@@ -100,32 +100,15 @@ export const RojmelAmount = ({ amount, type }) => {
 };
 
 export const RojmelStatCard = ({ icon: Icon, label, scope, tone, value }) => {
-  const tones = {
-    brand: "bg-brand-light text-brand",
-    emerald: "bg-emerald-50 text-emerald-700",
-    red: "bg-red-50 text-red-600",
-    slate: "bg-slate-100 text-slate-600",
-  };
-
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tones[tone] ?? tones.brand}`}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-            {label}
-          </p>
-          <p className="mt-1 truncate text-2xl font-bold tabular-nums text-slate-900">
-            {value}
-          </p>
-          <StatScopeBadge className="mt-1" scope={scope} />
-        </div>
-      </div>
-    </div>
+    <MetricCard
+      icon={Icon}
+      label={label}
+      scope={scope}
+      tone={tone}
+      value={value}
+      valueClassName="text-2xl"
+    />
   );
 };
 
@@ -144,7 +127,7 @@ export const RojmelPagination = ({
   const end = itemCount ? start + itemCount - 1 : 0;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/60 px-5 py-4 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
       <p>
         Showing <strong className="text-slate-900">{start}</strong> to{" "}
         <strong className="text-slate-900">{end}</strong> of{" "}

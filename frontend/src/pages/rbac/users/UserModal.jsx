@@ -169,8 +169,9 @@ const UserModal = ({
     }
   };
 
-  const submitDisabled =
-    isSubmitting || isRolesLoading || Boolean(rolesError) || roleOptions.length === 0;
+  const hasRoleOptions = roleOptions.length > 0;
+  const rolesUnavailable = !hasRoleOptions && (isRolesLoading || Boolean(rolesError));
+  const submitDisabled = isSubmitting || !hasRoleOptions;
 
   return (
     <AnimatePresence>
@@ -272,13 +273,15 @@ const UserModal = ({
                           id="roleId"
                           label="Role"
                           required
-                          disabled={isRolesLoading || Boolean(rolesError)}
+                          disabled={rolesUnavailable}
                           error={errors.roleId?.message}
                           value={field.value}
                           onBlur={field.onBlur}
                           onChange={field.onChange}
                           placeholder={
-                            isRolesLoading ? "Loading roles..." : "Select role"
+                            isRolesLoading && !hasRoleOptions
+                              ? "Loading roles..."
+                              : "Select role"
                           }
                           options={roleOptions.map((role) => ({
                             value: String(role.id),

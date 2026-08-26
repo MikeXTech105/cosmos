@@ -8,14 +8,14 @@ const MainLayout = () => {
   useDocumentTitle();
 
   return (
-    <div className="flex h-dvh flex-col bg-slate-50 text-slate-950 lg:flex-row">
+    <div className="flex h-dvh flex-col bg-[#f5f7fb] text-slate-950 lg:flex-row">
       <Sidebar />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header />
 
-        <main className="min-w-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1600px] px-3 py-5 sm:px-5 md:px-6 md:py-6">
+        <main className="relative min-w-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(79,70,229,0.045),transparent_26rem),linear-gradient(180deg,#f8fafc_0%,#f5f7fb_100%)]">
+          <div className="mx-auto w-full max-w-[1680px] px-3 py-5 sm:px-5 md:px-6 md:py-7 xl:px-8">
             <Outlet />
           </div>
         </main>
