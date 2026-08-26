@@ -330,12 +330,12 @@ const AppSelect = ({
         }}
         onKeyDown={handleTriggerKeyDown}
         className={[
-          "flex h-10 w-full items-center justify-between gap-3 rounded-lg border bg-white px-3 text-left text-sm text-slate-700 outline-none transition-all",
+          "flex h-11 w-full items-center justify-between gap-3 rounded-xl border bg-white px-3.5 text-left text-sm text-slate-700 shadow-sm outline-none transition-all duration-200",
           isOpen
             ? "border-brand/40 ring-2 ring-brand/15"
             : error
               ? "border-red-400"
-              : "border-slate-200 hover:border-slate-300",
+              : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/40",
           disabled
             ? "cursor-not-allowed bg-slate-50 text-slate-400 opacity-60"
             : "",
@@ -390,7 +390,7 @@ const AppSelect = ({
                   : undefined,
               width: menuPosition.width,
             }}
-            className="fixed z-[70] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+            className="fixed z-[70] flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_22px_55px_-20px_rgba(15,23,42,0.38)] ring-1 ring-slate-950/[0.025]"
           >
             <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
               {normalizedOptions.length === 0 ? (

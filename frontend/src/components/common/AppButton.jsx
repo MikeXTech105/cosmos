@@ -3,13 +3,13 @@ import { twMerge } from "tailwind-merge";
 
 const variants = {
   primary:
-    "bg-brand text-white hover:bg-brand-dark shadow-sm active:scale-[0.98]",
+    "border border-brand bg-brand text-white shadow-lg shadow-brand/20 hover:-translate-y-0.5 hover:bg-brand-dark hover:shadow-xl hover:shadow-brand/20 active:translate-y-0 active:scale-[0.98]",
   secondary:
-    "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-[0.98]",
+    "border border-slate-200 bg-white text-slate-700 shadow-sm hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 active:translate-y-0 active:scale-[0.98]",
   danger:
-    "bg-red-500 text-white hover:bg-red-600 shadow-sm active:scale-[0.98]",
+    "border border-red-500 bg-red-500 text-white shadow-lg shadow-red-500/15 hover:-translate-y-0.5 hover:bg-red-600 active:translate-y-0 active:scale-[0.98]",
   ghost:
-    "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]",
+    "border border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-950 active:scale-[0.98]",
 };
 
 const AppButton = ({
@@ -28,6 +28,7 @@ const AppButton = ({
   return (
     <button
       {...buttonProps}
+      data-app-button=""
       type={type}
       onClick={onClick}
       disabled={isDisabled}
@@ -35,7 +36,7 @@ const AppButton = ({
       aria-disabled={isDisabled || undefined}
       className={twMerge(
         clsx(
-          "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
+          "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2",
           variants[variant] ?? variants.primary,
           isDisabled && "cursor-not-allowed opacity-60",
         ),

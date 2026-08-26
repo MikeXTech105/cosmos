@@ -11,6 +11,7 @@ const AppInput = forwardRef(({
   helperText,
   id,
   label,
+  leadingIcon: LeadingIcon,
   required,
   type = "text",
   ...props
@@ -30,7 +31,7 @@ const AppInput = forwardRef(({
   const InputComponent = isCalendarInput ? AppDateInput : "input";
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       {label && (
         <label
           htmlFor={inputId}
@@ -40,25 +41,35 @@ const AppInput = forwardRef(({
           {required && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
-      <InputComponent
-        {...props}
-        ref={ref}
-        id={inputId}
-        type={type}
-        required={required}
-        aria-required={required || undefined}
-        aria-invalid={Boolean(error) || undefined}
-        aria-describedby={describedBy}
-        className={twMerge(
-          clsx(
-            "h-11 w-full rounded-lg border bg-white px-4 text-sm text-slate-800 placeholder:text-slate-400",
-            "outline-none transition-all",
-            "focus:border-brand focus:ring-2 focus:ring-brand/20",
-            error ? "border-red-400 bg-red-50" : "border-slate-200",
-          ),
-          className,
-        )}
-      />
+      <div className="relative min-w-0">
+        {LeadingIcon ? (
+          <LeadingIcon
+            className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400"
+            aria-hidden="true"
+          />
+        ) : null}
+        <InputComponent
+          {...props}
+          ref={ref}
+          id={inputId}
+          type={type}
+          required={required}
+          aria-required={required || undefined}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={describedBy}
+          className={twMerge(
+            clsx(
+              "h-11 w-full rounded-xl border bg-white px-4 text-sm text-slate-800 shadow-sm placeholder:text-slate-400",
+              "outline-none transition-all duration-200 hover:border-slate-300",
+              "focus:border-brand focus:ring-2 focus:ring-brand/15",
+              "disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none",
+              LeadingIcon && "pl-10",
+              error ? "border-red-400 bg-red-50/60" : "border-slate-200",
+            ),
+            className,
+          )}
+        />
+      </div>
       {helperText && (
         <p id={helperId} className="text-[12px] text-slate-500">
           {helperText}

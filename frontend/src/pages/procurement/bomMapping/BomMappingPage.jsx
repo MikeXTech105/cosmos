@@ -424,7 +424,7 @@ const BomMappingPage = ({ embedded = false, moduleTabs = null }) => {
         <ProcurementSectionCard title="Finished products" description="Active items classified as finished products.">
           <div className="m-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
             <div className="relative">
-              <AppInput placeholder="Search products" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} />
+              <AppInput aria-label="Search finished products" placeholder="Search products" value={productSearch} onChange={(event) => setProductSearch(event.target.value)} />
               <Search className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-slate-400" />
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
