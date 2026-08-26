@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Command, Search, ShieldCheck, X } from "lucide-react";
+import { Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
@@ -28,40 +28,69 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="relative flex h-[70px] items-center justify-between px-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={[
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold",
-              classes.brandTile,
-            ].join(" ")}
-          >
-            C
-          </div>
-
-          <div className="min-w-0">
-            <p
+      <div
+        className={[
+          "relative flex h-[72px] items-center justify-center border-b px-14",
+          classes.footer,
+        ].join(" ")}
+      >
+        <div
+          aria-label="COSMOS — A WEWEL product"
+          className="flex min-w-0 select-none flex-col items-center py-1 text-center"
+          role="img"
+        >
+          <div aria-hidden="true" className="flex items-center leading-none">
+            <span
               className={[
-                "truncate text-sm font-semibold leading-5",
+                "font-display text-[22px] font-extrabold tracking-[0.075em]",
                 classes.brandTitle,
               ].join(" ")}
             >
-              COSMOS ERP
-            </p>
-            <p
+              COSM
+            </span>
+            <span className="relative ml-0.5 mr-1 h-5 w-5 shrink-0 text-brand">
+              <span className="absolute inset-[2px] rounded-full border-2 border-current" />
+              <span className="absolute -inset-x-0.5 top-1/2 h-[8px] -translate-y-1/2 rotate-[-18deg] rounded-[50%] border border-brand/60" />
+              <span className="absolute right-[-1px] top-[1px] h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_7px_var(--app-accent)]" />
+            </span>
+            <span
               className={[
-                "whitespace-nowrap text-[8px] font-semibold uppercase tracking-[0.06em]",
+                "font-display text-[22px] font-extrabold",
+                classes.brandTitle,
+              ].join(" ")}
+            >
+              S
+            </span>
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="mt-1.5 flex items-center justify-center gap-1.5"
+          >
+            <span
+              className="h-px w-5 bg-gradient-to-r from-transparent to-brand/80"
+            />
+            <span
+              className={[
+                "whitespace-nowrap text-[7px] font-semibold uppercase tracking-[0.2em]",
                 classes.brandSubtitle,
               ].join(" ")}
             >
-              Enterprise Resource Platform
-            </p>
+              A WEWEL PRODUCT
+            </span>
+            <span
+              className="h-px w-5 bg-gradient-to-r from-brand/80 to-transparent"
+            />
           </div>
-          {closeAction}
         </div>
+        {closeAction && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {closeAction}
+          </div>
+        )}
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-3 py-3">
         <label className="relative block">
           <Search
             className={[
@@ -70,6 +99,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
             ].join(" ")}
           />
           <input
+            aria-label="Search navigation"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             onKeyDown={(event) => {
@@ -79,22 +109,14 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
             }}
             placeholder="Search menu"
             className={[
-              "h-10 w-full rounded-lg border pl-9 pr-12 text-sm outline-none transition-all focus:ring-2",
+              "h-10 w-full rounded-lg border pl-9 pr-3 text-sm outline-none transition-all focus:ring-2",
               classes.searchInput,
             ].join(" ")}
           />
-          <span
-            className={[
-              "absolute right-2 top-1/2 inline-flex h-6 -translate-y-1/2 items-center gap-1 rounded-md border px-1.5 text-[10px] font-semibold",
-              classes.searchShortcut,
-            ].join(" ")}
-          >
-            <Command className="h-3 w-3" /> K
-          </span>
         </label>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 pb-4">
+      <div className="sidebar-scroll flex-1 overflow-y-auto px-3 pb-4 pt-1">
         <p
           className={[
             "mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em]",
@@ -104,7 +126,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
           Menu
         </p>
 
-        <nav className="space-y-1" aria-label="Primary navigation">
+        <nav className="isolate space-y-1" aria-label="Primary navigation">
           {menuTree.map((item) =>
             item.children.length > 0 ? (
               <SidebarGroup
@@ -156,7 +178,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
         )}
       </div>
 
-      <div className={["border-t p-4", classes.footer].join(" ")}>
+      <div className={["border-t p-3", classes.footer].join(" ")}>
         <div className={["rounded-xl p-3", classes.userCard].join(" ")}>
           <div className="flex items-center gap-3">
             <div

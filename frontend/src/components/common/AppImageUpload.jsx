@@ -13,6 +13,7 @@ import {
   isImageUploadConfigured,
   uploadService,
 } from "../../services/uploadService";
+import { getApiErrorMessage } from "../../utils/apiError";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set([
@@ -114,7 +115,7 @@ const AppImageUpload = ({
       setProgress(100);
     } catch (uploadErrorResponse) {
       setUploadError(
-        uploadErrorResponse?.message ?? "Unable to upload image.",
+        getApiErrorMessage(uploadErrorResponse, "Unable to upload image."),
       );
     } finally {
       setIsUploading(false);

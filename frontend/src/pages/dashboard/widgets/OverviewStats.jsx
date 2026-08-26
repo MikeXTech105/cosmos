@@ -11,8 +11,8 @@ import {
   UsersRound,
   WalletCards,
 } from "lucide-react";
-import { createElement } from "react";
 
+import MetricCard from "../../../components/common/MetricCard";
 import {
   dashboardEmptyValue,
   formatCurrency,
@@ -22,10 +22,6 @@ import {
   toDashboardNumber,
 } from "../dashboardHelpers";
 import { StatSkeleton, WidgetError } from "./WidgetState";
-
-const MetricIcon = ({ className, icon }) => {
-  return createElement(icon, { className });
-};
 
 const buildMetrics = (overview) => [
   {
@@ -157,29 +153,19 @@ const OverviewStats = ({ error, isLoading, onRetry, overview }) => {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {metrics.map((metric) => {
+      {metrics.map((metric, index) => {
         const value = getDashboardValue(overview, metric.key);
+        const tones = ["brand", "sky", "emerald", "amber", "violet", "red"];
 
         return (
-          <div
+          <MetricCard
             key={metric.key}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand ring-1 ring-inset ring-brand/10">
-                <MetricIcon icon={metric.icon} className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                  {metric.label}
-                </p>
-                <p className="mt-1 truncate text-xl font-bold text-slate-900">
-                  {formatDashboardValue(value, metric.format)}
-                </p>
-              </div>
-            </div>
-
-            {metric.growthKey ? (
+            className="p-5"
+            icon={metric.icon}
+            label={metric.label}
+            tone={tones[index % tones.length]}
+            value={formatDashboardValue(value, metric.format)}
+            footer={metric.growthKey ? (
               <GrowthChip
                 growth={getDashboardValue(overview, metric.growthKey, null)}
                 previousValue={getDashboardValue(
@@ -189,11 +175,11 @@ const OverviewStats = ({ error, isLoading, onRetry, overview }) => {
                 )}
               />
             ) : (
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="text-xs text-slate-400">
                 Current overview metric
               </p>
             )}
-          </div>
+          />
         );
       })}
 

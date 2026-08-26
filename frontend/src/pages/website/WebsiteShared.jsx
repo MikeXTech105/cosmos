@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardCopy,
+  Info,
   LockKeyhole,
   PackageOpen,
   X,
@@ -27,8 +28,9 @@ export const WebsiteBooleanPill = ({ value, trueLabel = "Active", falseLabel = "
 );
 
 export const WebsitePageIntro = ({ children }) => (
-  <div className="rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800">
-    {children}
+  <div className="flex items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm leading-6 text-sky-800 shadow-sm shadow-sky-900/5">
+    <Info className="mt-1 h-4 w-4 shrink-0 text-sky-600" />
+    <span>{children}</span>
   </div>
 );
 
@@ -81,10 +83,12 @@ export const WebsiteErrorState = ({ error, onRetry }) => {
 };
 
 export const WebsiteEmptyState = ({ description, title }) => (
-  <div className="rounded-xl border border-slate-200 bg-white px-5 py-12 text-center shadow-sm">
-    <PackageOpen className="mx-auto h-8 w-8 text-slate-300" />
+  <div className="rounded-2xl border border-slate-200/90 bg-white px-5 py-14 text-center shadow-[0_12px_36px_-24px_rgba(15,23,42,0.4)]">
+    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+      <PackageOpen className="h-6 w-6" />
+    </span>
     <p className="mt-3 text-sm font-semibold text-slate-900">{title}</p>
-    <p className="mt-1 text-xs text-slate-500">{description}</p>
+    <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">{description}</p>
   </div>
 );
 
@@ -100,7 +104,7 @@ export const WebsitePagination = ({
   const first = totalCount ? (pageNumber - 1) * pageSize + 1 : 0;
   const last = Math.min(pageNumber * pageSize, totalCount);
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 bg-white px-5 py-4 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.35)] lg:flex-row lg:items-center lg:justify-between">
       <p className="text-sm text-slate-500">
         Showing <strong className="tabular-nums text-slate-700">{first}</strong> to{" "}
         <strong className="tabular-nums text-slate-700">{last}</strong> of{" "}
@@ -163,8 +167,8 @@ export const WebsiteTextarea = ({
       id={id}
       required={required}
       aria-invalid={Boolean(error) || undefined}
-      className={`min-h-28 w-full resize-y rounded-lg border bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 ${
-        error ? "border-red-400 bg-red-50" : "border-slate-200"
+      className={`min-h-28 w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition-all hover:border-slate-300 focus:border-brand focus:ring-2 focus:ring-brand/15 ${
+        error ? "border-red-400 bg-red-50/60" : "border-slate-200"
       } ${className}`}
     />
     {helperText ? <p className="mt-1.5 text-xs text-slate-500">{helperText}</p> : null}
@@ -173,18 +177,22 @@ export const WebsiteTextarea = ({
 );
 
 export const WebsiteToggle = ({ checked, disabled, helperText, label, onChange }) => (
-  <label className={`flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3 ${disabled ? "opacity-60" : "cursor-pointer"}`}>
+  <label className={`group flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm transition-all ${disabled ? "opacity-60" : "cursor-pointer hover:border-slate-300 hover:shadow-md"}`}>
     <span>
       <span className="block text-sm font-medium text-slate-800">{label}</span>
       {helperText ? <span className="mt-0.5 block text-xs leading-5 text-slate-500">{helperText}</span> : null}
     </span>
-    <input
-      type="checkbox"
-      className="mt-0.5 h-4 w-4 accent-brand"
-      checked={Boolean(checked)}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.checked)}
-    />
+    <span className="relative mt-0.5 inline-flex shrink-0">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={Boolean(checked)}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span className="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand/30 peer-focus-visible:ring-offset-2" />
+      <span className="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+    </span>
   </label>
 );
 

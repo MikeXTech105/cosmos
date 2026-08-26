@@ -9,7 +9,7 @@ import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
-import StatScopeBadge from "../../components/common/StatScopeBadge";
+import MetricCard from "../../components/common/MetricCard";
 import {
   normalizeOeeNumberBlurValue,
   normalizeOeeNumberInput,
@@ -97,29 +97,15 @@ export const OeeStatCard = ({
   value,
 }) => {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-            {label}
-          </p>
-          <p className="mt-0.5 truncate text-xl font-bold text-slate-900">
-            {value}
-          </p>
-          {meta && (
-            <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
-              {meta}
-            </p>
-          )}
-          <StatScopeBadge className="mt-1" scope={scope} />
-        </div>
-      </div>
-    </div>
+    <MetricCard
+      colorClass={colorClass}
+      icon={Icon}
+      label={label}
+      meta={meta}
+      metaClassName="font-medium text-slate-500"
+      scope={scope}
+      value={value}
+    />
   );
 };
 
@@ -138,7 +124,7 @@ export const OeePagination = ({
   const rangeEnd = itemCount ? rangeStart + itemCount - 1 : 0;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/60 px-5 py-4 text-sm text-slate-500 lg:flex-row lg:items-center lg:justify-between">
       <p>
         Showing <span className="font-semibold text-slate-900">{rangeStart}</span>{" "}
         to <span className="font-semibold text-slate-900">{rangeEnd}</span> of{" "}
