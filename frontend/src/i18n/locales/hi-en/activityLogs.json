@@ -1,0 +1,68 @@
+{
+  "navigation": {
+    "title": "Activity Logs"
+  },
+  "page": {
+    "title": "Activity Logs",
+    "description": "Kisne kya aur kab change kiya.",
+    "refresh": "Refresh karein",
+    "export": "Export karein",
+    "exportScope": "Current filters se match hone wali maximum 50,000 rows export hoti hain.",
+    "exportWarning": "Filters ko narrow karein — sirf pehli 50,000 rows export hongi."
+  },
+  "filters": {
+    "search": "Search",
+    "module": "Module",
+    "action": "Action",
+    "actor": "Actor",
+    "username": "Username",
+    "fromUtc": "From (UTC)",
+    "toUtc": "To (UTC)",
+    "support": "Support filters",
+    "entityType": "Entity type",
+    "entityId": "Entity ID",
+    "httpMethod": "HTTP method",
+    "statusCode": "Status code",
+    "correlationId": "Correlation ID",
+    "clear": "Clear karein",
+    "timezoneNote": "Timestamps UTC mein store hote hain aur aapke local time mein dikhte hain. Date bounds inclusive hain."
+  },
+  "table": {
+    "time": "Time",
+    "actor": "Actor",
+    "module": "Module",
+    "action": "Action",
+    "entity": "Entity",
+    "description": "Description",
+    "status": "Status",
+    "view": "Activity details dekhein",
+    "emptyTitle": "Koi activity nahi mili",
+    "emptyHint": "Date range badhayein ya filters clear karein."
+  },
+  "detail": {
+    "title": "Activity details",
+    "changedFields": "Changed fields",
+    "noChangedFields": "Field-level changes record nahi hue",
+    "beforeAfter": "Pehle / Baad mein",
+    "notAvailable": "Is record ke liye available nahi hai",
+    "showRaw": "Raw JSON dikhayein",
+    "requestContext": "Request context",
+    "requestNote": "Purane ya non-HTTP events ke liye request details record nahi hoti.",
+    "ipCaveat": "Server-observed address. Proxy ke peeche yeh proxy ka IP ho sakta hai.",
+    "supportReference": "Support reference",
+    "copy": "Copy karein",
+    "copied": "Copy ho gaya"
+  },
+  "errors": {
+    "forbidden": "Aapko activity logs ka access nahi hai.",
+    "load": "Activity logs load nahi ho sake.",
+    "detail": "Activity details load nahi ho saki.",
+    "export": "Activity logs export nahi ho sake."
+  },
+  "dashboard": {
+    "title": "Recent activity",
+    "description": "COSMOS mein sabse recent recorded changes.",
+    "viewAll": "Saari activity dekhein",
+    "empty": "Koi recent activity record nahi hui."
+  }
+}

@@ -4,6 +4,7 @@ import {
   sanitizeDataBookExportParams,
   sanitizeDataBookListParams,
 } from "../../utils/dataBookQuery";
+import { normalizeDataBookHistoryPayload } from "../../utils/dataBookHistory";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const dataBookService = {
@@ -48,7 +49,11 @@ export const dataBookService = {
     const response = await axiosInstance.get(
       ENDPOINTS.DATA_BOOK_ENTRY_HISTORY(id),
     );
-    return unwrapResponse(response);
+    const result = unwrapResponse(response);
+    return {
+      ...result,
+      data: normalizeDataBookHistoryPayload(result.data),
+    };
   },
 
   updateEntry: async (id, payload) => {

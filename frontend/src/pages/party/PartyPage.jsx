@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
   Contact,
   Download,
   Plus,
@@ -69,13 +70,22 @@ const PARTY_EXPORT_COLUMNS = [
   { header: "Party Name", getValue: getPartyDisplayName },
   { header: "Type", getValue: getPartyTypeLabel },
   { header: "GSTIN", getValue: (party) => party.gstin ?? "" },
-  { header: "Mobile", getValue: (party) => party.mobileNo ?? party.mobile ?? "" },
+  {
+    header: "Mobile",
+    getValue: (party) => party.mobileNo ?? party.mobile ?? "",
+  },
   { header: "Email", getValue: (party) => party.email ?? "" },
   { header: "City", getValue: getPartyCity },
   { header: "State", getValue: getPartyState },
-  { header: "Credit Limit", getValue: (party) => Number(party.creditLimit) || 0 },
+  {
+    header: "Credit Limit",
+    getValue: (party) => Number(party.creditLimit) || 0,
+  },
   { header: "Opening Balance", getValue: formatBalance },
-  { header: "Status", getValue: (party) => (party.isActive ? "Active" : "Inactive") },
+  {
+    header: "Status",
+    getValue: (party) => (party.isActive ? "Active" : "Inactive"),
+  },
 ];
 
 const buildPaginationMeta = ({ page, pageSize, pagedResult }) => {
@@ -238,137 +248,150 @@ const PartyPage = () => {
     [filters.IsActive, filters.Search],
   );
 
-  const loadParties = useCallback(async ({ force = false } = {}) => {
-    if (!force && dataMode === "client" && fallbackBaseKey === baseQueryKey) {
-      return;
-    }
-
-    const { requestId, signal } = beginListRequest();
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    try {
-      const baseFilters = {
-        ...DEFAULT_FILTERS,
-        IsActive: filters.IsActive,
-        Search: filters.Search,
-      };
-
-      if (!force && dataMode === "capped" && fallbackBaseKey === baseQueryKey) {
-        const baseResponse = await partyService.getParties(
-          buildPartyQueryParams({
-            filters: baseFilters,
-            group: "all",
-            page,
-            pageSize,
-            sort: DEFAULT_SORT,
-          }),
-          { signal },
-        );
-        const basePage = extractPagedParties(baseResponse.data);
-
-        if (!isLatestListRequest(requestId)) return;
-        setParties(basePage.items);
-        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult: basePage }));
+  const loadParties = useCallback(
+    async ({ force = false } = {}) => {
+      if (!force && dataMode === "client" && fallbackBaseKey === baseQueryKey) {
         return;
       }
 
-      const response = await partyService.getParties(
-        buildPartyQueryParams({
-          filters,
-          group: activeGroup,
-          page,
-          pageSize,
-          sort: DEFAULT_SORT,
-        }),
-        { signal },
-      );
-      const pagedResult = extractPagedParties(response.data);
+      const { requestId, signal } = beginListRequest();
+      setIsLoading(true);
+      setErrorMessage(null);
 
-      if (isPartySummary(pagedResult.summary)) {
-        if (!isLatestListRequest(requestId)) return;
-        setDataMode("server");
-        setFallbackBaseKey("");
-        setCompatibilityNotice("");
-        setPartySummary(pagedResult.summary);
-        setParties(pagedResult.items);
-        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult }));
-        return;
-      }
+      try {
+        const baseFilters = {
+          ...DEFAULT_FILTERS,
+          IsActive: filters.IsActive,
+          Search: filters.Search,
+        };
 
-      const fallback = await loadPartyFallbackCollection({
-        fetchPage: async (pageNumber, fallbackPageSize) => {
-          const fallbackResponse = await partyService.getParties(
+        if (
+          !force &&
+          dataMode === "capped" &&
+          fallbackBaseKey === baseQueryKey
+        ) {
+          const baseResponse = await partyService.getParties(
             buildPartyQueryParams({
               filters: baseFilters,
               group: "all",
-              page: pageNumber,
-              pageSize: fallbackPageSize,
+              page,
+              pageSize,
               sort: DEFAULT_SORT,
             }),
             { signal },
           );
+          const basePage = extractPagedParties(baseResponse.data);
 
-          return fallbackResponse.data;
-        },
-        maxRecords: PARTY_FALLBACK_MAX_RECORDS,
-        pageSize: PARTY_FALLBACK_PAGE_SIZE,
-        signal,
-      });
+          if (!isLatestListRequest(requestId)) return;
+          setParties(basePage.items);
+          setPaginationMeta(
+            buildPaginationMeta({ page, pageSize, pagedResult: basePage }),
+          );
+          return;
+        }
 
-      if (!isLatestListRequest(requestId)) return;
-      setPartySummary(null);
-      setFallbackBaseKey(baseQueryKey);
-
-      if (fallback.capped) {
-        const baseResponse = await partyService.getParties(
+        const response = await partyService.getParties(
           buildPartyQueryParams({
-            filters: baseFilters,
-            group: "all",
+            filters,
+            group: activeGroup,
             page,
             pageSize,
             sort: DEFAULT_SORT,
           }),
           { signal },
         );
-        const basePage = extractPagedParties(baseResponse.data);
+        const pagedResult = extractPagedParties(response.data);
+
+        if (isPartySummary(pagedResult.summary)) {
+          if (!isLatestListRequest(requestId)) return;
+          setDataMode("server");
+          setFallbackBaseKey("");
+          setCompatibilityNotice("");
+          setPartySummary(pagedResult.summary);
+          setParties(pagedResult.items);
+          setPaginationMeta(
+            buildPaginationMeta({ page, pageSize, pagedResult }),
+          );
+          return;
+        }
+
+        const fallback = await loadPartyFallbackCollection({
+          fetchPage: async (pageNumber, fallbackPageSize) => {
+            const fallbackResponse = await partyService.getParties(
+              buildPartyQueryParams({
+                filters: baseFilters,
+                group: "all",
+                page: pageNumber,
+                pageSize: fallbackPageSize,
+                sort: DEFAULT_SORT,
+              }),
+              { signal },
+            );
+
+            return fallbackResponse.data;
+          },
+          maxRecords: PARTY_FALLBACK_MAX_RECORDS,
+          pageSize: PARTY_FALLBACK_PAGE_SIZE,
+          signal,
+        });
 
         if (!isLatestListRequest(requestId)) return;
-        setDataMode("capped");
-        setParties(basePage.items);
-        setPaginationMeta(buildPaginationMeta({ page, pageSize, pagedResult: basePage }));
-        setCompatibilityNotice(
-          `Advanced Party Type, GSTIN, and credit-limit filters require server summary support for datasets above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} records. Search and status results remain available.`,
-        );
-        return;
-      }
+        setPartySummary(null);
+        setFallbackBaseKey(baseQueryKey);
 
-      setDataMode("client");
-      setParties(fallback.items);
-      setCompatibilityNotice(
-        "Client-filtered across the complete matching collection while server summary support is unavailable.",
-      );
-    } catch (error) {
-      if (signal.aborted || !isLatestListRequest(requestId)) return;
-      setParties([]);
-      setPartySummary(null);
-      setErrorMessage(
-        getErrorMessage(error, "Unable to load parties. Please try again."),
-      );
-    } finally {
-      if (isLatestListRequest(requestId)) setIsLoading(false);
-    }
-  }, [
-    activeGroup,
-    baseQueryKey,
-    beginListRequest,
-    dataMode,
-    fallbackBaseKey,
-    filters,
-    isLatestListRequest,
-    page,
-    pageSize,
-  ]);
+        if (fallback.capped) {
+          const baseResponse = await partyService.getParties(
+            buildPartyQueryParams({
+              filters: baseFilters,
+              group: "all",
+              page,
+              pageSize,
+              sort: DEFAULT_SORT,
+            }),
+            { signal },
+          );
+          const basePage = extractPagedParties(baseResponse.data);
+
+          if (!isLatestListRequest(requestId)) return;
+          setDataMode("capped");
+          setParties(basePage.items);
+          setPaginationMeta(
+            buildPaginationMeta({ page, pageSize, pagedResult: basePage }),
+          );
+          setCompatibilityNotice(
+            `Advanced Party Type, GSTIN, and credit-limit filters require server summary support for datasets above ${PARTY_FALLBACK_MAX_RECORDS.toLocaleString()} records. Search and status results remain available.`,
+          );
+          return;
+        }
+
+        setDataMode("client");
+        setParties(fallback.items);
+        setCompatibilityNotice(
+          "Client-filtered across the complete matching collection while server summary support is unavailable.",
+        );
+      } catch (error) {
+        if (signal.aborted || !isLatestListRequest(requestId)) return;
+        setParties([]);
+        setPartySummary(null);
+        setErrorMessage(
+          getErrorMessage(error, "Unable to load parties. Please try again."),
+        );
+      } finally {
+        if (isLatestListRequest(requestId)) setIsLoading(false);
+      }
+    },
+    [
+      activeGroup,
+      baseQueryKey,
+      beginListRequest,
+      dataMode,
+      fallbackBaseKey,
+      filters,
+      isLatestListRequest,
+      page,
+      pageSize,
+    ],
+  );
 
   useEffect(() => {
     void Promise.resolve().then(loadParties);
@@ -406,10 +429,12 @@ const PartyPage = () => {
   );
   const displayParties = dataMode === "client" ? clientView.items : parties;
   const effectivePage = dataMode === "client" ? clientView.page : page;
-  const totalItems = dataMode === "client" ? clientView.totalCount : paginationMeta.total;
-  const totalPages = dataMode === "client"
-    ? clientView.totalPages
-    : Math.max(1, paginationMeta.totalPages);
+  const totalItems =
+    dataMode === "client" ? clientView.totalCount : paginationMeta.total;
+  const totalPages =
+    dataMode === "client"
+      ? clientView.totalPages
+      : Math.max(1, paginationMeta.totalPages);
   const filterControls = useMemo(() => {
     return {
       ...filters,
@@ -426,11 +451,22 @@ const PartyPage = () => {
     }
 
     if (dataMode === "capped") {
-      return { all: paginationMeta.total, both: "—", customers: "—", suppliers: "—" };
+      return {
+        all: paginationMeta.total,
+        both: "—",
+        customers: "—",
+        suppliers: "—",
+      };
     }
 
     return getPartyGroupCounts(parties);
-  }, [clientView.groupCounts, dataMode, paginationMeta.total, parties, partySummary]);
+  }, [
+    clientView.groupCounts,
+    dataMode,
+    paginationMeta.total,
+    parties,
+    partySummary,
+  ]);
   const stats = useMemo(() => {
     if (dataMode === "server") {
       return {
@@ -467,7 +503,15 @@ const PartyPage = () => {
       metricScope: "current-page",
       totalScope: "all-matching",
     };
-  }, [clientView.stats, dataMode, groupCounts.customers, groupCounts.suppliers, parties, partySummary, totalItems]);
+  }, [
+    clientView.stats,
+    dataMode,
+    groupCounts.customers,
+    groupCounts.suppliers,
+    parties,
+    partySummary,
+    totalItems,
+  ]);
 
   const closeFormModal = useCallback(() => {
     cancelEditRequests();
@@ -510,95 +554,101 @@ const PartyPage = () => {
     });
   }, [capabilities.canCreate]);
 
-  const openEditModal = useCallback(async (party) => {
-    if (!capabilities.canUpdate) {
-      toast.error("You don't have permission to update parties.");
-      return;
-    }
+  const openEditModal = useCallback(
+    async (party) => {
+      if (!capabilities.canUpdate) {
+        toast.error("You don't have permission to update parties.");
+        return;
+      }
 
-    setFormModal({
-      isLoading: true,
-      isOpen: true,
-      mode: "edit",
-      party,
-    });
-    const { requestId, signal } = beginEditRequest();
-
-    try {
-      const response = await partyService.getPartyById(party.id, { signal });
-
-      if (!isLatestEditRequest(requestId)) return;
       setFormModal({
-        isLoading: false,
+        isLoading: true,
         isOpen: true,
         mode: "edit",
-        party: extractEntity(response.data),
+        party,
       });
-    } catch (error) {
-      if (signal.aborted || !isLatestEditRequest(requestId)) return;
-      if (getApiStatus(error) === 404) {
-        toast.error("This party no longer exists. The list was refreshed.");
-        closeFormModal();
-        await loadParties({ force: true });
+      const { requestId, signal } = beginEditRequest();
+
+      try {
+        const response = await partyService.getPartyById(party.id, { signal });
+
+        if (!isLatestEditRequest(requestId)) return;
+        setFormModal({
+          isLoading: false,
+          isOpen: true,
+          mode: "edit",
+          party: extractEntity(response.data),
+        });
+      } catch (error) {
+        if (signal.aborted || !isLatestEditRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This party no longer exists. The list was refreshed.");
+          closeFormModal();
+          await loadParties({ force: true });
+          return;
+        }
+        toast.error(getErrorMessage(error, "Unable to load party details."));
+        setFormModal((current) => ({
+          ...current,
+          isLoading: false,
+        }));
+      }
+    },
+    [
+      beginEditRequest,
+      capabilities.canUpdate,
+      closeFormModal,
+      isLatestEditRequest,
+      loadParties,
+    ],
+  );
+
+  const openDetailsModal = useCallback(
+    async (party) => {
+      if (!capabilities.canView) {
+        toast.error("You don't have permission to view parties.");
         return;
       }
-      toast.error(getErrorMessage(error, "Unable to load party details."));
-      setFormModal((current) => ({
-        ...current,
-        isLoading: false,
-      }));
-    }
-  }, [
-    beginEditRequest,
-    capabilities.canUpdate,
-    closeFormModal,
-    isLatestEditRequest,
-    loadParties,
-  ]);
 
-  const openDetailsModal = useCallback(async (party) => {
-    if (!capabilities.canView) {
-      toast.error("You don't have permission to view parties.");
-      return;
-    }
-
-    setDetailsModal({
-      isLoading: true,
-      isOpen: true,
-      party,
-    });
-    const { requestId, signal } = beginDetailsRequest();
-
-    try {
-      const response = await partyService.getPartyById(party.id, { signal });
-
-      if (!isLatestDetailsRequest(requestId)) return;
       setDetailsModal({
-        isLoading: false,
+        isLoading: true,
         isOpen: true,
-        party: extractEntity(response.data),
+        party,
       });
-    } catch (error) {
-      if (signal.aborted || !isLatestDetailsRequest(requestId)) return;
-      if (getApiStatus(error) === 404) {
-        toast.error("This party no longer exists. The list was refreshed.");
-        closeDetailsModal();
-        await loadParties({ force: true });
-        return;
+      const { requestId, signal } = beginDetailsRequest();
+
+      try {
+        const response = await partyService.getPartyById(party.id, { signal });
+
+        if (!isLatestDetailsRequest(requestId)) return;
+        setDetailsModal({
+          isLoading: false,
+          isOpen: true,
+          party: extractEntity(response.data),
+        });
+      } catch (error) {
+        if (signal.aborted || !isLatestDetailsRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This party no longer exists. The list was refreshed.");
+          closeDetailsModal();
+          await loadParties({ force: true });
+          return;
+        }
+        toast.error(getErrorMessage(error, "Unable to load party details."));
+        setDetailsModal((current) => ({
+          ...current,
+          isLoading: false,
+        }));
       }
-      toast.error(getErrorMessage(error, "Unable to load party details."));
-      setDetailsModal((current) => ({
-        ...current,
-        isLoading: false,
-      }));
-    }
-  }, [
-    beginDetailsRequest,
-    capabilities.canView,
-    closeDetailsModal,
-    isLatestDetailsRequest,
-    loadParties,
-  ]);
+    },
+    [
+      beginDetailsRequest,
+      capabilities.canView,
+      closeDetailsModal,
+      isLatestDetailsRequest,
+      loadParties,
+    ],
+  );
 
   const openSettingsModal = useCallback(async () => {
     if (!capabilities.canSettings) {
@@ -632,129 +682,141 @@ const PartyPage = () => {
     }
   }, [beginSettingsRequest, capabilities.canSettings, isLatestSettingsRequest]);
 
-  const submitParty = useCallback(async (payload) => {
-    const allowed =
-      formModal.mode === "edit"
-        ? capabilities.canUpdate
-        : capabilities.canCreate;
+  const submitParty = useCallback(
+    async (payload) => {
+      const allowed =
+        formModal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
 
-    if (!allowed) {
-      toast.error("You don't have permission to save this party.");
-      return;
-    }
-
-    try {
-      if (formModal.mode === "edit") {
-        await partyService.updateParty(formModal.party.id, payload);
-        toast.success("Party updated successfully");
-      } else {
-        await partyService.createParty(payload);
-        toast.success("Party created successfully");
-      }
-
-      closeFormModal();
-      await loadParties({ force: true });
-    } catch (error) {
-      if (formModal.mode === "edit" && getApiStatus(error) === 404) {
-        toast.error("This party no longer exists. The list was refreshed.");
-        closeFormModal();
-        await loadParties({ force: true });
+      if (!allowed) {
+        toast.error("You don't have permission to save this party.");
         return;
       }
-      toast.error(
-        getErrorMessage(
-          error,
-          formModal.mode === "edit"
-            ? "Unable to update party."
-            : "Unable to create party.",
+
+      try {
+        if (formModal.mode === "edit") {
+          await partyService.updateParty(formModal.party.id, payload);
+          toast.success("Party updated successfully");
+        } else {
+          await partyService.createParty(payload);
+          toast.success("Party created successfully");
+        }
+
+        closeFormModal();
+        await loadParties({ force: true });
+      } catch (error) {
+        if (formModal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This party no longer exists. The list was refreshed.");
+          closeFormModal();
+          await loadParties({ force: true });
+          return;
+        }
+        toast.error(
+          getErrorMessage(
+            error,
+            formModal.mode === "edit"
+              ? "Unable to update party."
+              : "Unable to create party.",
+          ),
+        );
+        throw error;
+      }
+    },
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeFormModal,
+      formModal.mode,
+      formModal.party,
+      loadParties,
+    ],
+  );
+
+  const submitSettings = useCallback(
+    async (payload) => {
+      if (!capabilities.canSettings) {
+        toast.error("You don't have permission to manage party settings.");
+        return;
+      }
+
+      try {
+        const response = await partyService.updatePartySettings(payload);
+
+        setSettingsModal((current) => ({
+          ...current,
+          settings: response.data,
+        }));
+        toast.success("Party settings updated successfully");
+        closeSettingsModal();
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Unable to update party settings."));
+        throw error;
+      }
+    },
+    [capabilities.canSettings, closeSettingsModal],
+  );
+
+  const updatePartyStatus = useCallback(
+    async (party, isActive) => {
+      const allowed = isActive
+        ? capabilities.canActivate
+        : capabilities.canDeactivate;
+
+      if (!allowed) {
+        toast.error("You don't have permission to change party status.");
+        return;
+      }
+
+      const previousParties = parties;
+
+      setParties((current) =>
+        current.map((item) =>
+          item.id === party.id
+            ? {
+                ...item,
+                isActive,
+              }
+            : item,
         ),
       );
-      throw error;
-    }
-  }, [
-    capabilities.canCreate,
-    capabilities.canUpdate,
-    closeFormModal,
-    formModal.mode,
-    formModal.party,
-    loadParties,
-  ]);
 
-  const submitSettings = useCallback(async (payload) => {
-    if (!capabilities.canSettings) {
-      toast.error("You don't have permission to manage party settings.");
-      return;
-    }
+      try {
+        await partyService.changePartyStatus(party.id, { isActive });
+        toast.success(
+          isActive
+            ? "Party activated successfully"
+            : "Party deactivated successfully",
+        );
+        await loadParties({ force: true });
+      } catch (error) {
+        setParties(previousParties);
+        toast.error(getErrorMessage(error, "Unable to update party status."));
+      }
+    },
+    [
+      capabilities.canActivate,
+      capabilities.canDeactivate,
+      loadParties,
+      parties,
+    ],
+  );
 
-    try {
-      const response = await partyService.updatePartySettings(payload);
+  const openDeleteConfirmation = useCallback(
+    (party) => {
+      if (!capabilities.canDelete) {
+        toast.error("You don't have permission to delete parties.");
+        return;
+      }
 
-      setSettingsModal((current) => ({
-        ...current,
-        settings: response.data,
-      }));
-      toast.success("Party settings updated successfully");
-      closeSettingsModal();
-    } catch (error) {
-      toast.error(getErrorMessage(error, "Unable to update party settings."));
-      throw error;
-    }
-  }, [capabilities.canSettings, closeSettingsModal]);
-
-  const updatePartyStatus = useCallback(async (party, isActive) => {
-    const allowed = isActive
-      ? capabilities.canActivate
-      : capabilities.canDeactivate;
-
-    if (!allowed) {
-      toast.error("You don't have permission to change party status.");
-      return;
-    }
-
-    const previousParties = parties;
-
-    setParties((current) =>
-      current.map((item) =>
-        item.id === party.id
-          ? {
-              ...item,
-              isActive,
-            }
-          : item,
-      ),
-    );
-
-    try {
-      await partyService.changePartyStatus(party.id, { isActive });
-      toast.success(
-        isActive
-          ? "Party activated successfully"
-          : "Party deactivated successfully",
-      );
-      await loadParties({ force: true });
-    } catch (error) {
-      setParties(previousParties);
-      toast.error(getErrorMessage(error, "Unable to update party status."));
-    }
-  }, [
-    capabilities.canActivate,
-    capabilities.canDeactivate,
-    loadParties,
-    parties,
-  ]);
-
-  const openDeleteConfirmation = useCallback((party) => {
-    if (!capabilities.canDelete) {
-      toast.error("You don't have permission to delete parties.");
-      return;
-    }
-
-    setConfirmation({
-      isOpen: true,
-      isSubmitting: false,
-      party,
-    });
-  }, [capabilities.canDelete]);
+      setConfirmation({
+        isOpen: true,
+        isSubmitting: false,
+        party,
+      });
+    },
+    [capabilities.canDelete],
+  );
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -851,7 +913,9 @@ const PartyPage = () => {
     setIsExporting(true);
 
     try {
-      const response = await partyService.exportParties(exportParams, { signal });
+      const response = await partyService.exportParties(exportParams, {
+        signal,
+      });
 
       if (!isLatestExportRequest(requestId)) return;
       await downloadResponseBlob(response, "parties.csv");
@@ -860,7 +924,9 @@ const PartyPage = () => {
       if (signal.aborted || !isLatestExportRequest(requestId)) return;
 
       if (![404, 405, 501].includes(getApiStatus(error))) {
-        toast.error(await getDownloadErrorMessage(error, "Unable to export parties."));
+        toast.error(
+          await getDownloadErrorMessage(error, "Unable to export parties."),
+        );
         return;
       }
 
@@ -913,7 +979,9 @@ const PartyPage = () => {
         toast.success(`Exported ${exportRows.length} parties`);
       } catch (fallbackError) {
         if (!signal.aborted && isLatestExportRequest(requestId)) {
-          toast.error(getErrorMessage(fallbackError, "Unable to export parties."));
+          toast.error(
+            getErrorMessage(fallbackError, "Unable to export parties."),
+          );
         }
       }
     } finally {
@@ -956,71 +1024,78 @@ const PartyPage = () => {
   );
 
   return (
-    <section className="min-w-0 space-y-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
-            <Contact className="h-3.5 w-3.5" />
-            Party Master
+    <section className="min-w-0 space-y-6">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand text-white shadow-lg shadow-brand/20">
+            <Contact className="h-5 w-5" />
           </div>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
-            Party Master
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            Manage parties, billing details, credit limits and settings.
-          </p>
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-brand">
+              Accounts directory
+            </p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              Party Master
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+              Manage customer and supplier identities, GST details, addresses
+              and credit terms.
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap xl:justify-end">
-          <AppTooltip label="Refresh Parties">
-            <button
-              type="button"
-              onClick={() => loadParties({ force: true })}
-              disabled={isLoading}
-              aria-label="Refresh Parties"
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
-          </AppTooltip>
-          {capabilities.canSettings && (
-            <AppTooltip label="Party Settings">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center xl:justify-end">
+          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+            <AppTooltip label="Refresh Parties">
               <button
                 type="button"
-                onClick={openSettingsModal}
-                aria-label="Party Settings"
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
+                onClick={() => loadParties({ force: true })}
+                disabled={isLoading}
+                aria-label="Refresh Parties"
+                className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
               >
-                <Settings className="h-4 w-4" />
-                Settings
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                />
+                Refresh
               </button>
             </AppTooltip>
-          )}
-          {capabilities.canExport && (
-            <AppTooltip label="Export Parties">
-              <button
-                type="button"
-                onClick={handleExport}
-                disabled={isExporting}
-                aria-busy={isExporting || undefined}
-                aria-label="Export Parties"
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50 active:scale-[0.98] sm:w-auto"
-              >
-                <Download className="h-4 w-4" />
-                {isExporting ? "Exporting…" : "Export"}
-              </button>
-            </AppTooltip>
-          )}
+            {capabilities.canSettings && (
+              <AppTooltip label="Party Settings">
+                <button
+                  type="button"
+                  onClick={openSettingsModal}
+                  aria-label="Party Settings"
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 sm:flex-none"
+                >
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </button>
+              </AppTooltip>
+            )}
+            {capabilities.canExport && (
+              <AppTooltip label="Export Parties">
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  aria-busy={isExporting || undefined}
+                  aria-label="Export Parties"
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                >
+                  <Download className="h-4 w-4" />
+                  {isExporting ? "Exporting…" : "Export"}
+                </button>
+              </AppTooltip>
+            )}
+          </div>
           {capabilities.canCreate && (
             <AppTooltip label="Add Party">
               <button
                 type="button"
                 onClick={openCreateModal}
                 aria-label="Add Party"
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:-translate-y-0.5 hover:bg-brand-dark active:translate-y-0 active:scale-[0.98] sm:w-auto"
               >
                 <Plus className="h-4 w-4" />
                 Add Party
@@ -1040,103 +1115,112 @@ const PartyPage = () => {
         totalScope={stats.totalScope}
       />
 
-      <PartyGroups
-        activeGroup={activeGroup}
-        counts={groupCounts}
-        onChange={handleGroupChange}
-      />
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <PartyGroups
+          embedded
+          activeGroup={activeGroup}
+          counts={groupCounts}
+          onChange={handleGroupChange}
+        />
 
-      <PartyFilters
-        filters={filterControls}
-        resultCount={totalItems}
-        onChange={handleFilterChange}
-        onClear={clearFilters}
-      />
+        <PartyFilters
+          embedded
+          filters={filterControls}
+          resultCount={totalItems}
+          onChange={handleFilterChange}
+          onClear={clearFilters}
+        />
 
-      {compatibilityNotice && (
-        <p className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-          {compatibilityNotice}
-        </p>
-      )}
-
-      <PartyTable
-        actions={tableActions}
-        currentPage={effectivePage}
-        errorMessage={errorMessage}
-        hasError={Boolean(errorMessage)}
-        isLoading={isLoading}
-        onCreate={capabilities.canCreate ? openCreateModal : undefined}
-        onRetry={() => loadParties({ force: true })}
-        pageSize={pageSize}
-        parties={displayParties}
-      />
-
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <p>
-          Showing <span className="font-semibold text-slate-900">
-            {displayParties.length ? (effectivePage - 1) * pageSize + 1 : 0}
-          </span>
-          {"–"}
-          <span className="font-semibold text-slate-900">
-            {displayParties.length
-              ? (effectivePage - 1) * pageSize + displayParties.length
-              : 0}
-          </span>{" "}
-          of <span className="font-semibold text-slate-900">{totalItems}</span>{" "}
-          matching parties
-        </p>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
-            <span>Rows</span>
-            <AppSelect
-              value={pageSize}
-              onChange={handlePageSizeChange}
-              options={PAGE_SIZE_OPTIONS}
-              className="w-20"
-              aria-label="Rows per page"
-            />
+        {compatibilityNotice && (
+          <div className="border-b border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-800 sm:px-5">
+            {compatibilityNotice}
           </div>
+        )}
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={isLoading || effectivePage <= 1}
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="min-w-20 text-center text-xs font-semibold text-slate-500">
-              Page {effectivePage} / {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() =>
-                setPage((current) => Math.min(totalPages, current + 1))
-              }
-              disabled={isLoading || effectivePage >= totalPages}
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Next
-            </button>
+        <PartyTable
+          embedded
+          actions={tableActions}
+          currentPage={effectivePage}
+          errorMessage={errorMessage}
+          hasError={Boolean(errorMessage)}
+          isLoading={isLoading}
+          onCreate={capabilities.canCreate ? openCreateModal : undefined}
+          onRetry={() => loadParties({ force: true })}
+          pageSize={pageSize}
+          parties={displayParties}
+        />
+
+        {!errorMessage && (isLoading || totalItems > 0) && (
+          <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50/70 px-4 py-3 text-sm text-slate-500 sm:px-5 lg:flex-row lg:items-center lg:justify-between">
+            <p>
+              Showing{" "}
+              <span className="font-bold tabular-nums text-slate-900">
+                {displayParties.length ? (effectivePage - 1) * pageSize + 1 : 0}
+              </span>
+              {"–"}
+              <span className="font-bold tabular-nums text-slate-900">
+                {displayParties.length
+                  ? (effectivePage - 1) * pageSize + displayParties.length
+                  : 0}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold tabular-nums text-slate-900">
+                {totalItems}
+              </span>
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex items-center justify-between gap-2 text-sm font-medium text-slate-600 sm:justify-start">
+                <span>Rows per page</span>
+                <AppSelect
+                  value={pageSize}
+                  onChange={handlePageSizeChange}
+                  options={PAGE_SIZE_OPTIONS}
+                  className="w-20"
+                  aria-label="Rows per page"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2 sm:justify-start">
+                <button
+                  type="button"
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={isLoading || effectivePage <= 1}
+                  aria-label="Previous page"
+                  className="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </button>
+                <span className="min-w-20 text-center text-xs font-bold tabular-nums text-slate-600">
+                  {effectivePage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPage((current) => Math.min(totalPages, current + 1))
+                  }
+                  disabled={isLoading || effectivePage >= totalPages}
+                  aria-label="Next page"
+                  className="inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {errorMessage && (
-        <div className="flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100">
-          <AlertTriangle className="h-4 w-4" />
-          {errorMessage}
-        </div>
-      )}
 
       <PartyFormModal
         isLoading={formModal.isLoading}
         isOpen={formModal.isOpen}
         mode={formModal.mode}
         source={formModal.party}
-        submitLabel={formModal.mode === "edit" ? "Save Changes" : "Create Party"}
+        submitLabel={
+          formModal.mode === "edit" ? "Save Changes" : "Create Party"
+        }
         onClose={closeFormModal}
         onSubmit={submitParty}
       />

@@ -3,7 +3,11 @@ import { useMemo, useState } from "react";
 
 import AppButton from "../../components/common/AppButton";
 import AppModal from "../../components/common/AppModal";
-import { getDataBookHistoryDiff } from "../../utils/dataBookHistory";
+import {
+  formatDataBookHistoryValue,
+  getDataBookHistoryDiff,
+  normalizeDataBookHistoryEntry,
+} from "../../utils/dataBookHistory";
 
 const ACTION_TONES = {
   created: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -14,18 +18,20 @@ const ACTION_TONES = {
 const formatDateTime = (value) => {
   if (!value) return "—";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
+  if (Number.isNaN(date.getTime())) {
+    return typeof value === "string" || typeof value === "number"
+      ? String(value)
+      : "—";
+  }
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
 };
 
-const displayHistoryValue = (field, value) => {
-  if (field === "isPrivate") return value ? "Private" : "Public";
-  if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
+const getHistoryTimestamp = (value) => {
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
 const EntryHistoryModal = ({
@@ -37,15 +43,16 @@ const EntryHistoryModal = ({
   onCopy,
   onRetry,
 }) => {
-  const [shownValues, setShownValues] = useState(new Set());
-  const [shownRaw, setShownRaw] = useState(new Set());
+  const [hiddenValues, setHiddenValues] = useState(new Set());
   const records = useMemo(
     () =>
-      [...(entry?.history ?? [])].sort(
+      [...(entry?.history ?? [])]
+        .map(normalizeDataBookHistoryEntry)
+        .sort(
         (left, right) =>
-          new Date(right.changedAtUtc).getTime() -
-          new Date(left.changedAtUtc).getTime(),
-      ),
+          getHistoryTimestamp(right.changedAtUtc) -
+          getHistoryTimestamp(left.changedAtUtc),
+        ),
     [entry?.history],
   );
 
@@ -67,7 +74,7 @@ const EntryHistoryModal = ({
         <div>
           <h2 className="text-lg font-semibold text-slate-900">Entry history</h2>
           <p className="mt-1 text-sm text-slate-500">
-            {entry?.name || "Entry"} · newest change first
+            {typeof entry?.name === "string" && entry.name ? entry.name : "Entry"} · newest change first
           </p>
         </div>
       </div>
@@ -96,8 +103,7 @@ const EntryHistoryModal = ({
             const action = String(record.actionType || "Updated");
             const tone = ACTION_TONES[action.toLowerCase()] ?? "bg-slate-100 text-slate-700 ring-slate-200";
             const diff = getDataBookHistoryDiff(record);
-            const valueVisible = shownValues.has(id);
-            const rawVisible = shownRaw.has(id);
+            const valueVisible = !hiddenValues.has(id);
 
             return (
               <li key={id} className="relative pl-10">
@@ -123,64 +129,62 @@ const EntryHistoryModal = ({
                     <div className="mt-4 space-y-3">
                       {diff.fields.map((field) => {
                         const isValue = field.field.toLowerCase() === "value";
+                        const canToggleValue = isValue && diff.mode === "diff";
                         return (
                           <div key={field.field}>
                             <div className="flex items-center justify-between gap-3">
                               <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                {field.field}
+                                {field.label}
                               </p>
-                              {isValue ? (
+                              {canToggleValue ? (
                                 <button
                                   type="button"
                                   className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                                  onClick={() => toggleSet(setShownValues, id)}
+                                  onClick={() => toggleSet(setHiddenValues, id)}
                                 >
                                   {valueVisible ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                                   {valueVisible ? "Hide value change" : "Show value change"}
                                 </button>
                               ) : null}
                             </div>
-                            {!isValue || valueVisible ? (
-                              <div className="mt-1 grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                                <pre className="overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-50 p-2 font-mono text-xs text-slate-600">{displayHistoryValue(field.field, field.oldValue)}</pre>
-                                <span aria-hidden="true" className="text-center text-slate-300">→</span>
-                                <pre className="overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-50 p-2 font-mono text-xs text-slate-700">{displayHistoryValue(field.field, field.newValue)}</pre>
-                              </div>
+                            {!canToggleValue || valueVisible ? (
+                              diff.mode === "diff" ? (
+                                <div className="mt-1 grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center">
+                                  <pre className="min-w-0 overflow-hidden whitespace-pre-wrap break-all rounded-lg bg-slate-50 p-2 font-mono text-xs text-slate-600 [overflow-wrap:anywhere]">{formatDataBookHistoryValue(field.field, field.oldValue)}</pre>
+                                  <span aria-hidden="true" className="text-center text-slate-300">→</span>
+                                  <pre className="min-w-0 overflow-hidden whitespace-pre-wrap break-all rounded-lg bg-slate-50 p-2 font-mono text-xs text-slate-700 [overflow-wrap:anywhere]">{formatDataBookHistoryValue(field.field, field.newValue)}</pre>
+                                </div>
+                              ) : (
+                                <pre className="mt-1 min-w-0 overflow-hidden whitespace-pre-wrap break-all rounded-lg bg-slate-50 p-2 font-mono text-xs text-slate-700 [overflow-wrap:anywhere]">
+                                  {formatDataBookHistoryValue(
+                                    field.field,
+                                    diff.mode === "previous"
+                                      ? field.oldValue
+                                      : field.newValue,
+                                  )}
+                                </pre>
+                              )
                             ) : null}
                           </div>
                         );
                       })}
                     </div>
-                  ) : null}
-
-                  {diff.raw.length ? (
-                    <div className="mt-4 border-t border-slate-100 pt-3">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                        onClick={() => toggleSet(setShownRaw, id)}
-                      >
-                        {rawVisible ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        {rawVisible ? "Hide raw history data" : "Show raw history data"}
-                      </button>
-                      {rawVisible ? (
-                        <div className="mt-2 space-y-2">
-                          {diff.raw.map((part, partIndex) => (
-                            <pre key={partIndex} className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-slate-900 p-3 font-mono text-xs text-slate-100">{part.raw}</pre>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
+                  ) : (
+                    <p className="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
+                      No business field details were recorded for this change.
+                    </p>
+                  )}
 
                   {record.correlationId ? (
                     <button
                       type="button"
-                      className="mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-slate-400 hover:text-brand"
+                      className="mt-4 inline-flex max-w-full min-w-0 items-start gap-1.5 text-left font-mono text-xs text-slate-400 hover:text-brand"
                       onClick={() => onCopy(record.correlationId, "Reference copied")}
                     >
-                      <ClipboardCopy className="h-3.5 w-3.5" />
-                      {record.correlationId}
+                      <ClipboardCopy className="h-3.5 w-3.5 shrink-0" />
+                      <span className="min-w-0 break-all [overflow-wrap:anywhere]">
+                        {record.correlationId}
+                      </span>
                     </button>
                   ) : null}
                 </div>

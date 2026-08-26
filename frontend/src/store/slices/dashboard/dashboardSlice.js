@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { dashboardService } from "../../../services/dashboard/dashboardService";
-import { getApiErrorMessage } from "../../../utils/apiError";
+import { getApiErrorMessage, getApiStatus } from "../../../utils/apiError";
 import {
   buildDashboardApiParams,
   getDefaultDashboardFilters,
@@ -23,6 +23,11 @@ const widgetConfig = {
     fallback: null,
     params: buildDashboardApiParams.overview,
     request: dashboardService.getOverview,
+  },
+  recentActivity: {
+    fallback: [],
+    params: buildDashboardApiParams.recentActivity,
+    request: dashboardService.getRecentActivity,
   },
   revenueExpenseTrend: {
     fallback: [],
@@ -49,6 +54,7 @@ const widgetConfig = {
 const initialPanel = (fallback) => ({
   data: fallback,
   error: null,
+  errorStatus: null,
   loading: false,
   requestId: null,
 });
@@ -58,6 +64,7 @@ const initialState = {
   alerts: initialPanel(null),
   hrSummary: initialPanel(null),
   overview: initialPanel(null),
+  recentActivity: initialPanel([]),
   revenueExpenseTrend: initialPanel([]),
   salesPurchaseTrend: initialPanel([]),
   topParties: initialPanel([]),
@@ -91,6 +98,7 @@ export const fetchDashboardWidget = createAsyncThunk(
 
       return rejectWithValue({
         error: getApiErrorMessage(error, `Unable to load ${widgetId}.`),
+        errorStatus: getApiStatus(error) || null,
         widgetId,
       });
     }
@@ -109,6 +117,7 @@ export const fetchDashboard = createAsyncThunk(
             {
               data: await fetchWidget(widgetId, normalizedFilters, signal),
               error: null,
+              errorStatus: null,
             },
           ];
         } catch (error) {
@@ -124,6 +133,7 @@ export const fetchDashboard = createAsyncThunk(
                 error,
                 `Unable to load ${widgetId}.`,
               ),
+              errorStatus: getApiStatus(error) || null,
             },
           ];
         }
@@ -140,6 +150,7 @@ const setWidgetLoading = (state, widgetId, loading, requestId = null) => {
 
   if (loading) {
     state[widgetId].error = null;
+    state[widgetId].errorStatus = null;
   }
 };
 
@@ -150,6 +161,7 @@ const dashboardSlice = createSlice({
     clearDashboardErrors: (state) => {
       Object.keys(widgetConfig).forEach((widgetId) => {
         state[widgetId].error = null;
+        state[widgetId].errorStatus = null;
       });
     },
     setDashboardFilters: (state, action) => {
@@ -175,6 +187,7 @@ const dashboardSlice = createSlice({
           state[widgetId].loading = false;
           state[widgetId].requestId = null;
           state[widgetId].error = panel.error;
+          state[widgetId].errorStatus = panel.errorStatus;
 
           if (panel.data !== undefined) {
             state[widgetId].data = panel.data;
@@ -193,6 +206,7 @@ const dashboardSlice = createSlice({
           if (!action.meta.aborted) {
             state[widgetId].error =
               action.error.message ?? "Unable to load dashboard.";
+            state[widgetId].errorStatus = null;
           }
         });
       })
@@ -213,6 +227,7 @@ const dashboardSlice = createSlice({
 
         state[widgetId].data = data;
         state[widgetId].error = null;
+        state[widgetId].errorStatus = null;
         state[widgetId].loading = false;
         state[widgetId].requestId = null;
       })
@@ -231,6 +246,8 @@ const dashboardSlice = createSlice({
             action.payload?.error ??
             action.error.message ??
             `Unable to load ${widgetId}.`;
+          state[widgetId].errorStatus =
+            action.payload?.errorStatus ?? null;
         }
       });
   },

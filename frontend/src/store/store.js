@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
+import activityLogReducer from "./slices/activityLogSlice";
 import dashboardReducer from "./slices/dashboard/dashboardSlice";
 import dataBookReducer from "./slices/dataBookSlice";
 import categoryReducer from "./slices/inventory/categorySlice";
@@ -53,9 +54,11 @@ import salesInvoiceReducer from "./slices/sales/invoiceSlice";
 import sidebarReducer from "./slices/sidebarSlice";
 import supplierPaymentReducer from "./slices/purchase/supplierPaymentSlice";
 import unitReducer from "./slices/inventory/unitSlice";
+import websiteReducer from "./slices/website/websiteSlice";
 
 export const store = configureStore({
   reducer: {
+    activityLogs: activityLogReducer,
     auth: authReducer,
     categories: categoryReducer,
     dashboard: dashboardReducer,
@@ -110,5 +113,6 @@ export const store = configureStore({
     supplyChainPackagingProfiles: supplyChainPackagingProfilesReducer,
     supplyChainWarehouses: supplyChainWarehousesReducer,
     units: unitReducer,
+    website: websiteReducer,
   },
 });

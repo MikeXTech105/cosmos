@@ -1,0 +1,9 @@
+{
+  "navigation": { "website": "Website", "dashboard": "Dashboard", "products": "Products", "blog": "Blog", "announcements": "Announcements", "warrantyClaims": "Warranty Claims", "siteSettings": "Site Settings" },
+  "common": { "refresh": "Refresh karo", "clear": "Clear", "save": "Save karo", "cancel": "Cancel", "actions": "Actions", "active": "Active", "inactive": "Inactive", "supportReference": "Support reference" },
+  "products": { "title": "Products", "catalogueNote": "Website catalogue. ERP inventory ya stock se linked nahi hai.", "publicWarning": "Ye values public dikhengi. Publish karne se pehle client se confirm karein.", "comparisonGroup": "Website comparison tool mein use hota hai" },
+  "blog": { "title": "Blog", "posts": "Posts", "categories": "Categories", "plainBodyNote": "Body plain/Markdown text mein store hota hai aur website render karti hai." },
+  "announcements": { "title": "Announcements", "live": "Live", "notLive": "Live nahi", "dismissalHelp": "Purana bar dismiss karne wale visitors ko phir dikhane ke liye version badlein." },
+  "warranty": { "title": "Warranty Claims", "internalHeader": "Internal — customer ko visible nahi.", "customerHeader": "Customer ko visible.", "sendConfirmation": "Ye message customer ko bheja jayega.", "historyImmutable": "Claim activity immutable aur append-only hai." },
+  "settings": { "title": "Site Settings", "publicWarning": "Ye value public website par sabko readable hogi.", "confirmation": "Ye values public website par dikhengi. Public karne se pehle confirm karein." }
+}

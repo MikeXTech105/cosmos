@@ -12,15 +12,16 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 const getFocusableElements = (container) => {
-  return Array.from(container?.querySelectorAll(FOCUSABLE_SELECTOR) ?? []).filter(
-    (element) => !element.closest("[aria-hidden='true']"),
-  );
+  return Array.from(
+    container?.querySelectorAll(FOCUSABLE_SELECTOR) ?? [],
+  ).filter((element) => !element.closest("[aria-hidden='true']"));
 };
 
 const AppModal = ({
   children,
   closeOnBackdrop = true,
   closeOnEscape = true,
+  hideHeader = false,
   isBusy = false,
   isOpen,
   maxWidth = "max-w-lg",
@@ -103,7 +104,10 @@ const AppModal = ({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
 
-      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+      if (
+        previouslyFocused instanceof HTMLElement &&
+        previouslyFocused.isConnected
+      ) {
         previouslyFocused.focus();
       }
     };
@@ -142,10 +146,13 @@ const AppModal = ({
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="min-h-0 overflow-y-auto p-6">
-              {(title || onClose) && (
+              {!hideHeader && (title || onClose) && (
                 <div className="mb-5 flex items-start justify-between gap-4">
                   {title && (
-                    <h2 id={titleId} className="text-base font-semibold text-slate-900">
+                    <h2
+                      id={titleId}
+                      className="text-base font-semibold text-slate-900"
+                    >
                       {title}
                     </h2>
                   )}

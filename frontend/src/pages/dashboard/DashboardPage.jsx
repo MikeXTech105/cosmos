@@ -17,6 +17,7 @@ import DashboardFilters from "./DashboardFilters";
 import AlertsPanel from "./widgets/AlertsPanel";
 import HrSummaryPanel from "./widgets/HrSummaryPanel";
 import OverviewStats from "./widgets/OverviewStats";
+import RecentActivity from "./widgets/RecentActivity";
 import TopParties from "./widgets/TopParties";
 import TopSellingItems from "./widgets/TopSellingItems";
 
@@ -95,6 +96,7 @@ const DashboardPage = () => {
     alerts: dashboard.alerts,
     hrSummary: dashboard.hrSummary,
     overview: dashboard.overview,
+    recentActivity: dashboard.recentActivity,
     revenueExpenseTrend: dashboard.revenueExpenseTrend,
     salesPurchaseTrend: dashboard.salesPurchaseTrend,
     topParties: dashboard.topParties,
@@ -165,6 +167,14 @@ const DashboardPage = () => {
           onRetry={() => retryWidget("topParties")}
         />
       </div>
+
+      <RecentActivity
+        data={dashboard.recentActivity.data}
+        error={dashboard.recentActivity.error}
+        errorStatus={dashboard.recentActivity.errorStatus}
+        isLoading={dashboard.recentActivity.loading}
+        onRetry={() => retryWidget("recentActivity")}
+      />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <AlertsPanel
