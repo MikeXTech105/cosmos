@@ -575,14 +575,23 @@ const Users = () => {
     }
 
     cancelDetailRequests();
-    loadRoles();
+    if (!roleOptions.length && !isRolesLoading) {
+      void loadRoles();
+    }
     setModalState({
       isLoading: false,
       isOpen: true,
       mode: "create",
       user: null,
     });
-  }, [cancelDetailRequests, capabilities.canAssignRole, capabilities.canCreate, loadRoles]);
+  }, [
+    cancelDetailRequests,
+    capabilities.canAssignRole,
+    capabilities.canCreate,
+    isRolesLoading,
+    loadRoles,
+    roleOptions.length,
+  ]);
 
   const openEditModal = useCallback(async (user) => {
     if (!capabilities.canUpdate || !capabilities.canAssignRole) {

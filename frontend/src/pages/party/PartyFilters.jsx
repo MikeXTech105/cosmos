@@ -61,6 +61,7 @@ const PartyFilters = ({
           <span className="sr-only">Search parties</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
+            aria-label="Search parties"
             value={filters.Search}
             onChange={(event) => onChange({ Search: event.target.value })}
             placeholder="Quick search by name, mobile, GSTIN..."

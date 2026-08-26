@@ -188,6 +188,7 @@ const SearchCommand = () => {
                   setHighlightedIndex(0);
                 }}
                 role="combobox"
+                aria-label="Search pages, modules, and reports"
                 aria-autocomplete="list"
                 aria-controls="command-results"
                 aria-expanded="true"

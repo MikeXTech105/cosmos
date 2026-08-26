@@ -54,7 +54,12 @@ const PageHeader = ({
       </div>
 
       {actions && (
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center xl:justify-end [&>*]:w-full sm:[&>*]:w-auto">
+        <div
+          aria-label="Page actions"
+          className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center xl:justify-end [&>*]:w-full [&_[data-app-button]]:h-10 [&_[data-app-button]]:w-full [&_[data-app-button]]:shrink-0 sm:[&>*]:w-auto sm:[&_[data-app-button]]:w-auto"
+          data-page-actions=""
+          role="group"
+        >
           {actions}
         </div>
       )}

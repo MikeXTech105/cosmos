@@ -27,6 +27,7 @@ const UserFilters = ({
     <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
       <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
         <AppInput
+          aria-label="Search users"
           leadingIcon={Search}
           value={filters.search}
           onChange={(event) => onChange({ search: event.target.value })}

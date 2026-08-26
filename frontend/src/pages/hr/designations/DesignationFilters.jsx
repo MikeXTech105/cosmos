@@ -13,6 +13,7 @@ const DesignationFilters = ({ filters, onChange, onClear, resultCount }) => {
     <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
       <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_auto]">
         <AppInput
+          aria-label="Search designations"
           leadingIcon={Search}
           value={filters.Search}
           onChange={(event) => onChange({ Search: event.target.value })}

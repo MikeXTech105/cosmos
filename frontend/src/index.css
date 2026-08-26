@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -10,6 +10,10 @@
   --color-surface-muted: #f8fafc;
   --color-border: #e2e8f0;
   --color-muted: #64748b;
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
 }
 
 :root {
@@ -38,7 +42,7 @@ button,
 
 main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 main textarea {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-xl);
 }
 
 main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus-visible,

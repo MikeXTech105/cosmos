@@ -28,6 +28,7 @@ const AppButton = ({
   return (
     <button
       {...buttonProps}
+      data-app-button=""
       type={type}
       onClick={onClick}
       disabled={isDisabled}

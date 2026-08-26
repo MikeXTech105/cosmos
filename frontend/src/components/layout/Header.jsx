@@ -1,4 +1,4 @@
-import { Command, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 
 import { useSidebar } from "../../hooks/useSidebar";
 import Breadcrumbs from "./Breadcrumbs";
@@ -31,15 +31,11 @@ const Header = () => {
           <button
             type="button"
             onClick={openCommand}
-            className="hidden h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 text-left text-sm text-slate-400 shadow-inner shadow-slate-200/30 transition-all hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
+            className="hidden h-10 w-full items-center rounded-xl border border-slate-200 bg-slate-50/70 px-3.5 text-left text-sm text-slate-400 shadow-inner shadow-slate-200/30 transition-all hover:border-slate-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 md:flex"
           >
             <span className="flex min-w-0 items-center gap-2">
               <Search className="h-4 w-4 shrink-0" />
               <span className="truncate">Search pages, modules, and reports...</span>
-            </span>
-
-            <span className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
-              <Command className="h-3 w-3" /> K
             </span>
           </button>
 
