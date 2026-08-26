@@ -12,15 +12,25 @@ import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { itemSchema } from "../../../utils/validationSchemas";
 import {
   buildItemPayload,
   generateItemCode,
   getItemDefaultValues,
+  ITEM_CLASSIFICATION_OPTIONS,
   ITEM_TYPE,
   ITEM_TYPE_OPTIONS,
   GST_RATE_OPTIONS,
 } from "./itemHelpers";
+
+const ITEM_FIELDS = [
+  "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
+  "procurementClassification", "purchasePrice", "salesPrice", "hsnCode",
+  "gstRate", "trackInventory", "openingStock", "openingStockValue",
+  "currentStock", "reservedStock", "minimumStock", "description", "isActive",
+  "imageFile",
+];
 
 const ToggleRow = ({
   checked,
@@ -173,6 +183,7 @@ const ItemFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm({
@@ -195,7 +206,17 @@ const ItemFormModal = ({
       : activeTab;
 
   const submitForm = async (values, saveAndNew = false) => {
-    await onSubmit(buildItemPayload(values), saveAndNew);
+    try {
+      await onSubmit(buildItemPayload(values), saveAndNew);
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        fieldAliases: { gstRate: "GSTRate", hsnCode: "HSNCode" },
+        formFieldNames: ITEM_FIELDS,
+        setError,
+      });
+      return;
+    }
 
     if (saveAndNew) {
       reset(getItemDefaultValues(null));
@@ -207,6 +228,7 @@ const ItemFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-6xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -238,35 +260,74 @@ const ItemFormModal = ({
           onSubmit={handleSubmit((values) => submitForm(values, false))}
         >
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
-            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-              {ITEM_TYPE_OPTIONS.map((option) => {
-                const type = option.value;
-                const isActive = itemType === type;
+            {errors.root?.server?.message && (
+              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {errors.root.server.message}
+              </p>
+            )}
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  Item type
+                </p>
+                <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                  {ITEM_TYPE_OPTIONS.map((option) => {
+                    const type = option.value;
+                    const isActive = itemType === type;
 
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => {
-                      setValue("itemType", type, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                      if (type === ITEM_TYPE.SERVICE) {
-                        setActiveTab("pricing");
-                      }
-                    }}
-                    className={[
-                      "h-9 rounded-lg px-5 text-sm font-semibold transition-colors",
-                      isActive
-                        ? "bg-brand text-white shadow-sm"
-                        : "text-slate-500 hover:bg-white hover:text-slate-900",
-                    ].join(" ")}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => {
+                          setValue("itemType", type, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
+                          if (type === ITEM_TYPE.SERVICE) {
+                            setActiveTab("pricing");
+                          }
+                        }}
+                        className={[
+                          "h-9 rounded-lg px-5 text-sm font-semibold transition-colors",
+                          isActive
+                            ? "bg-brand text-white shadow-sm"
+                            : "text-slate-500 hover:bg-white hover:text-slate-900",
+                        ].join(" ")}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <Controller
+                  control={control}
+                  name="procurementClassification"
+                  render={({ field }) => (
+                    <AppSelect
+                      id="itemMaterialType"
+                      label="Material type"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      options={[
+                        { value: "", label: "Not classified" },
+                        ...ITEM_CLASSIFICATION_OPTIONS,
+                      ]}
+                      aria-describedby="itemMaterialTypeHelp"
+                    />
+                  )}
+                />
+                <p
+                  id="itemMaterialTypeHelp"
+                  className="mt-1.5 text-xs text-slate-500"
+                >
+                  Used by procurement planning to decide what to buy.
+                </p>
+              </div>
             </div>
 
             <section>
@@ -385,10 +446,13 @@ const ItemFormModal = ({
                           shouldValidate: true,
                         })
                       }
-                      onFileChange={(file) =>
-                        setValue("imageFile", file, {
-                          shouldDirty: true,
-                        })
+                      onFileChange={
+                        isEdit
+                          ? undefined
+                          : (file) =>
+                              setValue("imageFile", file, {
+                                shouldDirty: true,
+                              })
                       }
                       error={errors.imageUrl?.message}
                     />
@@ -586,7 +650,7 @@ const ItemFormModal = ({
                 Save & New
               </AppButton>
             )}
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               {isEdit ? (
                 <>
                   <Check className="h-4 w-4" />

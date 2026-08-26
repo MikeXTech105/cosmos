@@ -45,6 +45,7 @@ import {
   HrNumberInput,
   HrStatCard,
 } from "../HrShared";
+import useHrCapabilities from "../useHrCapabilities";
 import {
   normalizeHrNumberBlurValue,
   normalizeHrNumberInput,
@@ -136,6 +137,7 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -171,7 +173,7 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Generating…">
             Process Payroll
           </AppButton>
         </div>
@@ -207,6 +209,7 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
@@ -229,7 +232,7 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Finalizing…">
             Approve Payroll
           </AppButton>
         </div>
@@ -241,6 +244,12 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
 const PayrollPage = () => {
   const dispatch = useDispatch();
   const payrollState = useSelector((state) => state.hrPayroll);
+  const capabilities = useHrCapabilities({
+    actions: ["view", "create", "approve"],
+    label: "Payroll",
+    resource: ["payroll", "hrPayroll"],
+    route: "/hr/payroll",
+  });
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [runId, setRunId] = useState("");
   const [modal, setModal] = useState(null);
@@ -288,6 +297,10 @@ const PayrollPage = () => {
 
   const processRun = useCallback(
     async (payload) => {
+      if (!capabilities.canCreate) {
+        return;
+      }
+
       try {
         const response = await dispatch(processHrPayroll(payload)).unwrap();
         toast.success(getHrSuccessMessage(response, "Payroll processed"));
@@ -297,11 +310,15 @@ const PayrollPage = () => {
         throw error;
       }
     },
-    [dispatch],
+    [capabilities.canCreate, dispatch],
   );
 
   const approveRun = useCallback(
     async (payload) => {
+      if (!capabilities.canApprove) {
+        return;
+      }
+
       try {
         const response = await dispatch(approveHrPayroll(payload)).unwrap();
         toast.success(getHrSuccessMessage(response, "Payroll approved"));
@@ -311,7 +328,7 @@ const PayrollPage = () => {
         throw error;
       }
     },
-    [dispatch],
+    [capabilities.canApprove, dispatch],
   );
 
   const loadRun = useCallback(async () => {
@@ -393,10 +410,12 @@ const PayrollPage = () => {
               />
               Load Run
             </AppButton>
-            <AppButton className="h-10" onClick={() => setModal("run")}>
-              <Play className="h-4 w-4" />
-              Run Payroll
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={() => setModal("run")}>
+                <Play className="h-4 w-4" />
+                Run Payroll
+              </AppButton>
+            )}
           </>
         }
       />
@@ -449,14 +468,16 @@ const PayrollPage = () => {
                 <Search className="h-4 w-4" />
                 Load
               </AppButton>
-              <AppButton
-                variant="secondary"
-                className="h-10"
-                onClick={() => setModal("approve")}
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                Approve
-              </AppButton>
+              {capabilities.canApprove && (
+                <AppButton
+                  variant="secondary"
+                  className="h-10"
+                  onClick={() => setModal("approve")}
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Approve
+                </AppButton>
+              )}
             </div>
           </div>
 

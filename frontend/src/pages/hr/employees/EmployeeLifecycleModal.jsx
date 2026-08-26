@@ -93,6 +93,7 @@ const EmployeeLifecycleModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -162,6 +163,7 @@ const EmployeeLifecycleModal = ({
             type="submit"
             variant={isRejoin ? "primary" : "danger"}
             isLoading={isSubmitting}
+            loadingText="Saving…"
           >
             {isRejoin ? "Rejoin Employee" : "Mark Resigned"}
           </AppButton>

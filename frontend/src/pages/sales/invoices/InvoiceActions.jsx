@@ -20,10 +20,10 @@ const ActionButton = ({
   onClick,
   tone = "default",
 }) => {
-  const toneClass =
+  const buttonClass =
     tone === "danger"
-      ? "hover:bg-red-50 hover:text-red-600"
-      : "hover:bg-slate-100 hover:text-brand";
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <AppTooltip label={label}>
@@ -35,11 +35,7 @@ const ActionButton = ({
           event.stopPropagation();
           onClick();
         }}
-        className={[
-          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors",
-          toneClass,
-          disabled ? "cursor-not-allowed opacity-40" : "",
-        ].join(" ")}
+        className={buttonClass}
       >
         <Icon className="h-4 w-4" />
       </button>
@@ -48,6 +44,11 @@ const ActionButton = ({
 };
 
 const InvoiceActions = ({
+  canCancel = false,
+  canConfirm = false,
+  canExport = false,
+  canUpdate = false,
+  canView = false,
   invoice,
   onCancel,
   onConfirm,
@@ -55,41 +56,51 @@ const InvoiceActions = ({
   onEdit,
   onView,
 }) => {
-  const canEdit = isInvoiceDraft(invoice);
-  const canConfirm = isInvoiceDraft(invoice);
-  const canCancel = isInvoiceConfirmed(invoice);
+  const mayEditStatus = isInvoiceDraft(invoice);
+  const mayConfirmStatus = isInvoiceDraft(invoice);
+  const mayCancelStatus = isInvoiceConfirmed(invoice);
 
   return (
     <div className="flex items-center justify-end gap-0.5">
-      <ActionButton
-        icon={Eye}
-        label="View Invoice"
-        onClick={() => onView(invoice)}
-      />
-      <ActionButton
-        icon={Pencil}
-        label="Edit Invoice"
-        disabled={!canEdit}
-        onClick={() => onEdit(invoice)}
-      />
-      <ActionButton
-        icon={CheckCircle2}
-        label="Confirm Invoice"
-        disabled={!canConfirm}
-        onClick={() => onConfirm(invoice)}
-      />
-      <ActionButton
-        icon={Ban}
-        label="Cancel Invoice"
-        tone="danger"
-        disabled={!canCancel || isInvoiceCancelled(invoice)}
-        onClick={() => onCancel(invoice)}
-      />
-      <ActionButton
-        icon={Download}
-        label="Download PDF"
-        onClick={() => onDownloadPdf(invoice)}
-      />
+      {canView && (
+        <ActionButton
+          icon={Eye}
+          label="View Invoice"
+          onClick={() => onView(invoice)}
+        />
+      )}
+      {canUpdate && (
+        <ActionButton
+          icon={Pencil}
+          label="Edit Invoice"
+          disabled={!mayEditStatus}
+          onClick={() => onEdit(invoice)}
+        />
+      )}
+      {canConfirm && (
+        <ActionButton
+          icon={CheckCircle2}
+          label="Confirm Invoice"
+          disabled={!mayConfirmStatus}
+          onClick={() => onConfirm(invoice)}
+        />
+      )}
+      {canCancel && (
+        <ActionButton
+          icon={Ban}
+          label="Cancel Invoice"
+          tone="danger"
+          disabled={!mayCancelStatus || isInvoiceCancelled(invoice)}
+          onClick={() => onCancel(invoice)}
+        />
+      )}
+      {canExport && (
+        <ActionButton
+          icon={Download}
+          label="Download PDF"
+          onClick={() => onDownloadPdf(invoice)}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,10 @@
 export const ENDPOINTS = {
   LOGIN: "/api/auth/login",
 
+  AUTH_ME: "/api/auth/me",
+
+  AUTH_ME_UPDATE: "/api/auth/me",
+
   REFRESH_TOKEN: "/api/auth/refresh-token",
 
   LOGOUT: "/api/auth/logout",
@@ -13,6 +17,8 @@ export const ENDPOINTS = {
 
   ROLES: "/api/roles",
 
+  ROLES_EXPORT: "/api/roles/export",
+
   ROLE_BY_ID: (id) => `/api/roles/${id}`,
 
   PAGES: "/api/pages",
@@ -22,6 +28,8 @@ export const ENDPOINTS = {
   ROLE_PERMISSIONS: (roleId) => `/api/permissions/role/${roleId}`,
 
   USERS: "/api/users",
+
+  USERS_EXPORT: "/api/users/export",
 
   USER_BY_ID: (id) => `/api/users/${id}`,
 
@@ -33,11 +41,19 @@ export const ENDPOINTS = {
 
   PARTIES: "/api/v1/parties",
 
+  PARTIES_EXPORT: "/api/v1/parties/export",
+
+  REPORT_EXPORT: "/api/v1/reports/export",
+
   PARTY_BY_ID: (id) => `/api/v1/parties/${id}`,
 
   PARTY_STATUS: (id) => `/api/v1/parties/${id}/status`,
 
   PARTY_SETTINGS: "/api/v1/settings/party",
+
+  GST_VERIFY_GSTIN: "/api/v1/gst/verify-gstin",
+
+  GST_CONFIG_STATUS: "/api/v1/gst/configuration/status",
 
   SALES_INVOICES: "/api/v1/sales/invoices",
 
@@ -201,6 +217,296 @@ export const ENDPOINTS = {
   HR_PAYROLL_PAYSLIP: (employeeId) =>
     `/api/hr/payroll/payslip/${employeeId}`,
 
+  DASHBOARD_OVERVIEW: "/api/v1/dashboard/overview",
+
+  DASHBOARD_SALES_PURCHASE_TREND:
+    "/api/v1/dashboard/sales-purchase-trend",
+
+  DASHBOARD_REVENUE_EXPENSE_TREND:
+    "/api/v1/dashboard/revenue-expense-trend",
+
+  DASHBOARD_TOP_SELLING_ITEMS: "/api/v1/dashboard/top-selling-items",
+
+  DASHBOARD_TOP_PARTIES: "/api/v1/dashboard/top-parties",
+
+  DASHBOARD_ALERTS: "/api/v1/dashboard/alerts",
+
+  DASHBOARD_HR_SUMMARY: "/api/v1/dashboard/hr-summary",
+
+  DASHBOARD_RECENT_ACTIVITY: "/api/v1/dashboard/recent-activity",
+
+  // Procurement Planning - Channels
+  PP_CHANNELS: "/api/v1/procurement-planning/channels",
+
+  PP_CHANNEL_BY_ID: (id) => `/api/v1/procurement-planning/channels/${id}`,
+
+  PP_CHANNEL_STATUS: (id) =>
+    `/api/v1/procurement-planning/channels/${id}/status`,
+
+  // Procurement Planning - SKU mappings
+  PP_SKU_MAPPINGS: "/api/v1/procurement-planning/sku-mappings",
+
+  PP_SKU_MAPPINGS_UNMAPPED:
+    "/api/v1/procurement-planning/sku-mappings/unmapped",
+
+  PP_SKU_MAPPING_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sku-mappings/${id}`,
+
+  PP_SKU_MAPPING_STATUS: (id) =>
+    `/api/v1/procurement-planning/sku-mappings/${id}/status`,
+
+  // Procurement Planning - Sales
+  PP_SALES_IMPORT_TEMPLATE:
+    "/api/v1/procurement-planning/sales/import-template",
+
+  PP_SALES_IMPORT_PREVIEW:
+    "/api/v1/procurement-planning/sales/imports/preview",
+
+  PP_SALES_IMPORT_CONFIRM:
+    "/api/v1/procurement-planning/sales/imports/confirm",
+
+  PP_SALES_IMPORT_BATCHES:
+    "/api/v1/procurement-planning/sales/import-batches",
+
+  PP_SALES_IMPORT_BATCH_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sales/import-batches/${id}`,
+
+  PP_SALES_IMPORT_BATCH_CANCEL: (id) =>
+    `/api/v1/procurement-planning/sales/import-batches/${id}/cancel`,
+
+  PP_SALES_MANUAL: "/api/v1/procurement-planning/sales/manual",
+
+  PP_SALES_MANUAL_BY_ID: (id) =>
+    `/api/v1/procurement-planning/sales/manual/${id}`,
+
+  PP_SALES_HISTORY: "/api/v1/procurement-planning/sales/history",
+
+  PP_SALES_SUMMARY: "/api/v1/procurement-planning/sales/summary",
+
+  // Procurement Planning - BOMs
+  PP_BOM_BY_PRODUCT: (productId) =>
+    `/api/v1/procurement-planning/boms/products/${productId}`,
+
+  PP_BOM_ISSUES: "/api/v1/procurement-planning/boms/issues",
+
+  // Procurement Planning - Settings
+  PP_SETTINGS: "/api/v1/procurement-planning/settings",
+
+  PP_SETTING_BY_ITEM: (itemId) =>
+    `/api/v1/procurement-planning/settings/items/${itemId}`,
+
+  PP_SETTINGS_MISSING: "/api/v1/procurement-planning/settings/missing",
+
+  PP_LEAD_TIME_HISTORY:
+    "/api/v1/procurement-planning/settings/lead-time-history",
+
+  PP_LEAD_TIME_HISTORY_BY_ITEM: (itemId) =>
+    `/api/v1/procurement-planning/settings/items/${itemId}/lead-time-history`,
+
+  // Procurement Planning - Plans
+  PP_PLAN_VALIDATE: "/api/v1/procurement-planning/plans/validate",
+
+  PP_PLAN_PREVIEW: "/api/v1/procurement-planning/plans/preview",
+
+  PP_PLAN_RUNS: "/api/v1/procurement-planning/plans/runs",
+
+  PP_PLAN_RUN_BY_ID: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}`,
+
+  PP_PLAN_RUN_LINES: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/lines`,
+
+  PP_PLAN_RUN_LINE: (runId, lineId) =>
+    `/api/v1/procurement-planning/plans/runs/${runId}/lines/${lineId}`,
+
+  PP_PLAN_RUN_FINALIZE: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/finalize`,
+
+  PP_PLAN_RUN_EXPORT: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/export`,
+
+  PP_PLAN_RUN_CANCEL: (id) =>
+    `/api/v1/procurement-planning/plans/runs/${id}/cancel`,
+
+  // Supply Chain - shared masters
+  SC_CHANNELS: "/api/v1/supply-chain/channels",
+
+  SC_CHANNEL_BY_ID: (id) => `/api/v1/supply-chain/channels/${id}`,
+
+  SC_CHANNEL_STATUS: (id) => `/api/v1/supply-chain/channels/${id}/status`,
+
+  SC_WAREHOUSES: "/api/v1/supply-chain/warehouses",
+
+  SC_WAREHOUSE_BY_ID: (id) => `/api/v1/supply-chain/warehouses/${id}`,
+
+  SC_WAREHOUSE_STATUS: (id) =>
+    `/api/v1/supply-chain/warehouses/${id}/status`,
+
+  SC_WAREHOUSE_DROPDOWN: "/api/v1/supply-chain/warehouses/dropdown",
+
+  SC_ITEM_MAPPINGS: "/api/v1/supply-chain/item-mappings",
+
+  SC_ITEM_MAPPING_BY_ID: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}`,
+
+  SC_ITEM_MAPPING_STATUS: (id) =>
+    `/api/v1/supply-chain/item-mappings/${id}/status`,
+
+  SC_ITEM_MAPPINGS_UNMATCHED:
+    "/api/v1/supply-chain/item-mappings/unmatched",
+
+  SC_PACKAGING_PROFILES: "/api/v1/supply-chain/packaging-profiles",
+
+  SC_PACKAGING_PROFILE_BY_ID: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}`,
+
+  SC_PACKAGING_PROFILE_SET_DEFAULT: (id) =>
+    `/api/v1/supply-chain/packaging-profiles/${id}/set-default`,
+
+  SC_IMPORT_VALIDATE: "/api/v1/supply-chain/imports/validate",
+
+  SC_IMPORTS: "/api/v1/supply-chain/imports",
+
+  SC_IMPORT_BY_ID: (id) => `/api/v1/supply-chain/imports/${id}`,
+
+  SC_IMPORT_ERRORS: (id) => `/api/v1/supply-chain/imports/${id}/errors`,
+
+  SC_IMPORT_ERROR_EXPORT: (id) =>
+    `/api/v1/supply-chain/imports/${id}/error-export`,
+
+  SC_IMPORT_COMMIT: (id) => `/api/v1/supply-chain/imports/${id}/commit`,
+
+  SC_IMPORT_CANCEL: (id) => `/api/v1/supply-chain/imports/${id}/cancel`,
+
+  // Dispatch Planning
+  DP_SETTINGS: "/api/v1/dispatch-planning/settings",
+
+  DP_SETTING_BY_ID: (id) => `/api/v1/dispatch-planning/settings/${id}`,
+
+  DP_IMPORT_VALIDATE: "/api/v1/dispatch-planning/imports/validate",
+
+  DP_IMPORTS: "/api/v1/dispatch-planning/imports",
+
+  DP_IMPORT_COMMIT: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/commit`,
+
+  DP_IMPORT_CANCEL: (id) =>
+    `/api/v1/dispatch-planning/imports/${id}/cancel`,
+
+  DP_RUNS: "/api/v1/dispatch-planning/runs",
+
+  DP_RUN_BY_ID: (id) => `/api/v1/dispatch-planning/runs/${id}`,
+
+  DP_RUN_CALCULATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/calculate`,
+
+  DP_RUN_RECOMMENDATIONS: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/recommendations`,
+
+  DP_RUN_RECOMMENDATION: (runId, recommendationId) =>
+    `/api/v1/dispatch-planning/runs/${runId}/recommendations/${recommendationId}`,
+
+  DP_RUN_ALLOCATE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/allocate`,
+
+  DP_RUN_FINALIZE: (id) =>
+    `/api/v1/dispatch-planning/runs/${id}/finalize`,
+
+  DP_RUN_CANCEL: (id) => `/api/v1/dispatch-planning/runs/${id}/cancel`,
+
+  DP_RECOMMENDATION_REPORTS:
+    "/api/v1/dispatch-planning/reports/recommendations",
+
+  DP_RECOMMENDATION_REPORT_EXPORT:
+    "/api/v1/dispatch-planning/reports/recommendations/export",
+
+  // Shipment Operations
+  SO_SHIPMENTS: "/api/v1/shipment-operations/shipments",
+
+  SO_SHIPMENT_BY_ID: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}`,
+
+  SO_SHIPMENTS_MANUAL:
+    "/api/v1/shipment-operations/shipments/manual",
+
+  SO_SHIPMENTS_FROM_DISPATCH:
+    "/api/v1/shipment-operations/shipments/from-dispatch-planning",
+
+  SO_SHIPMENT_TRANSITION: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/transition`,
+
+  SO_SHIPMENT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/shipments/${id}/cancel`,
+
+  SO_PACKING_SUGGESTIONS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packing-suggestions`,
+
+  SO_PACKAGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/packages`,
+
+  SO_DOCKETS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/dockets`,
+
+  SO_APPOINTMENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/appointments`,
+
+  SO_TRACKING_EVENTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/tracking-events`,
+
+  SO_DELIVERY_ATTEMPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/delivery-attempts`,
+
+  SO_RECEIPTS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/receipts`,
+
+  SO_RETURNS: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/returns`,
+
+  SO_RETURN_RECEIVE: (id) =>
+    `/api/v1/shipment-operations/returns/${id}/receive`,
+
+  SO_FREIGHT_CHARGES: (shipmentId) =>
+    `/api/v1/shipment-operations/shipments/${shipmentId}/freight-charges`,
+
+  SO_FREIGHT_SUBMIT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/submit`,
+
+  SO_FREIGHT_APPROVE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/approve`,
+
+  SO_FREIGHT_REJECT: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/reject`,
+
+  SO_FREIGHT_MARK_PAID: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/mark-paid`,
+
+  SO_FREIGHT_ROJMEL_EXPENSE: (id) =>
+    `/api/v1/shipment-operations/freight-charges/${id}/rojmel-expense`,
+
+  SO_TRANSPORTERS: "/api/v1/shipment-operations/transporters",
+
+  SO_TRANSPORTER_BY_ID: (partyId) =>
+    `/api/v1/shipment-operations/transporters/${partyId}`,
+
+  SO_REPORTS: "/api/v1/shipment-operations/reports",
+
+  SO_REPORTS_DASHBOARD:
+    "/api/v1/shipment-operations/reports/dashboard",
+
+  SO_REPORTS_EXPORT:
+    "/api/v1/shipment-operations/reports/export",
+
+  SO_IMPORT_VALIDATE:
+    "/api/v1/shipment-operations/imports/validate",
+
+  SO_IMPORTS: "/api/v1/shipment-operations/imports",
+
+  SO_IMPORT_COMMIT: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/commit`,
+
+  SO_IMPORT_CANCEL: (id) =>
+    `/api/v1/shipment-operations/imports/${id}/cancel`,
+
   OEE_DASHBOARD_SUMMARY: "/api/v1/oee/dashboard/summary",
 
   OEE_DASHBOARD_MACHINE_WISE: "/api/v1/oee/dashboard/machine-wise",
@@ -244,4 +550,156 @@ export const ENDPOINTS = {
   OEE_REPORT_DOWNTIME: "/api/v1/oee/reports/downtime",
 
   OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
+
+  // Data Book
+  DATA_BOOK_ENTRIES: "/api/v1/data-book/entries",
+  DATA_BOOK_ENTRY_BY_ID: (id) => `/api/v1/data-book/entries/${id}`,
+  DATA_BOOK_ENTRY_HISTORY: (id) =>
+    `/api/v1/data-book/entries/${id}/history`,
+  DATA_BOOK_ENTRIES_EXPORT: "/api/v1/data-book/entries/export",
+
+  ACTIVITY_LOGS: "/api/v1/activity-logs",
+
+  ACTIVITY_LOG_BY_ID: (id) => `/api/v1/activity-logs/${id}`,
+
+  ACTIVITY_LOGS_EXPORT: "/api/v1/activity-logs/export",
+
+  // Website Management admin console. Public /api/website routes intentionally
+  // remain separate and are not used by this module.
+  WEBSITE_DASHBOARD_OVERVIEW:
+    "/api/v1/website-management/dashboard/overview",
+  WEBSITE_PRODUCTS: "/api/v1/website-management/products",
+  WEBSITE_PRODUCT_BY_ID: (id) =>
+    `/api/v1/website-management/products/${id}`,
+  WEBSITE_BLOG_POSTS: "/api/v1/website-management/blog-posts",
+  WEBSITE_BLOG_POST_BY_ID: (id) =>
+    `/api/v1/website-management/blog-posts/${id}`,
+  WEBSITE_BLOG_CATEGORIES: "/api/v1/website-management/blog-categories",
+  WEBSITE_BLOG_CATEGORY_BY_ID: (id) =>
+    `/api/v1/website-management/blog-categories/${id}`,
+  WEBSITE_ANNOUNCEMENTS: "/api/v1/website-management/announcements",
+  WEBSITE_ANNOUNCEMENT_BY_ID: (id) =>
+    `/api/v1/website-management/announcements/${id}`,
+  WEBSITE_SETTINGS: "/api/v1/website-management/settings",
+  WEBSITE_WARRANTY_CLAIMS: "/api/v1/website-management/warranty-claims",
+  WEBSITE_WARRANTY_CLAIM_BY_ID: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}`,
+  WEBSITE_WARRANTY_HISTORY: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/history`,
+  WEBSITE_WARRANTY_ATTACHMENTS: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/attachments`,
+  WEBSITE_WARRANTY_ATTACHMENT_DOWNLOAD: (attachmentId) =>
+    `/api/v1/website-management/warranty-claims/attachments/${attachmentId}/download`,
+  WEBSITE_WARRANTY_ACTION: (id, action) =>
+    `/api/v1/website-management/warranty-claims/${id}/${action}`,
+  WEBSITE_WARRANTY_NOTES: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/notes`,
+  WEBSITE_WARRANTY_MESSAGES: (id) =>
+    `/api/v1/website-management/warranty-claims/${id}/customer-messages`,
+  WEBSITE_WARRANTY_SUMMARY:
+    "/api/v1/website-management/warranty-claims/reports/summary",
+  WEBSITE_IMAGE_UPLOAD: "/api/uploads/website/images",
+
+  // --- Rojmel (Daily Cash Book) ---
+  // My Wallet (current user)
+  ROJMEL_MY_WALLET: "/api/v1/rojmel/my-wallet",
+  ROJMEL_MY_WALLET_TRANSACTIONS: "/api/v1/rojmel/my-wallet/transactions",
+  ROJMEL_MY_WALLET_LEDGER: "/api/v1/rojmel/my-wallet/ledger",
+  ROJMEL_MY_WALLET_INCOME: "/api/v1/rojmel/my-wallet/income",
+  ROJMEL_MY_WALLET_EXPENSE: "/api/v1/rojmel/my-wallet/expense",
+  ROJMEL_MY_WALLET_CATEGORIES: "/api/v1/rojmel/my-wallet/categories",
+
+  // Wallets (admin)
+  ROJMEL_WALLETS: "/api/v1/rojmel/wallets",
+  ROJMEL_WALLET_BY_ID: (id) => `/api/v1/rojmel/wallets/${id}`,
+  ROJMEL_WALLET_BALANCE: (id) => `/api/v1/rojmel/wallets/${id}/balance`,
+  ROJMEL_WALLET_STATUS: (id) => `/api/v1/rojmel/wallets/${id}/status`,
+
+  // Transactions / ledger
+  ROJMEL_TRANSACTIONS: "/api/v1/rojmel/transactions",
+  ROJMEL_TRANSACTION_BY_ID: (id) => `/api/v1/rojmel/transactions/${id}`,
+  ROJMEL_TRANSACTION_INCOME: "/api/v1/rojmel/transactions/income",
+  ROJMEL_TRANSACTION_EXPENSE: "/api/v1/rojmel/transactions/expense",
+  ROJMEL_TRANSACTION_ADJUSTMENT: "/api/v1/rojmel/transactions/adjustment",
+  ROJMEL_TRANSACTION_CANCEL: (id) =>
+    `/api/v1/rojmel/transactions/${id}/cancel`,
+
+  // Transfers
+  ROJMEL_TRANSFERS: "/api/v1/rojmel/transfers",
+  ROJMEL_TRANSFER_BY_ID: (id) => `/api/v1/rojmel/transfers/${id}`,
+  ROJMEL_TRANSFER_CANCEL: (id) => `/api/v1/rojmel/transfers/${id}/cancel`,
+
+  // Dashboard
+  ROJMEL_DASHBOARD_SUMMARY: "/api/v1/rojmel/dashboard/summary",
+  ROJMEL_DASHBOARD_WALLET_BALANCES:
+    "/api/v1/rojmel/dashboard/wallet-balances",
+  ROJMEL_DASHBOARD_RECENT:
+    "/api/v1/rojmel/dashboard/recent-transactions",
+
+  // Reports
+  ROJMEL_REPORT_WALLET_LEDGER: "/api/v1/rojmel/reports/wallet-ledger",
+  ROJMEL_REPORT_ALL_TRANSACTIONS:
+    "/api/v1/rojmel/reports/all-transactions",
+  ROJMEL_REPORT_INCOME_EXPENSE:
+    "/api/v1/rojmel/reports/income-expense",
+  ROJMEL_REPORT_CATEGORY_EXPENSE:
+    "/api/v1/rojmel/reports/category-wise-expense",
+  ROJMEL_REPORT_TRANSFERS: "/api/v1/rojmel/reports/transfers",
+  ROJMEL_REPORT_DAILY_CASH_FLOW:
+    "/api/v1/rojmel/reports/daily-cash-flow",
+  ROJMEL_REPORT_USER_WALLET_BALANCES:
+    "/api/v1/rojmel/reports/user-wallet-balances",
+};
+
+const PARTY_REPORTS = {
+  customerStatement: "/api/v1/reports/parties/customer-statement",
+  ledger: "/api/v1/reports/parties/ledger",
+  payableAging: "/api/v1/reports/parties/payable-aging",
+  receivableAging: "/api/v1/reports/parties/receivable-aging",
+  supplierStatement: "/api/v1/reports/parties/supplier-statement",
+};
+
+const EXPENSE_REPORTS = {
+  byCategory: "/api/v1/reports/expenses/by-category",
+  byParty: "/api/v1/reports/expenses/by-party",
+  monthlySummary: "/api/v1/reports/expenses/monthly-summary",
+  summary: "/api/v1/reports/expenses/summary",
+};
+
+export const REPORTS = {
+  sales: {
+    byItem: "/api/v1/reports/sales/by-item",
+    byParty: "/api/v1/reports/sales/by-party",
+    invoices: "/api/v1/reports/sales/invoices",
+    paymentsIn: "/api/v1/reports/sales/payments-in",
+    receivables: "/api/v1/reports/sales/receivables",
+    summary: "/api/v1/reports/sales/summary",
+    taxSummary: "/api/v1/reports/sales/tax-summary",
+  },
+  purchase: {
+    bills: "/api/v1/reports/purchase/bills",
+    byItem: "/api/v1/reports/purchase/by-item",
+    bySupplier: "/api/v1/reports/purchase/by-supplier",
+    payables: "/api/v1/reports/purchase/payables",
+    paymentsOut: "/api/v1/reports/purchase/payments-out",
+    summary: "/api/v1/reports/purchase/summary",
+    taxSummary: "/api/v1/reports/purchase/tax-summary",
+  },
+  inventory: {
+    deadStock: "/api/v1/reports/inventory/dead-stock",
+    fastMovingItems: "/api/v1/reports/inventory/fast-moving-items",
+    itemLedger: (itemId) => `/api/v1/reports/inventory/items/${itemId}/ledger`,
+    itemMovement: "/api/v1/reports/inventory/item-movement",
+    lowStock: "/api/v1/reports/inventory/low-stock",
+    negativeStock: "/api/v1/reports/inventory/negative-stock",
+    slowMovingItems: "/api/v1/reports/inventory/slow-moving-items",
+    stockLedger: "/api/v1/reports/inventory/stock-ledger",
+    stockMovements: "/api/v1/reports/inventory/stock-movements",
+    stockSummary: "/api/v1/reports/inventory/stock-summary",
+    stockValuation: "/api/v1/reports/inventory/stock-valuation",
+  },
+  party: PARTY_REPORTS,
+  parties: PARTY_REPORTS,
+  expense: EXPENSE_REPORTS,
+  expenses: EXPENSE_REPORTS,
 };

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { hrDepartmentSchema } from "../../../utils/validationSchemas";
 import { getHrBoolean } from "../hrHelpers";
 
@@ -15,6 +16,7 @@ const getDefaultValues = (department) => ({
   description: department?.description ?? "",
   isActive: getHrBoolean(department?.isActive, true),
 });
+const DEPARTMENT_FIELDS = Object.keys(getDefaultValues());
 
 const DepartmentFormModal = ({
   department,
@@ -31,6 +33,7 @@ const DepartmentFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrDepartmentSchema),
     defaultValues: getDefaultValues(department),
@@ -43,12 +46,16 @@ const DepartmentFormModal = ({
   }, [department, isOpen, reset]);
 
   const submitForm = async (values) => {
-    await onSubmit({
-      departmentCode: values.departmentCode.trim(),
-      departmentName: values.departmentName.trim(),
-      description: values.description?.trim() ?? "",
-      isActive: values.isActive,
-    });
+    try {
+      await onSubmit({
+        departmentCode: values.departmentCode.trim(),
+        departmentName: values.departmentName.trim(),
+        description: values.description?.trim() ?? "",
+        isActive: values.isActive,
+      });
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: DEPARTMENT_FIELDS, setError });
+    }
   };
 
   const title = isView
@@ -59,6 +66,7 @@ const DepartmentFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -89,6 +97,11 @@ const DepartmentFormModal = ({
           className="mt-6 space-y-5"
           onSubmit={handleSubmit(submitForm)}
         >
+          {errors.root?.server?.message && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors.root.server.message}
+            </p>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <AppInput
               id="departmentCode"
@@ -157,7 +170,7 @@ const DepartmentFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Create Department"}
               </AppButton>
             )}

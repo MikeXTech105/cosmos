@@ -1,3 +1,6 @@
+import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
+
 const variants = {
   primary:
     "bg-brand text-white hover:bg-brand-dark shadow-sm active:scale-[0.98]",
@@ -12,25 +15,32 @@ const variants = {
 const AppButton = ({
   children,
   className = "",
-  disabled,
-  isLoading,
+  disabled = false,
+  isLoading = false,
+  loadingText = "Working…",
   onClick,
   type = "button",
   variant = "primary",
+  ...buttonProps
 }) => {
+  const isDisabled = Boolean(disabled || isLoading);
+
   return (
     <button
+      {...buttonProps}
       type={type}
       onClick={onClick}
-      disabled={disabled || isLoading}
-      className={[
-        "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
-        variants[variant] ?? variants.primary,
-        disabled || isLoading ? "cursor-not-allowed opacity-60" : "",
+      disabled={isDisabled}
+      aria-busy={isLoading || undefined}
+      aria-disabled={isDisabled || undefined}
+      className={twMerge(
+        clsx(
+          "inline-flex h-9 items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-all",
+          variants[variant] ?? variants.primary,
+          isDisabled && "cursor-not-allowed opacity-60",
+        ),
         className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       {isLoading ? (
         <>
@@ -54,7 +64,7 @@ const AppButton = ({
               d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
             />
           </svg>
-          Saving…
+          {loadingText}
         </>
       ) : (
         children

@@ -1,0 +1,24 @@
+{
+  "module": "Shipment Operations",
+  "navigation": {
+    "dashboard": "Dashboard",
+    "workList": "Work List",
+    "freight": "Freight",
+    "transporters": "Transporters",
+    "imports": "Historical Import",
+    "reports": "Reports"
+  },
+  "inventory": {
+    "dispatchWarning": "This dispatches the shipment and reduces stock. It cannot be undone.",
+    "returnWarning": "Only the restockable quantity is added back to stock.",
+    "noEffect": "This action records shipment operations only. It does not change current stock.",
+    "historicalImport": "Historical import never changes current stock."
+  },
+  "errors": {
+    "conflictTitle": "This shipment changed on the server",
+    "refresh": "Refresh and resolve",
+    "notFound": "Shipment not found",
+    "forbidden": "You do not have permission to perform this shipment action."
+  },
+  "freightBoundary": "Approval does not create a Rojmel expense. Posting is a separate explicit action."
+}

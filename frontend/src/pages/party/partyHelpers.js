@@ -94,6 +94,7 @@ export const extractPagedParties = (payload) => {
       pageSize: payload.length,
       totalCount: payload.length,
       totalPages: 1,
+      summary: null,
     };
   }
 
@@ -103,6 +104,7 @@ export const extractPagedParties = (payload) => {
     pageSize: Number(payload?.pageSize) || 10,
     totalCount: Number(payload?.totalCount) || 0,
     totalPages: Number(payload?.totalPages) || 1,
+    summary: payload?.summary ?? null,
   };
 };
 
@@ -110,17 +112,116 @@ export const extractEntity = (payload) => {
   return payload?.party ?? payload?.item ?? payload?.record ?? payload;
 };
 
-export const buildPartyQueryParams = ({ filters, page, pageSize, sort }) => {
+const PARTY_TYPE_BY_GROUP = {
+  both: "Both",
+  customers: "Customer",
+  suppliers: "Supplier",
+};
+
+export const buildPartyQueryParams = ({ filters, group = "all", page, pageSize, sort }) => {
   const search = filters.Search?.trim();
+  const parsedPageSize = Number(pageSize);
+  const safePageSize =
+    pageSize === undefined || pageSize === null
+      ? undefined
+      : Math.min(
+          200,
+          Math.max(1, Number.isFinite(parsedPageSize) ? Math.trunc(parsedPageSize) : 10),
+        );
+
+  return Object.fromEntries(
+    Object.entries({
+      PartyType: PARTY_TYPE_BY_GROUP[group],
+      HasGstin:
+        filters.gst === "with-gstin"
+          ? true
+          : filters.gst === "without-gstin"
+            ? false
+            : undefined,
+      HasCreditLimit:
+        filters.creditLimit === "with-limit"
+          ? true
+          : filters.creditLimit === "without-limit"
+            ? false
+            : undefined,
+      Search: search || undefined,
+      PageNumber: page,
+      PageSize: safePageSize,
+      SortBy: sort?.SortBy || undefined,
+      SortDirection: sort?.SortDirection || undefined,
+      IsActive:
+        filters.IsActive === "all" ? undefined : filters.IsActive === "active",
+    }).filter(([, value]) => value !== undefined),
+  );
+};
+
+export const isPartySummary = (summary) => {
+  return (
+    summary !== null &&
+    typeof summary === "object" &&
+    ["allCount", "customerCount", "supplierCount", "bothCount"].every(
+      (key) => Number.isFinite(Number(summary[key])),
+    )
+  );
+};
+
+export const getPartyGroupCountsFromSummary = (summary) => ({
+  all: Number(summary?.allCount) || 0,
+  both: Number(summary?.bothCount) || 0,
+  customers: Number(summary?.customerCount) || 0,
+  suppliers: Number(summary?.supplierCount) || 0,
+});
+
+export const dedupeParties = (parties) => {
+  const seen = new Set();
+
+  return parties.filter((party, index) => {
+    const key = party?.id === undefined || party?.id === null
+      ? `index-${index}`
+      : String(party.id);
+
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+export const loadPartyFallbackCollection = async ({
+  fetchPage,
+  maxRecords = 5000,
+  pageSize = 200,
+  signal,
+}) => {
+  const ensureActive = () => {
+    if (signal?.aborted) {
+      const error = new Error("Request aborted");
+      error.name = "AbortError";
+      throw error;
+    }
+  };
+  const firstPage = extractPagedParties(await fetchPage(1, pageSize));
+
+  ensureActive();
+  if (firstPage.totalCount > maxRecords) {
+    return { capped: true, items: firstPage.items, totalCount: firstPage.totalCount };
+  }
+
+  const items = [...firstPage.items];
+  const totalPages = Math.max(
+    firstPage.totalPages,
+    Math.ceil(firstPage.totalCount / pageSize),
+  );
+
+  for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+    ensureActive();
+    const nextPage = extractPagedParties(await fetchPage(pageNumber, pageSize));
+    items.push(...nextPage.items);
+  }
 
   return {
-    Search: search || undefined,
-    PageNumber: page,
-    PageSize: pageSize,
-    SortBy: sort.SortBy || undefined,
-    SortDirection: sort.SortDirection || undefined,
-    IsActive:
-      filters.IsActive === "all" ? undefined : filters.IsActive === "active",
+    capped: false,
+    items: dedupeParties(items).slice(0, maxRecords),
+    totalCount: firstPage.totalCount,
   };
 };
 
@@ -320,4 +421,49 @@ export const filterPartiesForBusinessView = ({
 
     return true;
   });
+};
+
+export const buildClientPartyView = ({
+  creditFilter,
+  gstFilter,
+  group,
+  page,
+  pageSize,
+  parties,
+}) => {
+  const summaryItems = filterPartiesForBusinessView({
+    creditFilter,
+    group: "all",
+    gstFilter,
+    parties,
+  });
+  const filteredItems = filterPartiesForBusinessView({
+    creditFilter,
+    group,
+    gstFilter,
+    parties,
+  });
+  const totalCount = filteredItems.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const start = (safePage - 1) * pageSize;
+
+  return {
+    groupCounts: getPartyGroupCounts(summaryItems),
+    items: filteredItems.slice(start, start + pageSize),
+    page: safePage,
+    stats: {
+      allCount: summaryItems.length,
+      customerCount: getPartyGroupCounts(summaryItems).customers,
+      supplierCount: getPartyGroupCounts(summaryItems).suppliers,
+      bothCount: getPartyGroupCounts(summaryItems).both,
+      inactiveCount: summaryItems.filter((party) => !party.isActive).length,
+      totalCreditLimit: summaryItems.reduce(
+        (total, party) => total + (Number(party.creditLimit) || 0),
+        0,
+      ),
+    },
+    totalCount,
+    totalPages,
+  };
 };

@@ -1,6 +1,7 @@
 import { Boxes, Plus, RefreshCw } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
+import MaterialTypePill from "../../../components/common/MaterialTypePill";
 import {
   InventoryPagination,
   InventoryStatusPill,
@@ -65,7 +66,12 @@ const ItemTable = ({
   return (
     <div className="flex h-full min-h-[420px] flex-col">
       <div className="min-h-0 flex-1 overflow-x-auto">
-        <table className="w-full min-w-[680px] table-fixed text-left">
+        <table className="w-full min-w-[1010px] table-fixed text-left">
+          <colgroup>
+            {itemColumns.map((column) => (
+              <col key={column.key} className={column.width} />
+            ))}
+          </colgroup>
           <thead className="bg-slate-50">
             <tr>
               {itemColumns.map((column) => (
@@ -74,8 +80,6 @@ const ItemTable = ({
                   className={[
                     "border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500",
                     column.align === "right" ? "text-right" : "",
-                    column.key === "name" ? "w-[34%]" : "",
-                    column.key === "actions" ? "w-[112px]" : "",
                   ].join(" ")}
                 >
                   {column.label}
@@ -92,7 +96,7 @@ const ItemTable = ({
                     </td>
                   </tr>
                 ))
-              : items.map((item) => {
+              : items.map((item, index) => {
                   const lowStock = isLowStock(item);
                   const isSelected = String(selectedId) === String(item.id);
                   const itemType = getItemTypeLabel(item.itemType);
@@ -113,6 +117,9 @@ const ItemTable = ({
                         isSelected ? "bg-brand-light/60" : "",
                       ].join(" ")}
                     >
+                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                        {(pageNumber - 1) * pageSize + index + 1}
+                      </td>
                       <td className="border-b border-slate-100 px-3 py-3">
                         <div className="flex items-center gap-3">
                           <ItemImageThumbnail
@@ -142,6 +149,11 @@ const ItemTable = ({
                         >
                           {itemType}
                         </span>
+                      </td>
+                      <td className="border-b border-slate-100 px-4 py-3.5">
+                        <MaterialTypePill
+                          value={item.procurementClassification}
+                        />
                       </td>
                       <td
                         className={[

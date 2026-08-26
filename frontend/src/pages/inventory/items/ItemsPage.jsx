@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
 import {
@@ -95,6 +97,12 @@ const ItemsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [lookupCreateModal, setLookupCreateModal] = useState({
     isOpen: false,
     type: null,
@@ -118,6 +126,12 @@ const ItemsPage = () => {
             itemsState.filters.CategoryId === "all"
               ? undefined
               : serializeId(itemsState.filters.CategoryId),
+          ProcurementClassification:
+            itemsState.filters.ProcurementClassification === "all"
+              ? undefined
+              : serializeId(
+                  itemsState.filters.ProcurementClassification,
+                ),
         },
       }),
     [itemsState.filters, itemsState.pageNumber, itemsState.pageSize],
@@ -255,23 +269,37 @@ const ItemsPage = () => {
 
   const stats = useMemo(
     () => ({
-      lowStock: itemsState.list.filter(isLowStock).length,
-      products: itemsState.list.filter(
+      lowStock:
+        itemsState.summary?.lowStockCount ??
+        itemsState.list.filter(isLowStock).length,
+      products: itemsState.summary?.productCount ?? itemsState.list.filter(
         (item) => getItemTypeLabel(item.itemType) !== "Service",
       ).length,
-      services: itemsState.list.filter(
+      services: itemsState.summary?.serviceCount ?? itemsState.list.filter(
         (item) => getItemTypeLabel(item.itemType) === "Service",
       ).length,
-      total: itemsState.totalCount,
+      total: itemsState.summary?.totalCount ?? itemsState.totalCount,
+      metricScope: itemsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [itemsState.list, itemsState.totalCount],
+    [itemsState.list, itemsState.summary, itemsState.summaryScope, itemsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     void loadLookups();
     setModal({
       entity: null,
@@ -279,11 +307,19 @@ const ItemsPage = () => {
       isOpen: true,
       mode: "create",
     });
-  }, [loadLookups]);
+  }, [cancelDetailRequests, capabilities.canCreate, loadLookups]);
 
-  const openLookupCreate = useCallback((type) => {
-    setLookupCreateModal({ isOpen: true, type });
-  }, []);
+  const openLookupCreate = useCallback(
+    (type) => {
+      const isAllowed =
+        type === "categories" ? canCreateCategory : canCreateUnit;
+
+      if (isAllowed) {
+        setLookupCreateModal({ isOpen: true, type });
+      }
+    },
+    [canCreateCategory, canCreateUnit],
+  );
 
   const closeLookupCreate = useCallback(() => {
     setLookupCreateModal({ isOpen: false, type: null });
@@ -294,6 +330,13 @@ const ItemsPage = () => {
       const type = lookupCreateModal.type;
 
       if (!type) {
+        return;
+      }
+
+      const isAllowed =
+        type === "categories" ? canCreateCategory : canCreateUnit;
+
+      if (!isAllowed) {
         return;
       }
 
@@ -324,11 +367,21 @@ const ItemsPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup, lookupCreateModal.type],
+    [
+      canCreateCategory,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      lookupCreateModal.type,
+    ],
   );
 
   const selectItem = useCallback(
     async (item) => {
+      if (!capabilities.canView) {
+        return;
+      }
+
       dispatch(setSelectedItem(item));
 
       try {
@@ -337,11 +390,15 @@ const ItemsPage = () => {
         toast.error(getActionError(error, "Unable to load item details."));
       }
     },
-    [dispatch],
+    [capabilities.canView, dispatch],
   );
 
   const openEdit = useCallback(
     async (item) => {
+      if (!capabilities.canUpdate) {
+        return;
+      }
+
       void loadLookups();
       setModal({
         entity: item,
@@ -349,9 +406,14 @@ const ItemsPage = () => {
         isOpen: true,
         mode: "edit",
       });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchItemById(item.id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchItemById(item.id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: getResponseItem(response),
           isLoading: false,
@@ -359,15 +421,49 @@ const ItemsPage = () => {
           mode: "edit",
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This item no longer exists. The list was refreshed.");
+          closeModal();
+          await loadItems();
+          return;
+        }
         toast.error(getActionError(error, "Unable to load item details."));
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === "edit" &&
+          String(current.entity?.id) === String(item.id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [dispatch, loadLookups],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadItems,
+      loadLookups,
+    ],
   );
 
   const submitItem = useCallback(
     async (payload, saveAndNew) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -420,15 +516,29 @@ const ItemsPage = () => {
           }
         }
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This item no longer exists. The list was refreshed.");
+          closeModal();
+          await loadItems();
+          return;
+        }
         toast.error(getActionError(error, "Unable to save item."));
         throw error;
       }
     },
-    [closeModal, dispatch, loadItems, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadItems,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -447,7 +557,7 @@ const ItemsPage = () => {
       toast.error(getActionError(error, "Unable to delete item."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadItems]);
+  }, [capabilities.canDelete, confirmation.entity, dispatch, loadItems]);
 
   const filterControls = {
     ...itemsState.filters,
@@ -478,14 +588,12 @@ const ItemsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Item
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Item
+              </AppButton>
+            )}
           </>
         }
       />
@@ -512,6 +620,7 @@ const ItemsPage = () => {
               Search: "",
               IsActive: "all",
               CategoryId: "all",
+              ProcurementClassification: "all",
               Barcode: "",
               ItemCode: "",
             }),
@@ -537,7 +646,7 @@ const ItemsPage = () => {
             error={itemsState.error}
             isLoading={itemsState.loading}
             items={itemsState.list}
-            onCreate={openCreate}
+            onCreate={capabilities.canCreate ? openCreate : undefined}
             onPageChange={(value) => dispatch(setItemPage(value))}
             onPageSizeChange={(value) => dispatch(setItemPageSize(value))}
             onRetry={loadItems}

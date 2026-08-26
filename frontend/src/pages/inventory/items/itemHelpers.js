@@ -1,5 +1,9 @@
 import { serializeId } from "../inventoryHelpers";
 import {
+  ITEM_CLASSIFICATION_OPTIONS,
+  normalizeItemClassification,
+} from "../../../utils/itemClassification";
+import {
   getItemTypeName,
   ITEM_TYPE,
   ITEM_TYPE_VALUES,
@@ -7,6 +11,7 @@ import {
 } from "../../../utils/itemTypes";
 
 export { ITEM_TYPE, ITEM_TYPE_VALUES };
+export { ITEM_CLASSIFICATION_OPTIONS };
 
 export const ITEM_TYPE_OPTIONS = ITEM_TYPE_VALUES.map((value) => ({
   value,
@@ -35,6 +40,8 @@ export const getItemDefaultValues = (item) => ({
       ? ""
       : Number(item.unitId),
   itemType: normalizeItemType(item?.itemType),
+  procurementClassification:
+    normalizeItemClassification(item?.procurementClassification) ?? "",
   salesPrice: getNumberDefaultValue(item?.salesPrice),
   purchasePrice: getNumberDefaultValue(item?.purchasePrice),
   hsnCode: item?.hsnCode ?? "",
@@ -81,6 +88,9 @@ export const buildItemPayload = (values) => {
         ? (serializeId(values.unitId) ?? 0)
         : 0,
     itemType,
+    procurementClassification: normalizeItemClassification(
+      values.procurementClassification,
+    ),
     salesPrice: toNumber(values.salesPrice),
     purchasePrice: toNumber(values.purchasePrice),
     hsnCode: cleanString(values.hsnCode),

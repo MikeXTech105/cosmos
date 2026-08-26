@@ -7,6 +7,7 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { hrDesignationSchema } from "../../../utils/validationSchemas";
 import { getHrBoolean } from "../hrHelpers";
 
@@ -17,6 +18,7 @@ const getDefaultValues = (designation) => ({
   description: designation?.description ?? "",
   isActive: getHrBoolean(designation?.isActive, true),
 });
+const DESIGNATION_FIELDS = Object.keys(getDefaultValues());
 
 const DesignationFormModal = ({
   canCreateDepartment = false,
@@ -38,6 +40,7 @@ const DesignationFormModal = ({
     handleSubmit,
     register,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrDesignationSchema),
     defaultValues: getDefaultValues(designation),
@@ -50,13 +53,17 @@ const DesignationFormModal = ({
   }, [designation, isOpen, reset]);
 
   const submitForm = async (values) => {
-    await onSubmit({
-      designationCode: values.designationCode.trim(),
-      designationName: values.designationName.trim(),
-      departmentId: Number(values.departmentId),
-      description: values.description?.trim() ?? "",
-      isActive: values.isActive,
-    });
+    try {
+      await onSubmit({
+        designationCode: values.designationCode.trim(),
+        designationName: values.designationName.trim(),
+        departmentId: Number(values.departmentId),
+        description: values.description?.trim() ?? "",
+        isActive: values.isActive,
+      });
+    } catch (error) {
+      applyApiErrorsToForm({ error, formFieldNames: DESIGNATION_FIELDS, setError });
+    }
   };
 
   const title = isView
@@ -67,6 +74,7 @@ const DesignationFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -97,6 +105,11 @@ const DesignationFormModal = ({
           className="mt-6 space-y-5"
           onSubmit={handleSubmit(submitForm)}
         >
+          {errors.root?.server?.message && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors.root.server.message}
+            </p>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <AppInput
               id="designationCode"
@@ -191,7 +204,7 @@ const DesignationFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : "Create Designation"}
               </AppButton>
             )}

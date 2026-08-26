@@ -34,6 +34,7 @@ import {
   getOeeRecordId,
   OEE_HORIZON_OPTIONS,
 } from "../oeeHelpers";
+import useOeeCapabilities from "../useOeeCapabilities";
 
 const tabs = [
   { id: "daily", label: "Daily", icon: FileSpreadsheet },
@@ -175,6 +176,7 @@ const ReportTable = ({ activeTab, rows }) => {
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               {columns.map((column) => (
                 <th key={column.key} className="px-4 py-3 font-semibold">
                   {column.label}
@@ -185,6 +187,9 @@ const ReportTable = ({ activeTab, rows }) => {
           <tbody>
             {rows.map((row, index) => (
               <tr key={index} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {index + 1}
+                </td>
                 {columns.map((column) => (
                   <td key={column.key} className="px-4 py-3 text-slate-700">
                     {column.render ? column.render(row) : row[column.key] || "-"}
@@ -291,6 +296,12 @@ const downloadBlob = ({ blob, filename }) => {
 const OeeReportsPage = () => {
   const dispatch = useDispatch();
   const reports = useSelector((state) => state.oeeReports);
+  const capabilities = useOeeCapabilities({
+    actions: ["view", "export"],
+    label: "OEE Reports",
+    resource: ["oeeReports", "reports"],
+    route: "/oee/reports",
+  });
   const [activeTab, setActiveTab] = useState("daily");
   const [exporting, setExporting] = useState(false);
   const [lookups, setLookups] = useState({
@@ -378,6 +389,10 @@ const OeeReportsPage = () => {
   );
 
   const exportExcel = async () => {
+    if (!capabilities.canExport || exporting) {
+      return;
+    }
+
     setExporting(true);
 
     try {
@@ -424,14 +439,17 @@ const OeeReportsPage = () => {
               />
               Run Report
             </AppButton>
-            <AppButton
-              className="h-10"
-              isLoading={exporting}
-              onClick={exportExcel}
-            >
-              <Download className="h-4 w-4" />
-              Export to Excel
-            </AppButton>
+            {capabilities.canExport && (
+              <AppButton
+                className="h-10"
+                isLoading={exporting}
+                loadingText="Exporting…"
+                onClick={exportExcel}
+              >
+                <Download className="h-4 w-4" />
+                Export to Excel
+              </AppButton>
+            )}
           </>
         }
       />

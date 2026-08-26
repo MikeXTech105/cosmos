@@ -1,8 +1,17 @@
-import { Save, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2,
+  CircleAlert,
+  RefreshCw,
+  Save,
+  ShieldCheck,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
+import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { pageService } from "../../../services/rbac/pageService";
 import { permissionService } from "../../../services/rbac/permissionService";
 import { roleService } from "../../../services/rbac/roleService";
@@ -238,6 +247,12 @@ const buildPermissionMatrix = (pages, permissions) => {
 };
 
 const Permissions = () => {
+  const capabilities = useCapabilities({
+    actions: ["view", "update"],
+    label: "Permissions",
+    resource: "permissions",
+    route: "/permissions",
+  });
   const [roles, setRoles] = useState([]);
   const [pages, setPages] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
@@ -383,9 +398,14 @@ const Permissions = () => {
   const totalCount = pages.length * permissionColumns.length;
 
   const updateMatrix = useCallback((updater) => {
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update role permissions.");
+      return;
+    }
+
     setMatrix((current) => updater(current));
     setIsDirty(true);
-  }, []);
+  }, [capabilities.canUpdate]);
 
   const toggleCell = useCallback((pageId, columnKey, checked) => {
     updateMatrix((current) => ({
@@ -439,6 +459,11 @@ const Permissions = () => {
   }, [isAllSelected, pages, updateMatrix]);
 
   const savePermissions = useCallback(async () => {
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update role permissions.");
+      return;
+    }
+
     if (!selectedRoleId) {
       return;
     }
@@ -469,11 +494,14 @@ const Permissions = () => {
     } finally {
       setIsSaving(false);
     }
-  }, [matrix, pages, selectedRoleId]);
+  }, [capabilities.canUpdate, matrix, pages, selectedRoleId]);
 
   const matrixError = pagesError ?? permissionsError;
   const matrixLoading =
     Boolean(selectedRoleId) && (isPagesLoading || isPermissionsLoading);
+  const selectedRole = roles.find((role) => {
+    return String(role.id) === String(selectedRoleId);
+  });
   const saveDisabled =
     !selectedRoleId ||
     !isDirty ||
@@ -481,40 +509,81 @@ const Permissions = () => {
     matrixLoading ||
     Boolean(matrixError) ||
     pages.length === 0;
+  const changeState = !selectedRoleId
+    ? {
+        className: "border-slate-200 bg-slate-50 text-slate-500",
+        icon: ShieldCheck,
+        label: "No role selected",
+      }
+    : matrixLoading
+      ? {
+          className: "border-brand/15 bg-brand-light text-brand",
+          icon: RefreshCw,
+          iconClassName: "animate-spin",
+          label: "Loading access",
+        }
+      : isDirty
+        ? {
+            className: "border-amber-200 bg-amber-50 text-amber-700",
+            icon: CircleAlert,
+            label: "Unsaved changes",
+          }
+        : {
+            className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+            icon: CheckCircle2,
+            label: "Changes saved",
+          };
+  const ChangeStateIcon = changeState.icon;
 
   return (
-    <section className="min-w-0 space-y-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
+    <section className="min-w-0 space-y-5 pb-4">
+      <PageHeader
+        badge={
+          <>
             <ShieldCheck className="h-3.5 w-3.5" />
-            RBAC / Permission Management
-          </div>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
-            Permissions
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            Manage role based access control.
-          </p>
-        </div>
+            RBAC / Permissions
+          </>
+        }
+        title="Permissions"
+        description="Manage role-based access across application pages and actions."
+        actions={
+          <>
+            <div
+              role="status"
+              aria-live="polite"
+              className={[
+                "inline-flex h-10 items-center justify-center gap-2 rounded-lg border px-3 text-xs font-semibold",
+                changeState.className,
+              ].join(" ")}
+            >
+              <ChangeStateIcon
+                className={["h-4 w-4", changeState.iconClassName ?? ""].join(" ")}
+              />
+              {changeState.label}
+            </div>
 
-        <AppTooltip label="Save Permissions">
-          <button
-            type="button"
-            onClick={savePermissions}
-            disabled={saveDisabled}
-            aria-label="Save Permissions"
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] sm:w-auto"
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Permissions"}
-          </button>
-        </AppTooltip>
-      </div>
+            {capabilities.canUpdate && (
+              <AppTooltip label="Save Permissions">
+                <AppButton
+                  aria-label="Save Permissions"
+                  className="h-10 w-full px-4 sm:w-auto"
+                  disabled={saveDisabled}
+                  isLoading={isSaving}
+                  loadingText="Saving..."
+                  onClick={savePermissions}
+                >
+                  <Save className="h-4 w-4" />
+                  Save changes
+                </AppButton>
+              </AppTooltip>
+            )}
+          </>
+        }
+      />
 
       <RoleSelector
         error={rolesError}
-        isDisabled={isSaving}
+        isDisabled={isSaving || !capabilities.canUpdate}
         isLoading={isRolesLoading}
         roles={roles}
         selectedRoleId={selectedRoleId}
@@ -523,11 +592,12 @@ const Permissions = () => {
       />
 
       <PermissionsTable
+        key={selectedRoleId || "no-role"}
         enabledCount={enabledCount}
         errorMessage={matrixError}
         isAllSelected={isAllSelected}
         isColumnSelected={isColumnSelected}
-        isDisabled={isSaving}
+        isDisabled={isSaving || !capabilities.canUpdate}
         isLoading={matrixLoading}
         matrix={matrix}
         onRetry={pagesError ? loadPages : loadRolePermissions}
@@ -536,6 +606,7 @@ const Permissions = () => {
         onToggleColumn={toggleColumn}
         pages={pages}
         selectedRoleId={selectedRoleId}
+        selectedRoleName={selectedRole?.name}
         totalCount={totalCount}
       />
     </section>

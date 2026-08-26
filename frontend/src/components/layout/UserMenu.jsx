@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, KeyRound, LogOut, Settings, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -9,32 +9,71 @@ import { logoutUser } from "../../services/authService";
 import { clearCredentials } from "../../store/slices/authSlice";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { clearAuthData } from "../../utils/authStorage";
-
-const getDisplayName = (user) => {
-  return (
-    user?.fullName ??
-    user?.name ??
-    user?.username ??
-    user?.email ??
-    "System Admin"
-  );
-};
-
-const getInitial = (name) => {
-  return name.trim().charAt(0).toUpperCase() || "S";
-};
-
-const getRoleName = (user, roles) => {
-  return user?.role ?? user?.roleName ?? roles?.[0]?.name ?? roles?.[0] ?? "Admin";
-};
+import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay";
 
 const UserMenu = () => {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+  const menuRef = useRef(null);
+  const triggerRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { refreshToken, roles, user } = useSelector((state) => state.auth);
   const displayName = getDisplayName(user);
   const roleName = getRoleName(user, roles);
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      menuRef.current?.querySelector('[role="menuitem"]')?.focus();
+    });
+    const triggerElement = triggerRef.current;
+    const getItems = () =>
+      Array.from(menuRef.current?.querySelectorAll('[role="menuitem"]') ?? []);
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      const items = getItems();
+      const currentIndex = items.indexOf(document.activeElement);
+      const nextIndex =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? items.length - 1
+            : event.key === "ArrowUp"
+              ? (currentIndex - 1 + items.length) % items.length
+              : (currentIndex + 1) % items.length;
+
+      items[nextIndex]?.focus();
+    };
+    const handleOutsidePointer = (event) => {
+      if (!containerRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handleOutsidePointer);
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handleOutsidePointer);
+      triggerElement?.focus();
+    };
+  }, [open]);
 
   const handleLogout = async () => {
     try {
@@ -55,8 +94,9 @@ const UserMenu = () => {
   };
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="flex h-11 items-center gap-3 rounded-xl px-1.5 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 sm:px-2.5"
@@ -85,12 +125,14 @@ const UserMenu = () => {
           <>
             <button
               type="button"
+              tabIndex={-1}
               className="fixed inset-0 z-30 cursor-default"
               aria-label="Close user menu"
               onClick={() => setOpen(false)}
             />
 
             <motion.div
+              ref={menuRef}
               role="menu"
               className="absolute right-0 top-12 z-40 w-[min(16rem,calc(100vw-1rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
               initial={{ opacity: 0, y: -8, scale: 0.98 }}

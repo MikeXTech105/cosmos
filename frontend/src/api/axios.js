@@ -1,15 +1,11 @@
 import axios from "axios";
 import { ENDPOINTS } from "./endpoints";
-import {
-  clearAuthData,
-  getAuthData,
-  updateAuthTokens,
-} from "../utils/authStorage";
-import { createApiError } from "../utils/apiError";
-import { store } from "../store/store";
-import { clearCredentials, setTokens } from "../store/slices/authSlice";
+import { getAuthData } from "../utils/authStorage";
+import { unwrapResponse } from "../services/apiServiceUtils";
+import { refreshSession } from "../services/sessionService";
+import runtimeConfig from "../config/runtimeConfig";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = runtimeConfig.API_BASE_URL;
 
 const AUTH_REFRESH_EXCLUDED_ENDPOINTS = [
   ENDPOINTS.LOGIN,
@@ -19,8 +15,6 @@ const AUTH_REFRESH_EXCLUDED_ENDPOINTS = [
   ENDPOINTS.RESET_PASSWORD,
 ];
 
-let refreshPromise = null;
-
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 
@@ -29,76 +23,26 @@ const axiosInstance = axios.create({
   },
 });
 
-const unwrapResponse = (response) => {
-  const responseData = response.data;
+const normalizeEndpointPath = (url = "") => {
+  try {
+    const origin = globalThis.location?.origin ?? "http://localhost";
+    const baseUrl = API_BASE_URL
+      ? new URL(`${API_BASE_URL}/`, origin)
+      : new URL("/", origin);
+    const pathname = new URL(url, baseUrl).pathname;
 
-  if (
-    responseData?.succeeded === false ||
-    responseData?.data?.succeeded === false
-  ) {
-    throw createApiError(
-      responseData?.succeeded === false ? responseData : responseData.data,
-      response,
-    );
+    return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  } catch {
+    return "";
   }
-
-  if (
-    responseData?.data &&
-    typeof responseData.data === "object" &&
-    !Array.isArray(responseData.data)
-  ) {
-    return responseData.data;
-  }
-
-  return responseData;
 };
+
+const AUTH_REFRESH_EXCLUDED_PATHS = new Set(
+  AUTH_REFRESH_EXCLUDED_ENDPOINTS.map(normalizeEndpointPath),
+);
 
 const shouldSkipRefresh = (url = "") => {
-  return AUTH_REFRESH_EXCLUDED_ENDPOINTS.some((endpoint) =>
-    url.includes(endpoint),
-  );
-};
-
-const clearSessionAndRedirect = () => {
-  clearAuthData();
-  store.dispatch(clearCredentials());
-
-  if (window.location.pathname !== "/login") {
-    window.location.assign("/login");
-  }
-};
-
-const requestNewAccessToken = async () => {
-  const { refreshToken } = getAuthData();
-
-  if (!refreshToken) {
-    throw new Error("Missing refresh token");
-  }
-
-  const response = await axios.post(
-    `${API_BASE_URL}${ENDPOINTS.REFRESH_TOKEN}`,
-    { refreshToken },
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  const data = unwrapResponse(response);
-  const nextTokens = {
-    accessToken: data.accessToken,
-    refreshToken: data.refreshToken ?? refreshToken,
-  };
-
-  if (!nextTokens.accessToken) {
-    throw new Error("Refresh response did not include an access token");
-  }
-
-  updateAuthTokens(nextTokens);
-  store.dispatch(setTokens(nextTokens));
-
-  return nextTokens.accessToken;
+  return AUTH_REFRESH_EXCLUDED_PATHS.has(normalizeEndpointPath(url));
 };
 
 axiosInstance.interceptors.request.use(
@@ -116,17 +60,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-    if (
-      response.data?.succeeded === false ||
-      response.data?.data?.succeeded === false
-    ) {
-      return Promise.reject(
-        createApiError(
-          response.data?.succeeded === false ? response.data : response.data.data,
-          response,
-        ),
-      );
-    }
+    unwrapResponse(response);
 
     return response;
   },
@@ -143,19 +77,13 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        refreshPromise ??= requestNewAccessToken().finally(() => {
-          refreshPromise = null;
-        });
-
-        const newAccessToken = await refreshPromise;
+        const { accessToken: newAccessToken } = await refreshSession();
 
         originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        clearSessionAndRedirect();
-
         return Promise.reject(refreshError);
       }
     }

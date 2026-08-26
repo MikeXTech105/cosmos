@@ -19,6 +19,7 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
@@ -71,10 +72,10 @@ const getResponseRecord = (response, key) => {
 };
 
 const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }) => {
-  const toneClass =
+  const buttonClass =
     tone === "danger"
-      ? "hover:bg-red-50 hover:text-red-600"
-      : "hover:bg-slate-100 hover:text-brand";
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
     <button
@@ -83,11 +84,7 @@ const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className={[
-        "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors",
-        toneClass,
-        disabled ? "cursor-not-allowed opacity-40" : "",
-      ].join(" ")}
+      className={buttonClass}
     >
       <Icon className="h-4 w-4" />
     </button>
@@ -98,6 +95,12 @@ const PurchaseDocumentListPage = ({ config }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const state = useSelector((store) => store[config.selectorKey]);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete", "confirm", "cancel", "convert"],
+    label: config.pageName ?? config.label,
+    resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
+    route: config.routeBase,
+  });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
     resource: "party",
@@ -314,12 +317,14 @@ const PurchaseDocumentListPage = ({ config }) => {
     );
 
     return {
-      balance: formatCurrency(balance),
-      count: state.totalCount,
-      paid: formatCurrency(paid),
-      total: formatCurrency(total),
+      balance: formatCurrency(state.summary?.balanceAmount ?? balance),
+      count: state.summary?.totalCount ?? state.totalCount,
+      paid: formatCurrency(state.summary?.paidAmount ?? paid),
+      total: formatCurrency(state.summary?.totalAmount ?? total),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const loadItemCreateLookups = useCallback(async () => {
     setItemCreateLookups((current) => ({
@@ -362,13 +367,30 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const openLookupCreate = useCallback(
     (type) => {
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        return;
+      }
+
       if (type === "item") {
         void loadItemCreateLookups();
       }
 
       setLookupCreateModal((current) => ({ ...current, [type]: true }));
     },
-    [loadItemCreateLookups],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      loadItemCreateLookups,
+    ],
   );
 
   const closeLookupCreate = useCallback((type) => {
@@ -402,6 +424,17 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const submitLookupCreate = useCallback(
     async (type, payload, saveAndNew = false) => {
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        return;
+      }
+
       try {
         if (type === "supplier") {
           await partyService.createParty(payload);
@@ -431,10 +464,22 @@ const PurchaseDocumentListPage = ({ config }) => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup, refreshItemCreateLookup],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      refreshItemCreateLookup,
+    ],
   );
 
   const openEdit = async (record) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       isLoading: true,
       isOpen: true,
@@ -458,6 +503,13 @@ const PurchaseDocumentListPage = ({ config }) => {
   };
 
   const submitRecord = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -477,6 +529,16 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const runAction = async () => {
     if (!confirmation.record) {
+      return;
+    }
+
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+      delete: capabilities.canDelete,
+    };
+
+    if (!permissionMap[confirmation.action]) {
       return;
     }
 
@@ -508,6 +570,10 @@ const PurchaseDocumentListPage = ({ config }) => {
   };
 
   const submitConvert = async (payload) => {
+    if (!capabilities.canConvert || !convertOrder.order) {
+      return;
+    }
+
     try {
       const response = await dispatch(
         config.convertThunk({ id: convertOrder.order.id, payload }),
@@ -535,6 +601,46 @@ const PurchaseDocumentListPage = ({ config }) => {
 
   const Icon = config.icon;
 
+  const openCreate = () => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    setModal({
+      isLoading: false,
+      isOpen: true,
+      mode: "create",
+      record: null,
+    });
+  };
+
+  const openAction = (action, record) => {
+    const permissionMap = {
+      cancel: capabilities.canCancel,
+      confirm: capabilities.canConfirm,
+      delete: capabilities.canDelete,
+    };
+
+    if (!permissionMap[action]) {
+      return;
+    }
+
+    setConfirmation({
+      action,
+      isLoading: false,
+      isOpen: true,
+      record,
+    });
+  };
+
+  const openConvert = (record) => {
+    if (!capabilities.canConvert) {
+      return;
+    }
+
+    setConvertOrder({ isOpen: true, order: record });
+  };
+
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
@@ -559,20 +665,12 @@ const PurchaseDocumentListPage = ({ config }) => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                  record: null,
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                New
+              </AppButton>
+            )}
           </>
         }
       />
@@ -582,18 +680,21 @@ const PurchaseDocumentListPage = ({ config }) => {
           icon={Icon}
           label="Count"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={Icon}
           label="Total"
           value={stats.total}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <PurchaseStatCard
           icon={Icon}
           label={config.supportsPaidAmount ? "Unpaid" : "Paid / Balance"}
           value={config.supportsPaidAmount ? stats.balance : stats.paid}
+          scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
         />
       </div>
@@ -686,6 +787,9 @@ const PurchaseDocumentListPage = ({ config }) => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
+                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Document #
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -715,7 +819,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={8} className="px-3 py-3">
+                    <td colSpan={9} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -723,15 +827,18 @@ const PurchaseDocumentListPage = ({ config }) => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || `No ${config.pluralLabel} found.`}
                   </td>
                 </tr>
               ) : (
-                state.list.map((record) => (
+                state.list.map((record, index) => (
                   <tr key={record.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm font-semibold text-slate-900">
                       {getDocumentNumber(record, config.fallbackPrefix)}
                     </td>
@@ -754,68 +861,49 @@ const PurchaseDocumentListPage = ({ config }) => {
                       <PurchaseStatusPill meta={getStatusMeta(record.status)} />
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
-                      <div className="inline-flex gap-1">
+                      <div className="flex items-center justify-end gap-0.5">
                         <ActionButton
                           icon={Eye}
                           label="View"
                           onClick={() => navigate(config.detailPath(record.id))}
                         />
-                        <ActionButton
-                          icon={Pencil}
-                          label="Edit"
-                          onClick={() => void openEdit(record)}
-                        />
-                        {config.supportsConfirm && (
+                        {capabilities.canUpdate && (
+                          <ActionButton
+                            icon={Pencil}
+                            label="Edit"
+                            onClick={() => void openEdit(record)}
+                          />
+                        )}
+                        {config.supportsConfirm && capabilities.canConfirm && (
                           <ActionButton
                             icon={CheckCircle2}
                             label="Confirm"
-                            onClick={() =>
-                              setConfirmation({
-                                action: "confirm",
-                                isLoading: false,
-                                isOpen: true,
-                                record,
-                              })
-                            }
+                            onClick={() => openAction("confirm", record)}
                           />
                         )}
-                        {config.supportsCancel && (
+                        {config.supportsCancel && capabilities.canCancel && (
                           <ActionButton
                             icon={Ban}
                             label="Cancel"
                             tone="danger"
-                            onClick={() =>
-                              setConfirmation({
-                                action: "cancel",
-                                isLoading: false,
-                                isOpen: true,
-                                record,
-                              })
-                            }
+                            onClick={() => openAction("cancel", record)}
                           />
                         )}
-                        {config.supportsConvert && (
+                        {config.supportsConvert && capabilities.canConvert && (
                           <ActionButton
                             icon={ArrowRight}
                             label="Convert to Bill"
-                            onClick={() =>
-                              setConvertOrder({ isOpen: true, order: record })
-                            }
+                            onClick={() => openConvert(record)}
                           />
                         )}
-                        <ActionButton
-                          icon={Trash2}
-                          label="Delete"
-                          tone="danger"
-                          onClick={() =>
-                            setConfirmation({
-                              action: "delete",
-                              isLoading: false,
-                              isOpen: true,
-                              record,
-                            })
-                          }
-                        />
+                        {capabilities.canDelete && (
+                          <ActionButton
+                            icon={Trash2}
+                            label="Delete"
+                            tone="danger"
+                            onClick={() => openAction("delete", record)}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

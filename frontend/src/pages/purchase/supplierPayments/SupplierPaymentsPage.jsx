@@ -18,6 +18,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
@@ -162,6 +163,7 @@ const PaymentModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-5xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -320,14 +322,16 @@ const PaymentModal = ({
                         />
                       </td>
                       <td className="px-2 py-3 text-right">
-                        <button
-                          type="button"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                          onClick={() => remove(index)}
-                          aria-label="Remove allocation"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-0.5">
+                          <button
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() => remove(index)}
+                            aria-label="Remove allocation"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -378,7 +382,7 @@ const PaymentModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Payment
           </AppButton>
         </div>
@@ -390,6 +394,12 @@ const PaymentModal = ({
 const SupplierPaymentsPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.supplierPayments);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete"],
+    label: "Supplier Payments",
+    resource: ["supplierPayments", "supplierPayment"],
+    route: "/purchase/supplier-payments",
+  });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
     resource: "party",
@@ -516,13 +526,19 @@ const SupplierPaymentsPage = () => {
     );
 
     return {
-      count: state.totalCount,
-      totalPaid: formatCurrency(totalPaid),
+      count: state.summary?.totalCount ?? state.totalCount,
+      totalPaid: formatCurrency(state.summary?.totalPaidAmount ?? totalPaid),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
   const submitSupplier = useCallback(
     async (payload) => {
+      if (!canCreateSupplier) {
+        return;
+      }
+
       try {
         await partyService.createParty(payload);
         toast.success("Supplier created successfully");
@@ -534,10 +550,14 @@ const SupplierPaymentsPage = () => {
         throw error;
       }
     },
-    [loadSuppliers],
+    [canCreateSupplier, loadSuppliers],
   );
 
   const openEdit = async (payment) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       isLoading: true,
       isOpen: true,
@@ -562,6 +582,13 @@ const SupplierPaymentsPage = () => {
   };
 
   const submitPayment = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -580,7 +607,7 @@ const SupplierPaymentsPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.payment) {
+    if (!capabilities.canDelete || !confirmation.payment) {
       return;
     }
 
@@ -630,20 +657,22 @@ const SupplierPaymentsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                  payment: null,
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New Payment
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                onClick={() =>
+                  setModal({
+                    isLoading: false,
+                    isOpen: true,
+                    mode: "create",
+                    payment: null,
+                  })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                New Payment
+              </AppButton>
+            )}
           </>
         }
       />
@@ -653,12 +682,14 @@ const SupplierPaymentsPage = () => {
           icon={CreditCard}
           label="Total Paid"
           value={stats.totalPaid}
+          scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={CreditCard}
           label="Payments"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
       </div>
@@ -684,7 +715,11 @@ const SupplierPaymentsPage = () => {
             aria-label="Filter by supplier"
             creatable={canCreateSupplier}
             createLabel="Create new supplier"
-            onCreateClick={() => setSupplierCreateOpen(true)}
+            onCreateClick={() => {
+              if (canCreateSupplier) {
+                setSupplierCreateOpen(true);
+              }
+            }}
           />
           <AppInput
             type="date"
@@ -739,6 +774,9 @@ const SupplierPaymentsPage = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
+                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Payment #
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -765,7 +803,7 @@ const SupplierPaymentsPage = () => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={7} className="px-3 py-3">
+                    <td colSpan={8} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -773,15 +811,18 @@ const SupplierPaymentsPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No supplier payments found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((payment) => (
+                state.list.map((payment, index) => (
                   <tr key={payment.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm font-semibold text-slate-900">
                       {payment.paymentNo ?? payment.paymentNumber ?? `PAY-${payment.id}`}
                     </td>
@@ -801,27 +842,31 @@ const SupplierPaymentsPage = () => {
                       {payment.referenceNo || "-"}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
-                      <div className="inline-flex gap-2">
-                        <AppButton
-                          variant="secondary"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() => void openEdit(payment)}
-                        >
-                          Edit
-                        </AppButton>
-                        <AppButton
-                          variant="danger"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setConfirmation({
-                              isLoading: false,
-                              isOpen: true,
-                              payment,
-                            })
-                          }
-                        >
-                          Delete
-                        </AppButton>
+                      <div className="flex items-center justify-end gap-0.5">
+                        {capabilities.canUpdate && (
+                          <AppButton
+                            variant="secondary"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() => void openEdit(payment)}
+                          >
+                            Edit
+                          </AppButton>
+                        )}
+                        {capabilities.canDelete && (
+                          <AppButton
+                            variant="danger"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setConfirmation({
+                                isLoading: false,
+                                isOpen: true,
+                                payment,
+                              })
+                            }
+                          >
+                            Delete
+                          </AppButton>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -852,7 +897,11 @@ const SupplierPaymentsPage = () => {
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-        onCreateSupplier={() => setSupplierCreateOpen(true)}
+        onCreateSupplier={() => {
+          if (canCreateSupplier) {
+            setSupplierCreateOpen(true);
+          }
+        }}
         onLoadBills={loadSupplierBills}
         onSubmit={submitPayment}
         payment={modal.payment}

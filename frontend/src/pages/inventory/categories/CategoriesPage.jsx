@@ -1,10 +1,12 @@
 import { FolderKanban, Plus, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   createCategory,
   deleteCategory,
@@ -44,6 +46,12 @@ const CategoriesPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -83,36 +91,60 @@ const CategoriesPage = () => {
 
   const stats = useMemo(
     () => ({
-      active: categoriesState.list.filter((category) => category.isActive)
-        .length,
-      inactive: categoriesState.list.filter((category) => !category.isActive)
-        .length,
-      total: categoriesState.totalCount,
+      active:
+        categoriesState.summary?.activeCount ??
+        categoriesState.list.filter((category) => category.isActive).length,
+      inactive:
+        categoriesState.summary?.inactiveCount ??
+        categoriesState.list.filter((category) => !category.isActive).length,
+      total: categoriesState.summary?.totalCount ?? categoriesState.totalCount,
+      metricScope: categoriesState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [categoriesState.list, categoriesState.totalCount],
+    [categoriesState.list, categoriesState.summary, categoriesState.summaryScope, categoriesState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, category) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       setModal({ entity: category, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchCategoryById(category.id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(
-          fetchCategoryById(category.id),
-        ).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: response.data?.category ?? response.data,
           isLoading: false,
@@ -120,17 +152,51 @@ const CategoriesPage = () => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This category no longer exists. The list was refreshed.");
+          closeModal();
+          await loadCategories();
+          return;
+        }
         toast.error(
           getActionError(error, "Unable to load category details."),
         );
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(current.entity?.id) === String(category.id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadCategories,
+    ],
   );
 
   const submitCategory = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -150,15 +216,29 @@ const CategoriesPage = () => {
         closeModal();
         await loadCategories();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This category no longer exists. The list was refreshed.");
+          closeModal();
+          await loadCategories();
+          return;
+        }
         toast.error(getActionError(error, "Unable to save category."));
         throw error;
       }
     },
-    [closeModal, dispatch, loadCategories, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadCategories,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -177,7 +257,12 @@ const CategoriesPage = () => {
       toast.error(getActionError(error, "Unable to delete category."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadCategories]);
+  }, [
+    capabilities.canDelete,
+    confirmation.entity,
+    dispatch,
+    loadCategories,
+  ]);
 
   const filterControls = {
     ...categoriesState.filters,
@@ -208,14 +293,12 @@ const CategoriesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Category
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Category
+              </AppButton>
+            )}
           </>
         }
       />
@@ -254,7 +337,7 @@ const CategoriesPage = () => {
         categories={categoriesState.list}
         error={categoriesState.error}
         isLoading={categoriesState.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(setCategoryPage(value))}
         onPageSizeChange={(value) => dispatch(setCategoryPageSize(value))}
         onRetry={loadCategories}

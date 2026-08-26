@@ -19,6 +19,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
 import {
@@ -127,6 +128,7 @@ const ExpenseModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-4xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -279,7 +281,7 @@ const ExpenseModal = ({
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting}>
+          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
             Save Expense
           </AppButton>
         </div>
@@ -291,6 +293,12 @@ const ExpenseModal = ({
 const ExpensesPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((store) => store.expenses);
+  const capabilities = useCapabilities({
+    actions: ["view", "create", "update", "delete"],
+    label: "Expenses",
+    resource: ["expenses", "expense"],
+    route: "/purchase/expenses",
+  });
   const canCreateCategory = useCreatePermission({
     label: "Expense Categories",
     resource: "expenseCategories",
@@ -461,15 +469,24 @@ const ExpensesPage = () => {
     }, 0);
 
     return {
-      count: state.totalCount,
-      thisMonth: formatCurrency(thisMonth),
-      total: formatCurrency(total),
+      count: state.summary?.totalCount ?? state.totalCount,
+      thisMonth: formatCurrency(state.summary?.thisMonthAmount ?? thisMonth),
+      total: formatCurrency(state.summary?.totalAmount ?? total),
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     };
-  }, [state.list, state.totalCount]);
+  }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
-  const openLookupCreate = useCallback((type) => {
-    setLookupCreateModal((current) => ({ ...current, [type]: true }));
-  }, []);
+  const openLookupCreate = useCallback(
+    (type) => {
+      const allowed = type === "category" ? canCreateCategory : canCreateParty;
+
+      if (allowed) {
+        setLookupCreateModal((current) => ({ ...current, [type]: true }));
+      }
+    },
+    [canCreateCategory, canCreateParty],
+  );
 
   const closeLookupCreate = useCallback((type) => {
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
@@ -477,6 +494,12 @@ const ExpensesPage = () => {
 
   const submitLookupCreate = useCallback(
     async (type, payload) => {
+      const allowed = type === "category" ? canCreateCategory : canCreateParty;
+
+      if (!allowed) {
+        return;
+      }
+
       try {
         if (type === "category") {
           await expenseCategoryService.createExpenseCategory(payload);
@@ -496,10 +519,19 @@ const ExpensesPage = () => {
         throw error;
       }
     },
-    [closeLookupCreate, loadLookup],
+    [
+      canCreateCategory,
+      canCreateParty,
+      closeLookupCreate,
+      loadLookup,
+    ],
   );
 
   const openEdit = async (expense) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     setModal({
       expense,
       isLoading: true,
@@ -523,6 +555,13 @@ const ExpensesPage = () => {
   };
 
   const submitExpense = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
     try {
       const response =
         modal.mode === "edit"
@@ -541,7 +580,7 @@ const ExpensesPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.expense) {
+    if (!capabilities.canDelete || !confirmation.expense) {
       return;
     }
 
@@ -591,20 +630,22 @@ const ExpensesPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              onClick={() =>
-                setModal({
-                  expense: null,
-                  isLoading: false,
-                  isOpen: true,
-                  mode: "create",
-                })
-              }
-            >
-              <Plus className="h-4 w-4" />
-              New Expense
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                onClick={() =>
+                  setModal({
+                    expense: null,
+                    isLoading: false,
+                    isOpen: true,
+                    mode: "create",
+                  })
+                }
+              >
+                <Plus className="h-4 w-4" />
+                New Expense
+              </AppButton>
+            )}
           </>
         }
       />
@@ -614,18 +655,21 @@ const ExpensesPage = () => {
           icon={CircleDollarSign}
           label="Total Expenses"
           value={stats.total}
+          scope={stats.metricScope}
           colorClass="bg-brand-light text-brand"
         />
         <PurchaseStatCard
           icon={ReceiptText}
           label="This Month"
           value={stats.thisMonth}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <PurchaseStatCard
           icon={ReceiptText}
           label="Count"
           value={stats.count}
+          scope={stats.totalScope}
           colorClass="bg-sky-50 text-sky-600"
         />
       </div>
@@ -704,6 +748,9 @@ const ExpensesPage = () => {
             <thead className="bg-slate-50">
               <tr>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                  #
+                </th>
+                <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Date
                 </th>
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -730,7 +777,7 @@ const ExpensesPage = () => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={7} className="px-3 py-3">
+                    <td colSpan={8} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -738,15 +785,18 @@ const ExpensesPage = () => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || "No expenses found."}
                   </td>
                 </tr>
               ) : (
-                state.list.map((expense) => (
+                state.list.map((expense, index) => (
                   <tr key={expense.id} className="hover:bg-slate-50">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      {(state.pageNumber - 1) * state.pageSize + index + 1}
+                    </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-sm text-slate-600">
                       {formatDate(expense.expenseDate)}
                     </td>
@@ -768,27 +818,31 @@ const ExpensesPage = () => {
                       {expense.referenceNo || "-"}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
-                      <div className="inline-flex gap-2">
-                        <AppButton
-                          variant="secondary"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() => void openEdit(expense)}
-                        >
-                          Edit
-                        </AppButton>
-                        <AppButton
-                          variant="danger"
-                          className="h-8 rounded-lg px-3"
-                          onClick={() =>
-                            setConfirmation({
-                              expense,
-                              isLoading: false,
-                              isOpen: true,
-                            })
-                          }
-                        >
-                          Delete
-                        </AppButton>
+                      <div className="flex items-center justify-end gap-0.5">
+                        {capabilities.canUpdate && (
+                          <AppButton
+                            variant="secondary"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() => void openEdit(expense)}
+                          >
+                            Edit
+                          </AppButton>
+                        )}
+                        {capabilities.canDelete && (
+                          <AppButton
+                            variant="danger"
+                            className="h-8 rounded-lg px-3"
+                            onClick={() =>
+                              setConfirmation({
+                                expense,
+                                isLoading: false,
+                                isOpen: true,
+                              })
+                            }
+                          >
+                            Delete
+                          </AppButton>
+                        )}
                       </div>
                     </td>
                   </tr>

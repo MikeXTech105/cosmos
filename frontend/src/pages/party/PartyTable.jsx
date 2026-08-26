@@ -3,8 +3,12 @@ import {
   CheckCircle2,
   Contact,
   Eye,
+  Mail,
+  MapPin,
   Pencil,
+  Phone,
   Plus,
+  ReceiptText,
   RefreshCw,
   Trash2,
 } from "lucide-react";
@@ -13,7 +17,7 @@ import { memo } from "react";
 import AppTooltip from "../../components/common/AppTooltip";
 import {
   formatBalance,
-  formatValue,
+  formatNumber,
   getPartyCity,
   getPartyDisplayName,
   getPartyState,
@@ -65,17 +69,37 @@ const PartyStatusBadge = ({ isActive }) => {
   );
 };
 
-const ActionButton = ({ className, icon: Icon, label, onClick }) => {
+const PartyTypeBadge = ({ party }) => {
+  const label = getPartyTypeLabel(party);
+  const normalizedLabel = label.toLowerCase();
+  const tone = normalizedLabel.includes("supplier")
+    ? "bg-amber-50 text-amber-700 ring-amber-200"
+    : normalizedLabel.includes("customer")
+      ? "bg-sky-50 text-sky-700 ring-sky-200"
+      : "bg-violet-50 text-violet-700 ring-violet-200";
+
+  return (
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset ${tone}`}
+    >
+      {label}
+    </span>
+  );
+};
+
+const ActionButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
+  const buttonClass =
+    tone === "danger"
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition-all hover:border-red-100 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-slate-400 transition-all hover:border-slate-200 hover:bg-white hover:text-brand hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <AppTooltip label={label}>
       <button
         type="button"
         onClick={onClick}
         aria-label={label}
-        className={[
-          "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30",
-          className,
-        ].join(" ")}
+        className={buttonClass}
       >
         <Icon className="h-4 w-4" />
       </button>
@@ -84,11 +108,11 @@ const ActionButton = ({ className, icon: Icon, label, onClick }) => {
 };
 
 const PartyActions = ({
-  canActivate = true,
-  canDeactivate = true,
-  canDelete = true,
-  canEdit = true,
-  canView = true,
+  canActivate = false,
+  canDeactivate = false,
+  canDelete = false,
+  canEdit = false,
+  canView = false,
   onActivate,
   onDeactivate,
   onDelete,
@@ -97,13 +121,12 @@ const PartyActions = ({
   party,
 }) => {
   return (
-    <div className="flex items-center justify-end gap-0.5">
+    <div className="flex items-center justify-end gap-0.5 rounded-lg bg-slate-50 p-0.5 ring-1 ring-inset ring-slate-200/70">
       {canView && (
         <ActionButton
           icon={Eye}
           label="View Party"
           onClick={() => onView(party)}
-          className="hover:text-brand"
         />
       )}
 
@@ -112,36 +135,31 @@ const PartyActions = ({
           icon={Pencil}
           label="Edit Party"
           onClick={() => onEdit(party)}
-          className="hover:text-brand"
         />
       )}
 
-      {party.isActive ? (
-        canDeactivate && (
-          <ActionButton
-            icon={Ban}
-            label="Deactivate Party"
-            onClick={() => onDeactivate(party)}
-            className="hover:bg-amber-50 hover:text-amber-700"
-          />
-        )
-      ) : (
-        canActivate && (
-          <ActionButton
-            icon={CheckCircle2}
-            label="Activate Party"
-            onClick={() => onActivate(party)}
-            className="hover:bg-emerald-50 hover:text-emerald-700"
-          />
-        )
-      )}
+      {party.isActive
+        ? canDeactivate && (
+            <ActionButton
+              icon={Ban}
+              label="Deactivate Party"
+              onClick={() => onDeactivate(party)}
+            />
+          )
+        : canActivate && (
+            <ActionButton
+              icon={CheckCircle2}
+              label="Activate Party"
+              onClick={() => onActivate(party)}
+            />
+          )}
 
       {canDelete && (
         <ActionButton
           icon={Trash2}
           label="Delete Party"
           onClick={() => onDelete(party)}
-          className="hover:bg-red-50 hover:text-red-700"
+          tone="danger"
         />
       )}
     </div>
@@ -151,8 +169,8 @@ const PartyActions = ({
 const TableSkeleton = () => {
   return Array.from({ length: 6 }, (_, index) => (
     <tr key={index}>
-      <td colSpan={10} className="px-4 py-3.5">
-        <div className="h-11 animate-pulse rounded-xl bg-slate-100" />
+      <td colSpan={8} className="px-5 py-3.5">
+        <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
       </td>
     </tr>
   ));
@@ -160,8 +178,8 @@ const TableSkeleton = () => {
 
 const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-light text-brand">
+    <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-light text-brand ring-8 ring-brand-light/50">
         <Contact className="h-6 w-6" />
       </div>
       <h3 className="mt-4 text-base font-bold text-slate-950">
@@ -169,7 +187,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
       </h3>
       <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
         {hasError
-          ? errorMessage ?? "Something went wrong while loading parties."
+          ? (errorMessage ?? "Something went wrong while loading parties.")
           : "Create the first party or adjust filters to find existing records."}
       </p>
       <div className="mt-5">
@@ -182,7 +200,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <RefreshCw className="h-4 w-4" />
             Retry
           </button>
-        ) : (
+        ) : onCreate ? (
           <button
             type="button"
             onClick={onCreate}
@@ -191,41 +209,94 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <Plus className="h-4 w-4" />
             Add Party
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
 };
 
 const MobilePartyCard = ({ actions, party, serialNumber }) => {
+  const location = [getPartyCity(party), getPartyState(party)]
+    .filter(Boolean)
+    .join(", ");
+
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-400">
-              #{serialNumber}
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${getPartyIdentityStyles(party)}`}
+            >
+              {getInitials(party) || "P"}
             </span>
-            <p className="truncate text-sm font-bold text-slate-950">
-              {getPartyDisplayName(party)}
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <p className="truncate text-sm font-bold text-slate-950">
+                  {getPartyDisplayName(party)}
+                </p>
+                <span className="shrink-0 text-[10px] font-semibold tabular-nums text-slate-400">
+                  #{serialNumber}
+                </span>
+              </div>
+              <p className="mt-1 truncate text-xs text-slate-500">
+                {party.partyCode || "No party code"}
+              </p>
+              <div className="mt-2">
+                <PartyTypeBadge party={party} />
+              </div>
+            </div>
+          </div>
+          <PartyStatusBadge isActive={party.isActive} />
+        </div>
+
+        <div className="mt-4 grid gap-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
+          <div className="flex items-center gap-2">
+            <Phone className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <span className="truncate">
+              {party.mobileNo || "No mobile number"}
+            </span>
+          </div>
+          {party.email && (
+            <div className="flex items-center gap-2">
+              <Mail className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="truncate">{party.email}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <span className="truncate">{location || "No location added"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ReceiptText className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            <span className="truncate font-mono">
+              {party.gstin || "No GSTIN"}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
+              Opening balance
+            </p>
+            <p className="mt-1 text-sm font-bold tabular-nums text-slate-900">
+              {formatBalance(party)}
             </p>
           </div>
-          <p className="mt-1 truncate text-xs font-semibold text-slate-400">
-            {getPartyTypeLabel(party)}
-          </p>
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
-            {[party.mobileNo, getPartyCity(party), getPartyState(party)]
-              .filter(Boolean)
-              .join(" / ") || "-"}
-          </p>
+          <div className="text-right">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-slate-400">
+              Credit limit
+            </p>
+            <p className="mt-1 text-sm font-bold tabular-nums text-slate-900">
+              {formatNumber(party.creditLimit)}
+            </p>
+          </div>
         </div>
-        <PartyActions party={party} {...actions} />
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <PartyStatusBadge isActive={party.isActive} />
-        <span className="text-xs text-slate-500">
-          Balance {formatBalance(party)}
-        </span>
+
+      <div className="flex items-center justify-end border-t border-slate-100 bg-slate-50/70 px-3 py-2">
+        <PartyActions party={party} {...actions} />
       </div>
     </article>
   );
@@ -234,6 +305,7 @@ const MobilePartyCard = ({ actions, party, serialNumber }) => {
 const PartyTable = ({
   actions,
   currentPage = 1,
+  embedded = false,
   errorMessage,
   hasError,
   isLoading,
@@ -244,7 +316,13 @@ const PartyTable = ({
 }) => {
   if (!isLoading && (hasError || parties.length === 0)) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div
+        className={
+          embedded
+            ? "bg-white"
+            : "overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+        }
+      >
         <EmptyState
           errorMessage={errorMessage}
           hasError={hasError}
@@ -257,12 +335,14 @@ const PartyTable = ({
 
   return (
     <div>
-      <div className="grid gap-3 lg:hidden">
+      <div
+        className={`grid gap-3 lg:hidden ${embedded ? "bg-slate-50/40 p-4" : ""}`}
+      >
         {isLoading
           ? Array.from({ length: 4 }, (_, index) => (
               <div
                 key={index}
-                className="h-40 animate-pulse rounded-2xl bg-slate-100"
+                className="h-72 animate-pulse rounded-2xl bg-slate-100"
               />
             ))
           : parties.map((party, index) => (
@@ -275,40 +355,40 @@ const PartyTable = ({
             ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:block">
+      <div
+        className={[
+          "hidden overflow-hidden bg-white lg:block",
+          embedded ? "" : "rounded-2xl border border-slate-200 shadow-sm",
+        ].join(" ")}
+      >
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] table-fixed border-separate border-spacing-0 text-left">
             <colgroup>
               <col className="w-[56px]" />
-              <col className="w-[210px]" />
-              <col className="w-[130px]" />
-              <col className="w-[150px]" />
-              <col className="w-[130px]" />
-              <col className="w-[130px]" />
+              <col className="w-[250px]" />
+              <col className="w-[190px]" />
+              <col className="w-[230px]" />
               <col className="w-[120px]" />
-              <col className="w-[130px]" />
-              <col className="w-[112px]" />
+              <col className="w-[170px]" />
+              <col className="w-[110px]" />
               <col className="w-[148px]" />
             </colgroup>
-            <thead className="sticky top-0 z-10 bg-slate-50">
+            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
               <tr>
                 {[
-                  "SR No",
-                  "Party Name",
-                  "Mobile",
-                  "GSTIN",
-                  "City",
-                  "State",
-                  "Party Type",
-                  "Balance",
+                  "#",
+                  "Party",
+                  "Contact",
+                  "GST & Location",
+                  "Relationship",
+                  "Financial",
                   "Status",
                   "Actions",
                 ].map((heading) => (
                   <th
                     key={heading}
                     className={[
-                      "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
-                      heading === "SR No" ? "text-center" : "",
+                      "whitespace-nowrap border-b border-slate-200 px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500",
                       heading === "Actions" ? "text-right" : "",
                     ].join(" ")}
                   >
@@ -324,59 +404,64 @@ const PartyTable = ({
                 parties.map((party, index) => (
                   <tr
                     key={party.id}
-                    className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
+                    className="group transition-colors hover:bg-brand-light/25 focus-within:bg-brand-light/25"
                   >
-                    <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-5 py-4 text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5">
+                    <td className="border-b border-slate-100 px-5 py-4">
                       <div className="flex min-w-0 items-center gap-3">
                         <span
                           className={[
-                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-inset ring-black/5",
                             getPartyIdentityStyles(party),
                           ].join(" ")}
                         >
                           {getInitials(party) || "P"}
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-medium text-slate-900">
+                          <span className="block truncate text-sm font-bold text-slate-950">
                             {getPartyDisplayName(party)}
                           </span>
                           <span className="mt-0.5 block truncate text-xs text-slate-400">
-                            {[party.partyCode, getPartyTypeLabel(party)]
-                              .filter(Boolean)
-                              .join(" / ") || "-"}
+                            {party.partyCode || "No party code"}
                           </span>
                         </span>
                       </div>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5">
-                      <p className="truncate font-mono text-xs text-slate-600">
-                        {party.mobileNo || "-"}
+                    <td className="border-b border-slate-100 px-5 py-4">
+                      <p className="truncate text-sm font-medium text-slate-700">
+                        {party.mobileNo || "No mobile"}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-slate-400">
+                        {party.email || "No email added"}
                       </p>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5">
-                      <p className="truncate text-sm text-slate-600">
-                        {party.gstin || "-"}
+                    <td className="border-b border-slate-100 px-5 py-4">
+                      <p className="truncate font-mono text-xs font-medium text-slate-700">
+                        {party.gstin || "No GSTIN"}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-slate-400">
+                        {[getPartyCity(party), getPartyState(party)]
+                          .filter(Boolean)
+                          .join(", ") || "No location added"}
                       </p>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-sm text-slate-600">
-                      {formatValue(getPartyCity(party))}
+                    <td className="border-b border-slate-100 px-5 py-4">
+                      <PartyTypeBadge party={party} />
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-sm text-slate-600">
-                      {formatValue(getPartyState(party))}
+                    <td className="border-b border-slate-100 px-5 py-4">
+                      <p className="text-sm font-bold tabular-nums text-slate-800">
+                        {formatBalance(party)}
+                      </p>
+                      <p className="mt-1 text-xs tabular-nums text-slate-400">
+                        Limit {formatNumber(party.creditLimit)}
+                      </p>
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700">
-                      {getPartyTypeLabel(party)}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5 text-right text-sm font-medium tabular-nums text-slate-700">
-                      {formatBalance(party)}
-                    </td>
-                    <td className="border-b border-slate-100 px-4 py-3.5">
+                    <td className="border-b border-slate-100 px-5 py-4">
                       <PartyStatusBadge isActive={party.isActive} />
                     </td>
-                    <td className="border-b border-slate-100 px-3 py-3.5">
+                    <td className="border-b border-slate-100 px-4 py-4">
                       <PartyActions party={party} {...actions} />
                     </td>
                   </tr>

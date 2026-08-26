@@ -76,7 +76,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <RefreshCw className="h-4 w-4" />
             Retry
           </button>
-        ) : (
+        ) : onCreate ? (
           <button
             type="button"
             onClick={onCreate}
@@ -85,7 +85,7 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
             <Plus className="h-4 w-4" />
             Create Role
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -188,7 +188,6 @@ const RoleTable = ({
                   key={heading}
                   className={[
                     "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-xs font-medium uppercase tracking-wide text-slate-500",
-                    heading === "#" ? "text-center" : "",
                     heading === "Actions" ? "text-right" : "",
                   ].join(" ")}
                 >
@@ -206,7 +205,7 @@ const RoleTable = ({
                   key={role.id}
                   className="group transition-colors hover:bg-slate-50 focus-within:bg-slate-50"
                 >
-                  <td className="border-b border-slate-100 px-2 py-3.5 text-center text-xs font-semibold tabular-nums text-slate-400">
+                  <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="border-b border-slate-100 px-4 py-3.5">

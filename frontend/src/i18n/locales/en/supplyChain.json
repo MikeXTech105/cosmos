@@ -1,0 +1,30 @@
+{
+  "category": "Supply Chain",
+  "channels": {
+    "title": "Channels",
+    "description": "Maintain the shared sales channels used by imports and procurement planning.",
+    "empty": "No channels yet"
+  },
+  "warehouses": {
+    "title": "Warehouses",
+    "description": "Map operational warehouses to channels without inferring warehouse codes.",
+    "empty": "No warehouses yet"
+  },
+  "itemMappings": {
+    "title": "Item mappings",
+    "description": "Resolve channel SKUs to authoritative existing Items.",
+    "empty": "No item mappings yet",
+    "unmatchedEmpty": "No unmatched SKUs"
+  },
+  "packagingProfiles": {
+    "title": "Packaging profiles",
+    "description": "Maintain channel-aware packaging data.",
+    "empty": "No packaging profiles yet"
+  },
+  "imports": {
+    "title": "Imports",
+    "description": "Validate, review, and explicitly commit staged sales-history imports.",
+    "empty": "No import batches yet",
+    "commitApprovalRequired": "Commit requires Supply Chain Imports approval permission."
+  }
+}

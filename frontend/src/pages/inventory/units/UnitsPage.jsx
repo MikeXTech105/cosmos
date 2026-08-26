@@ -1,10 +1,12 @@
 import { Plus, RefreshCw, Scale } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import useLatestRequest from "../../../hooks/useLatestRequest";
+import { getApiStatus } from "../../../utils/apiError";
 import {
   createUnit,
   deleteUnit,
@@ -44,6 +46,12 @@ const UnitsPage = () => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -79,32 +87,60 @@ const UnitsPage = () => {
 
   const stats = useMemo(
     () => ({
-      active: unitsState.list.filter((unit) => unit.isActive).length,
-      inactive: unitsState.list.filter((unit) => !unit.isActive).length,
-      total: unitsState.totalCount,
+      active:
+        unitsState.summary?.activeCount ??
+        unitsState.list.filter((unit) => unit.isActive).length,
+      inactive:
+        unitsState.summary?.inactiveCount ??
+        unitsState.list.filter((unit) => !unit.isActive).length,
+      total: unitsState.summary?.totalCount ?? unitsState.totalCount,
+      metricScope: unitsState.summaryScope,
+      totalScope: "all-matching",
     }),
-    [unitsState.list, unitsState.totalCount],
+    [unitsState.list, unitsState.summary, unitsState.summaryScope, unitsState.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, unit) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       setModal({ entity: unit, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(fetchUnitById(unit.id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(fetchUnitById(unit.id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
         setModal({
           entity: response.data?.unit ?? response.data,
           isLoading: false,
@@ -112,15 +148,49 @@ const UnitsPage = () => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error("This unit no longer exists. The list was refreshed.");
+          closeModal();
+          await loadUnits();
+          return;
+        }
         toast.error(getActionError(error, "Unable to load unit details."));
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(current.entity?.id) === String(unit.id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      dispatch,
+      isLatestDetailRequest,
+      loadUnits,
+    ],
   );
 
   const submitUnit = useCallback(
     async (payload, saveAndNew) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -143,15 +213,29 @@ const UnitsPage = () => {
         }
         await loadUnits();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error("This unit no longer exists. The list was refreshed.");
+          closeModal();
+          await loadUnits();
+          return;
+        }
         toast.error(getActionError(error, "Unable to save unit."));
         throw error;
       }
     },
-    [closeModal, dispatch, loadUnits, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      dispatch,
+      loadUnits,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -170,7 +254,7 @@ const UnitsPage = () => {
       toast.error(getActionError(error, "Unable to delete unit."));
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [confirmation.entity, dispatch, loadUnits]);
+  }, [capabilities.canDelete, confirmation.entity, dispatch, loadUnits]);
 
   const filterControls = {
     ...unitsState.filters,
@@ -201,14 +285,12 @@ const UnitsPage = () => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              Add Unit
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                Add Unit
+              </AppButton>
+            )}
           </>
         }
       />
@@ -242,7 +324,7 @@ const UnitsPage = () => {
         }}
         error={unitsState.error}
         isLoading={unitsState.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(setUnitPage(value))}
         onPageSizeChange={(value) => dispatch(setUnitPageSize(value))}
         onRetry={loadUnits}

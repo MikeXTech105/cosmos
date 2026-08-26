@@ -7,6 +7,7 @@ import {
 } from "../../../services/purchase/purchaseServiceUtils";
 import {
   extractEntity,
+  getRequestEntityId,
   getThunkError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
@@ -24,6 +25,8 @@ const initialState = {
   pageSize: PURCHASE_DEFAULT_PAGE_SIZE,
   totalCount: 0,
   totalPages: 1,
+  summary: null,
+  summaryScope: "current-page",
   filters: {
     Search: "",
     SupplierId: "all",
@@ -34,6 +37,10 @@ const initialState = {
     SortDirection: "",
   },
   selected: null,
+  listRequestId: null,
+  detailRequestId: null,
+  selectedRequestEntityId: null,
+  bySupplierRequestId: null,
 };
 
 export const fetchPurchaseBills = createAsyncThunk(
@@ -168,11 +175,13 @@ const purchaseBillSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPurchaseBills.pending, (state) => {
+      .addCase(fetchPurchaseBills.pending, (state, action) => {
         state.loading = true;
         state.error = null;
+        state.listRequestId = action.meta.requestId;
       })
       .addCase(fetchPurchaseBills.fulfilled, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         const page = normalizePagedPayload(action.payload.data);
 
         state.loading = false;
@@ -181,38 +190,54 @@ const purchaseBillSlice = createSlice({
         state.pageSize = page.pageSize;
         state.totalCount = page.totalCount;
         state.totalPages = page.totalPages;
+        state.summary = page.summary;
+        state.summaryScope = page.summaryScope;
+        state.listRequestId = null;
       })
       .addCase(fetchPurchaseBills.rejected, (state, action) => {
+        if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
         state.error = action.payload ?? action.error.message;
+        state.listRequestId = null;
       })
-      .addCase(fetchPurchaseBillById.pending, (state) => {
+      .addCase(fetchPurchaseBillById.pending, (state, action) => {
         state.detailLoading = true;
         state.detailError = null;
+        state.detailRequestId = action.meta.requestId;
+        state.selectedRequestEntityId = getRequestEntityId(action.meta.arg);
       })
       .addCase(fetchPurchaseBillById.fulfilled, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId || String(state.selectedRequestEntityId) !== String(getRequestEntityId(action.meta.arg))) return;
         state.detailLoading = false;
         state.selected = extractEntity(action.payload.data, "purchaseBill");
+        state.detailRequestId = null;
       })
       .addCase(fetchPurchaseBillById.rejected, (state, action) => {
+        if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
         state.detailError = action.payload ?? action.error.message;
+        state.detailRequestId = null;
       })
-      .addCase(fetchPurchaseBillsBySupplier.pending, (state) => {
+      .addCase(fetchPurchaseBillsBySupplier.pending, (state, action) => {
         state.bySupplierLoading = true;
         state.bySupplierError = null;
+        state.bySupplierRequestId = action.meta.requestId;
       })
       .addCase(fetchPurchaseBillsBySupplier.fulfilled, (state, action) => {
+        if (state.bySupplierRequestId !== action.meta.requestId) return;
         const page = normalizePagedPayload(action.payload.data);
 
         state.bySupplierLoading = false;
         state.bySupplier = page.items;
+        state.bySupplierRequestId = null;
       })
       .addCase(fetchPurchaseBillsBySupplier.rejected, (state, action) => {
+        if (state.bySupplierRequestId !== action.meta.requestId) return;
         state.bySupplierLoading = false;
         state.bySupplier = [];
         state.bySupplierError = action.payload ?? action.error.message;
+        state.bySupplierRequestId = null;
       })
       .addCase(createPurchaseBill.fulfilled, (state, action) => {
         state.selected = extractEntity(action.payload.data, "purchaseBill");

@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCapabilities from "../../../hooks/useCapabilities";
 import { itemService } from "../../../services/inventory/itemService";
 import {
   cancelInvoice,
@@ -142,6 +143,12 @@ const InvoiceDetailPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const invoiceState = useSelector((state) => state.salesInvoices);
+  const capabilities = useCapabilities({
+    actions: ["view", "update", "confirm", "cancel", "payment", "export"],
+    label: "Sale Invoices",
+    resource: ["saleInvoices", "salesInvoices", "invoices"],
+    route: "/sales/invoices",
+  });
   const invoice =
     String(invoiceState.selected?.id ?? "") === String(id)
       ? invoiceState.selected
@@ -340,6 +347,11 @@ const InvoiceDetailPage = () => {
       return;
     }
 
+    if (!capabilities.canUpdate) {
+      toast.error("You don't have permission to update invoices.");
+      return;
+    }
+
     void loadLookups();
     setModal({
       entity: invoice,
@@ -347,10 +359,15 @@ const InvoiceDetailPage = () => {
       isOpen: true,
       mode: "edit",
     });
-  }, [invoice, loadLookups]);
+  }, [capabilities.canUpdate, invoice, loadLookups]);
 
   const submitInvoice = useCallback(
     async (payload) => {
+      if (!capabilities.canUpdate) {
+        toast.error("You don't have permission to update invoices.");
+        return;
+      }
+
       try {
         const response = await dispatch(
           updateInvoice({ id: invoice.id, payload }),
@@ -364,17 +381,25 @@ const InvoiceDetailPage = () => {
         throw error;
       }
     },
-    [dispatch, invoice, loadInvoice],
+    [capabilities.canUpdate, dispatch, invoice, loadInvoice],
   );
 
   const openConfirmation = useCallback((action) => {
+    const allowed =
+      action === "cancel" ? capabilities.canCancel : capabilities.canConfirm;
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this invoice action.");
+      return;
+    }
+
     setConfirmation({
       action,
       entity: invoice,
       isLoading: false,
       isOpen: true,
     });
-  }, [invoice]);
+  }, [capabilities.canCancel, capabilities.canConfirm, invoice]);
 
   const closeConfirmation = useCallback(() => {
     setConfirmation({
@@ -387,6 +412,17 @@ const InvoiceDetailPage = () => {
 
   const submitConfirmation = useCallback(async () => {
     if (!confirmation.entity) {
+      return;
+    }
+
+    const allowed =
+      confirmation.action === "cancel"
+        ? capabilities.canCancel
+        : capabilities.canConfirm;
+
+    if (!allowed) {
+      toast.error("You don't have permission to perform this invoice action.");
+      closeConfirmation();
       return;
     }
 
@@ -419,10 +455,22 @@ const InvoiceDetailPage = () => {
       );
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [closeConfirmation, confirmation, dispatch, loadInvoice]);
+  }, [
+    capabilities.canCancel,
+    capabilities.canConfirm,
+    closeConfirmation,
+    confirmation,
+    dispatch,
+    loadInvoice,
+  ]);
 
   const submitPayment = useCallback(
     async (payload) => {
+      if (!capabilities.canPayment) {
+        toast.error("You don't have permission to record invoice payments.");
+        return;
+      }
+
       try {
         const response = await dispatch(
           recordInvoicePayment({ id: invoice.id, payload }),
@@ -436,11 +484,25 @@ const InvoiceDetailPage = () => {
         throw error;
       }
     },
-    [dispatch, invoice, loadInvoice],
+    [capabilities.canPayment, dispatch, invoice, loadInvoice],
   );
+
+  const openPayment = useCallback(() => {
+    if (!capabilities.canPayment) {
+      toast.error("You don't have permission to record invoice payments.");
+      return;
+    }
+
+    setPaymentOpen(true);
+  }, [capabilities.canPayment]);
 
   const downloadPdf = useCallback(async () => {
     if (!invoice) {
+      return;
+    }
+
+    if (!capabilities.canExport) {
+      toast.error("You don't have permission to export invoices.");
       return;
     }
 
@@ -453,11 +515,16 @@ const InvoiceDetailPage = () => {
     } finally {
       setIsPdfLoading(false);
     }
-  }, [customer, invoice, templateId]);
+  }, [capabilities.canExport, customer, invoice, templateId]);
 
   const printInvoice = useCallback(() => {
+    if (!capabilities.canExport) {
+      toast.error("You don't have permission to export invoices.");
+      return;
+    }
+
     window.print();
-  }, []);
+  }, [capabilities.canExport]);
 
   if (invoiceState.detailLoading && !invoice) {
     return (
@@ -581,58 +648,70 @@ const InvoiceDetailPage = () => {
               className="min-w-44"
               aria-label="Invoice template"
             />
-            <AppButton
-              variant="secondary"
-              className="h-10 rounded-lg px-3"
-              disabled={!isInvoiceDraft(invoice)}
-              onClick={openEdit}
-            >
-              <Pencil className="h-4 w-4" />
-              Edit
-            </AppButton>
-            <AppButton
-              variant="secondary"
-              className="h-10 rounded-lg px-3"
-              disabled={!isInvoiceDraft(invoice)}
-              onClick={() => openConfirmation("confirm")}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              Confirm
-            </AppButton>
-            <AppButton
-              variant="secondary"
-              className="h-10 rounded-lg px-3"
-              disabled={!isInvoiceConfirmed(invoice)}
-              onClick={() => openConfirmation("cancel")}
-            >
-              <Ban className="h-4 w-4" />
-              Cancel
-            </AppButton>
-            <AppButton
-              className="h-10 rounded-lg px-3"
-              disabled={isInvoiceCancelled(invoice)}
-              onClick={() => setPaymentOpen(true)}
-            >
-              <CreditCard className="h-4 w-4" />
-              Record Payment
-            </AppButton>
-            <AppButton
-              variant="secondary"
-              className="h-10 rounded-lg px-3"
-              onClick={printInvoice}
-            >
-              <Printer className="h-4 w-4" />
-              Print
-            </AppButton>
-            <AppButton
-              variant="secondary"
-              className="h-10 rounded-lg px-3"
-              disabled={isPdfLoading}
-              onClick={downloadPdf}
-            >
-              <Download className="h-4 w-4" />
-              PDF
-            </AppButton>
+            {capabilities.canUpdate && (
+              <AppButton
+                variant="secondary"
+                className="h-10 rounded-lg px-3"
+                disabled={!isInvoiceDraft(invoice)}
+                onClick={openEdit}
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </AppButton>
+            )}
+            {capabilities.canConfirm && (
+              <AppButton
+                variant="secondary"
+                className="h-10 rounded-lg px-3"
+                disabled={!isInvoiceDraft(invoice)}
+                onClick={() => openConfirmation("confirm")}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Confirm
+              </AppButton>
+            )}
+            {capabilities.canCancel && (
+              <AppButton
+                variant="secondary"
+                className="h-10 rounded-lg px-3"
+                disabled={!isInvoiceConfirmed(invoice)}
+                onClick={() => openConfirmation("cancel")}
+              >
+                <Ban className="h-4 w-4" />
+                Cancel
+              </AppButton>
+            )}
+            {capabilities.canPayment && (
+              <AppButton
+                className="h-10 rounded-lg px-3"
+                disabled={isInvoiceCancelled(invoice)}
+                onClick={openPayment}
+              >
+                <CreditCard className="h-4 w-4" />
+                Record Payment
+              </AppButton>
+            )}
+            {capabilities.canExport && (
+              <>
+                <AppButton
+                  variant="secondary"
+                  className="h-10 rounded-lg px-3"
+                  onClick={printInvoice}
+                >
+                  <Printer className="h-4 w-4" />
+                  Print
+                </AppButton>
+                <AppButton
+                  variant="secondary"
+                  className="h-10 rounded-lg px-3"
+                  disabled={isPdfLoading}
+                  onClick={downloadPdf}
+                >
+                  <Download className="h-4 w-4" />
+                  PDF
+                </AppButton>
+              </>
+            )}
           </div>
         </div>
       )}

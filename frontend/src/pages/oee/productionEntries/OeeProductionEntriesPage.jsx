@@ -17,6 +17,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
+import useCreatePermission from "../../../hooks/useCreatePermission";
 import { oeeDowntimeReasonService } from "../../../services/oee/oeeDowntimeReasonService";
 import { oeeMachineService } from "../../../services/oee/oeeMachineService";
 import { oeeMouldService } from "../../../services/oee/oeeMouldService";
@@ -125,6 +126,7 @@ const QuickCreateModal = ({
 
   return (
     <AppModal
+      isBusy={isSaving}
       isOpen={isOpen}
       maxWidth="max-w-xl"
       onClose={isSaving ? undefined : onClose}
@@ -188,7 +190,7 @@ const QuickCreateModal = ({
           <AppButton variant="secondary" disabled={isSaving} onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSaving}>
+          <AppButton type="submit" isLoading={isSaving} loadingText="Saving…">
             Create
           </AppButton>
         </div>
@@ -265,6 +267,7 @@ const EditEntryModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-3xl"
       onClose={isSubmitting ? undefined : onClose}
@@ -366,7 +369,7 @@ const EditEntryModal = ({
             <AppButton variant="secondary" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </AppButton>
-            <AppButton type="submit" isLoading={isSubmitting}>
+            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
               Save Changes
             </AppButton>
           </div>
@@ -422,6 +425,7 @@ const HistoryTable = ({
         <table className="w-full min-w-[1100px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               <th className="px-4 py-3 font-semibold">Date</th>
               <th className="px-4 py-3 font-semibold">Machine</th>
               <th className="px-4 py-3 font-semibold">Mould</th>
@@ -435,8 +439,11 @@ const HistoryTable = ({
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry) => (
+            {entries.map((entry, index) => (
               <tr key={getOeeRecordId(entry)} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {(pageNumber - 1) * pageSize + index + 1}
+                </td>
                 <td className="px-4 py-3 text-slate-700">
                   {formatOeeDate(entry.productionDate)}
                 </td>
@@ -477,27 +484,29 @@ const HistoryTable = ({
                   {entry.remarks || "-"}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      aria-label="Edit entry"
-                      title="Edit entry"
-                      disabled={!actions.canEdit}
-                      onClick={() => actions.onEdit(entry)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand/30 hover:bg-brand-light hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Delete entry"
-                      title="Delete entry"
-                      disabled={!actions.canDelete}
-                      onClick={() => actions.onDelete(entry)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <div className="flex items-center justify-end gap-0.5">
+                    {actions.canEdit && (
+                      <button
+                        type="button"
+                        aria-label="Edit entry"
+                        title="Edit entry"
+                        onClick={() => actions.onEdit(entry)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </button>
+                    )}
+                    {actions.canDelete && (
+                      <button
+                        type="button"
+                        aria-label="Delete entry"
+                        title="Delete entry"
+                        onClick={() => actions.onDelete(entry)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -528,6 +537,16 @@ const OeeProductionEntriesPage = () => {
     label: "OEE Production Entries",
     resource: "oeeProductionEntries",
     route: "/oee/production-entries",
+  });
+  const canCreateMould = useCreatePermission({
+    label: "Moulds",
+    resource: "oeeMoulds",
+    route: "/oee/moulds",
+  });
+  const canCreateDowntimeReason = useCreatePermission({
+    label: "Downtime Reasons",
+    resource: "oeeDowntimeReasons",
+    route: "/oee/downtime-reasons",
   });
   const [productionDate, setProductionDate] = useState(getTodayInputValue());
   const [lookups, setLookups] = useState({
@@ -674,6 +693,10 @@ const OeeProductionEntriesPage = () => {
   };
 
   const saveAll = async () => {
+    if (!capabilities.canCreate || production.bulkSaving) {
+      return;
+    }
+
     if (!productionDate) {
       toast.error("Production date is required.");
       return;
@@ -720,6 +743,15 @@ const OeeProductionEntriesPage = () => {
   };
 
   const submitQuickCreate = async (values) => {
+    const isAllowed =
+      quickCreate.type === "mould"
+        ? canCreateMould
+        : canCreateDowntimeReason;
+
+    if (!isAllowed || quickCreate.isSaving) {
+      return;
+    }
+
     setQuickCreate((current) => ({ ...current, isSaving: true }));
 
     try {
@@ -769,6 +801,10 @@ const OeeProductionEntriesPage = () => {
   };
 
   const openEdit = async (entry) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     const id = getOeeRecordId(entry);
 
     if (!id) {
@@ -795,6 +831,10 @@ const OeeProductionEntriesPage = () => {
   };
 
   const submitEdit = async (payload) => {
+    if (!capabilities.canUpdate) {
+      return;
+    }
+
     try {
       const response = await dispatch(
         updateOeeProductionEntry({
@@ -817,7 +857,7 @@ const OeeProductionEntriesPage = () => {
   };
 
   const confirmDelete = async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -892,15 +932,17 @@ const OeeProductionEntriesPage = () => {
               />
               Refresh Lookups
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate || production.bulkSaving}
-              isLoading={production.bulkSaving}
-              onClick={saveAll}
-            >
-              <Save className="h-4 w-4" />
-              Save All
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton
+                className="h-10"
+                isLoading={production.bulkSaving}
+                loadingText="Saving…"
+                onClick={saveAll}
+              >
+                <Save className="h-4 w-4" />
+                Save All
+              </AppButton>
+            )}
           </>
         }
       />
@@ -995,16 +1037,18 @@ const OeeProductionEntriesPage = () => {
                   onChange={(value) => updateRow(row.id, { mouldId: value })}
                   options={mouldOptions}
                   placeholder="Select mould"
-                  creatable={capabilities.canCreate}
+                  creatable={canCreateMould}
                   createLabel="Create mould"
-                  onCreateClick={() =>
-                    setQuickCreate({
-                      isOpen: true,
-                      isSaving: false,
-                      rowId: row.id,
-                      type: "mould",
-                    })
-                  }
+                  onCreateClick={() => {
+                    if (canCreateMould) {
+                      setQuickCreate({
+                        isOpen: true,
+                        isSaving: false,
+                        rowId: row.id,
+                        type: "mould",
+                      });
+                    }
+                  }}
                   aria-label="Mould"
                 />
                 <OeeNumberInput
@@ -1020,16 +1064,18 @@ const OeeProductionEntriesPage = () => {
                   }
                   options={reasonOptions}
                   placeholder="Select reason"
-                  creatable={capabilities.canCreate}
+                  creatable={canCreateDowntimeReason}
                   createLabel="Create reason"
-                  onCreateClick={() =>
-                    setQuickCreate({
-                      isOpen: true,
-                      isSaving: false,
-                      rowId: row.id,
-                      type: "reason",
-                    })
-                  }
+                  onCreateClick={() => {
+                    if (canCreateDowntimeReason) {
+                      setQuickCreate({
+                        isOpen: true,
+                        isSaving: false,
+                        rowId: row.id,
+                        type: "reason",
+                      });
+                    }
+                  }}
                   aria-label="Downtime reason"
                 />
                 <AppInput

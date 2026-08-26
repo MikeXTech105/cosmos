@@ -8,17 +8,26 @@ import {
   getSidebarCategory,
 } from "../config/sidebar";
 import {
+  getReportGroup,
+  reportRegistry,
+} from "../pages/reports/reportRegistry";
+import { canViewReport } from "../utils/reportPermissions";
+import { markActiveSidebarItems } from "../utils/sidebarRoute";
+import {
   canViewPermission,
   findPermissionPage,
   isSuperAdminAuth,
 } from "./usePermission";
 import {
   closeCommand,
+  closeMobileSidebar,
   expandSidebarGroups,
   openCommand,
+  openMobileSidebar,
   resetSidebarSearch,
   setSidebarSearchQuery,
   toggleSidebarGroup,
+  toggleMobileSidebar,
 } from "../store/slices/sidebarSlice";
 
 const getPageId = (page) => {
@@ -72,18 +81,22 @@ const sortMenuItems = (items) => {
 
 const createItem = ({ module, page }) => {
   const iconName = page?.icon ?? page?.iconName ?? page?.moduleIcon ?? module.icon;
+  const preservePresentation = Boolean(module.preservePresentation);
 
   return {
     raw: page ?? module,
-    id: String(page ? getPageId(page) : module.id),
-    parentId: page ? getParentId(page) : null,
-    label: page ? getPageLabel(page) : module.label,
+    id: String(page && !preservePresentation ? getPageId(page) : module.id),
+    parentId: page && !preservePresentation ? getParentId(page) : null,
+    label: page && !preservePresentation ? getPageLabel(page) : module.label,
     route: module.route,
     iconName,
     Icon: getIconComponent(iconName),
     description:
       page?.description ?? page?.moduleName ?? page?.categoryName ?? module.description ?? "",
-    sortOrder: page ? getSortOrder(page) || module.sortOrder : module.sortOrder,
+    sortOrder:
+      page && !preservePresentation
+        ? getSortOrder(page) || module.sortOrder
+        : module.sortOrder,
     children: [],
   };
 };
@@ -106,13 +119,18 @@ const buildMenuTree = (pages, isSuperAdmin) => {
   const enabledModules = getEnabledSidebarModules();
 
   enabledModules.forEach((module) => {
+    const permissionTargets = module.permissionTargets ?? [
+      {
+        id: module.id,
+        label: module.label,
+        route: module.route,
+      },
+    ];
     const page = isSuperAdmin
       ? null
-      : findPermissionPage(pages, {
-          id: module.id,
-          label: module.label,
-          route: module.route,
-        });
+      : permissionTargets
+          .map((target) => findPermissionPage(pages, target))
+          .find((candidate) => candidate && canViewPermission(candidate));
 
     if (!isSuperAdmin && (!page || !canViewPermission(page))) {
       return;
@@ -144,27 +162,6 @@ const buildMenuTree = (pages, isSuperAdmin) => {
   });
 
   return sortMenuItems(rootItems);
-};
-
-const isRouteActive = (pathname, route) => {
-  return Boolean(route && (pathname === route || pathname.startsWith(`${route}/`)));
-};
-
-const markActiveItems = (items, pathname) => {
-  return items.map((item) => {
-    const children = markActiveItems(item.children, pathname);
-    const isActive = isRouteActive(pathname, item.route);
-    const hasActiveChild = children.some(
-      (child) => child.isActive || child.hasActiveChild,
-    );
-
-    return {
-      ...item,
-      children,
-      isActive,
-      hasActiveChild,
-    };
-  });
 };
 
 const filterMenuTree = (items, query) => {
@@ -209,6 +206,28 @@ const flattenMenuItems = (items, ancestors = []) => {
   });
 };
 
+const createReportCommandItems = (pages, roles, user) => {
+  return reportRegistry
+    .filter((report) => canViewReport({ pages, report, roles, user }))
+    .map((report) => {
+      const group = getReportGroup(report.group);
+
+      return {
+        raw: report,
+        id: `report-${report.id}`,
+        parentId: null,
+        label: report.title,
+        route: report.route,
+        iconName: report.icon,
+        Icon: getIconComponent(report.icon),
+        description: report.description,
+        sortOrder: 0,
+        modulePath: `Reports / ${group?.label ?? report.group}`,
+        children: [],
+      };
+    });
+};
+
 const getActiveTrail = (items) => {
   for (const item of items) {
     if (item.isActive) {
@@ -242,7 +261,7 @@ export const useSidebar = () => {
   );
 
   const activeMenuTree = useMemo(
-    () => markActiveItems(menuTree, location.pathname),
+    () => markActiveSidebarItems(menuTree, location.pathname),
     [location.pathname, menuTree],
   );
 
@@ -256,9 +275,14 @@ export const useSidebar = () => {
     [activeMenuTree, sidebar.searchQuery],
   );
 
+  const reportCommandItems = useMemo(
+    () => createReportCommandItems(pages, roles, user),
+    [pages, roles, user],
+  );
+
   const flatMenuItems = useMemo(
-    () => flattenMenuItems(activeMenuTree),
-    [activeMenuTree],
+    () => [...flattenMenuItems(activeMenuTree), ...reportCommandItems],
+    [activeMenuTree, reportCommandItems],
   );
 
   useEffect(() => {
@@ -278,7 +302,15 @@ export const useSidebar = () => {
   }, [activeTrail, dispatch, sidebar.expandedGroupIds]);
 
   const closeCommandHandler = useCallback(() => dispatch(closeCommand()), [dispatch]);
+  const closeMobileSidebarHandler = useCallback(
+    () => dispatch(closeMobileSidebar()),
+    [dispatch],
+  );
   const openCommandHandler = useCallback(() => dispatch(openCommand()), [dispatch]);
+  const openMobileSidebarHandler = useCallback(
+    () => dispatch(openMobileSidebar()),
+    [dispatch],
+  );
   const resetSearchHandler = useCallback(
     () => dispatch(resetSidebarSearch()),
     [dispatch],
@@ -291,10 +323,15 @@ export const useSidebar = () => {
     (groupId) => dispatch(toggleSidebarGroup(groupId)),
     [dispatch],
   );
+  const toggleMobileSidebarHandler = useCallback(
+    () => dispatch(toggleMobileSidebar()),
+    [dispatch],
+  );
 
   return {
     activeTrail,
     commandOpen: sidebar.commandOpen,
+    mobileOpen: sidebar.mobileOpen,
     expandedGroupIds: sidebar.expandedGroupIds,
     flatMenuItems,
     hasPages: activeMenuTree.length > 0,
@@ -302,9 +339,12 @@ export const useSidebar = () => {
     rawMenuTree: activeMenuTree,
     searchQuery: sidebar.searchQuery,
     closeCommand: closeCommandHandler,
+    closeMobileSidebar: closeMobileSidebarHandler,
     openCommand: openCommandHandler,
+    openMobileSidebar: openMobileSidebarHandler,
     resetSearch: resetSearchHandler,
     setSearchQuery: setSearchQueryHandler,
     toggleGroup: toggleGroupHandler,
+    toggleMobileSidebar: toggleMobileSidebarHandler,
   };
 };

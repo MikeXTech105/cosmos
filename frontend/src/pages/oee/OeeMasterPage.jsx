@@ -6,7 +6,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -15,6 +15,9 @@ import AppInput from "../../components/common/AppInput";
 import AppModal from "../../components/common/AppModal";
 import AppSelect from "../../components/common/AppSelect";
 import PageHeader from "../../components/common/PageHeader";
+import useLatestRequest from "../../hooks/useLatestRequest";
+import { applyApiErrorsToForm } from "../../utils/formApiErrors";
+import { getApiStatus } from "../../utils/apiError";
 import {
   buildOeeListQueryParams,
   extractOeeEntity,
@@ -127,6 +130,14 @@ const OeeMasterFormModal = ({
 
     try {
       await onSubmit(config.toPayload(values));
+    } catch (error) {
+      applyApiErrorsToForm({
+        error,
+        formFieldNames: config.fields.map((field) => field.name),
+        setError: (name, detail) => {
+          setErrors((current) => ({ ...current, [name]: detail.message }));
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,6 +151,7 @@ const OeeMasterFormModal = ({
 
   return (
     <AppModal
+      isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth={config.modalWidth ?? "max-w-2xl"}
       onClose={isSubmitting ? undefined : onClose}
@@ -165,6 +177,11 @@ const OeeMasterFormModal = ({
         </div>
       ) : (
         <form className="mt-6 space-y-5" onSubmit={submitForm}>
+          {errors["root.server"] && (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {errors["root.server"]}
+            </p>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             {config.fields.map((field) => {
               if (field.type === "checkbox") {
@@ -238,7 +255,7 @@ const OeeMasterFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting}>
+              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
                 {isEdit ? "Save Changes" : `Create ${config.entityLabel}`}
               </AppButton>
             )}
@@ -292,7 +309,12 @@ const OeeMasterFilters = ({
   );
 };
 
-const ActionButton = ({ children, disabled, label, onClick }) => {
+const ActionButton = ({ children, disabled, label, onClick, tone = "default" }) => {
+  const buttonClass =
+    tone === "danger"
+      ? "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
+      : "inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <button
       type="button"
@@ -300,7 +322,7 @@ const ActionButton = ({ children, disabled, label, onClick }) => {
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand/30 hover:bg-brand-light hover:text-brand disabled:cursor-not-allowed disabled:opacity-40"
+      className={buttonClass}
     >
       {children}
     </button>
@@ -364,6 +386,7 @@ const OeeMasterTable = ({
         <table className="w-full min-w-[780px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
+              <th className="px-4 py-3 font-semibold">#</th>
               {columns.map((column) => (
                 <th key={column.key} className="px-4 py-3 font-semibold">
                   {column.label}
@@ -373,35 +396,43 @@ const OeeMasterTable = ({
             </tr>
           </thead>
           <tbody>
-            {records.map((record) => (
+            {records.map((record, index) => (
               <tr key={getOeeRecordId(record)} className="border-t border-slate-100">
+                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                  {(pageNumber - 1) * pageSize + index + 1}
+                </td>
                 {columns.map((column) => (
                   <td key={column.key} className="px-4 py-3 text-slate-700">
                     {column.render ? column.render(record) : record[column.key] ?? "-"}
                   </td>
                 ))}
                 <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
-                    <ActionButton
-                      label={`View ${config.entityLabel}`}
-                      onClick={() => actions.onView(record)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </ActionButton>
-                    <ActionButton
-                      label={`Edit ${config.entityLabel}`}
-                      disabled={!actions.canEdit}
-                      onClick={() => actions.onEdit(record)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </ActionButton>
-                    <ActionButton
-                      label={`Delete ${config.entityLabel}`}
-                      disabled={!actions.canDelete}
-                      onClick={() => actions.onDelete(record)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </ActionButton>
+                  <div className="flex items-center justify-end gap-0.5">
+                    {actions.canView && (
+                      <ActionButton
+                        label={`View ${config.entityLabel}`}
+                        onClick={() => actions.onView(record)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </ActionButton>
+                    )}
+                    {actions.canEdit && (
+                      <ActionButton
+                        label={`Edit ${config.entityLabel}`}
+                        onClick={() => actions.onEdit(record)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </ActionButton>
+                    )}
+                    {actions.canDelete && (
+                      <ActionButton
+                        label={`Delete ${config.entityLabel}`}
+                        onClick={() => actions.onDelete(record)}
+                        tone="danger"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </ActionButton>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -440,6 +471,12 @@ const OeeMasterPage = ({ config }) => {
     isOpen: false,
     mode: "create",
   });
+  const detailPromiseRef = useRef(null);
+  const {
+    beginRequest: beginDetailRequest,
+    cancelAllRequests: cancelDetailRequests,
+    isLatestRequest: isLatestDetailRequest,
+  } = useLatestRequest();
   const [confirmation, setConfirmation] = useState({
     entity: null,
     isLoading: false,
@@ -476,28 +513,51 @@ const OeeMasterPage = ({ config }) => {
 
   const stats = useMemo(
     () => ({
-      active: state.list.filter((record) => getOeeBoolean(record.isActive)).length,
-      inactive: state.list.filter((record) => !getOeeBoolean(record.isActive)).length,
-      total: state.totalCount,
+      active:
+        state.summary?.activeCount ??
+        state.list.filter((record) => getOeeBoolean(record.isActive)).length,
+      inactive:
+        state.summary?.inactiveCount ??
+        state.list.filter((record) => !getOeeBoolean(record.isActive)).length,
+      total: state.summary?.totalCount ?? state.totalCount,
+      metricScope: state.summaryScope,
+      totalScope: "all-matching",
     }),
-    [state.list, state.totalCount],
+    [state.list, state.summary, state.summaryScope, state.totalCount],
   );
 
   const closeModal = useCallback(() => {
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
+  }, [cancelDetailRequests]);
 
   const openCreate = useCallback(() => {
+    if (!capabilities.canCreate) {
+      return;
+    }
+
+    cancelDetailRequests();
+    detailPromiseRef.current?.abort?.();
+    detailPromiseRef.current = null;
     setModal({
       entity: null,
       isLoading: false,
       isOpen: true,
       mode: "create",
     });
-  }, []);
+  }, [cancelDetailRequests, capabilities.canCreate]);
 
   const openEntity = useCallback(
     async (mode, record) => {
+      const isAllowed =
+        mode === "edit" ? capabilities.canUpdate : capabilities.canView;
+
+      if (!isAllowed) {
+        return;
+      }
+
       const id = getOeeRecordId(record, config.recordResource);
 
       if (!id) {
@@ -506,9 +566,14 @@ const OeeMasterPage = ({ config }) => {
       }
 
       setModal({ entity: record, isLoading: true, isOpen: true, mode });
+      detailPromiseRef.current?.abort?.();
+      const requestId = beginDetailRequest();
+      const detailPromise = dispatch(config.fetchById(id));
+      detailPromiseRef.current = detailPromise;
 
       try {
-        const response = await dispatch(config.fetchById(id)).unwrap();
+        const response = await detailPromise.unwrap();
+        if (!isLatestDetailRequest(requestId)) return;
 
         setModal({
           entity: extractOeeEntity(response.data, config.entityKey),
@@ -517,20 +582,55 @@ const OeeMasterPage = ({ config }) => {
           mode,
         });
       } catch (error) {
+        if (!isLatestDetailRequest(requestId)) return;
+        if (getApiStatus(error) === 404) {
+          toast.error(`This ${config.entityLabel.toLowerCase()} no longer exists. The list was refreshed.`);
+          closeModal();
+          await loadRecords();
+          return;
+        }
         toast.error(
           getOeeActionError(
             error,
             `Unable to load ${config.entityLabel.toLowerCase()} details.`,
           ),
         );
-        setModal((current) => ({ ...current, isLoading: false }));
+        setModal((current) =>
+          current.isOpen &&
+          current.mode === mode &&
+          String(getOeeRecordId(current.entity, config.recordResource)) === String(id)
+            ? { ...current, isLoading: false }
+            : current,
+        );
+      } finally {
+        if (detailPromiseRef.current === detailPromise) {
+          detailPromiseRef.current = null;
+        }
       }
     },
-    [config, dispatch],
+    [
+      beginDetailRequest,
+      capabilities.canUpdate,
+      capabilities.canView,
+      closeModal,
+      config,
+      dispatch,
+      isLatestDetailRequest,
+      loadRecords,
+    ],
   );
 
   const submitRecord = useCallback(
     async (payload) => {
+      const isAllowed =
+        modal.mode === "edit"
+          ? capabilities.canUpdate
+          : capabilities.canCreate;
+
+      if (!isAllowed) {
+        return;
+      }
+
       try {
         const response =
           modal.mode === "edit"
@@ -553,6 +653,12 @@ const OeeMasterPage = ({ config }) => {
         closeModal();
         await loadRecords();
       } catch (error) {
+        if (modal.mode === "edit" && getApiStatus(error) === 404) {
+          toast.error(`This ${config.entityLabel.toLowerCase()} no longer exists. The list was refreshed.`);
+          closeModal();
+          await loadRecords();
+          return;
+        }
         toast.error(
           getOeeActionError(
             error,
@@ -562,11 +668,20 @@ const OeeMasterPage = ({ config }) => {
         throw error;
       }
     },
-    [closeModal, config, dispatch, loadRecords, modal.entity, modal.mode],
+    [
+      capabilities.canCreate,
+      capabilities.canUpdate,
+      closeModal,
+      config,
+      dispatch,
+      loadRecords,
+      modal.entity,
+      modal.mode,
+    ],
   );
 
   const confirmDelete = useCallback(async () => {
-    if (!confirmation.entity) {
+    if (!capabilities.canDelete || !confirmation.entity) {
       return;
     }
 
@@ -598,7 +713,13 @@ const OeeMasterPage = ({ config }) => {
       );
       setConfirmation((current) => ({ ...current, isLoading: false }));
     }
-  }, [config, confirmation.entity, dispatch, loadRecords]);
+  }, [
+    capabilities.canDelete,
+    config,
+    confirmation.entity,
+    dispatch,
+    loadRecords,
+  ]);
 
   const filterControls = {
     ...state.filters,
@@ -629,14 +750,12 @@ const OeeMasterPage = ({ config }) => {
               />
               Refresh
             </AppButton>
-            <AppButton
-              className="h-10"
-              disabled={!capabilities.canCreate}
-              onClick={openCreate}
-            >
-              <Plus className="h-4 w-4" />
-              {config.addLabel}
-            </AppButton>
+            {capabilities.canCreate && (
+              <AppButton className="h-10" onClick={openCreate}>
+                <Plus className="h-4 w-4" />
+                {config.addLabel}
+              </AppButton>
+            )}
           </>
         }
       />
@@ -646,17 +765,20 @@ const OeeMasterPage = ({ config }) => {
           icon={config.icon}
           label={`Total ${config.pluralLabel}`}
           value={formatOeeNumber(stats.total, { maximumFractionDigits: 0 })}
+          scope={stats.totalScope}
         />
         <OeeStatCard
           icon={config.activeIcon ?? config.icon}
           label="Active"
           value={formatOeeNumber(stats.active, { maximumFractionDigits: 0 })}
+          scope={stats.metricScope}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <OeeStatCard
           icon={config.inactiveIcon ?? config.icon}
           label="Inactive"
           value={formatOeeNumber(stats.inactive, { maximumFractionDigits: 0 })}
+          scope={stats.metricScope}
           colorClass="bg-amber-50 text-amber-600"
         />
       </div>
@@ -695,7 +817,7 @@ const OeeMasterPage = ({ config }) => {
         config={config}
         error={state.error}
         isLoading={state.loading}
-        onCreate={openCreate}
+        onCreate={capabilities.canCreate ? openCreate : undefined}
         onPageChange={(value) => dispatch(config.setPage(value))}
         onPageSizeChange={(value) => dispatch(config.setPageSize(value))}
         onRetry={loadRecords}

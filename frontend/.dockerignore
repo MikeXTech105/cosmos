@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+*.log
+logs
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+.eslintcache
+*.zip
+public.zip
+.codex

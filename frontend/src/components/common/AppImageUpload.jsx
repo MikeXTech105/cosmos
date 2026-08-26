@@ -6,10 +6,13 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
-import { uploadService } from "../../services/uploadService";
+import {
+  isImageUploadConfigured,
+  uploadService,
+} from "../../services/uploadService";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set([
@@ -40,17 +43,29 @@ const AppImageUpload = ({
   label,
   onChange,
   onFileChange,
+  uploadHandler,
   value,
 }) => {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [failedPreviewUrl, setFailedPreviewUrl] = useState("");
+  const [localPreviewUrl, setLocalPreviewUrl] = useState("");
+  const [previewNotice, setPreviewNotice] = useState("");
   const [progress, setProgress] = useState(0);
   const [uploadError, setUploadError] = useState("");
   const isDisabled = disabled || isUploading;
   const currentError = uploadError || error;
-  const previewError = Boolean(value) && failedPreviewUrl === value;
+  const displayValue = localPreviewUrl || value;
+  const previewError = Boolean(displayValue) && failedPreviewUrl === displayValue;
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
 
   const openFilePicker = () => {
     if (!isDisabled) {
@@ -69,9 +84,24 @@ const AppImageUpload = ({
     setIsUploading(true);
     setProgress(0);
     setUploadError("");
+    setPreviewNotice("");
 
     try {
-      const imageUrl = await uploadService.uploadImage(file, (event) => {
+      if (!uploadHandler && !isImageUploadConfigured()) {
+        const nextPreviewUrl = URL.createObjectURL(file);
+
+        setLocalPreviewUrl(nextPreviewUrl);
+        onFileChange?.(file);
+        setPreviewNotice(
+          onFileChange
+            ? "Local preview. The file will be submitted with this form."
+            : "Local preview only. Image upload is not configured, so this file will not be saved.",
+        );
+        return;
+      }
+
+      const uploader = uploadHandler ?? uploadService.uploadImage;
+      const imageUrl = await uploader(file, (event) => {
         if (!event.total) {
           return;
         }
@@ -126,8 +156,14 @@ const AppImageUpload = ({
   const clearImage = (event) => {
     event.stopPropagation();
     setUploadError("");
+    setPreviewNotice("");
     setFailedPreviewUrl("");
-    onChange?.("");
+    setLocalPreviewUrl("");
+
+    if (!localPreviewUrl) {
+      onChange?.("");
+    }
+
     onFileChange?.(null);
   };
 
@@ -164,17 +200,17 @@ const AppImageUpload = ({
           className="hidden"
         />
 
-        {value && !previewError ? (
+        {displayValue && !previewError ? (
           <div className="flex w-full items-center gap-4 text-left">
             <img
-              src={value}
+              src={displayValue}
               alt=""
-              onError={() => setFailedPreviewUrl(value)}
+              onError={() => setFailedPreviewUrl(displayValue)}
               className="h-24 w-24 shrink-0 rounded-lg border border-slate-200 object-cover"
             />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-slate-900">
-                Item image selected
+                Image selected
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 Click or drop another image to replace it.
@@ -234,6 +270,11 @@ const AppImageUpload = ({
         <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
           <AlertCircle className="h-3.5 w-3.5" />
           {currentError}
+        </p>
+      )}
+      {!currentError && previewNotice && (
+        <p className="mt-1.5 text-xs font-medium leading-5 text-amber-700">
+          {previewNotice}
         </p>
       )}
     </div>
