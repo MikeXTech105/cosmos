@@ -11,6 +11,25 @@ import {
   getThunkError,
   normalizePagedPayload,
 } from "./inventorySliceHelpers";
+import { getMediaUrl } from "../../../utils/mediaUrl";
+
+const normalizeItemImage = (item) => {
+  if (!item || typeof item !== "object") {
+    return item;
+  }
+
+  return {
+    ...item,
+    imageUrl: getMediaUrl(item, [
+      "imageUrl",
+      "imageURL",
+      "imagePath",
+      "image",
+      "photoUrl",
+      "primaryImageUrl",
+    ]),
+  };
+};
 
 const initialState = {
   list: [],
@@ -133,7 +152,7 @@ const itemSlice = createSlice({
         const page = normalizePagedPayload(action.payload.data);
 
         state.loading = false;
-        state.list = page.items;
+        state.list = page.items.map(normalizeItemImage);
         state.pageNumber = page.pageNumber;
         state.pageSize = page.pageSize;
         state.totalCount = page.totalCount;
@@ -158,7 +177,9 @@ const itemSlice = createSlice({
       .addCase(fetchItemById.fulfilled, (state, action) => {
         if (state.detailRequestId !== action.meta.requestId || String(state.selectedRequestEntityId) !== String(getRequestEntityId(action.meta.arg))) return;
         state.detailLoading = false;
-        state.selected = extractEntity(action.payload.data, "item");
+        state.selected = normalizeItemImage(
+          extractEntity(action.payload.data, "item"),
+        );
         state.detailRequestId = null;
       })
       .addCase(fetchItemById.rejected, (state, action) => {
@@ -168,10 +189,14 @@ const itemSlice = createSlice({
         state.detailRequestId = null;
       })
       .addCase(createItem.fulfilled, (state, action) => {
-        state.selected = extractEntity(action.payload.data, "item");
+        state.selected = normalizeItemImage(
+          extractEntity(action.payload.data, "item"),
+        );
       })
       .addCase(updateItem.fulfilled, (state, action) => {
-        state.selected = extractEntity(action.payload.data, "item");
+        state.selected = normalizeItemImage(
+          extractEntity(action.payload.data, "item"),
+        );
       })
       .addCase(deleteItem.fulfilled, (state, action) => {
         state.list = state.list.filter(

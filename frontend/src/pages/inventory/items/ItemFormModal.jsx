@@ -230,7 +230,7 @@ const ItemFormModal = ({
     <AppModal
       isBusy={isSubmitting}
       isOpen={isOpen}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[1480px]"
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">

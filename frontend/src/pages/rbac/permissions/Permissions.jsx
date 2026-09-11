@@ -16,6 +16,7 @@ import { pageService } from "../../../services/rbac/pageService";
 import { permissionService } from "../../../services/rbac/permissionService";
 import { roleService } from "../../../services/rbac/roleService";
 import { getApiErrorMessage } from "../../../utils/apiError";
+import { isSuperAdminAuth } from "../../../utils/permissionResolver";
 import { permissionColumns } from "./permissionsColumns";
 import PermissionsTable from "./PermissionsTable";
 import RoleSelector from "./RoleSelector";
@@ -222,7 +223,7 @@ const normalizePermission = (permission) => {
   );
 };
 
-const buildPermissionMatrix = (pages, permissions) => {
+const buildPermissionMatrix = (pages, permissions, grantAll = false) => {
   const permissionMap = new Map(
     permissions
       .map(normalizePermission)
@@ -236,7 +237,7 @@ const buildPermissionMatrix = (pages, permissions) => {
       const row = permissionColumns.reduce(
         (permissionRow, column) => ({
           ...permissionRow,
-          [column.key]: Boolean(assignedPermission?.[column.key]),
+          [column.key]: grantAll || Boolean(assignedPermission?.[column.key]),
         }),
         { pageId: page.id },
       );
@@ -266,6 +267,13 @@ const Permissions = () => {
   const [pagesError, setPagesError] = useState(null);
   const [permissionsError, setPermissionsError] = useState(null);
   const permissionRequestId = useRef(0);
+  const selectedRole = useMemo(() => {
+    return roles.find((role) => String(role.id) === String(selectedRoleId));
+  }, [roles, selectedRoleId]);
+  const isSelectedRoleSuperAdmin = useMemo(
+    () => isSuperAdminAuth({ roles: selectedRole ? [selectedRole] : [] }),
+    [selectedRole],
+  );
 
   const loadRoles = useCallback(async () => {
     setIsRolesLoading(true);
@@ -326,7 +334,9 @@ const Permissions = () => {
       const permissions = extractCollection(response.data);
 
       if (requestId === permissionRequestId.current) {
-        setMatrix(buildPermissionMatrix(pages, permissions));
+        setMatrix(
+          buildPermissionMatrix(pages, permissions, isSelectedRoleSuperAdmin),
+        );
       }
     } catch (error) {
       if (requestId === permissionRequestId.current) {
@@ -339,7 +349,7 @@ const Permissions = () => {
         setIsPermissionsLoading(false);
       }
     }
-  }, [pages, selectedRoleId]);
+  }, [isSelectedRoleSuperAdmin, pages, selectedRoleId]);
 
   useEffect(() => {
     void Promise.resolve().then(loadRoles);
@@ -499,9 +509,6 @@ const Permissions = () => {
   const matrixError = pagesError ?? permissionsError;
   const matrixLoading =
     Boolean(selectedRoleId) && (isPagesLoading || isPermissionsLoading);
-  const selectedRole = roles.find((role) => {
-    return String(role.id) === String(selectedRoleId);
-  });
   const saveDisabled =
     !selectedRoleId ||
     !isDirty ||
@@ -597,7 +604,9 @@ const Permissions = () => {
         errorMessage={matrixError}
         isAllSelected={isAllSelected}
         isColumnSelected={isColumnSelected}
-        isDisabled={isSaving || !capabilities.canUpdate}
+        isDisabled={
+          isSaving || !capabilities.canUpdate || isSelectedRoleSuperAdmin
+        }
         isLoading={matrixLoading}
         matrix={matrix}
         onRetry={pagesError ? loadPages : loadRolePermissions}
@@ -607,6 +616,7 @@ const Permissions = () => {
         pages={pages}
         selectedRoleId={selectedRoleId}
         selectedRoleName={selectedRole?.name}
+        isSuperAdmin={isSelectedRoleSuperAdmin}
         totalCount={totalCount}
       />
     </section>

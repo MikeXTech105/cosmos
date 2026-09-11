@@ -65,7 +65,9 @@ const initialPaymentSchema = z
   });
 
 const invoiceSchema = z.object({
-  customerPartyId: z.string().uuid("Customer is required"),
+  // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
+  // Requiring a UUID here made a valid selected customer fail before submission.
+  customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
   invoiceNumber: z.string().optional(),
   invoiceDate: z.string().min(1, "Invoice date is required"),
   dueDate: z.string().optional(),
@@ -219,7 +221,7 @@ const InvoiceFormModal = ({
     <AppModal
       isBusy={isSubmitting}
       isOpen={isOpen}
-      maxWidth="max-w-7xl"
+      maxWidth="max-w-[1480px]"
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">

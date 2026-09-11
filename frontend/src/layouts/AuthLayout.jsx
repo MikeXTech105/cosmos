@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Outlet } from "react-router-dom";
 
 import FloatingIcons from "../components/auth/FloatingIcons";
+import CosmosBrand from "../components/branding/CosmosBrand";
 import { AUTH_FEATURES, AUTH_STATS } from "../constants/authConstants";
 import useAuthTheme from "../hooks/useAuthTheme";
 import { AUTH_THEME } from "../utils/authTheme";
@@ -119,31 +120,14 @@ const AuthLayout = () => {
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-center gap-3"
+              className="flex justify-center"
             >
-              <div
-                className={[
-                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
-                  classes.brandTile,
-                ].join(" ")}
-              >
-                <span className="text-lg font-bold text-white">C</span>
-              </div>
-
-              <div>
-                <p className="text-base font-bold leading-tight tracking-tight text-white">
-                  COSMOS ERP
-                </p>
-
-                <p
-                  className={[
-                    "mt-0.5 text-[10px] uppercase tracking-[0.2em]",
-                    classes.subtitle,
-                  ].join(" ")}
-                >
-                  Enterprise Suite
-                </p>
-              </div>
+              <CosmosBrand
+                accentClassName="text-indigo-200"
+                className="scale-110"
+                subtitleClassName={classes.subtitle}
+                titleClassName="text-white"
+              />
             </motion.div>
 
             <motion.div
@@ -239,7 +223,7 @@ const AuthLayout = () => {
           classes.footer,
         ].join(" ")}
       >
-        (c) 2026 COSMOS ERP / Privacy / Terms
+        © 2026 COSMOS · A WEWEL PRODUCT / Privacy / Terms
       </p>
     </div>
   );

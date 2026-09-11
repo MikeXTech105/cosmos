@@ -1,6 +1,7 @@
 import axiosInstance from "../api/axios";
 import { ENDPOINTS } from "../api/endpoints";
 import { unwrapResponse } from "./apiServiceUtils";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 export const isImageUploadConfigured = () => Boolean(ENDPOINTS.UPLOAD_IMAGE);
 
@@ -23,7 +24,7 @@ const extractUploadUrl = (response) => {
     throw new Error("Upload response did not include an image URL.");
   }
 
-  return url;
+  return resolveMediaUrl(url);
 };
 
 export const uploadService = {
