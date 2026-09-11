@@ -358,11 +358,13 @@ const PartyTable = ({
       <div
         className={[
           "hidden overflow-hidden bg-white lg:block",
-          embedded ? "" : "rounded-2xl border border-slate-200 shadow-sm",
+          embedded
+            ? ""
+            : "rounded-2xl border border-slate-200/90 shadow-[0_12px_36px_-24px_rgba(15,23,42,0.4)] ring-1 ring-slate-950/[0.02]",
         ].join(" ")}
       >
         <div className="overflow-x-auto">
-          <table className="min-w-[1120px] table-fixed border-separate border-spacing-0 text-left">
+          <table className="w-full min-w-[1120px] table-fixed text-left text-sm">
             <colgroup>
               <col className="w-[56px]" />
               <col className="w-[250px]" />
@@ -373,7 +375,7 @@ const PartyTable = ({
               <col className="w-[110px]" />
               <col className="w-[148px]" />
             </colgroup>
-            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <thead className="sticky top-0 z-10 bg-slate-50/80 backdrop-blur-sm">
               <tr>
                 {[
                   "#",
@@ -388,7 +390,7 @@ const PartyTable = ({
                   <th
                     key={heading}
                     className={[
-                      "whitespace-nowrap border-b border-slate-200 px-5 py-3.5 text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500",
+                      "whitespace-nowrap border-b border-slate-200 px-4 py-3.5 text-[11px] font-medium uppercase tracking-wide text-slate-500",
                       heading === "Actions" ? "text-right" : "",
                     ].join(" ")}
                   >
@@ -406,10 +408,10 @@ const PartyTable = ({
                     key={party.id}
                     className="group transition-colors hover:bg-brand-light/25 focus-within:bg-brand-light/25"
                   >
-                    <td className="border-b border-slate-100 px-5 py-4 text-xs font-semibold tabular-nums text-slate-400">
+                    <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <div className="flex min-w-0 items-center gap-3">
                         <span
                           className={[
@@ -429,7 +431,7 @@ const PartyTable = ({
                         </span>
                       </div>
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <p className="truncate text-sm font-medium text-slate-700">
                         {party.mobileNo || "No mobile"}
                       </p>
@@ -437,7 +439,7 @@ const PartyTable = ({
                         {party.email || "No email added"}
                       </p>
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <p className="truncate font-mono text-xs font-medium text-slate-700">
                         {party.gstin || "No GSTIN"}
                       </p>
@@ -447,10 +449,10 @@ const PartyTable = ({
                           .join(", ") || "No location added"}
                       </p>
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <PartyTypeBadge party={party} />
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <p className="text-sm font-bold tabular-nums text-slate-800">
                         {formatBalance(party)}
                       </p>
@@ -458,10 +460,10 @@ const PartyTable = ({
                         Limit {formatNumber(party.creditLimit)}
                       </p>
                     </td>
-                    <td className="border-b border-slate-100 px-5 py-4">
+                    <td className="border-b border-slate-100 px-4 py-3.5">
                       <PartyStatusBadge isActive={party.isActive} />
                     </td>
-                    <td className="border-b border-slate-100 px-4 py-4">
+                    <td className="border-b border-slate-100 px-3 py-3.5">
                       <PartyActions party={party} {...actions} />
                     </td>
                   </tr>

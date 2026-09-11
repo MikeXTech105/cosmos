@@ -13,6 +13,7 @@ import { WEBSITE_PUBLISH_STATUS } from "../../../constants/websiteEnums";
 import { websiteBlogService, websiteMediaService } from "../../../services/website/websiteService";
 import { fetchWebsiteBlogCategories, fetchWebsiteBlogPosts } from "../../../store/slices/website/websiteSlice";
 import { getApiErrorMessage, getApiFieldErrors, isConflictError } from "../../../utils/apiError";
+import { resolveMediaUrl } from "../../../utils/mediaUrl";
 import { slugifyWebsiteTitle } from "../../../utils/websiteContent";
 import { PUBLISH_STATUS_BODY_OPTIONS, getPublishStatusName, getPublishTransitionWarning } from "../websiteStatus";
 import useWebsiteCapabilities from "../useWebsiteCapabilities";
@@ -33,6 +34,13 @@ const toLocalDateTime = (value) => {
 const toForm = (record = {}) => ({
   ...EMPTY_FORM,
   ...record,
+  coverImageUrl: resolveMediaUrl(
+    record.coverImageUrl ??
+      record.coverImageURL ??
+      record.coverUrl ??
+      record.imageUrl ??
+      record.imagePath,
+  ),
   publishStatus: WEBSITE_PUBLISH_STATUS[getPublishStatusName(record.publishStatus)] ?? WEBSITE_PUBLISH_STATUS.Draft,
   publishedAtUtc: toLocalDateTime(record.publishedAtUtc),
   slugTouched: Boolean(record.id),

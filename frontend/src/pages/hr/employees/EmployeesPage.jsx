@@ -49,6 +49,7 @@ import EmployeeList from "./EmployeeList";
 import EmployeeProfilePanel from "./EmployeeProfilePanel";
 import EmployeeStats from "./EmployeeStats";
 import { extractEmployeeBankDetails } from "./employeeFormMappers";
+import { exportEmployeeProfilePdf } from "./exportEmployeeProfilePdf";
 import DepartmentFormModal from "../departments/DepartmentFormModal";
 import DesignationFormModal from "../designations/DesignationFormModal";
 import ShiftFormModal from "../shifts/ShiftFormModal";
@@ -65,7 +66,7 @@ const extractList = (response) => {
   return [];
 };
 
-const toOption = (record, idResource, labelCandidates) => {
+const toOption = (record, idResource, labelCandidates, metadata = {}) => {
   const value = getHrRecordId(record, idResource);
   const label = labelCandidates
     .map((candidate) =>
@@ -73,7 +74,7 @@ const toOption = (record, idResource, labelCandidates) => {
     )
     .find((candidate) => String(candidate ?? "").trim());
 
-  return label && value ? { label, value } : null;
+  return label && value ? { label, value, ...metadata } : null;
 };
 
 const buildEmployeeQueryParams = ({ filters, pageNumber, pageSize }) => {
@@ -206,7 +207,15 @@ const EmployeesPage = () => {
       setDesignationOptions(
         extractList(designations)
           .map((designation) =>
-            toOption(designation, "designation", ["designationName"]),
+            toOption(
+              designation,
+              "designation",
+              ["designationName"],
+              {
+                departmentId:
+                  designation.departmentId ?? designation.department?.id ?? null,
+              },
+            ),
           )
           .filter(Boolean),
       );
@@ -512,6 +521,28 @@ const EmployeesPage = () => {
               : "Employee created successfully",
           ),
         );
+        if (modal.mode !== "edit") {
+          const createdEmployee = {
+            ...payload,
+            ...extractHrEntity(response?.data, "employee"),
+            bankDetails: payload.bankDetails ?? options.bankDetails,
+          };
+
+          try {
+            await exportEmployeeProfilePdf({
+              bankDetails: createdEmployee.bankDetails,
+              departmentOptions,
+              designationOptions,
+              employee: createdEmployee,
+              shiftOptions,
+            });
+          } catch (pdfError) {
+            toast.error(
+              pdfError?.message ??
+                "Employee was saved, but the profile PDF could not be generated.",
+            );
+          }
+        }
         closeModal();
         await loadEmployees();
       } catch (error) {
@@ -524,9 +555,12 @@ const EmployeesPage = () => {
       capabilities.canUpdate,
       closeModal,
       dispatch,
+      departmentOptions,
+      designationOptions,
       loadEmployees,
       modal.entity,
       modal.mode,
+      shiftOptions,
     ],
   );
 

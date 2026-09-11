@@ -14,7 +14,6 @@ export const GROUP_BY_OPTIONS = [
 ];
 
 export const PARTY_TYPE_OPTIONS = [
-  { value: "Both", label: "Both" },
   { value: "Customer", label: "Customers" },
   { value: "Supplier", label: "Suppliers" },
 ];
@@ -212,8 +211,8 @@ export const normalizeDashboardFilters = (filters = {}) => {
       PARTY_TYPE_OPTIONS,
       defaults.partyType,
       {
-        all: "Both",
-        both: "Both",
+        all: "Customer",
+        both: "Customer",
         customer: "Customer",
         customers: "Customer",
         supplier: "Supplier",
