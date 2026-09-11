@@ -13,6 +13,7 @@ const AppInput = forwardRef(({
   label,
   leadingIcon: LeadingIcon,
   required,
+  requiredIndicator = false,
   type = "text",
   ...props
 }, ref) => {
@@ -38,7 +39,9 @@ const AppInput = forwardRef(({
           className="text-[13px] font-medium text-slate-700"
         >
           {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
+          {(required || requiredIndicator) && (
+            <span className="ml-0.5 text-red-500">*</span>
+          )}
         </label>
       )}
       <div className="relative min-w-0">

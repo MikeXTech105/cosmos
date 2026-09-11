@@ -189,42 +189,79 @@ const getActionCodeAliases = (action) => {
   return [String(action).toLowerCase()];
 };
 
-export const hasPageCapability = (page, { action, resource } = {}) => {
+// The backend permission model (AuthLoginPagePermissionDto /
+// PermissionsPermissionUpsertDto) only stores six flags per page:
+// canView, canCreate, canEdit, canDelete, canExport, canApprove. Screens
+// across the app gate finer-grained actions (activate/deactivate a user,
+// assign a role, confirm/cancel/convert a document, record a payment,
+// open settings) that have no dedicated backend flag, so without a
+// fallback those buttons stay permanently locked for every non-SuperAdmin
+// role regardless of what an admin grants on the Permissions screen. Map
+// each of those actions onto the closest real flag until the backend
+// exposes dedicated ones.
+const ACTION_FALLBACK = {
+  activate: "update",
+  deactivate: "update",
+  assignRole: "update",
+  settings: "update",
+  confirm: "approve",
+  cancel: "approve",
+  convert: "approve",
+  payment: "approve",
+};
+
+export const hasPageCapability = (page, { action, resource } = {}, _visited) => {
   if (!page) {
     return false;
   }
 
   const normalizedAction = normalizeAction(action);
+  const visited = _visited ?? new Set();
+
+  if (visited.has(normalizedAction)) {
+    return false;
+  }
+
+  visited.add(normalizedAction);
+
   const explicitCapability = getExplicitBooleanCapability(page, normalizedAction);
 
   if (explicitCapability !== null) {
     return explicitCapability;
   }
 
-  if (!Array.isArray(page.permissions)) {
-    return false;
+  if (Array.isArray(page.permissions)) {
+    const resources = (Array.isArray(resource) ? resource : [resource])
+      .map(normalizePermissionCode)
+      .filter(Boolean);
+    const permissionSet = new Set(page.permissions.map(normalizePermissionCode));
+    const actionAliases = getActionCodeAliases(normalizedAction);
+    const matched =
+      resources.length === 0
+        ? Array.from(permissionSet).some((permissionCode) => {
+            const separatorIndex = permissionCode.lastIndexOf(".");
+            const permissionAction = permissionCode.slice(separatorIndex + 1);
+
+            return separatorIndex > 0 && actionAliases.includes(permissionAction);
+          })
+        : resources.some((resourceName) => {
+            return actionAliases.some((actionName) => {
+              return permissionSet.has(`${resourceName}.${actionName}`);
+            });
+          });
+
+    if (matched) {
+      return true;
+    }
   }
 
-  const resources = (Array.isArray(resource) ? resource : [resource])
-    .map(normalizePermissionCode)
-    .filter(Boolean);
-  const permissionSet = new Set(page.permissions.map(normalizePermissionCode));
-  const actionAliases = getActionCodeAliases(normalizedAction);
+  const fallbackAction = ACTION_FALLBACK[normalizedAction];
 
-  if (resources.length === 0) {
-    return Array.from(permissionSet).some((permissionCode) => {
-      const separatorIndex = permissionCode.lastIndexOf(".");
-      const permissionAction = permissionCode.slice(separatorIndex + 1);
-
-      return separatorIndex > 0 && actionAliases.includes(permissionAction);
-    });
+  if (fallbackAction) {
+    return hasPageCapability(page, { action: fallbackAction, resource }, visited);
   }
 
-  return resources.some((resourceName) => {
-    return actionAliases.some((actionName) => {
-      return permissionSet.has(`${resourceName}.${actionName}`);
-    });
-  });
+  return false;
 };
 
 export const canViewPermission = (page, resource) => {

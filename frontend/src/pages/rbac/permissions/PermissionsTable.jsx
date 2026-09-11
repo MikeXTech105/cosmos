@@ -200,6 +200,7 @@ const PermissionsTable = ({
   isColumnSelected,
   isDisabled,
   isLoading,
+  isSuperAdmin,
   matrix,
   onRetry,
   onToggleAll,
@@ -259,10 +260,11 @@ const PermissionsTable = ({
               </span>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              Editing permissions for{" "}
+              {isSuperAdmin ? "Effective access for " : "Editing permissions for "}
               <span className="font-semibold text-slate-700">
                 {selectedRoleName || "the selected role"}
               </span>
+              {isSuperAdmin ? " · SuperAdmin always has full access" : ""}
             </p>
           </div>
         </div>

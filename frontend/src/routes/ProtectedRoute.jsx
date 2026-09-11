@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useLocation } from "react-router-dom";
 
+import CosmosLoader from "../components/common/CosmosLoader";
 import { refreshSession } from "../services/sessionService";
 import { getAuthData } from "../utils/authStorage";
 import { isJwtExpired } from "../utils/jwt";
@@ -37,13 +38,8 @@ const ProtectedRoute = ({ children }) => {
 
   if (needsRefresh) {
     return (
-      <div
-        className="flex min-h-dvh items-center justify-center bg-slate-50"
-        role="status"
-        aria-live="polite"
-      >
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-brand" />
-        <span className="sr-only">Refreshing your session…</span>
+      <div role="status" aria-live="polite">
+        <CosmosLoader fullScreen size="md" label="Refreshing your session…" />
       </div>
     );
   }

@@ -7,6 +7,7 @@ import {
   sanitizeWebsiteProductParams,
 } from "../../utils/websiteQuery";
 import { unwrapResponse } from "../apiServiceUtils";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 
 // BACKEND: Authenticated response shape verification remains required for:
 // blog posts/categories, announcements, settings, warranty detail/history/
@@ -150,6 +151,6 @@ export const websiteMediaService = {
     if (!unwrapped.data?.url) {
       throw new Error("Upload response did not include a URL.");
     }
-    return unwrapped.data.url;
+    return resolveMediaUrl(unwrapped.data.url);
   },
 };

@@ -1,7 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2, UserRound } from "lucide-react";
-import { useEffect } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from "react-hook-form";
+import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppImageUpload from "../../../components/common/AppImageUpload";
@@ -14,6 +20,11 @@ import {
   HR_GENDER_OPTIONS,
 } from "../../../utils/hrEnums";
 import { hrEmployeeSchema } from "../../../utils/validationSchemas";
+import {
+  clearFormDraft,
+  readFormDraft,
+  saveFormDraft,
+} from "../../../utils/formDraftStorage";
 import { getHrRecordId } from "../hrHelpers";
 import {
   hasBankDetails,
@@ -59,8 +70,10 @@ const EmployeeFormModal = ({
     control,
     formState: { errors, isSubmitting },
     handleSubmit,
+    getValues,
     register,
     reset,
+    setValue,
   } = useForm({
     resolver: zodResolver(hrEmployeeSchema),
     defaultValues: mapEmployeeToForm(employee),
@@ -73,12 +86,55 @@ const EmployeeFormModal = ({
     control,
     name: "addresses",
   });
+  const selectedDepartmentId = useWatch({ control, name: "departmentId" });
+  const selectedDesignationId = useWatch({ control, name: "designationId" });
+  const filteredDesignationOptions = useMemo(() => {
+    if (!selectedDepartmentId) return [];
+
+    return designationOptions.filter((option) => {
+      return (
+        option.departmentId === null ||
+        option.departmentId === undefined ||
+        String(option.departmentId) === String(selectedDepartmentId)
+      );
+    });
+  }, [designationOptions, selectedDepartmentId]);
 
   useEffect(() => {
     if (isOpen) {
-      reset(mapEmployeeToForm(employee));
+      const savedDraft = !employee && mode === "create"
+        ? readFormDraft("employee-create")
+        : null;
+      reset(savedDraft ?? mapEmployeeToForm(employee));
+      if (savedDraft) {
+        toast.info("Your saved employee draft has been restored.");
+      }
     }
-  }, [employee, isOpen, reset]);
+  }, [employee, isOpen, mode, reset]);
+
+  useEffect(() => {
+    if (!selectedDesignationId) return;
+
+    const selectedOption = designationOptions.find(
+      (option) => String(option.value) === String(selectedDesignationId),
+    );
+
+    if (
+      selectedOption?.departmentId !== null &&
+      selectedOption?.departmentId !== undefined &&
+      String(selectedOption.departmentId) !== String(selectedDepartmentId)
+    ) {
+      setValue("designationId", "", {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [
+    designationOptions,
+    selectedDepartmentId,
+    selectedDesignationId,
+    setValue,
+  ]);
 
   const submitForm = async (values) => {
     await onSubmit(
@@ -90,6 +146,9 @@ const EmployeeFormModal = ({
           (hasBankDetails(values) || hasBankDetails(employee?.bankDetails)),
       },
     );
+    if (!isEdit) {
+      clearFormDraft("employee-create");
+    }
   };
 
   const title = isView
@@ -102,7 +161,7 @@ const EmployeeFormModal = ({
     <AppModal
       isBusy={isSubmitting}
       isOpen={isOpen}
-      maxWidth="max-w-5xl"
+      maxWidth="max-w-[1480px]"
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">
@@ -243,7 +302,13 @@ const EmployeeFormModal = ({
                       label="Department"
                       required
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(value) => {
+                        field.onChange(value);
+                        setValue("designationId", "", {
+                          shouldDirty: true,
+                          shouldValidate: false,
+                        });
+                      }}
                       options={departmentOptions}
                       placeholder="Select department"
                       disabled={isView}
@@ -263,9 +328,14 @@ const EmployeeFormModal = ({
                       required
                       value={field.value}
                       onChange={field.onChange}
-                      options={designationOptions}
-                      placeholder="Select designation"
-                      disabled={isView}
+                      options={filteredDesignationOptions}
+                      placeholder={
+                        selectedDepartmentId
+                          ? "Select designation"
+                          : "Select department first"
+                      }
+                      emptyMessage="No active designations for this department"
+                      disabled={isView || !selectedDepartmentId}
                       error={errors.designationId?.message}
                       creatable={canCreateDesignation}
                       createLabel="Create new designation"
@@ -495,9 +565,24 @@ const EmployeeFormModal = ({
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (
-              <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
-                {isEdit ? "Save Changes" : "Create Employee"}
-              </AppButton>
+              <>
+                {!isEdit && (
+                  <AppButton
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      saveFormDraft("employee-create", getValues());
+                      toast.success("Employee draft saved on this device");
+                      onClose();
+                    }}
+                  >
+                    Save as Draft
+                  </AppButton>
+                )}
+                <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
+                  {isEdit ? "Save Changes" : "Create Employee"}
+                </AppButton>
+              </>
             )}
           </div>
         </form>
