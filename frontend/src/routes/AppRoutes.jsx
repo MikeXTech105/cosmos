@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import CosmosLoader from "../components/common/CosmosLoader";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
@@ -177,11 +178,7 @@ const AccessDeniedPage = lazy(
 const NotFoundPage = lazy(() => import("../pages/errors/NotFoundPage.jsx"));
 
 const RouteFallback = () => {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50">
-      <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-brand" />
-    </div>
-  );
+  return <CosmosLoader fullScreen size="md" />;
 };
 
 const AppRoutes = () => {
