@@ -10,6 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppSelect from "../../components/common/AppSelect";
@@ -163,6 +164,7 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const PartyPage = () => {
+  const navigate = useNavigate();
   const [parties, setParties] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.Search);
@@ -182,12 +184,6 @@ const PartyPage = () => {
   const [partySummary, setPartySummary] = useState(null);
   const [fallbackBaseKey, setFallbackBaseKey] = useState("");
   const [compatibilityNotice, setCompatibilityNotice] = useState("");
-  const [formModal, setFormModal] = useState({
-    isLoading: false,
-    isOpen: false,
-    mode: "create",
-    party: null,
-  });
   const [detailsModal, setDetailsModal] = useState({
     isLoading: false,
     isOpen: false,
@@ -206,11 +202,6 @@ const PartyPage = () => {
   const {
     beginAbortableRequest: beginListRequest,
     isLatestRequest: isLatestListRequest,
-  } = useLatestRequest();
-  const {
-    beginAbortableRequest: beginEditRequest,
-    cancelAllRequests: cancelEditRequests,
-    isLatestRequest: isLatestEditRequest,
   } = useLatestRequest();
   const {
     beginAbortableRequest: beginDetailsRequest,
@@ -513,15 +504,6 @@ const PartyPage = () => {
     totalItems,
   ]);
 
-  const closeFormModal = useCallback(() => {
-    cancelEditRequests();
-    setFormModal((current) => ({
-      ...current,
-      isLoading: false,
-      isOpen: false,
-    }));
-  }, [cancelEditRequests]);
-
   const closeDetailsModal = useCallback(() => {
     cancelDetailsRequests();
     setDetailsModal((current) => ({
@@ -546,61 +528,19 @@ const PartyPage = () => {
       return;
     }
 
-    setFormModal({
-      isLoading: false,
-      isOpen: true,
-      mode: "create",
-      party: null,
-    });
-  }, [capabilities.canCreate]);
+    navigate("/party/new");
+  }, [capabilities.canCreate, navigate]);
 
   const openEditModal = useCallback(
-    async (party) => {
+    (party) => {
       if (!capabilities.canUpdate) {
         toast.error("You don't have permission to update parties.");
         return;
       }
 
-      setFormModal({
-        isLoading: true,
-        isOpen: true,
-        mode: "edit",
-        party,
-      });
-      const { requestId, signal } = beginEditRequest();
-
-      try {
-        const response = await partyService.getPartyById(party.id, { signal });
-
-        if (!isLatestEditRequest(requestId)) return;
-        setFormModal({
-          isLoading: false,
-          isOpen: true,
-          mode: "edit",
-          party: extractEntity(response.data),
-        });
-      } catch (error) {
-        if (signal.aborted || !isLatestEditRequest(requestId)) return;
-        if (getApiStatus(error) === 404) {
-          toast.error("This party no longer exists. The list was refreshed.");
-          closeFormModal();
-          await loadParties({ force: true });
-          return;
-        }
-        toast.error(getErrorMessage(error, "Unable to load party details."));
-        setFormModal((current) => ({
-          ...current,
-          isLoading: false,
-        }));
-      }
+      navigate(`/party/${party.id}/edit`);
     },
-    [
-      beginEditRequest,
-      capabilities.canUpdate,
-      closeFormModal,
-      isLatestEditRequest,
-      loadParties,
-    ],
+    [capabilities.canUpdate, navigate],
   );
 
   const openDetailsModal = useCallback(
@@ -682,56 +622,6 @@ const PartyPage = () => {
     }
   }, [beginSettingsRequest, capabilities.canSettings, isLatestSettingsRequest]);
 
-  const submitParty = useCallback(
-    async (payload) => {
-      const allowed =
-        formModal.mode === "edit"
-          ? capabilities.canUpdate
-          : capabilities.canCreate;
-
-      if (!allowed) {
-        toast.error("You don't have permission to save this party.");
-        return;
-      }
-
-      try {
-        if (formModal.mode === "edit") {
-          await partyService.updateParty(formModal.party.id, payload);
-          toast.success("Party updated successfully");
-        } else {
-          await partyService.createParty(payload);
-          toast.success("Party created successfully");
-        }
-
-        closeFormModal();
-        await loadParties({ force: true });
-      } catch (error) {
-        if (formModal.mode === "edit" && getApiStatus(error) === 404) {
-          toast.error("This party no longer exists. The list was refreshed.");
-          closeFormModal();
-          await loadParties({ force: true });
-          return;
-        }
-        toast.error(
-          getErrorMessage(
-            error,
-            formModal.mode === "edit"
-              ? "Unable to update party."
-              : "Unable to create party.",
-          ),
-        );
-        throw error;
-      }
-    },
-    [
-      capabilities.canCreate,
-      capabilities.canUpdate,
-      closeFormModal,
-      formModal.mode,
-      formModal.party,
-      loadParties,
-    ],
-  );
 
   const submitSettings = useCallback(
     async (payload) => {
@@ -1212,18 +1102,6 @@ const PartyPage = () => {
           </div>
         )}
       </div>
-
-      <PartyFormModal
-        isLoading={formModal.isLoading}
-        isOpen={formModal.isOpen}
-        mode={formModal.mode}
-        source={formModal.party}
-        submitLabel={
-          formModal.mode === "edit" ? "Save Changes" : "Create Party"
-        }
-        onClose={closeFormModal}
-        onSubmit={submitParty}
-      />
 
       <PartyDetailsModal
         isLoading={detailsModal.isLoading}
