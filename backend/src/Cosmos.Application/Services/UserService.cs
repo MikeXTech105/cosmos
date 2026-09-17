@@ -42,8 +42,12 @@ public sealed class UserService : IUserService
         _currentUser = currentUser;
     }
 
-    public async Task<ApiResponse<IReadOnlyCollection<UserDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        ApiResponse<IReadOnlyCollection<UserDto>>.Success(await _repository.GetAllAsync(cancellationToken));
+    public async Task<ApiResponse<IReadOnlyCollection<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var users = await _repository.GetAllAsync(cancellationToken);
+        var usersWithRoles = await Task.WhenAll(users.Select(user => IncludeRolesAsync(user, cancellationToken)));
+        return ApiResponse<IReadOnlyCollection<UserDto>>.Success(usersWithRoles);
+    }
 
     public async Task<ApiResponse<IReadOnlyCollection<UserExportDto>>> ExportAsync(
         string? search,
@@ -78,8 +82,11 @@ public sealed class UserService : IUserService
         return ApiResponse<IReadOnlyCollection<UserExportDto>>.Success(rows);
     }
 
-    public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        ApiResponse<UserDto>.Success(await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found."));
+    public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var user = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found.");
+        return ApiResponse<UserDto>.Success(await IncludeRolesAsync(user, cancellationToken));
+    }
 
     public async Task<ApiResponse<UserDto>> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
@@ -156,4 +163,7 @@ public sealed class UserService : IUserService
             throw new NotFoundException("User was not found.");
         }
     }
+
+    private async Task<UserDto> IncludeRolesAsync(UserDto user, CancellationToken cancellationToken) =>
+        user with { Roles = await _repository.GetRolesByUserIdAsync(user.Id, cancellationToken) };
 }

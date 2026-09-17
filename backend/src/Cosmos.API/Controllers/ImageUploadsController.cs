@@ -1,15 +1,17 @@
 using Cosmos.API.Security;
+using Cosmos.API.Hosting;
 using Cosmos.Domain.Security;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Cosmos.API.Controllers;
 
 [Authorize]
 [Route("api/uploads")]
-public sealed class ImageUploadsController(IWebHostEnvironment environment) : ApiControllerBase
+public sealed class ImageUploadsController(IWebHostEnvironment environment, IOptions<ImageUploadOptions> options) : ApiControllerBase
 {
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
 
@@ -56,7 +58,7 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
             throw InvalidFile("The declared content type does not match the image signature.");
         }
 
-        if (!Request.IsHttps && !environment.IsDevelopment())
+        if (!Request.IsHttps && !environment.IsDevelopment() && !options.Value.AllowHttp)
         {
             throw HttpsRequired();
         }
