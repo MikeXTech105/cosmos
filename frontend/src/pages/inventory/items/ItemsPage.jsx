@@ -7,17 +7,14 @@ import {
   useState,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
-import useLatestRequest from "../../../hooks/useLatestRequest";
-import { getApiStatus } from "../../../utils/apiError";
 import { categoryService } from "../../../services/inventory/categoryService";
-import { unitService } from "../../../services/inventory/unitService";
 import {
-  createItem,
   deleteItem,
   fetchItemById,
   fetchItems,
@@ -25,7 +22,6 @@ import {
   setItemPage,
   setItemPageSize,
   setSelectedItem,
-  updateItem,
 } from "../../../store/slices/inventory/itemSlice";
 import { InventoryConfirmDialog } from "../InventoryShared";
 import {
@@ -36,10 +32,8 @@ import {
 } from "../inventoryHelpers";
 import useInventoryCapabilities from "../useInventoryCapabilities";
 import CategoryFormModal from "../categories/CategoryFormModal";
-import UnitFormModal from "../units/UnitFormModal";
 import ItemDetailsPanel from "./ItemDetailsPanel";
 import ItemFilters from "./ItemFilters";
-import ItemFormModal from "./ItemFormModal";
 import ItemStats from "./ItemStats";
 import ItemTable from "./ItemTable";
 import { getItemTypeLabel, isLowStock } from "./itemHelpers";
@@ -54,14 +48,9 @@ const getLookupList = (response) => {
   return data?.items ?? [];
 };
 
-const getResponseItem = (response) => {
-  const data = response?.data;
-
-  return data?.item ?? data;
-};
-
 const ItemsPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const itemsState = useSelector((state) => state.items);
   const capabilities = useInventoryCapabilities({
     label: "Items",
@@ -73,36 +62,15 @@ const ItemsPage = () => {
     resource: "categories",
     route: "/categories",
   });
-  const canCreateUnit = useCreatePermission({
-    label: "Units",
-    resource: "units",
-    route: "/units",
-  });
   const [searchInput, setSearchInput] = useState(itemsState.filters.Search);
   const [lookups, setLookups] = useState({
     categories: [],
     categoriesError: null,
     categoriesLoading: false,
-    units: [],
-    unitsError: null,
-    unitsLoading: false,
   });
   const lookupCacheRef = useRef({
     categories: { loaded: false, promise: null },
-    units: { loaded: false, promise: null },
   });
-  const [modal, setModal] = useState({
-    entity: null,
-    isLoading: false,
-    isOpen: false,
-    mode: "create",
-  });
-  const detailPromiseRef = useRef(null);
-  const {
-    beginRequest: beginDetailRequest,
-    cancelAllRequests: cancelDetailRequests,
-    isLatestRequest: isLatestDetailRequest,
-  } = useLatestRequest();
   const [lookupCreateModal, setLookupCreateModal] = useState({
     isOpen: false,
     type: null,
@@ -152,22 +120,13 @@ const ItemsPage = () => {
       return cache.promise;
     }
 
-    const isCategories = type === "categories";
-    const loadingKey = isCategories
-      ? "categoriesLoading"
-      : "unitsLoading";
-    const errorKey = isCategories ? "categoriesError" : "unitsError";
-    const request = isCategories
-      ? categoryService.getCategories({
-          PageNumber: 1,
-          PageSize: 200,
-          IsActive: true,
-        })
-      : unitService.getUnits({
-          PageNumber: 1,
-          PageSize: 200,
-          IsActive: true,
-        });
+    const loadingKey = "categoriesLoading";
+    const errorKey = "categoriesError";
+    const request = categoryService.getCategories({
+      PageNumber: 1,
+      PageSize: 200,
+      IsActive: true,
+    });
 
     setLookups((current) => ({
       ...current,
@@ -218,15 +177,10 @@ const ItemsPage = () => {
   }, []);
 
   const loadLookups = useCallback(async () => {
-    const errors = (
-      await Promise.all([
-        loadLookup("categories"),
-        loadLookup("units"),
-      ])
-    ).filter(Boolean);
+    const error = await loadLookup("categories");
 
-    if (errors.length > 0) {
-      toast.error([...new Set(errors)].join(" "));
+    if (error) {
+      toast.error(error);
     }
   }, [loadLookup]);
 
@@ -256,17 +210,6 @@ const ItemsPage = () => {
     [lookups.categories],
   );
 
-  const unitOptions = useMemo(
-    () =>
-      lookups.units.map((unit) => ({
-        value: Number(unit.id),
-        label: unit.shortName
-          ? `${unit.name} (${unit.shortName})`
-          : unit.name,
-      })),
-    [lookups.units],
-  );
-
   const stats = useMemo(
     () => ({
       lowStock:
@@ -285,40 +228,21 @@ const ItemsPage = () => {
     [itemsState.list, itemsState.summary, itemsState.summaryScope, itemsState.totalCount],
   );
 
-  const closeModal = useCallback(() => {
-    cancelDetailRequests();
-    detailPromiseRef.current?.abort?.();
-    detailPromiseRef.current = null;
-    setModal((current) => ({ ...current, isOpen: false }));
-  }, [cancelDetailRequests]);
-
   const openCreate = useCallback(() => {
     if (!capabilities.canCreate) {
       return;
     }
 
-    cancelDetailRequests();
-    detailPromiseRef.current?.abort?.();
-    detailPromiseRef.current = null;
-    void loadLookups();
-    setModal({
-      entity: null,
-      isLoading: false,
-      isOpen: true,
-      mode: "create",
-    });
-  }, [cancelDetailRequests, capabilities.canCreate, loadLookups]);
+    navigate("/items/new");
+  }, [capabilities.canCreate, navigate]);
 
   const openLookupCreate = useCallback(
     (type) => {
-      const isAllowed =
-        type === "categories" ? canCreateCategory : canCreateUnit;
-
-      if (isAllowed) {
+      if (type === "categories" && canCreateCategory) {
         setLookupCreateModal({ isOpen: true, type });
       }
     },
-    [canCreateCategory, canCreateUnit],
+    [canCreateCategory],
   );
 
   const closeLookupCreate = useCallback(() => {
@@ -327,53 +251,26 @@ const ItemsPage = () => {
 
   const submitLookupCreate = useCallback(
     async (payload, saveAndNew = false) => {
-      const type = lookupCreateModal.type;
-
-      if (!type) {
-        return;
-      }
-
-      const isAllowed =
-        type === "categories" ? canCreateCategory : canCreateUnit;
-
-      if (!isAllowed) {
+      if (lookupCreateModal.type !== "categories" || !canCreateCategory) {
         return;
       }
 
       try {
-        if (type === "categories") {
-          await categoryService.createCategory(payload);
-          toast.success("Category created successfully");
-        } else {
-          await unitService.createUnit(payload);
-          toast.success("Unit created successfully");
-        }
+        await categoryService.createCategory(payload);
+        toast.success("Category created successfully");
 
-        lookupCacheRef.current[type].loaded = false;
-        await loadLookup(type, { force: true });
+        lookupCacheRef.current.categories.loaded = false;
+        await loadLookup("categories", { force: true });
 
         if (!saveAndNew) {
           closeLookupCreate();
         }
       } catch (error) {
-        toast.error(
-          getActionError(
-            error,
-            type === "categories"
-              ? "Unable to create category."
-              : "Unable to create unit.",
-          ),
-        );
+        toast.error(getActionError(error, "Unable to create category."));
         throw error;
       }
     },
-    [
-      canCreateCategory,
-      canCreateUnit,
-      closeLookupCreate,
-      loadLookup,
-      lookupCreateModal.type,
-    ],
+    [canCreateCategory, closeLookupCreate, loadLookup, lookupCreateModal.type],
   );
 
   const selectItem = useCallback(
@@ -394,147 +291,14 @@ const ItemsPage = () => {
   );
 
   const openEdit = useCallback(
-    async (item) => {
+    (item) => {
       if (!capabilities.canUpdate) {
         return;
       }
 
-      void loadLookups();
-      setModal({
-        entity: item,
-        isLoading: true,
-        isOpen: true,
-        mode: "edit",
-      });
-      detailPromiseRef.current?.abort?.();
-      const requestId = beginDetailRequest();
-      const detailPromise = dispatch(fetchItemById(item.id));
-      detailPromiseRef.current = detailPromise;
-
-      try {
-        const response = await detailPromise.unwrap();
-        if (!isLatestDetailRequest(requestId)) return;
-        setModal({
-          entity: getResponseItem(response),
-          isLoading: false,
-          isOpen: true,
-          mode: "edit",
-        });
-      } catch (error) {
-        if (!isLatestDetailRequest(requestId)) return;
-        if (getApiStatus(error) === 404) {
-          toast.error("This item no longer exists. The list was refreshed.");
-          closeModal();
-          await loadItems();
-          return;
-        }
-        toast.error(getActionError(error, "Unable to load item details."));
-        setModal((current) =>
-          current.isOpen &&
-          current.mode === "edit" &&
-          String(current.entity?.id) === String(item.id)
-            ? { ...current, isLoading: false }
-            : current,
-        );
-      } finally {
-        if (detailPromiseRef.current === detailPromise) {
-          detailPromiseRef.current = null;
-        }
-      }
+      navigate(`/items/${item.id}/edit`);
     },
-    [
-      beginDetailRequest,
-      capabilities.canUpdate,
-      closeModal,
-      dispatch,
-      isLatestDetailRequest,
-      loadItems,
-      loadLookups,
-    ],
-  );
-
-  const submitItem = useCallback(
-    async (payload, saveAndNew) => {
-      const isAllowed =
-        modal.mode === "edit"
-          ? capabilities.canUpdate
-          : capabilities.canCreate;
-
-      if (!isAllowed) {
-        return;
-      }
-
-      try {
-        const response =
-          modal.mode === "edit"
-            ? await dispatch(
-                updateItem({ id: modal.entity.id, payload }),
-              ).unwrap()
-            : await dispatch(createItem(payload)).unwrap();
-        const responseItem = getResponseItem(response);
-        const responseId =
-          responseItem?.id ??
-          (["number", "string"].includes(typeof responseItem)
-            ? responseItem
-            : modal.entity?.id);
-        const displayPayload = { ...payload };
-
-        delete displayPayload.imageFile;
-
-        const savedItem = {
-          ...(modal.entity ?? {}),
-          ...displayPayload,
-          ...(responseItem && typeof responseItem === "object"
-            ? responseItem
-            : {}),
-          ...(responseId === undefined ? {} : { id: responseId }),
-        };
-
-        toast.success(
-          getSuccessMessage(
-            response,
-            modal.mode === "edit"
-              ? "Item updated successfully"
-              : "Item created successfully",
-          ),
-        );
-
-        if (savedItem.id !== undefined) {
-          dispatch(setSelectedItem(savedItem));
-        }
-        if (!saveAndNew) {
-          closeModal();
-        }
-
-        await loadItems();
-
-        if (savedItem.id !== undefined) {
-          try {
-            await dispatch(fetchItemById(savedItem.id)).unwrap();
-          } catch {
-            dispatch(setSelectedItem(savedItem));
-          }
-        }
-      } catch (error) {
-        if (modal.mode === "edit" && getApiStatus(error) === 404) {
-          toast.error("This item no longer exists. The list was refreshed.");
-          closeModal();
-          await loadItems();
-          return;
-        }
-        toast.error(getActionError(error, "Unable to save item."));
-        throw error;
-      }
-    },
-    [
-      capabilities.canCreate,
-      capabilities.canUpdate,
-      closeModal,
-      dispatch,
-      loadItems,
-      modal.entity,
-      modal.mode,
-    ],
+    [capabilities.canUpdate, navigate],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -668,34 +432,6 @@ const ItemsPage = () => {
         </div>
       </div>
 
-      <ItemFormModal
-        key={`${modal.isOpen}-${modal.mode}-${modal.entity?.id ?? "new"}`}
-        canCreateCategory={canCreateCategory}
-        canCreateUnit={canCreateUnit}
-        categoryOptions={categoryOptions}
-        categoryEmptyMessage={
-          lookups.categoriesError
-            ? "Unable to load categories. Close and reopen to retry."
-            : "No categories yet - add one in Categories."
-        }
-        categoryLoading={lookups.categoriesLoading}
-        isLoading={modal.isLoading}
-        isOpen={modal.isOpen}
-        item={modal.entity}
-        mode={modal.mode}
-        onClose={closeModal}
-        onCreateCategory={() => openLookupCreate("categories")}
-        onCreateUnit={() => openLookupCreate("units")}
-        onSubmit={submitItem}
-        unitOptions={unitOptions}
-        unitEmptyMessage={
-          lookups.unitsError
-            ? "Unable to load units. Close and reopen to retry."
-            : "No units yet - add one in Units."
-        }
-        unitLoading={lookups.unitsLoading}
-      />
-
       <CategoryFormModal
         category={null}
         isLoading={false}
@@ -703,15 +439,6 @@ const ItemsPage = () => {
         mode="create"
         onClose={closeLookupCreate}
         onSubmit={submitLookupCreate}
-      />
-
-      <UnitFormModal
-        isLoading={false}
-        isOpen={lookupCreateModal.isOpen && lookupCreateModal.type === "units"}
-        mode="create"
-        onClose={closeLookupCreate}
-        onSubmit={submitLookupCreate}
-        unit={null}
       />
 
       <InventoryConfirmDialog

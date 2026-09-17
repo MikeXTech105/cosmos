@@ -20,6 +20,7 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 var reverseProxyOptions = builder.Configuration.GetSection(ReverseProxyOptions.SectionName).Get<ReverseProxyOptions>() ?? new ReverseProxyOptions();
 ReverseProxyForwarding.Validate(reverseProxyOptions);
+builder.Services.Configure<ImageUploadOptions>(builder.Configuration.GetSection(ImageUploadOptions.SectionName));
 
 if (reverseProxyOptions.IsEnabled)
 {

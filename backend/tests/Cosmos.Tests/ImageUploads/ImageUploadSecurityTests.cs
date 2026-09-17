@@ -41,7 +41,7 @@ public sealed class ImageUploadSecurityTests
     }
 
     [Fact]
-    public async Task Production_direct_http_website_upload_is_rejected_as_a_security_error()
+    public async Task Production_direct_http_website_upload_is_rejected_when_allow_http_is_missing_or_false()
     {
         var root = CreateTemporaryRoot();
         try
@@ -54,6 +54,28 @@ public sealed class ImageUploadSecurityTests
             Assert.Equal(StatusCodes.Status403Forbidden, exception.StatusCode);
             Assert.Equal("Image uploads require HTTPS outside development.", exception.Message);
             Assert.Null(exception.FieldErrors);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Production_direct_http_website_upload_is_allowed_only_when_explicitly_enabled()
+    {
+        var root = CreateTemporaryRoot();
+        try
+        {
+            var controller = CreateController("Production", root, CreateContext("http"), allowHttp: true);
+
+            var result = await controller.UploadWebsiteImage(ValidImageRequest(), CancellationToken.None);
+
+            var response = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status201Created, response.StatusCode);
+            var payload = Assert.IsType<Cosmos.Shared.Responses.ApiResponse<ImageUploadDto>>(response.Value);
+            Assert.True(payload.Succeeded);
+            Assert.StartsWith("http://api.test/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
         }
         finally
         {
@@ -195,7 +217,9 @@ public sealed class ImageUploadSecurityTests
         return context;
     }
 
-    private static ImageUploadsController CreateController(string environmentName, string root, HttpContext context) => new(TestEnvironment(environmentName, root))
+    private static ImageUploadsController CreateController(string environmentName, string root, HttpContext context, bool allowHttp = false) => new(
+        TestEnvironment(environmentName, root),
+        Options.Create(new ImageUploadOptions { AllowHttp = allowHttp }))
     {
         ControllerContext = new ControllerContext { HttpContext = context }
     };
