@@ -1074,7 +1074,7 @@ const ModalSkeleton = ({ count = 8 }) => {
   );
 };
 
-const PartyFormContent = ({
+export const PartyFormContent = ({
   fields,
   groupedFields,
   isView,

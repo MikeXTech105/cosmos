@@ -1,5 +1,5 @@
 import { ArrowLeft, Ban, CheckCircle2, Pencil, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,13 +7,6 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
-import { itemService } from "../../../services/inventory/itemService";
-import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
-import {
-  getPartyDisplayName,
-  getPartyType,
-} from "../../party/partyHelpers";
-import { partyService } from "../../party/partyService";
 import {
   extractItems,
   formatCurrency,
@@ -35,17 +28,6 @@ import {
   PurchaseConfirmDialog,
   PurchaseStatusPill,
 } from "../PurchaseShared";
-import PurchaseDocumentFormModal from "./PurchaseDocumentFormModal";
-
-const getLookupList = (response) => {
-  const data = response?.data;
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  return data?.items ?? [];
-};
 
 const PurchaseDocumentDetailPage = ({ config }) => {
   const { id } = useParams();
@@ -60,25 +42,6 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   });
   const record =
     String(state.selected?.id ?? "") === String(id) ? state.selected : null;
-  const [lookups, setLookups] = useState({
-    bills: [],
-    billsLoading: false,
-    items: [],
-    itemsLoading: false,
-    suppliers: [],
-    suppliersLoading: false,
-  });
-  const cacheRef = useRef({
-    bills: { loaded: false, promise: null },
-    items: { loaded: false, promise: null },
-    suppliers: { loaded: false, promise: null },
-  });
-  const [modal, setModal] = useState({
-    isLoading: false,
-    isOpen: false,
-    mode: "edit",
-    record: null,
-  });
   const [confirmation, setConfirmation] = useState({
     action: "confirm",
     isLoading: false,
@@ -97,114 +60,6 @@ const PurchaseDocumentDetailPage = ({ config }) => {
     void Promise.resolve().then(loadRecord);
   }, [loadRecord]);
 
-  const loadLookup = useCallback((type) => {
-    const cache = cacheRef.current[type];
-
-    if (cache.loaded) {
-      return Promise.resolve();
-    }
-
-    if (cache.promise) {
-      return cache.promise;
-    }
-
-    const request =
-      type === "suppliers"
-        ? partyService.getParties({
-            PageNumber: 1,
-            PageSize: 200,
-            IsActive: true,
-          })
-        : type === "items"
-          ? itemService.getItems({
-              PageNumber: 1,
-              PageSize: 200,
-              IsActive: true,
-            })
-          : purchaseBillService.getPurchaseBills({
-              PageNumber: 1,
-              PageSize: 200,
-            });
-
-    setLookups((current) => ({ ...current, [`${type}Loading`]: true }));
-
-    cache.promise = request
-      .then((response) => {
-        const rows = getLookupList(response).filter((entry) => {
-          if (entry?.id === null || entry?.id === undefined) {
-            return false;
-          }
-
-          if (type === "suppliers") {
-            return (
-              entry?.isActive !== false &&
-              ["supplier", "both"].includes(getPartyType(entry))
-            );
-          }
-
-          return entry?.isActive !== false;
-        });
-
-        cache.loaded = true;
-        setLookups((current) => ({
-          ...current,
-          [type]: rows,
-          [`${type}Loading`]: false,
-        }));
-      })
-      .catch((error) => {
-        toast.error(getActionError(error, `Unable to load ${type}.`));
-        setLookups((current) => ({ ...current, [`${type}Loading`]: false }));
-      })
-      .finally(() => {
-        cache.promise = null;
-      });
-
-    return cache.promise;
-  }, []);
-
-  const loadLookups = useCallback(
-    () =>
-      Promise.all([
-        loadLookup("suppliers"),
-        loadLookup("items"),
-        ...(config.supportsBillSelect ? [loadLookup("bills")] : []),
-      ]),
-    [config.supportsBillSelect, loadLookup],
-  );
-
-  const supplierOptions = useMemo(
-    () =>
-      lookups.suppliers.map((supplier) => ({
-        value: supplier.id,
-        label: getPartyDisplayName(supplier),
-      })),
-    [lookups.suppliers],
-  );
-
-  const itemOptions = useMemo(
-    () =>
-      lookups.items.map((item) => ({
-        value: Number(item.id),
-        label: [item.name, item.itemCode].filter(Boolean).join(" - "),
-      })),
-    [lookups.items],
-  );
-
-  const itemsById = useMemo(
-    () => new Map(lookups.items.map((item) => [String(item.id), item])),
-    [lookups.items],
-  );
-
-  const billOptions = useMemo(
-    () =>
-      lookups.bills.map((bill) => ({
-        value: Number(bill.id),
-        label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
-      })),
-    [lookups.bills],
-  );
-
   const lineItems = useMemo(() => (record ? extractItems(record) : []), [record]);
   const totals = useMemo(
     () =>
@@ -216,25 +71,6 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       }),
     [lineItems, record],
   );
-
-  const submitRecord = async (payload) => {
-    if (!capabilities.canUpdate || !record) {
-      return;
-    }
-
-    try {
-      const response = await dispatch(
-        config.updateThunk({ id: record.id, payload }),
-      ).unwrap();
-
-      toast.success(getSuccessMessage(response, `${config.singularLabel} saved`));
-      setModal((current) => ({ ...current, isOpen: false }));
-      await loadRecord();
-    } catch (error) {
-      toast.error(getActionError(error, `Unable to save ${config.singularLabel}.`));
-      throw error;
-    }
-  };
 
   const runAction = async () => {
     const permissionMap = {
@@ -271,13 +107,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       return;
     }
 
-    void loadLookups();
-    setModal({
-      isLoading: false,
-      isOpen: true,
-      mode: "edit",
-      record,
-    });
+    navigate(`${config.routeBase}/${record.id}/edit`);
   };
 
   const openAction = (action) => {
@@ -549,22 +379,6 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               </dl>
             </section>
           </div>
-
-          <PurchaseDocumentFormModal
-            billOptions={billOptions}
-            config={config}
-            isLoading={modal.isLoading}
-            isOpen={modal.isOpen}
-            itemEmptyMessage="No items found in inventory."
-            itemLoading={lookups.itemsLoading}
-            itemOptions={itemOptions}
-            itemsById={itemsById}
-            mode="edit"
-            onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-            onSubmit={submitRecord}
-            record={modal.record}
-            supplierOptions={supplierOptions}
-          />
 
           <PurchaseConfirmDialog
             confirmLabel={confirmation.action === "cancel" ? "Cancel" : "Confirm"}
