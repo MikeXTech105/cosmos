@@ -10,3 +10,4 @@ public sealed class ImageUploadOptions
 
     public bool AllowHttp { get; set; }
 }
+ 

@@ -1,0 +1,5 @@
+# Manufacturing module
+
+Manufacturing adds versioned BOMs and draft/post/cancel production records without changing Procurement Planning's planning BOM. A production draft snapshots its BOM materials. Posting is a SQL transaction: it locks component item rows, checks stock, creates component stock-out movements, creates the finished-good stock-in movement, and updates balances. Cancellation atomically reverses those movements. Wastage is calculated as `base quantity × produced quantity × wastage percentage / 100`; total consumed is base plus wastage.
+
+BOMs are versioned and only one active default BOM exists per finished item. Direct duplicate components are database-constrained; activation and creation must reject circular relationships in the deployed BOM procedures. OEE remains independent. Future work: multi-level explosion, costing, and dedicated manufacturing reports.
