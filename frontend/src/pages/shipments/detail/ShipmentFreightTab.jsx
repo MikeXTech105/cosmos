@@ -412,6 +412,7 @@ const FreightActionModal = ({
             htmlFor="freight-action-notes"
           >
             {action === "reject" ? "Rejection reason" : "Approval notes"}
+            {action === "reject" && <span className="ml-0.5 text-red-500">*</span>}
           </label>
           <textarea
             className="min-h-24 w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"

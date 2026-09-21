@@ -193,6 +193,7 @@ const MyWalletPage = () => {
         showCategory
         showDates
         showTransactionType
+        showStatus
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -209,6 +210,7 @@ const MyWalletPage = () => {
               CategoryId: "all",
               Search: "",
               TransactionType: "all",
+              Status: "all",
             }),
           );
           dispatch(setMyRojmelLedgerPage(1));

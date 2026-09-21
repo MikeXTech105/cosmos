@@ -322,6 +322,7 @@ const PageFormPage = () => {
                   id="pageSortOrder"
                   label="Sort Order"
                   inputMode="numeric"
+                  required
                   disabled={isView}
                   error={errors.sortOrder?.message}
                   value={field.value}

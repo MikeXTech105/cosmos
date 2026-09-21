@@ -1,6 +1,7 @@
 import { Eye, RotateCcw } from "lucide-react";
 
 import AppTooltip from "../../../components/common/AppTooltip";
+import { sumRojmelMoney } from "../../../utils/rojmelTotals";
 import { RojmelTransactionStatus } from "../../../constants/rojmelEnums";
 import {
   formatRojmelCurrency,
@@ -139,6 +140,17 @@ const TransactionTable = ({
                 );
               })}
             </tbody>
+            <tfoot className="border-t border-slate-200 bg-slate-50 text-sm font-semibold text-slate-900">
+              <tr>
+                <th scope="row" colSpan={5 + Number(showWallet)} className="px-3 py-4">
+                  Page total (gross amount; cancelled excluded)
+                </th>
+                <td className="px-3 py-4 text-right tabular-nums">
+                  {formatRojmelCurrency(sumRojmelMoney(rows, "amount", { excludeCancelled: true }))}
+                </td>
+                <td colSpan={2 + Number(showActions)} className="px-3 py-4 text-xs font-normal text-slate-500">Running balances are not summed</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}

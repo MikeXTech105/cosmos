@@ -55,6 +55,18 @@ describe("findPermissionPage", () => {
       findPermissionPage(pages, { label: "Users", route: "/missing" }),
     ).toBeNull();
   });
+
+  it("falls back to a unique backend page name when the route does not match", () => {
+    expect(
+      findPermissionPage(pages, { pageName: "Users", route: "/user-list" }),
+    ).toBe(pages[2]);
+  });
+
+  it("still fails closed when the backend page name is ambiguous", () => {
+    expect(
+      findPermissionPage(pages, { pageName: "Dashboard", route: "/missing" }),
+    ).toBeNull();
+  });
 });
 
 describe("capability evaluation", () => {
@@ -183,6 +195,14 @@ describe("getDefaultAuthorizedRoute", () => {
 
   it("returns /403 when no page is accessible", () => {
     expect(getDefaultAuthorizedRoute({ modules, pages: [] })).toBe("/403");
+  });
+
+  it("falls back to a granted page no configured module covers", () => {
+    const pages = [
+      { canView: true, id: "data-book", route: "/data-book" },
+    ];
+
+    expect(getDefaultAuthorizedRoute({ modules, pages })).toBe("/data-book");
   });
 
   it("returns dashboard for Super Admin", () => {

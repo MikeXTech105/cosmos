@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import { oeeDowntimeReasonService } from "../../../services/oee/oeeDowntimeReasonService";
@@ -492,24 +492,13 @@ const OeeReportsPage = () => {
           />
           {reports.filters.mode === "custom" ? (
             <>
-              <AppInput
-                type="date"
-                value={reports.filters.FromDate}
-                onChange={(event) =>
-                  dispatch(setOeeReportFilters({ FromDate: event.target.value }))
-                }
-                aria-label="From date"
-                className="h-10"
-              />
-              <AppInput
-                type="date"
-                value={reports.filters.ToDate}
-                onChange={(event) =>
-                  dispatch(setOeeReportFilters({ ToDate: event.target.value }))
-                }
-                aria-label="To date"
-                className="h-10"
-              />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={reports.filters.FromDate}
+            toDate={reports.filters.ToDate}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => dispatch(setOeeReportFilters({ FromDate: fromDate, ToDate: toDate }))}
+          />
             </>
           ) : (
             <>

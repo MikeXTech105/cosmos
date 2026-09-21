@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
@@ -550,23 +551,12 @@ const LeavesPage = () => {
             }}
             options={[{ value: "all", label: "All leave types" }, ...HR_LEAVE_TYPE_OPTIONS]}
           />
-          <AppInput
-            id="leaveFromDate"
-            type="date"
-            value={leaveState.filters.FromDate}
-            onChange={(event) => {
-              dispatch(setHrLeaveFilters({ FromDate: event.target.value }));
-              dispatch(setHrLeavePage(1));
-            }}
-          />
-          <AppInput
-            id="leaveToDate"
-            type="date"
-            value={leaveState.filters.ToDate}
-            onChange={(event) => {
-              dispatch(setHrLeaveFilters({ ToDate: event.target.value }));
-              dispatch(setHrLeavePage(1));
-            }}
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={leaveState.filters.FromDate}
+            toDate={leaveState.filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => { dispatch(setHrLeaveFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(setHrLeavePage(1)); }}
           />
           <AppSelect
             value={leaveState.filters.Status}

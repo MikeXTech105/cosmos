@@ -260,7 +260,7 @@ const PackagingProfileFormPage = () => {
               value={form.packagingName}
               onChange={(event) => setField("packagingName", event.target.value)}
             />
-            {numericField("unitsPerBox", "Units per box", { min: "0.000001" })}
+            {numericField("unitsPerBox", "Units per box", { min: "0.000001", required: true })}
             {numericField("length", "Length")}
             {numericField("width", "Width")}
             {numericField("height", "Height")}

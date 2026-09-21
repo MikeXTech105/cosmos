@@ -1,7 +1,7 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import {
   ROJMEL_STATUS_OPTIONS,
@@ -28,8 +28,13 @@ const RojmelFilterBar = ({
   showWalletType = false,
   walletOptions = [],
 }) => {
+  const sortOptions = showWalletType
+    ? [{ label: "Wallet name", value: "walletName" }, { label: "Created date", value: "createdAt" }]
+    : showTransactionType
+      ? [{ label: "Transaction date", value: "transactionDate" }, { label: "Amount", value: "amount" }, { label: "Created date", value: "createdAt" }]
+      : [];
   const hasFilters = Object.entries(filters).some(([key, value]) => {
-    if (["SortBy", "SortDirection"].includes(key)) return false;
+    if (["SortBy", "SortDirection"].includes(key)) return Boolean(value);
     return value !== "" && value !== "all" && value !== undefined;
   });
 
@@ -42,7 +47,7 @@ const RojmelFilterBar = ({
             <input
               aria-label="Search Rojmel records"
               className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
-              placeholder="Search number, category or note…"
+              placeholder={showWalletType ? "Search wallet name or code…" : "Search number, category or note…"}
               value={filters.Search ?? ""}
               onChange={(event) => onChange({ Search: event.target.value })}
             />
@@ -50,22 +55,13 @@ const RojmelFilterBar = ({
         )}
         {showDates && (
           <>
-            <AppInput
-              aria-label="From date"
-              className="h-10 px-3"
-              max={filters.ToDate || undefined}
-              type="date"
-              value={filters.FromDate ?? ""}
-              onChange={(event) => onChange({ FromDate: event.target.value })}
-            />
-            <AppInput
-              aria-label="To date"
-              className="h-10 px-3"
-              min={filters.FromDate || undefined}
-              type="date"
-              value={filters.ToDate ?? ""}
-              onChange={(event) => onChange({ ToDate: event.target.value })}
-            />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.FromDate ?? ""}
+            toDate={filters.ToDate ?? ""}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => onChange({ FromDate: fromDate, ToDate: toDate })}
+          />
           </>
         )}
         {showWallet && (
@@ -128,11 +124,31 @@ const RojmelFilterBar = ({
             onChange={(value) => onChange({ IsActive: value })}
           />
         )}
+        {sortOptions.length > 0 && (
+          <>
+            <AppSelect
+              aria-label="Sort records by"
+              options={[{ label: "Default order", value: "" }, ...sortOptions]}
+              value={filters.SortBy ?? ""}
+              onChange={(value) => onChange({ SortBy: value, SortDirection: value ? (filters.SortDirection || "desc") : "" })}
+            />
+            <AppSelect
+              aria-label="Sort direction"
+              disabled={!filters.SortBy}
+              options={[{ label: "Ascending", value: "asc" }, { label: "Descending", value: "desc" }]}
+              value={filters.SortDirection || "desc"}
+              onChange={(value) => onChange({ SortDirection: value })}
+            />
+          </>
+        )}
         <AppButton
           className="h-10 rounded-lg px-3"
           disabled={!hasFilters}
           variant="secondary"
-          onClick={onClear}
+          onClick={() => {
+            if (sortOptions.length) onChange({ SortBy: "", SortDirection: "" });
+            onClear();
+          }}
         >
           <RotateCcw className="h-4 w-4" />
           Clear

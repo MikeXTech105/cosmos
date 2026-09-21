@@ -117,7 +117,7 @@ const getResponseItem = (response) => {
   return response?.data?.item ?? response?.data ?? null;
 };
 
-const NumberInput = ({ className, control, disabled, error, id, label, name, placeholder = "0" }) => (
+const NumberInput = ({ className, control, disabled, error, id, label, name, placeholder = "0", required = false }) => (
   <Controller
     control={control}
     name={name}
@@ -128,6 +128,7 @@ const NumberInput = ({ className, control, disabled, error, id, label, name, pla
         type="text"
         inputMode="decimal"
         placeholder={placeholder}
+        required={required}
         disabled={disabled}
         value={field.value ?? ""}
         name={field.name}
@@ -477,8 +478,8 @@ const InvoiceFormPage = () => {
               <table className="w-full min-w-[1050px] table-fixed text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-white">
-                    <th className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Item</th>
-                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Qty</th>
+                    <th className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Item<span className="ml-0.5 text-red-500">*</span></th>
+                    <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Qty<span className="ml-0.5 text-red-500">*</span></th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Rate</th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Disc %</th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Disc Amt</th>
@@ -510,6 +511,7 @@ const InvoiceFormPage = () => {
                                 emptyMessage={lookups.itemsError ? "Unable to load items. Try refreshing the page." : "No items found in inventory."}
                                 placeholder={lookups.itemsLoading ? "Loading items..." : "Select item"}
                                 disabled={lookups.itemsLoading}
+                                required
                                 error={errors.items?.[index]?.itemId?.message}
                                 creatable={canCreateItem}
                                 createLabel="Create new item"
@@ -519,7 +521,7 @@ const InvoiceFormPage = () => {
                           />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} error={errors.items?.[index]?.quantity?.message} />
+                          <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} required error={errors.items?.[index]?.quantity?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
                           <NumberInput control={control} id={`rate-${index}`} name={`items.${index}.rate`} error={errors.items?.[index]?.rate?.message} />

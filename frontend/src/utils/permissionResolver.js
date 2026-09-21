@@ -111,6 +111,18 @@ export const normalizePermissionPage = (page) => {
   };
 };
 
+const findUniquePageByName = (pageList, normalizedName) => {
+  if (!normalizedName) {
+    return null;
+  }
+
+  const nameMatches = pageList.filter((page) => {
+    return normalizeText(page?.pageName) === normalizedName;
+  });
+
+  return nameMatches.length === 1 ? nameMatches[0] : null;
+};
+
 export const findPermissionPage = (pages, target) => {
   const pageList = Array.isArray(pages) ? pages.filter(Boolean) : [];
   const normalizedTarget = {
@@ -119,6 +131,9 @@ export const findPermissionPage = (pages, target) => {
       typeof target === "string"
         ? target
         : target?.pageName ?? target?.label ?? target?.name,
+    ),
+    pageName: normalizeText(
+      typeof target === "string" ? "" : target?.pageName,
     ),
     route: normalizeRoute(typeof target === "string" ? "" : target?.route),
   };
@@ -134,10 +149,19 @@ export const findPermissionPage = (pages, target) => {
   }
 
   if (normalizedTarget.route) {
-    return (
-      pageList.find((page) => getPageRoute(page) === normalizedTarget.route) ??
-      null
-    );
+    const routeMatch = pageList.find((page) => {
+      return getPageRoute(page) === normalizedTarget.route;
+    });
+
+    if (routeMatch) {
+      return routeMatch;
+    }
+
+    // The backend owns each page's route string and may store it differently
+    // from the app router (or leave it empty). Fall back to the page's unique
+    // backend name so a granted permission is never silently dropped. An
+    // ambiguous display label still fails closed below.
+    return findUniquePageByName(pageList, normalizedTarget.pageName);
   }
 
   if (!normalizedTarget.label) {

@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
@@ -478,25 +478,12 @@ const PurchaseDocumentListPage = ({ config }) => {
           ) : (
             <div />
           )}
-          <AppInput
-            type="date"
-            value={state.filters.FromDate}
-            onChange={(event) => {
-              dispatch(config.setFilters({ FromDate: event.target.value }));
-              dispatch(config.setPage(1));
-            }}
-            aria-label="From date"
-            className="h-10"
-          />
-          <AppInput
-            type="date"
-            value={state.filters.ToDate}
-            onChange={(event) => {
-              dispatch(config.setFilters({ ToDate: event.target.value }));
-              dispatch(config.setPage(1));
-            }}
-            aria-label="To date"
-            className="h-10"
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={state.filters.FromDate}
+            toDate={state.filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => { dispatch(config.setFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(config.setPage(1)); }}
           />
           <AppButton
             variant="secondary"

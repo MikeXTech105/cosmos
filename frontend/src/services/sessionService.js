@@ -1,10 +1,16 @@
 import axios from "axios";
 
 import { ENDPOINTS } from "../api/endpoints";
-import { clearCredentials, setTokens } from "../store/slices/authSlice";
+import {
+  clearCredentials,
+  replaceAuthSnapshot,
+  setTokens,
+} from "../store/slices/authSlice";
 import {
   clearAuthData,
   getAuthData,
+  getAuthStorageType,
+  saveAuthData,
   updateAuthTokens,
 } from "../utils/authStorage";
 import { unwrapResponse } from "./apiServiceUtils";
@@ -33,7 +39,8 @@ export const clearSession = () => {
 };
 
 const performRefresh = async () => {
-  const { refreshToken } = getAuthData();
+  const storedAuth = getAuthData();
+  const { refreshToken } = storedAuth;
 
   if (!refreshToken) {
     throw new Error("Missing refresh token");
@@ -52,6 +59,27 @@ const performRefresh = async () => {
 
   if (!tokens.accessToken) {
     throw new Error("Refresh response did not include an access token");
+  }
+
+  // The refresh response carries the same payload as login, including the
+  // current page permissions. Persisting them keeps a live session in step with
+  // role changes an admin just made, instead of serving the page list captured
+  // at sign-in until the user logs out and back in.
+  if (Array.isArray(data?.pages)) {
+    const snapshot = {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: data.user ?? storedAuth.user,
+      roles: data.roles ?? storedAuth.roles,
+      pages: data.pages,
+    };
+
+    saveAuthData(snapshot, {
+      rememberMe: getAuthStorageType() !== "session",
+    });
+    sessionStore?.dispatch(replaceAuthSnapshot(snapshot));
+
+    return tokens;
   }
 
   updateAuthTokens(tokens);

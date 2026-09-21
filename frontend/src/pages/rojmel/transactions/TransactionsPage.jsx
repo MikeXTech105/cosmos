@@ -304,7 +304,7 @@ const TransactionsPage = () => {
         showCategory
         showDates
         showLinkedUser={capabilities.isAdmin}
-        showStatus={capabilities.isAdmin}
+        showStatus
         showTransactionType
         showWallet={capabilities.isAdmin}
         walletOptions={walletOptions}
