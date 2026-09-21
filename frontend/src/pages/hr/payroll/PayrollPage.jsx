@@ -247,6 +247,7 @@ const PayrollPage = () => {
   const capabilities = useHrCapabilities({
     actions: ["view", "create", "approve"],
     label: "Payroll",
+    pageName: "HR.Payroll",
     resource: ["payroll", "hrPayroll"],
     route: "/hr/payroll",
   });

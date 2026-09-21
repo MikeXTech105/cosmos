@@ -37,6 +37,7 @@ const DepartmentsPage = () => {
   const departmentsState = useSelector((state) => state.hrDepartments);
   const capabilities = useHrCapabilities({
     label: "Departments",
+    pageName: "HR.Department",
     resource: "departments",
     route: "/hr/departments",
   });

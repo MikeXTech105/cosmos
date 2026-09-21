@@ -9,7 +9,7 @@ const toCapabilityName = (action) => {
   return `can${normalizedAction.charAt(0).toUpperCase()}${normalizedAction.slice(1)}`;
 };
 
-const useCapabilities = ({ actions, label, resource, route }) => {
+const useCapabilities = ({ actions, label, pageName, resource, route }) => {
   const pages = useSelector((state) => state.auth.pages ?? []);
   const roles = useSelector((state) => state.auth.roles ?? []);
   const user = useSelector((state) => state.auth.user);
@@ -35,13 +35,13 @@ const useCapabilities = ({ actions, label, resource, route }) => {
             pages,
             resource,
             roles,
-            target: { label, route },
+            target: { label, pageName, route },
             user,
           }),
         ];
       }),
     );
-  }, [actionList, label, pages, resource, roles, route, user]);
+  }, [actionList, label, pageName, pages, resource, roles, route, user]);
 };
 
 export default useCapabilities;

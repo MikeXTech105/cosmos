@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
@@ -266,29 +267,13 @@ const ReportFilterBar = ({
             options={DATE_PRESETS.map(({ label, value }) => ({ label, value }))}
             aria-label="Date preset"
           />
-          <AppInput
-            type="date"
-            value={filters.FromDate ?? ""}
-            onChange={(event) =>
-              onChange({
-                FromDate: event.target.value,
-                PageNumber: 1,
-                datePreset: "custom",
-              })
-            }
-            aria-label="From date"
-          />
-          <AppInput
-            type="date"
-            value={filters.ToDate ?? ""}
-            onChange={(event) =>
-              onChange({
-                PageNumber: 1,
-                ToDate: event.target.value,
-                datePreset: "custom",
-              })
-            }
-            aria-label="To date"
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.FromDate ?? ""}
+            toDate={filters.ToDate ?? ""}
+            allowLifetime={false}
+            disabled={disabled}
+            onChange={({ fromDate, toDate }) => onChange({ FromDate: fromDate, ToDate: toDate, PageNumber: 1, datePreset: "custom" })}
           />
         </div>
       );

@@ -44,6 +44,7 @@ const AppImageUpload = ({
   label,
   onChange,
   onFileChange,
+  required = false,
   uploadHandler,
   value,
 }) => {
@@ -173,6 +174,7 @@ const AppImageUpload = ({
       {label && (
         <p className="mb-1.5 text-xs font-semibold text-slate-700">
           {label}
+          {required && <span className="ml-0.5 text-red-500">*</span>}
         </p>
       )}
 

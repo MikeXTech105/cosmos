@@ -1,5 +1,6 @@
 import {
   CalendarCheck,
+  BookOpenCheck,
   ChevronLeft,
   ChevronRight,
   Clock3,
@@ -7,6 +8,7 @@ import {
   Filter,
   LogIn,
   LogOut,
+  List,
   Plus,
   RefreshCw,
   Search,
@@ -50,6 +52,7 @@ import {
   QuickActionModal,
 } from "./AttendanceActionModals";
 import AttendanceRoster from "./AttendanceRoster";
+import AttendanceBook from "./AttendanceBook";
 import EmployeeAttendanceModal from "./EmployeeAttendanceModal";
 import {
   extractAttendanceItems,
@@ -165,6 +168,7 @@ const AttendanceWorkspace = () => {
   const capabilities = useHrCapabilities({
     actions: ["view", "create", "approve"],
     label: "Attendance",
+    pageName: "HR.Attendance",
     resource: ["attendance", "hrAttendance"],
     route: "/hr/attendance",
   });
@@ -191,6 +195,16 @@ const AttendanceWorkspace = () => {
   const [decisionMode, setDecisionMode] = useState("approve");
   const [initialEmployeeId, setInitialEmployeeId] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [viewMode, setViewMode] = useState("book");
+  const [attendanceDrafts, setAttendanceDrafts] = useState({});
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
+
+  const changeSelectedDate = useCallback((nextDate) => {
+    setSelectedDate((current) =>
+      typeof nextDate === "function" ? nextDate(current) : nextDate,
+    );
+    setAttendanceDrafts({});
+  }, []);
 
   const loadWorkforce = useCallback(async () => {
     const requestId = ++workforceRequestRef.current;
@@ -400,7 +414,7 @@ const AttendanceWorkspace = () => {
         if (payload.attendanceDate === selectedDate) {
           await loadDailyAttendance();
         } else {
-          setSelectedDate(payload.attendanceDate);
+          changeSelectedDate(payload.attendanceDate);
         }
       } catch (error) {
         toast.error(
@@ -411,6 +425,7 @@ const AttendanceWorkspace = () => {
     },
     [
       capabilities.canCreate,
+      changeSelectedDate,
       closeAction,
       dispatch,
       loadDailyAttendance,
@@ -458,6 +473,109 @@ const AttendanceWorkspace = () => {
   const refreshEverything = useCallback(() => {
     void Promise.allSettled([loadWorkforce(), loadDailyAttendance()]);
   }, [loadDailyAttendance, loadWorkforce]);
+
+  const setAttendanceBookStatus = useCallback(
+    (employeeId, currentStatus, nextStatus) => {
+      setAttendanceDrafts((current) => {
+        const next = { ...current };
+
+        if (Number(currentStatus) === Number(nextStatus)) {
+          delete next[String(employeeId)];
+        } else {
+          next[String(employeeId)] = Number(nextStatus);
+        }
+
+        return next;
+      });
+    },
+    [],
+  );
+
+  const bulkMarkVisible = useCallback(
+    (status) => {
+      setAttendanceDrafts((current) => {
+        const next = { ...current };
+
+        visibleRoster.forEach(({ employee, isExpected, record }) => {
+          if (isExpected === false) return;
+
+          const employeeId = String(getHrRecordId(employee, "employee"));
+          const currentStatus = Number(
+            record?.attendanceStatus ?? record?.status,
+          );
+
+          if (currentStatus === Number(status)) {
+            delete next[employeeId];
+          } else {
+            next[employeeId] = Number(status);
+          }
+        });
+
+        return next;
+      });
+    },
+    [visibleRoster],
+  );
+
+  const saveAttendanceBook = useCallback(async () => {
+    const entries = Object.entries(attendanceDrafts);
+    if (!capabilities.canCreate || entries.length === 0 || isBulkSaving) return;
+
+    setIsBulkSaving(true);
+    const succeeded = [];
+    const failed = [];
+
+    try {
+      for (let index = 0; index < entries.length; index += 6) {
+        const batch = entries.slice(index, index + 6);
+        const results = await Promise.allSettled(
+          batch.map(([employeeId, attendanceStatus]) =>
+            dispatch(
+              createHrAttendanceManualEntry({
+                attendanceDate: selectedDate,
+                attendanceStatus: Number(attendanceStatus),
+                employeeId: Number(employeeId),
+              }),
+            ).unwrap(),
+          ),
+        );
+
+        results.forEach((result, resultIndex) => {
+          const employeeId = batch[resultIndex][0];
+          if (result.status === "fulfilled") succeeded.push(employeeId);
+          else failed.push(employeeId);
+        });
+      }
+
+      setAttendanceDrafts((current) => {
+        const next = { ...current };
+        succeeded.forEach((employeeId) => delete next[employeeId]);
+        return next;
+      });
+
+      if (succeeded.length > 0) {
+        toast.success(
+          `${succeeded.length} attendance ${succeeded.length === 1 ? "entry" : "entries"} saved`,
+        );
+        await loadDailyAttendance();
+      }
+
+      if (failed.length > 0) {
+        toast.error(
+          `${failed.length} ${failed.length === 1 ? "entry" : "entries"} could not be saved. Unsaved rows are still highlighted.`,
+        );
+      }
+    } finally {
+      setIsBulkSaving(false);
+    }
+  }, [
+    attendanceDrafts,
+    capabilities.canCreate,
+    dispatch,
+    isBulkSaving,
+    loadDailyAttendance,
+    selectedDate,
+  ]);
 
   return (
     <section className="min-w-0 space-y-6">
@@ -564,11 +682,35 @@ const AttendanceWorkspace = () => {
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("book")}
+                  className={`inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors ${
+                    viewMode === "book"
+                      ? "bg-white text-brand shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <BookOpenCheck className="h-4 w-4" /> Book
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("details")}
+                  className={`inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-bold transition-colors ${
+                    viewMode === "details"
+                      ? "bg-white text-brand shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <List className="h-4 w-4" /> Details
+                </button>
+              </div>
               <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-1">
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedDate((current) => shiftDateKey(current, -1))
+                    changeSelectedDate((current) => shiftDateKey(current, -1))
                   }
                   aria-label="Previous day"
                   className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
@@ -579,13 +721,13 @@ const AttendanceWorkspace = () => {
                   id="attendanceWorkspaceDate"
                   type="date"
                   value={selectedDate}
-                  onChange={(event) => setSelectedDate(event.target.value)}
+                  onChange={(event) => changeSelectedDate(event.target.value)}
                   className="w-[155px] border-0 bg-transparent shadow-none focus:ring-0"
                 />
                 <button
                   type="button"
                   onClick={() =>
-                    setSelectedDate((current) => shiftDateKey(current, 1))
+                    changeSelectedDate((current) => shiftDateKey(current, 1))
                   }
                   aria-label="Next day"
                   className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-white hover:text-slate-900"
@@ -595,7 +737,7 @@ const AttendanceWorkspace = () => {
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedDate(today())}
+                onClick={() => changeSelectedDate(today())}
                 className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50"
               >
                 Today
@@ -739,19 +881,42 @@ const AttendanceWorkspace = () => {
           </div>
         )}
 
-        <AttendanceRoster
-          attendanceUnavailable={isDailyUnavailable}
-          error={workforce.error}
-          isLoading={
-            (workforce.loading && workforce.employees.length === 0) ||
-            dailyAttendance.loading
-          }
-          items={visibleRoster}
-          onRetry={loadWorkforce}
-          onSelect={(employee) => {
-            if (capabilities.canView) setSelectedEmployee(employee);
-          }}
-        />
+        {viewMode === "book" ? (
+          <AttendanceBook
+            attendanceUnavailable={isDailyUnavailable}
+            canEdit={capabilities.canCreate}
+            drafts={attendanceDrafts}
+            error={workforce.error}
+            isLoading={
+              (workforce.loading && workforce.employees.length === 0) ||
+              dailyAttendance.loading
+            }
+            isSaving={isBulkSaving}
+            items={visibleRoster}
+            onBulkMark={bulkMarkVisible}
+            onDiscard={() => setAttendanceDrafts({})}
+            onRetry={loadWorkforce}
+            onSave={saveAttendanceBook}
+            onSelect={(employee) => {
+              if (capabilities.canView) setSelectedEmployee(employee);
+            }}
+            onSetStatus={setAttendanceBookStatus}
+          />
+        ) : (
+          <AttendanceRoster
+            attendanceUnavailable={isDailyUnavailable}
+            error={workforce.error}
+            isLoading={
+              (workforce.loading && workforce.employees.length === 0) ||
+              dailyAttendance.loading
+            }
+            items={visibleRoster}
+            onRetry={loadWorkforce}
+            onSelect={(employee) => {
+              if (capabilities.canView) setSelectedEmployee(employee);
+            }}
+          />
+        )}
 
         {!workforce.error && !workforce.loading && visibleRoster.length > 0 && (
           <div className="flex flex-col gap-1 border-t border-slate-200 bg-slate-50/70 px-4 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-5">
@@ -761,7 +926,9 @@ const AttendanceWorkspace = () => {
               matching employees—no attendance record is hidden.
             </span>
             <span className="font-semibold text-brand">
-              Select an employee for monthly history →
+              {viewMode === "book"
+                ? "Use P / A to mark attendance, then save changes →"
+                : "Select an employee for monthly history →"}
             </span>
           </div>
         )}

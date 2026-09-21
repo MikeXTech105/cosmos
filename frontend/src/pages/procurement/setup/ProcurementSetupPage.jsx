@@ -45,7 +45,11 @@ const ProcurementSetupPage = () => {
           action: "view",
           pages,
           roles,
-          target: { label: tab.pageName, route: tab.route },
+          target: {
+            label: tab.label,
+            pageName: tab.pageName,
+            route: tab.route,
+          },
           user,
         }),
       ),

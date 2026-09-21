@@ -93,10 +93,10 @@ const EmployeeFormPage = () => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const capabilities = useHrCapabilities({ label: "Employees", resource: "employees", route: "/hr/employees" });
-  const canCreateDepartment = useCreatePermission({ label: "Departments", resource: "departments", route: "/hr/departments" });
-  const canCreateDesignation = useCreatePermission({ label: "Designations", resource: "designations", route: "/hr/designations" });
-  const canCreateShift = useCreatePermission({ label: "Shifts", resource: "shifts", route: "/hr/shifts" });
+  const capabilities = useHrCapabilities({ label: "Employees", pageName: "HR.Employee", resource: "employees", route: "/hr/employees" });
+  const canCreateDepartment = useCreatePermission({ label: "Departments", pageName: "HR.Department", resource: "departments", route: "/hr/departments" });
+  const canCreateDesignation = useCreatePermission({ label: "Designations", pageName: "HR.Designation", resource: "designations", route: "/hr/designations" });
+  const canCreateShift = useCreatePermission({ label: "Shifts", pageName: "HR.Shift", resource: "shifts", route: "/hr/shifts" });
 
   const detailLoading = useSelector((state) => state.hrEmployees.detailLoading);
   const detailError = useSelector((state) => state.hrEmployees.detailError);

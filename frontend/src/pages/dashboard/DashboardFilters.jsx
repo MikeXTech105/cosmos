@@ -1,7 +1,7 @@
 import { CalendarDays, RefreshCw } from "lucide-react";
 
 import AppButton from "../../components/common/AppButton";
-import AppInput from "../../components/common/AppInput";
+import AppDateRangeFilter from "../../components/common/AppDateRangeFilter";
 import AppSelect from "../../components/common/AppSelect";
 import {
   DASHBOARD_DATE_PRESETS,
@@ -39,27 +39,12 @@ const DashboardFilters = ({
             }))}
             aria-label="Dashboard date preset"
           />
-          <AppInput
-            type="date"
-            value={filters.fromDate ?? ""}
-            onChange={(event) =>
-              onChange({
-                datePreset: "custom",
-                fromDate: event.target.value,
-              })
-            }
-            aria-label="Dashboard from date"
-          />
-          <AppInput
-            type="date"
-            value={filters.toDate ?? ""}
-            onChange={(event) =>
-              onChange({
-                datePreset: "custom",
-                toDate: event.target.value,
-              })
-            }
-            aria-label="Dashboard to date"
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.fromDate ?? ""}
+            toDate={filters.toDate ?? ""}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => onChange({ fromDate, toDate, datePreset: "custom" })}
           />
         </div>
 

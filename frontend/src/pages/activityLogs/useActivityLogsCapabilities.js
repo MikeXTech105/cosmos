@@ -4,6 +4,7 @@ const useActivityLogsCapabilities = () => {
   const capabilities = useCapabilities({
     actions: ["view", "export"],
     label: "ActivityLogs",
+    pageName: "ActivityLogs",
     resource: "ActivityLogs",
     route: "/activity-logs",
   });
@@ -15,4 +16,3 @@ const useActivityLogsCapabilities = () => {
 };
 
 export default useActivityLogsCapabilities;
-

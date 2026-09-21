@@ -298,6 +298,7 @@ const DispatchPlanShipmentFormPage = () => {
                       error={errors[`allocations.${form.allocations.indexOf(selected)}.plannedQuantity`]}
                       label="Planned quantity"
                       min="0"
+                      required={selected}
                       step="any"
                       type="number"
                       value={selected?.plannedQuantity ?? ""}

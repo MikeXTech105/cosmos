@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
@@ -672,22 +673,13 @@ const DispatchRunsPage = () => {
           value={state.filters.Status}
           onChange={(value) => setFilters({ Status: value })}
         />
-        <AppInput
-          className="w-44"
-          label="From date"
-          max={state.filters.ToDate || undefined}
-          type="date"
-          value={state.filters.FromDate}
-          onChange={(event) => setFilters({ FromDate: event.target.value })}
-        />
-        <AppInput
-          className="w-44"
-          label="To date"
-          min={state.filters.FromDate || undefined}
-          type="date"
-          value={state.filters.ToDate}
-          onChange={(event) => setFilters({ ToDate: event.target.value })}
-        />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={state.filters.FromDate}
+            toDate={state.filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => setFilters({ FromDate: fromDate, ToDate: toDate })}
+          />
       </SupplyChainFilterBar>
 
       <SupplyChainInlineError message={channelError} title="Channels unavailable" />

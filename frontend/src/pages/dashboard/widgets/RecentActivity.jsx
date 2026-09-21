@@ -25,6 +25,7 @@ const RecentActivity = ({ data, error, errorStatus, isLoading, onRetry }) => {
   const dashboardCapabilities = useCapabilities({
     actions: ["view"],
     label: "Dashboard",
+    pageName: "Dashboard",
     resource: "Dashboard",
     route: "/dashboard",
   });
@@ -99,4 +100,3 @@ const RecentActivity = ({ data, error, errorStatus, isLoading, onRetry }) => {
 };
 
 export default RecentActivity;
-

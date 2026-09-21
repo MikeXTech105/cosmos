@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import DataTableShell, { DATA_TABLE_ROW_ACTION_CLASS } from "../../../components/common/DataTableShell";
@@ -90,10 +91,15 @@ const WebsiteWarrantyPage = () => {
           <AppSelect label="Status" options={[{ label: "Any status", value: "" }, ...WARRANTY_STATUS_NAMES.map((value) => ({ label: getWarrantyStatusLabel(value), value }))]} value={filters.status} onChange={(value) => setFilter("status", value)} />
           <AppSelect label="Resolution type" options={[{ label: "Any resolution", value: "" }, ...WARRANTY_RESOLUTION_NAMES.filter((value) => value !== "None").map((value) => ({ label: value, value }))]} value={filters.resolutionType} onChange={(value) => setFilter("resolutionType", value)} />
           <AppSelect label="Assigned to" options={[{ label: "Anyone", value: "" }, ...userOptions]} value={filters.assignedToUserId} onChange={(value) => setFilter("assignedToUserId", value)} />
-          <AppInput label="Submitted from" type="datetime-local" value={filters.submittedFromUtc} onChange={(event) => setFilter("submittedFromUtc", event.target.value)} />
-          <AppInput label="Submitted to" type="datetime-local" value={filters.submittedToUtc} onChange={(event) => setFilter("submittedToUtc", event.target.value)} />
-          <AppInput label="Purchase date from" type="date" value={filters.purchaseDateFrom} onChange={(event) => setFilter("purchaseDateFrom", event.target.value)} />
-          <AppInput label="Purchase date to" type="date" value={filters.purchaseDateTo} onChange={(event) => setFilter("purchaseDateTo", event.target.value)} />
+          <AppDateRangeFilter includeTime label="Submitted date range" className="md:col-span-2" fromDate={filters.submittedFromUtc} toDate={filters.submittedToUtc} onChange={({ fromDate, toDate }) => setFilters((current) => ({ ...current, submittedFromUtc: fromDate, submittedToUtc: toDate, pageNumber: 1 }))} />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.purchaseDateFrom}
+            label="Purchase date range"
+            toDate={filters.purchaseDateTo}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => setFilters((current) => ({ ...current, purchaseDateFrom: fromDate, purchaseDateTo: toDate, pageNumber: 1 }))}
+          />
         </div>
         <div className="mt-3 flex items-center justify-between"><p className="text-xs text-slate-500">{activeFilterCount} active filter{activeFilterCount === 1 ? "" : "s"}</p><AppButton variant="ghost" disabled={!activeFilterCount} onClick={() => setFilters(createFilters(new URLSearchParams()))}><X className="h-4 w-4" /> Clear</AppButton></div>
       </section>

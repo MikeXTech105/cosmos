@@ -4,6 +4,7 @@ const useDataBookCapabilities = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "edit", "delete", "export"],
     label: "DataBook.Entries",
+    pageName: "DataBook.Entries",
     resource: "DataBook.Entries",
     route: "/data-book",
   });

@@ -251,6 +251,7 @@ const Permissions = () => {
   const capabilities = useCapabilities({
     actions: ["view", "update"],
     label: "Permissions",
+    pageName: "Permissions",
     resource: "permissions",
     route: "/permissions",
   });

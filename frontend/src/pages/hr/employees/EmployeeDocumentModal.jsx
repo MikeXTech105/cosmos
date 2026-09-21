@@ -97,6 +97,7 @@ const EmployeeDocumentModal = ({ isOpen, onClose, onSubmit }) => {
           render={({ field }) => (
             <AppImageUpload
               label="Document File"
+              required
               value={field.value}
               onChange={field.onChange}
               error={errors.filePath?.message}

@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import { oeeMachineService } from "../../../services/oee/oeeMachineService";
@@ -36,6 +36,7 @@ import {
 } from "../oeeHelpers";
 import { OeeRatingPill, OeeStatCard } from "../OeeShared";
 import OeeSpeedometer from "../OeeSpeedometer";
+import OeeDowntimeAnalysis from "./OeeDowntimeAnalysis";
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -455,28 +456,13 @@ const OeeDashboardPage = () => {
           />
           {dashboard.filters.mode === "custom" ? (
             <>
-              <AppInput
-                type="date"
-                value={dashboard.filters.FromDate}
-                onChange={(event) =>
-                  dispatch(
-                    setOeeDashboardFilters({ FromDate: event.target.value }),
-                  )
-                }
-                aria-label="From date"
-                className="h-10"
-              />
-              <AppInput
-                type="date"
-                value={dashboard.filters.ToDate}
-                onChange={(event) =>
-                  dispatch(
-                    setOeeDashboardFilters({ ToDate: event.target.value }),
-                  )
-                }
-                aria-label="To date"
-                className="h-10"
-              />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={dashboard.filters.FromDate}
+            toDate={dashboard.filters.ToDate}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => dispatch(setOeeDashboardFilters({ FromDate: fromDate, ToDate: toDate }))}
+          />
             </>
           ) : (
             <>
@@ -560,6 +546,8 @@ const OeeDashboardPage = () => {
           colorClass="bg-amber-50 text-amber-600"
         />
       </div>
+
+      <OeeDowntimeAnalysis />
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
         <div className="flex min-w-max gap-1">

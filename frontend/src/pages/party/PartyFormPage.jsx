@@ -18,6 +18,7 @@ const PartyFormPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

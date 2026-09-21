@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
@@ -84,6 +85,7 @@ const createRowsFromMachines = (machines) => {
     machineCode: machine.machineCode ?? "",
     machineId: getOeeRecordId(machine, "machine"),
     machineName: machine.machineName ?? "",
+    isRunning: false,
     machineOnTime: "",
     mouldId: "",
     shotCount: "0",
@@ -535,16 +537,19 @@ const OeeProductionEntriesPage = () => {
   const production = useSelector((state) => state.oeeProductionEntries);
   const capabilities = useOeeCapabilities({
     label: "OEE Production Entries",
+    pageName: "OEE.ProductionEntries",
     resource: "oeeProductionEntries",
     route: "/oee/production-entries",
   });
   const canCreateMould = useCreatePermission({
     label: "Moulds",
+    pageName: "OEE.Moulds",
     resource: "oeeMoulds",
     route: "/oee/moulds",
   });
   const canCreateDowntimeReason = useCreatePermission({
     label: "Downtime Reasons",
+    pageName: "OEE.DowntimeReasons",
     resource: "oeeDowntimeReasons",
     route: "/oee/downtime-reasons",
   });
@@ -639,7 +644,15 @@ const OeeProductionEntriesPage = () => {
         moulds: getItems(moulds),
         reasons: getItems(reasons),
       });
-      setRows(createRowsFromMachines(nextMachines));
+      setRows((current) => {
+        const existing = new Map(current.map((row) => [row.id, row]));
+        return createRowsFromMachines(nextMachines).map((row) => ({
+          ...row,
+          ...existing.get(row.id),
+          machineCode: row.machineCode,
+          machineName: row.machineName,
+        }));
+      });
     } catch (error) {
       setLookups((current) => ({
         ...current,
@@ -667,7 +680,7 @@ const OeeProductionEntriesPage = () => {
   const validateRows = () => {
     const nextErrors = {};
 
-    rows.forEach((row) => {
+    rows.filter((row) => row.isRunning).forEach((row) => {
       const errors = [];
 
       if (!row.machineOnTime.trim()) {
@@ -707,6 +720,11 @@ const OeeProductionEntriesPage = () => {
       return;
     }
 
+    if (!rows.some((row) => row.isRunning)) {
+      toast.error("Switch on at least one running machine to save an entry.");
+      return;
+    }
+
     if (!validateRows()) {
       toast.error("Please complete required fields before saving.");
       return;
@@ -714,7 +732,7 @@ const OeeProductionEntriesPage = () => {
 
     const payload = {
       productionDate,
-      entries: rows.map((row) => ({
+      entries: rows.filter((row) => row.isRunning).map((row) => ({
         machineId: Number(row.machineId),
         machineOnTime: normalizeMachineOnTime(row.machineOnTime),
         mouldId: Number(row.mouldId),
@@ -924,7 +942,7 @@ const OeeProductionEntriesPage = () => {
             <AppButton
               variant="secondary"
               className="h-10"
-              disabled={lookups.loading}
+              disabled={lookups.loading || production.bulkSaving}
               onClick={loadLookups}
             >
               <RefreshCw
@@ -940,7 +958,7 @@ const OeeProductionEntriesPage = () => {
                 onClick={saveAll}
               >
                 <Save className="h-4 w-4" />
-                Save All
+                Save Running Machines
               </AppButton>
             )}
           </>
@@ -961,10 +979,11 @@ const OeeProductionEntriesPage = () => {
               Bulk Daily Entry
             </div>
             <h2 className="mt-3 text-lg font-semibold text-slate-900">
-              {rows.length} active machines
+              {rows.filter((row) => row.isRunning).length} of {rows.length} machines running
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Enter on-time as text such as 12 HR. Pure numbers are saved as HR.
+              Switch on the machines running on this date. Only running machines will be saved.
+              Enter on-time as 12 HR or a number of hours.
             </p>
           </div>
           <AppInput
@@ -973,6 +992,7 @@ const OeeProductionEntriesPage = () => {
             type="date"
             required
             value={productionDate}
+            disabled={production.bulkSaving}
             onChange={(event) => setProductionDate(event.target.value)}
             className="h-10"
           />
@@ -1010,6 +1030,20 @@ const OeeProductionEntriesPage = () => {
                 ].join(" ")}
               >
                 <div className="min-w-0">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={row.isRunning}
+                    aria-label={`Running machine ${row.machineCode || row.machineName}`}
+                    disabled={!capabilities.canCreate || production.bulkSaving}
+                    onClick={() => updateRow(row.id, { isRunning: !row.isRunning })}
+                    className="mb-2 inline-flex items-center gap-2 rounded-md text-xs font-semibold text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <span className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${row.isRunning ? "bg-emerald-500" : "bg-slate-300"}`}>
+                      <span className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${row.isRunning ? "translate-x-4" : "translate-x-0"}`} />
+                    </span>
+                    {row.isRunning ? "Running" : "Off · skipped"}
+                  </button>
                   <p className="truncate text-sm font-semibold text-slate-900">
                     {row.machineCode || row.machineName}
                   </p>
@@ -1024,6 +1058,7 @@ const OeeProductionEntriesPage = () => {
                 </div>
                 <AppInput
                   id={`machineOnTime-${row.id}`}
+                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
                   aria-label="Machine on-time"
                   value={row.machineOnTime}
                   placeholder="12 HR"
@@ -1034,6 +1069,7 @@ const OeeProductionEntriesPage = () => {
                 />
                 <AppSelect
                   value={row.mouldId}
+                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
                   onChange={(value) => updateRow(row.id, { mouldId: value })}
                   options={mouldOptions}
                   placeholder="Select mould"
@@ -1053,12 +1089,14 @@ const OeeProductionEntriesPage = () => {
                 />
                 <OeeNumberInput
                   id={`shotCount-${row.id}`}
+                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
                   allowDecimal={false}
                   value={row.shotCount}
                   onChange={(value) => updateRow(row.id, { shotCount: value })}
                 />
                 <AppSelect
                   value={row.downtimeReasonId}
+                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
                   onChange={(value) =>
                     updateRow(row.id, { downtimeReasonId: value })
                   }
@@ -1080,6 +1118,7 @@ const OeeProductionEntriesPage = () => {
                 />
                 <AppInput
                   id={`remarks-${row.id}`}
+                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
                   aria-label="Remarks"
                   value={row.remarks}
                   placeholder="Remarks"
@@ -1118,29 +1157,12 @@ const OeeProductionEntriesPage = () => {
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-          <AppInput
-            type="date"
-            value={production.filters.FromDate}
-            onChange={(event) => {
-              dispatch(
-                setOeeProductionEntryFilters({ FromDate: event.target.value }),
-              );
-              dispatch(setOeeProductionEntryPage(1));
-            }}
-            aria-label="From date"
-            className="h-10"
-          />
-          <AppInput
-            type="date"
-            value={production.filters.ToDate}
-            onChange={(event) => {
-              dispatch(
-                setOeeProductionEntryFilters({ ToDate: event.target.value }),
-              );
-              dispatch(setOeeProductionEntryPage(1));
-            }}
-            aria-label="To date"
-            className="h-10"
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={production.filters.FromDate}
+            toDate={production.filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => { dispatch(setOeeProductionEntryFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(setOeeProductionEntryPage(1)); }}
           />
           <AppSelect
             value={production.filters.MachineId}

@@ -118,6 +118,7 @@ const mouldConfig = {
   inactiveIcon: PauseCircle,
   modalDescription: "Set the production target inputs used by backend OEE calculations.",
   permissionLabel: "OEE Moulds",
+  permissionPageName: "OEE.Moulds",
   permissionResource: "oeeMoulds",
   pluralLabel: "Moulds",
   recordResource: "mould",

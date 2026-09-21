@@ -9,10 +9,11 @@ const PROCUREMENT_ACTIONS = [
   "approve",
 ];
 
-const useProcurementCapabilities = ({ label, resource, route }) => {
+const useProcurementCapabilities = ({ label, pageName = label, resource, route }) => {
   const capabilities = useCapabilities({
     actions: PROCUREMENT_ACTIONS,
     label,
+    pageName,
     resource,
     route,
   });
