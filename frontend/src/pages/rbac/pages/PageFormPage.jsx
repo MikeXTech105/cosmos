@@ -79,7 +79,7 @@ const PageFormPage = () => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const capabilities = useCapabilities({ label: "Pages", resource: "pages", route: "/rbac/pages" });
+  const capabilities = useCapabilities({ label: "Pages", pageName: "Pages", resource: "pages", route: "/rbac/pages" });
   const isView = isEdit && !capabilities.canUpdate;
 
   const pages = useSelector((state) => state.rbacPages.list);

@@ -299,6 +299,7 @@ const OeeReportsPage = () => {
   const capabilities = useOeeCapabilities({
     actions: ["view", "export"],
     label: "OEE Reports",
+    pageName: "OEE.Reports",
     resource: ["oeeReports", "reports"],
     route: "/oee/reports",
   });

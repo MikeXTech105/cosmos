@@ -111,6 +111,7 @@ const machineConfig = {
   inactiveIcon: PauseCircle,
   modalDescription: "Keep machine details aligned with the production floor.",
   permissionLabel: "OEE Machines",
+  permissionPageName: "OEE.Machines",
   permissionResource: "oeeMachines",
   pluralLabel: "Machines",
   recordResource: "machine",

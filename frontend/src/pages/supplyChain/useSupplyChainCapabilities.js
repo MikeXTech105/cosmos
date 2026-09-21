@@ -9,10 +9,11 @@ const SUPPLY_CHAIN_ACTIONS = [
   "approve",
 ];
 
-const useSupplyChainCapabilities = ({ label, resource, route }) => {
+const useSupplyChainCapabilities = ({ label, pageName = label, resource, route }) => {
   const capabilities = useCapabilities({
     actions: SUPPLY_CHAIN_ACTIONS,
     label,
+    pageName,
     resource,
     route,
   });

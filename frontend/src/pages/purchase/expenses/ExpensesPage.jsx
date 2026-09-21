@@ -297,16 +297,19 @@ const ExpensesPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete"],
     label: "Expenses",
+    pageName: "PurchaseExpense.Expense",
     resource: ["expenses", "expense"],
     route: "/purchase/expenses",
   });
   const canCreateCategory = useCreatePermission({
     label: "Expense Categories",
+    pageName: "PurchaseExpense.ExpenseCategory",
     resource: "expenseCategories",
     route: "/purchase/expense-categories",
   });
   const canCreateParty = useCreatePermission({
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

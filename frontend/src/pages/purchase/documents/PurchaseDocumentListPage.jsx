@@ -85,12 +85,14 @@ const PurchaseDocumentListPage = ({ config }) => {
   const state = useSelector((store) => store[config.selectorKey]);
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete", "confirm", "cancel", "convert"],
-    label: config.pageName ?? config.label,
+    label: config.label,
+    pageName: config.permissionPageName,
     resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
     route: config.routeBase,
   });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

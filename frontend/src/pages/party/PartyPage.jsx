@@ -230,6 +230,7 @@ const PartyPage = () => {
       "settings",
     ],
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

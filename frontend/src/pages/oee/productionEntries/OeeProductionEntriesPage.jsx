@@ -537,16 +537,19 @@ const OeeProductionEntriesPage = () => {
   const production = useSelector((state) => state.oeeProductionEntries);
   const capabilities = useOeeCapabilities({
     label: "OEE Production Entries",
+    pageName: "OEE.ProductionEntries",
     resource: "oeeProductionEntries",
     route: "/oee/production-entries",
   });
   const canCreateMould = useCreatePermission({
     label: "Moulds",
+    pageName: "OEE.Moulds",
     resource: "oeeMoulds",
     route: "/oee/moulds",
   });
   const canCreateDowntimeReason = useCreatePermission({
     label: "Downtime Reasons",
+    pageName: "OEE.DowntimeReasons",
     resource: "oeeDowntimeReasons",
     route: "/oee/downtime-reasons",
   });

@@ -400,11 +400,13 @@ const SupplierPaymentsPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete"],
     label: "Supplier Payments",
+    pageName: "PurchaseExpense.PaymentOut",
     resource: ["supplierPayments", "supplierPayment"],
     route: "/purchase/supplier-payments",
   });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

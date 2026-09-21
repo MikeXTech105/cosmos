@@ -454,6 +454,7 @@ const Users = () => {
       "export",
     ],
     label: "Users",
+    pageName: "Users",
     resource: "users",
     route: "/users",
   });

@@ -13,6 +13,7 @@ const usePageCapabilities = (name) =>
   useCapabilities({
     actions: ACTIONS,
     label: `ShipmentOperations.${name}`,
+    pageName: `ShipmentOperations.${name}`,
     resource: `ShipmentOperations.${name}`,
   });
 
@@ -57,4 +58,3 @@ const useShipmentCapabilities = () => {
 };
 
 export default useShipmentCapabilities;
-

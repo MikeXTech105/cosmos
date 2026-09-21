@@ -300,6 +300,7 @@ const Roles = () => {
       "export",
     ],
     label: "Roles",
+    pageName: "Roles",
     resource: "roles",
     route: "/roles",
   });

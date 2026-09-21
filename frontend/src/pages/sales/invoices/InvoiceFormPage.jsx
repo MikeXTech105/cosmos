@@ -163,10 +163,11 @@ const InvoiceFormPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
     label: "Sale Invoices",
+    pageName: "Sales.Invoice",
     resource: ["saleInvoices", "salesInvoices", "invoices"],
     route: "/sales/invoices",
   });
-  const canCreateCustomer = useCreatePermission({ label: "Party Master", resource: "party", route: "/party" });
+  const canCreateCustomer = useCreatePermission({ label: "Party Master", pageName: "Party", resource: "party", route: "/party" });
   const canCreateItem = useCreatePermission({ label: "Items", resource: "items", route: "/items" });
   const canCreateCategory = useCreatePermission({ label: "Categories", resource: "categories", route: "/categories" });
   const canCreateUnit = useCreatePermission({ label: "Units", resource: "units", route: "/units" });

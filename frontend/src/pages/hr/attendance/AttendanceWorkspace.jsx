@@ -168,6 +168,7 @@ const AttendanceWorkspace = () => {
   const capabilities = useHrCapabilities({
     actions: ["view", "create", "approve"],
     label: "Attendance",
+    pageName: "HR.Attendance",
     resource: ["attendance", "hrAttendance"],
     route: "/hr/attendance",
   });

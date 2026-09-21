@@ -73,13 +73,17 @@ export const normalizeRoute = (route) => {
 
 export const getPageLabel = (page) => {
   return (
-    page?.pageName ??
     page?.displayName ??
-    page?.name ??
-    page?.title ??
     page?.label ??
+    page?.title ??
+    page?.pageName ??
+    page?.name ??
     ""
   );
+};
+
+export const getPageName = (page) => {
+  return page?.pageName ?? page?.name ?? "";
 };
 
 export const getPageRoute = (page) => {
@@ -117,7 +121,7 @@ const findUniquePageByName = (pageList, normalizedName) => {
   }
 
   const nameMatches = pageList.filter((page) => {
-    return normalizeText(page?.pageName) === normalizedName;
+    return normalizeText(getPageName(page)) === normalizedName;
   });
 
   return nameMatches.length === 1 ? nameMatches[0] : null;
@@ -128,9 +132,7 @@ export const findPermissionPage = (pages, target) => {
   const normalizedTarget = {
     id: normalizeIdentifier(typeof target === "string" ? "" : target?.id),
     label: normalizeText(
-      typeof target === "string"
-        ? target
-        : target?.pageName ?? target?.label ?? target?.name,
+      typeof target === "string" ? target : target?.label ?? target?.name,
     ),
     pageName: normalizeText(
       typeof target === "string" ? "" : target?.pageName,
@@ -156,12 +158,19 @@ export const findPermissionPage = (pages, target) => {
     if (routeMatch) {
       return routeMatch;
     }
+  }
 
+  if (normalizedTarget.pageName) {
     // The backend owns each page's route string and may store it differently
-    // from the app router (or leave it empty). Fall back to the page's unique
-    // backend name so a granted permission is never silently dropped. An
-    // ambiguous display label still fails closed below.
+    // from the app router (or leave it empty). An explicit backend name is the
+    // stable fallback, but it must identify exactly one page.
     return findUniquePageByName(pageList, normalizedTarget.pageName);
+  }
+
+  if (normalizedTarget.route) {
+    // An explicit route mismatch must never fall through to an editable display
+    // label; without a stable backend name the target is ambiguous.
+    return null;
   }
 
   if (!normalizedTarget.label) {

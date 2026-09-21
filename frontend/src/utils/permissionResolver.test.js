@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getDefaultAuthorizedRoute } from "./authorizedRoute";
+import { getReportPermissionTarget } from "../pages/reports/reportRegistry";
 import {
   canPerformAction,
   findPermissionPage,
@@ -20,11 +21,60 @@ describe("normalizeRoute", () => {
   });
 });
 
+describe("report permission targets", () => {
+  it.each([
+    ["sales", "Reports.Sales", "/reports/sales"],
+    ["purchase", "Reports.Purchase", "/reports/purchase"],
+    ["inventory", "Reports.Inventory", "/reports/inventory"],
+    ["party", "Reports.Parties", "/reports/party"],
+    ["expense", "Reports.Expenses", "/reports/expense"],
+  ])("maps %s reports to the backend page", (group, pageName, route) => {
+    expect(
+      getReportPermissionTarget({
+        group,
+        permission: "LegacyReportPermission",
+        route: `${route}/detail`,
+        title: "Report",
+      }),
+    ).toEqual({ label: "Report", pageName, route });
+  });
+
+  it("preserves an explicit Rojmel permission target", () => {
+    expect(
+      getReportPermissionTarget({
+        group: "rojmel",
+        permission: "Rojmel.Admin",
+        permissionRoute: "/rojmel/admin",
+        title: "Wallet balances",
+      }),
+    ).toEqual({
+      label: "Wallet balances",
+      pageName: "Rojmel.Admin",
+      route: "/rojmel/admin",
+    });
+  });
+});
+
 describe("findPermissionPage", () => {
   const pages = [
-    { id: "main", pageName: "Dashboard", route: "/dashboard" },
-    { id: "hr", pageName: "Dashboard", route: "/hr/dashboard" },
-    { id: "users", pageName: "Users", route: "/users" },
+    {
+      displayName: "Dashboard",
+      id: "main",
+      pageName: "Dashboard",
+      route: "/dashboard",
+    },
+    {
+      displayName: "Dashboard",
+      id: "hr",
+      pageName: "HR.Dashboard",
+      route: "/hr/dashboard",
+    },
+    {
+      displayName: "User accounts",
+      id: "users",
+      pageName: "Users",
+      route: "/security/users",
+    },
   ];
 
   it("prioritizes an exact stable ID", () => {
@@ -46,13 +96,13 @@ describe("findPermissionPage", () => {
     ).toBe(pages[1]);
   });
 
-  it("fails closed when a duplicate label is ambiguous", () => {
+  it("fails closed when duplicate display labels are ambiguous", () => {
     expect(findPermissionPage(pages, { label: "Dashboard" })).toBeNull();
   });
 
   it("does not use a label to override a failed explicit route", () => {
     expect(
-      findPermissionPage(pages, { label: "Users", route: "/missing" }),
+      findPermissionPage(pages, { label: "User accounts", route: "/missing" }),
     ).toBeNull();
   });
 
@@ -62,9 +112,23 @@ describe("findPermissionPage", () => {
     ).toBe(pages[2]);
   });
 
+  it("resolves an explicit backend page name without a route", () => {
+    expect(findPermissionPage(pages, { pageName: "HR.Dashboard" })).toBe(
+      pages[1],
+    );
+  });
+
   it("still fails closed when the backend page name is ambiguous", () => {
+    const duplicateNames = [
+      ...pages,
+      { id: "legacy-users", pageName: "Users", route: "/legacy/users" },
+    ];
+
     expect(
-      findPermissionPage(pages, { pageName: "Dashboard", route: "/missing" }),
+      findPermissionPage(duplicateNames, {
+        pageName: "Users",
+        route: "/missing",
+      }),
     ).toBeNull();
   });
 });

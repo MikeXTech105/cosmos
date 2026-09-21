@@ -313,6 +313,7 @@ const LeavesPage = () => {
   const capabilities = useHrCapabilities({
     actions: ["view", "create", "update", "approve"],
     label: "Leaves",
+    pageName: "HR.Leave",
     resource: ["leaves", "hrLeaves"],
     route: "/hr/leaves",
   });
