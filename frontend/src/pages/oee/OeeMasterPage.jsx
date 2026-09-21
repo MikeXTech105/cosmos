@@ -462,6 +462,7 @@ const OeeMasterPage = ({ config }) => {
   const state = useSelector(config.selectState);
   const capabilities = useOeeCapabilities({
     label: config.permissionLabel,
+    pageName: config.permissionPageName,
     resource: config.permissionResource,
     route: config.route,
   });

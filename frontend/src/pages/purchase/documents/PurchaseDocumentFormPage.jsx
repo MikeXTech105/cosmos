@@ -162,11 +162,12 @@ const PurchaseDocumentFormPage = ({ config }) => {
   const navigate = useNavigate();
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
-    label: config.pageName ?? config.label,
+    label: config.label,
+    pageName: config.permissionPageName,
     resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
     route: config.routeBase,
   });
-  const canCreateSupplier = useCreatePermission({ label: "Party Master", resource: "party", route: "/party" });
+  const canCreateSupplier = useCreatePermission({ label: "Party Master", pageName: "Party", resource: "party", route: "/party" });
   const canCreateItem = useCreatePermission({ label: "Items", resource: "items", route: "/items" });
   const canCreateCategory = useCreatePermission({ label: "Categories", resource: "categories", route: "/categories" });
   const canCreateUnit = useCreatePermission({ label: "Units", resource: "units", route: "/units" });

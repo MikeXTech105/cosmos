@@ -64,11 +64,13 @@ const SalesInvoicesPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "confirm", "cancel", "export"],
     label: "Sale Invoices",
+    pageName: "Sales.Invoice",
     resource: ["saleInvoices", "salesInvoices", "invoices"],
     route: "/sales/invoices",
   });
   const canCreateCustomer = useCreatePermission({
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });

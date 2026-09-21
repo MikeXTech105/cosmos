@@ -109,6 +109,7 @@ const PagesPage = () => {
 
   const capabilities = useCapabilities({
     label: "Pages",
+    pageName: "Pages",
     resource: "pages",
     route: "/rbac/pages",
   });

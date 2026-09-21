@@ -2,6 +2,7 @@ import { Filter, RotateCcw, Search } from "lucide-react";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import {
   INVOICE_STATUS_OPTIONS,
@@ -63,19 +64,13 @@ const InvoiceFilters = ({
           aria-label="Filter invoices by payment status"
         />
 
-        <AppInput
-          type="date"
-          value={filters.FromDate}
-          onChange={(event) => onChange({ FromDate: event.target.value })}
-          aria-label="From date"
-        />
-
-        <AppInput
-          type="date"
-          value={filters.ToDate}
-          onChange={(event) => onChange({ ToDate: event.target.value })}
-          aria-label="To date"
-        />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.FromDate}
+            toDate={filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => onChange({ FromDate: fromDate, ToDate: toDate })}
+          />
 
         <AppButton
           variant="secondary"

@@ -3,7 +3,10 @@ import { Link, useParams } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import PermissionGuard from "../../routes/PermissionGuard";
-import { findReportByRouteParams } from "./reportRegistry";
+import {
+  findReportByRouteParams,
+  getReportPermissionTarget,
+} from "./reportRegistry";
 import ReportView from "./ReportView";
 
 const ReportNotFound = () => {
@@ -43,10 +46,12 @@ const ReportRoutePage = ({ forcedGroup }) => {
     return <ReportNotFound />;
   }
 
+  const permissionTarget = getReportPermissionTarget(report);
+
   return (
     <PermissionGuard
-      route={report.permissionRoute ?? report.route}
-      pageName={report.permission}
+      route={permissionTarget.route}
+      pageName={permissionTarget.pageName}
     >
       <ReportView report={report} />
     </PermissionGuard>

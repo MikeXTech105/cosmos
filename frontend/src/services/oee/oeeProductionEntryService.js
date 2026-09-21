@@ -13,10 +13,11 @@ const PRODUCTION_ENTRY_SORT_FIELDS = [
 ];
 
 export const oeeProductionEntryService = {
-  getProductionEntries: async (params) => {
+  getProductionEntries: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(
       ENDPOINTS.OEE_PRODUCTION_ENTRIES,
       {
+        signal,
         params: sanitizeOeeListParams(
           params,
           PRODUCTION_ENTRY_SORT_FIELDS,

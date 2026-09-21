@@ -43,18 +43,19 @@ const hasAdminViewCode = (pages) =>
       : [];
 
     return (
-      pageName === "rojmel.admin/view" ||
+      pageName === "rojmel.admin" ||
       permissions.some((permission) => {
         const value = String(permission).replace(/\s+/g, "").toLowerCase();
-        return ["rojmel.admin/view", "rojmel.admin.view"].includes(value);
+        return ["rojmel.admin", "rojmel.admin/view", "rojmel.admin.view"].includes(value);
       })
     );
   });
 
-const useRojmelCapabilities = ({ label, resource, route }) => {
+const useRojmelCapabilities = ({ label, pageName = label, resource, route }) => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete", "approve", "export"],
     label,
+    pageName,
     resource,
     route,
   });
@@ -65,7 +66,11 @@ const useRojmelCapabilities = ({ label, resource, route }) => {
       pages: auth.pages,
       resource: ["rojmel.admin", "rojmel.admin/view"],
       roles: auth.roles,
-      target: { label: "Rojmel.Admin/View", route: "/rojmel/admin" },
+      target: {
+        label: "Rojmel administration",
+        pageName: "Rojmel.Admin",
+        route: "/rojmel/admin",
+      },
       user: auth.user,
     });
 

@@ -1,4 +1,6 @@
 import {
+  ArrowDownLeft,
+  ArrowUpRight,
   Eye,
   LockKeyhole,
   Pencil,
@@ -12,9 +14,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import { sumRojmelMoney } from "../../../utils/rojmelTotals";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import { userService } from "../../../services/rbac/userService";
+import { walletService } from "../../../services/rojmel/walletService";
+import { RojmelCategoryType } from "../../../constants/rojmelEnums";
+import { createRojmelIncome, createRojmelExpense } from "../../../store/slices/rojmel/transactionSlice";
+import { createMyRojmelIncome, createMyRojmelExpense, fetchMyRojmelCategories } from "../../../store/slices/rojmel/myWalletSlice";
+import TransactionEntryModal from "../components/TransactionEntryModal";
 import {
   changeRojmelWalletStatus,
   createRojmelWallet,
@@ -63,6 +71,15 @@ const WalletAction = ({ disabled, icon: Icon, label, onClick, tone = "default" }
 const WalletsPage = () => {
   const dispatch = useDispatch();
   const state = useSelector((root) => root.rojmelWallets);
+  const myWalletState = useSelector((root) => root.myRojmelWallet);
+  const transactionCapabilities = useRojmelCapabilities({
+    label: "Rojmel.Transactions",
+    resource: "rojmel.transactions",
+    route: "/rojmel/transactions",
+  });
+  const [entryMode, setEntryMode] = useState(null);
+  const [entryWallets, setEntryWallets] = useState([]);
+  const [entryLoading, setEntryLoading] = useState(false);
   const capabilities = useRojmelCapabilities({
     label: "Rojmel.Wallets",
     resource: "rojmel.wallets",
@@ -178,6 +195,35 @@ const WalletsPage = () => {
   };
 
   const filterControls = { ...state.filters, Search: searchInput };
+  const openEntry = async (mode) => {
+    if (!transactionCapabilities.canCreate || entryLoading) return;
+    setEntryLoading(true);
+    try {
+      // Keep form lookups separate from the wallet table's filters and pagination.
+      const [walletResponse] = await Promise.all([
+        transactionCapabilities.isAdmin
+          ? walletService.getWallets({ IsActive: true, PageNumber: 1, PageSize: 200, SortBy: "walletName", SortDirection: "asc" })
+          : Promise.resolve(null),
+        dispatch(fetchMyRojmelCategories(mode === "income" ? RojmelCategoryType.Income : RojmelCategoryType.Expense)).unwrap(),
+      ]);
+      setEntryWallets(walletResponse ? getRojmelCollection(walletResponse.data) : []);
+      setEntryMode(mode);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Unable to load entry options. Please try again."));
+    } finally {
+      setEntryLoading(false);
+    }
+  };
+  const submitEntry = async (payload) => {
+    if (!transactionCapabilities.canCreate) throw new Error("You do not have permission to create transactions.");
+    const createEntry = transactionCapabilities.isAdmin
+      ? (entryMode === "income" ? createRojmelIncome : createRojmelExpense)
+      : (entryMode === "income" ? createMyRojmelIncome : createMyRojmelExpense);
+    const response = await dispatch(createEntry(payload)).unwrap();
+    toast.success(getRojmelSuccessMessage(response, "Entry posted"));
+    setEntryMode(null);
+    await loadWallets();
+  };
 
   return (
     <section className="min-w-0 space-y-5">
@@ -201,6 +247,16 @@ const WalletsPage = () => {
                 <Plus className="h-4 w-4" />
                 Create Wallet
               </AppButton>
+            )}
+            {transactionCapabilities.canCreate && (
+              <>
+                <AppButton className="h-10 bg-emerald-600 hover:bg-emerald-700" disabled={entryLoading} onClick={() => openEntry("income")}>
+                  <ArrowDownLeft className="h-4 w-4" /> Income
+                </AppButton>
+                <AppButton className="h-10 bg-red-600 hover:bg-red-700" disabled={entryLoading} onClick={() => openEntry("expense")}>
+                  <ArrowUpRight className="h-4 w-4" /> Expense
+                </AppButton>
+              </>
             )}
           </>
         }
@@ -300,6 +356,13 @@ const WalletsPage = () => {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t border-slate-200 bg-slate-50 text-sm font-semibold text-slate-900">
+                <tr>
+                  <th scope="row" colSpan={5} className="px-3 py-4">Page total balance</th>
+                  <td className="px-3 py-4 text-right tabular-nums">{formatRojmelCurrency(sumRojmelMoney(state.list, "currentBalance"))}</td>
+                  <td colSpan={3} />
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
@@ -325,6 +388,16 @@ const WalletsPage = () => {
         wallet={modal.entity}
         onClose={() => setModal({ entity: null, mode: "create", open: false })}
         onSubmit={saveWallet}
+      />
+      <TransactionEntryModal
+        categories={myWalletState.categoriesByType[entryMode === "income" ? RojmelCategoryType.Income : RojmelCategoryType.Expense] ?? []}
+        categoriesLoading={myWalletState.categoriesLoading}
+        isAdmin={transactionCapabilities.isAdmin}
+        isOpen={Boolean(entryMode)}
+        mode={entryMode}
+        wallets={entryWallets}
+        onClose={() => setEntryMode(null)}
+        onSubmit={submitEntry}
       />
     </section>
   );

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import { sumRojmelMoney } from "../../../utils/rojmelTotals";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import {
@@ -271,6 +272,13 @@ const TransfersPage = () => {
                   );
                 })}
               </tbody>
+              <tfoot className="border-t border-slate-200 bg-slate-50 text-sm font-semibold text-slate-900">
+                <tr>
+                  <th scope="row" colSpan={4} className="px-3 py-4">Page total · cancelled excluded</th>
+                  <td className="px-3 py-4 text-right tabular-nums">{formatRojmelCurrency(sumRojmelMoney(state.list, "amount", { excludeCancelled: true }))}</td>
+                  <td colSpan={2} />
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

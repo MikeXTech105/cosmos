@@ -7,6 +7,7 @@ import {
 
 import AppButton from "../../components/common/AppButton";
 import AppSelect from "../../components/common/AppSelect";
+import { sumRojmelMoney } from "../../utils/rojmelTotals";
 import {
   formatCell,
   getPillMeta,
@@ -249,6 +250,25 @@ const ReportTable = ({
                   </tr>
                 ))}
           </tbody>
+          {!isLoading && report.group === "rojmel" && (
+            <tfoot className="border-t border-slate-200 bg-slate-50 text-sm font-semibold text-slate-900">
+              <tr>
+                <th scope="row" colSpan={columns.length + 1} className="px-3 pt-3 text-left text-xs">
+                  {report.paginated ? "Page totals" : "Totals for returned records"} · cancelled entries excluded · running balances not summed
+                </th>
+              </tr>
+              <tr>
+                <td />
+                {columns.map((column) => (
+                  <td key={String(column.key)} className="px-3 py-3 text-right tabular-nums">
+                    {column.format === "currency" && column.key !== "balanceAfter"
+                      ? formatCell(sumRojmelMoney(rows, column.key, { excludeCancelled: true }), column)
+                      : ""}
+                  </td>
+                ))}
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

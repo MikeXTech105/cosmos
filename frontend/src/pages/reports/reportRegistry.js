@@ -837,7 +837,7 @@ export const reportRegistry = [
     description: "Income, expense and net result with all non-P&L movements excluded.",
     exportable: true,
     fetcher: rojmelReportService.getIncomeExpense,
-    filters: [dateRange, rojmelWallet],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelStatus, search],
     group: "rojmel",
     icon: "chartBar",
     id: "rojmel-income-expense",
@@ -861,7 +861,7 @@ export const reportRegistry = [
     description: "Expense totals and counts grouped by cash-book category.",
     exportable: true,
     fetcher: rojmelReportService.getCategoryExpense,
-    filters: [dateRange, rojmelWallet, rojmelCategory],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelStatus, search],
     group: "rojmel",
     icon: "chartPie",
     id: "rojmel-category-expense",
@@ -894,7 +894,7 @@ export const reportRegistry = [
     description: "Daily income, expense and net cash result for the period.",
     exportable: true,
     fetcher: rojmelReportService.getDailyCashFlow,
-    filters: [dateRange, rojmelWallet],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelTransactionType, rojmelStatus, search],
     group: "rojmel",
     icon: "chartBar",
     id: "rojmel-daily-cash-flow",
@@ -910,12 +910,12 @@ export const reportRegistry = [
     description: "Current balances for wallets linked to users.",
     exportable: true,
     fetcher: rojmelReportService.getUserWalletBalances,
-    filters: [search],
+    filters: [rojmelWallet, search],
     group: "rojmel",
     icon: "wallets",
     id: "rojmel-user-wallet-balances",
     kind: "table",
-    permission: "Rojmel.Admin/View",
+    permission: "Rojmel.Admin",
     permissionRoute: "/rojmel/admin",
     route: "/rojmel/reports/user-wallet-balances",
     slug: "user-wallet-balances",
@@ -931,6 +931,25 @@ export const getReportById = (reportId) => reportById[reportId] ?? null;
 
 export const getReportGroup = (groupId) => {
   return reportGroups.find((group) => group.id === groupId) ?? null;
+};
+
+const REPORT_GROUP_PERMISSION_NAMES = {
+  expense: "Reports.Expenses",
+  inventory: "Reports.Inventory",
+  party: "Reports.Parties",
+  purchase: "Reports.Purchase",
+  sales: "Reports.Sales",
+};
+
+export const getReportPermissionTarget = (report) => {
+  const pageName = REPORT_GROUP_PERMISSION_NAMES[report?.group] ?? report?.permission;
+  const groupRoute = getReportGroup(report?.group)?.route;
+
+  return {
+    label: report?.title ?? pageName,
+    pageName,
+    route: report?.permissionRoute ?? groupRoute ?? report?.route,
+  };
 };
 
 export const getReportsByGroup = (groupId) => {

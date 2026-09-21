@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
@@ -223,6 +224,7 @@ const PaymentModal = ({
             id="supplierPaymentAmount"
             name="amount"
             label="Amount"
+            required
             error={errors.amount?.message}
           />
           <Controller
@@ -273,7 +275,7 @@ const PaymentModal = ({
             <table className="w-full min-w-[620px] text-left">
               <thead className="text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Purchase Bill</th>
+                  <th className="px-4 py-3 font-semibold">Purchase Bill<span className="ml-0.5 text-red-500">*</span></th>
                   <th className="px-4 py-3 text-right font-semibold">Amount</th>
                   <th className="w-14 px-2 py-3" />
                 </tr>
@@ -302,6 +304,7 @@ const PaymentModal = ({
                               onBlur={billField.onBlur}
                               options={billOptions}
                               placeholder="Select bill"
+                              required
                               error={
                                 errors.allocations?.[index]?.purchaseBillId
                                   ?.message
@@ -397,11 +400,13 @@ const SupplierPaymentsPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete"],
     label: "Supplier Payments",
+    pageName: "PurchaseExpense.PaymentOut",
     resource: ["supplierPayments", "supplierPayment"],
     route: "/purchase/supplier-payments",
   });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
+    pageName: "Party",
     resource: "party",
     route: "/party",
   });
@@ -722,27 +727,12 @@ const SupplierPaymentsPage = () => {
               }
             }}
           />
-          <AppInput
-            type="date"
-            value={state.filters.FromDate}
-            onChange={(event) => {
-              dispatch(
-                setSupplierPaymentFilters({ FromDate: event.target.value }),
-              );
-              dispatch(setSupplierPaymentPage(1));
-            }}
-            aria-label="From date"
-            className="h-10"
-          />
-          <AppInput
-            type="date"
-            value={state.filters.ToDate}
-            onChange={(event) => {
-              dispatch(setSupplierPaymentFilters({ ToDate: event.target.value }));
-              dispatch(setSupplierPaymentPage(1));
-            }}
-            aria-label="To date"
-            className="h-10"
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={state.filters.FromDate}
+            toDate={state.filters.ToDate}
+            allowLifetime={true}
+            onChange={({ fromDate, toDate }) => { dispatch(setSupplierPaymentFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(setSupplierPaymentPage(1)); }}
           />
           <AppButton
             variant="secondary"

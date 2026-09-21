@@ -37,6 +37,7 @@ const ShiftsPage = () => {
   const shiftsState = useSelector((state) => state.hrShifts);
   const capabilities = useHrCapabilities({
     label: "Shifts",
+    pageName: "HR.Shift",
     resource: "shifts",
     route: "/hr/shifts",
   });

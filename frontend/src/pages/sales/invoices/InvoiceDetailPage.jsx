@@ -127,6 +127,7 @@ const InvoiceDetailPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "update", "confirm", "cancel", "payment", "export"],
     label: "Sale Invoices",
+    pageName: "Sales.Invoice",
     resource: ["saleInvoices", "salesInvoices", "invoices"],
     route: "/sales/invoices",
   });

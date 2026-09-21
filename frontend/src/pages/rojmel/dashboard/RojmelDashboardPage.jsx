@@ -20,8 +20,8 @@ import {
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
-import AppSelect from "../../../components/common/AppSelect";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
+import { sumRojmelMoney } from "../../../utils/rojmelTotals";
 import PageHeader from "../../../components/common/PageHeader";
 import { rojmelReportService } from "../../../services/rojmel/reportService";
 import { fetchRojmelDashboard } from "../../../store/slices/rojmel/rojmelDashboardSlice";
@@ -41,35 +41,10 @@ import {
   RojmelWalletTypeBadge,
 } from "../RojmelShared";
 
-const PERIOD_OPTIONS = [
-  { label: "Today", value: "today" },
-  { label: "This Week", value: "week" },
-  { label: "This Month", value: "month" },
-  { label: "Custom", value: "custom" },
-];
-
-const getRange = (period) => {
-  const today = new Date();
-
-  if (period === "today") {
-    const value = toRojmelInputDate(today);
-    return { FromDate: value, ToDate: value };
-  }
-  if (period === "week") {
-    const start = new Date(today);
-    const day = start.getDay();
-    start.setDate(start.getDate() + (day === 0 ? -6 : 1 - day));
-    return { FromDate: toRojmelInputDate(start), ToDate: toRojmelInputDate(today) };
-  }
-
-  return getRojmelMonthRange(today);
-};
-
 const RojmelDashboardPage = () => {
   const dispatch = useDispatch();
   const dashboard = useSelector((state) => state.rojmelDashboard);
-  const [period, setPeriod] = useState("month");
-  const [dates, setDates] = useState(() => getRange("month"));
+  const [dates, setDates] = useState(() => getRojmelMonthRange());
   const [categoryExpense, setCategoryExpense] = useState([]);
   const [categoryError, setCategoryError] = useState("");
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -150,41 +125,13 @@ const RojmelDashboardPage = () => {
       />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center">
-        <AppSelect
-          aria-label="Dashboard period"
-          className="sm:w-44"
-          options={PERIOD_OPTIONS}
-          value={period}
-          onChange={(value) => {
-            setPeriod(value);
-            if (value !== "custom") setDates(getRange(value));
-          }}
-        />
-        {period === "custom" && (
-          <>
-            <AppInput
-              aria-label="From date"
-              className="h-10"
-              max={dates.ToDate}
-              type="date"
-              value={dates.FromDate}
-              onChange={(event) =>
-                setDates((current) => ({ ...current, FromDate: event.target.value }))
-              }
-            />
-            <AppInput
-              aria-label="To date"
-              className="h-10"
-              min={dates.FromDate}
-              max={toRojmelInputDate()}
-              type="date"
-              value={dates.ToDate}
-              onChange={(event) =>
-                setDates((current) => ({ ...current, ToDate: event.target.value }))
-              }
-            />
-          </>
-        )}
+        <AppDateRangeFilter
+            className="w-full sm:w-auto sm:min-w-[300px]"
+            fromDate={dates.FromDate}
+            toDate={dates.ToDate}
+            allowLifetime={false} max={toRojmelInputDate()}
+            onChange={({ fromDate, toDate }) => setDates({ FromDate: fromDate, ToDate: toDate })}
+          />
         <span className="inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand">
           {summary.isAllWalletView ? "All wallets" : "Your wallet"}
         </span>
@@ -266,6 +213,12 @@ const RojmelDashboardPage = () => {
                     </tr>
                   ))}
                 </tbody>
+                <tfoot className="border-t border-slate-200 bg-slate-50 text-sm font-semibold text-slate-900">
+                  <tr>
+                    <th scope="row" colSpan={3} className="px-4 py-4">Total displayed wallet balances</th>
+                    <td className="px-4 py-4 text-right tabular-nums">{formatRojmelCurrency(sumRojmelMoney(dashboard.walletBalances, "currentBalance"))}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </section>

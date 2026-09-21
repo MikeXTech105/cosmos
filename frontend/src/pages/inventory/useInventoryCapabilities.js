@@ -1,7 +1,7 @@
 import useCapabilities from "../../hooks/useCapabilities";
 
-const useInventoryCapabilities = ({ label, resource, route }) => {
-  const capabilities = useCapabilities({ label, resource, route });
+const useInventoryCapabilities = ({ label, pageName = label, resource, route }) => {
+  const capabilities = useCapabilities({ label, pageName, resource, route });
 
   return {
     ...capabilities,

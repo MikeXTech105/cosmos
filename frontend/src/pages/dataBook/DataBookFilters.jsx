@@ -2,6 +2,7 @@ import { RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
+import AppDateRangeFilter from "../../components/common/AppDateRangeFilter";
 import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
 
@@ -89,26 +90,12 @@ const DataBookFilters = ({
             />
           </div>
         ) : null}
-        <div className="w-full sm:w-44">
-          <AppInput
-            className="h-10"
-            label="From date"
-            max={filters.ToDate || undefined}
-            type="date"
-            value={filters.FromDate}
-            onChange={(event) => onChange({ FromDate: event.target.value })}
-          />
-        </div>
-        <div className="w-full sm:w-44">
-          <AppInput
-            className="h-10"
-            label="To date"
-            min={filters.FromDate || undefined}
-            type="date"
-            value={filters.ToDate}
-            onChange={(event) => onChange({ ToDate: event.target.value })}
-          />
-        </div>
+        <AppDateRangeFilter
+          className="w-full sm:w-72"
+          fromDate={filters.FromDate}
+          toDate={filters.ToDate}
+          onChange={({ fromDate, toDate }) => onChange({ FromDate: fromDate, ToDate: toDate })}
+        />
         {activeCount === 0 ? (
           <AppTooltip label="No active filters to clear.">
             {clearButton}

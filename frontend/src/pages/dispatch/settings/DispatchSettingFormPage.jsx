@@ -214,12 +214,13 @@ const DispatchSettingFormPage = () => {
     }
   };
 
-  const numeric = (field, label, min = "0") => (
+  const numeric = (field, label, min = "0", required = false) => (
     <AppInput
       disabled={readOnly || saving}
       error={errors[field]}
       label={label}
       min={min}
+      required={required}
       step="any"
       type="number"
       value={form[field]}
@@ -329,8 +330,8 @@ const DispatchSettingFormPage = () => {
               value={form.tier}
               onChange={(value) => setField("tier", value)}
             />
-            {numeric("safetyStockFactor", "Safety stock factor", "0.000001")}
-            {numeric("recurringDemandFactor", "Recurring demand factor", "0.000001")}
+            {numeric("safetyStockFactor", "Safety stock factor", "0.000001", true)}
+            {numeric("recurringDemandFactor", "Recurring demand factor", "0.000001", true)}
             {numeric("minimumDispatchQuantity", "Minimum dispatch quantity")}
             <div className={form.allowLooseQuantity ? "opacity-60" : ""}>
               <AppSelect

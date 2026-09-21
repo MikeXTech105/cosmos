@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import DataTableShell, {
   DATA_TABLE_HEADER_CLASS,
@@ -291,32 +291,13 @@ const DispatchDashboardPage = () => {
             setFilters((current) => ({ ...current, ChannelId: value }))
           }
         />
-        <AppInput
-          className="w-44"
-          label="From date"
-          max={filters.ToDate || undefined}
-          type="date"
-          value={filters.FromDate}
-          onChange={(event) =>
-            setFilters((current) => ({
-              ...current,
-              FromDate: event.target.value,
-            }))
-          }
-        />
-        <AppInput
-          className="w-44"
-          label="To date"
-          min={filters.FromDate || undefined}
-          type="date"
-          value={filters.ToDate}
-          onChange={(event) =>
-            setFilters((current) => ({
-              ...current,
-              ToDate: event.target.value,
-            }))
-          }
-        />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.FromDate}
+            toDate={filters.ToDate}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => setFilters((current) => ({ ...current, FromDate: fromDate, ToDate: toDate }))}
+          />
       </SupplyChainFilterBar>
 
       <SupplyChainInlineError message={channelError} title="Channels unavailable" />

@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
+import AppDateRangeFilter from "../../components/common/AppDateRangeFilter";
 import AppSelect from "../../components/common/AppSelect";
 import MaterialTypePill from "../../components/common/MaterialTypePill";
 import { ProcurementItemClassification } from "../../constants/procurementEnums";
@@ -244,23 +245,13 @@ export const ProcurementDateRangeFields = ({
   return (
     <div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <AppInput
-          id="procurement-from-date"
-          label="From date"
-          max={toDate || max}
-          type="date"
-          value={fromDate}
-          onChange={(event) => onChange({ fromDate: event.target.value })}
-        />
-        <AppInput
-          id="procurement-to-date"
-          label="To date"
-          min={fromDate}
-          max={max}
-          type="date"
-          value={toDate}
-          onChange={(event) => onChange({ toDate: event.target.value })}
-        />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={fromDate}
+            toDate={toDate}
+            allowLifetime={false} max={max}
+            onChange={({ fromDate, toDate }) => onChange({ fromDate, toDate })}
+          />
       </div>
       <div className="mt-2 flex items-center justify-between gap-3 text-xs">
         <span className={error ? "text-red-600" : "text-slate-500"}>

@@ -65,6 +65,7 @@ const downtimeReasonConfig = {
   inactiveIcon: PauseCircle,
   modalDescription: "Standardize downtime choices for shop-floor reporting.",
   permissionLabel: "OEE Downtime Reasons",
+  permissionPageName: "OEE.DowntimeReasons",
   permissionResource: "oeeDowntimeReasons",
   pluralLabel: "Downtime Reasons",
   recordResource: "downtimeReason",
