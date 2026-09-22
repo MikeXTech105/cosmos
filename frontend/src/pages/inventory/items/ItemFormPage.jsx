@@ -44,7 +44,7 @@ import {
 const ITEM_FIELDS = [
   "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
   "procurementClassification", "purchasePrice", "salesPrice", "hsnCode",
-  "gstRate", "trackInventory", "openingStock", "openingStockValue",
+  "gstRate", "trackInventory", "isManufactured", "openingStock", "openingStockValue",
   "currentStock", "reservedStock", "minimumStock", "description", "isActive",
   "imageFile",
 ];
@@ -607,13 +607,24 @@ const ItemFormPage = () => {
                 {errors.description?.message && <p className="mt-1.5 text-xs font-medium text-red-600">{errors.description.message}</p>}
               </div>
 
-              <Controller
-                control={control}
-                name="isActive"
-                render={({ field }) => (
-                  <ToggleRow checked={field.value} label="Active item" description="Active items are available for inventory and transaction workflows." onChange={field.onChange} />
+              <div className="space-y-3">
+                <Controller
+                  control={control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <ToggleRow checked={field.value} label="Active item" description="Active items are available for inventory and transaction workflows." onChange={field.onChange} />
+                  )}
+                />
+                {itemType === ITEM_TYPE.PRODUCT && (
+                  <Controller
+                    control={control}
+                    name="isManufactured"
+                    render={({ field }) => (
+                      <ToggleRow checked={field.value} label="Manufactured item" description="Allow versioned manufacturing BOMs and production records for this finished item." onChange={field.onChange} />
+                    )}
+                  />
                 )}
-              />
+              </div>
             </div>
           </Section>
         </>

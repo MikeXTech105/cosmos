@@ -105,6 +105,15 @@ const OeeDowntimeReasons = lazy(
   () => import("../pages/oee/downtimeReasons/index.js"),
 );
 const OeeReports = lazy(() => import("../pages/oee/reports/index.js"));
+const ManufacturingBoms = lazy(
+  () => import("../pages/manufacturing/boms/index.js"),
+);
+const ManufacturingProduction = lazy(
+  () => import("../pages/manufacturing/production/index.js"),
+);
+const ManufacturingReports = lazy(
+  () => import("../pages/manufacturing/reports/index.js"),
+);
 const ProcurementSalesImport = lazy(
   () => import("../pages/procurement/salesImport/index.js"),
 );
@@ -952,6 +961,30 @@ const AppRoutes = () => {
                 pageName="ProcurementPlanning.Settings"
               >
                 <ProcurementSettingForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/manufacturing/boms"
+            element={
+              <PermissionGuard route="/manufacturing/boms" pageName="Manufacturing.BOM">
+                <ManufacturingBoms />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/manufacturing/production"
+            element={
+              <PermissionGuard route="/manufacturing/production" pageName="Manufacturing.Production">
+                <ManufacturingProduction />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/manufacturing/reports"
+            element={
+              <PermissionGuard route="/manufacturing/reports" pageName="Manufacturing.Reports">
+                <ManufacturingReports />
               </PermissionGuard>
             }
           />

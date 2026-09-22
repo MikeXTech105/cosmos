@@ -1,6 +1,7 @@
 import {
   Boxes,
   CalendarDays,
+  Factory,
   Pencil,
   Tag,
 } from "lucide-react";
@@ -95,6 +96,12 @@ const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
                 Low stock
               </span>
             )}
+            {item.isManufactured && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">
+                <Factory className="h-3 w-3" />
+                Manufactured
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -120,6 +127,7 @@ const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
         </p>
         <div className="mt-2">
           <DetailRow label="Item type" value={itemType} />
+          <DetailRow label="Manufacturing" value={item.isManufactured ? "Enabled" : "Not enabled"} />
           <DetailRow
             label="Material type"
             value={
