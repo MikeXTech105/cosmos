@@ -551,6 +551,19 @@ export const ENDPOINTS = {
 
   OEE_REPORT_EXPORT_EXCEL: "/api/v1/oee/reports/export/excel",
 
+  // Manufacturing (separate from Procurement Planning BOMs and OEE)
+  MANUFACTURING_BOMS: "/api/v1/manufacturing/boms",
+  MANUFACTURING_BOM_BY_ID: (id) => `/api/v1/manufacturing/boms/${id}`,
+  MANUFACTURING_BOM_ACTIVATE: (id) =>
+    `/api/v1/manufacturing/boms/${id}/activate`,
+  MANUFACTURING_PRODUCTIONS: "/api/v1/manufacturing/productions",
+  MANUFACTURING_PRODUCTION_BY_ID: (id) =>
+    `/api/v1/manufacturing/productions/${id}`,
+  MANUFACTURING_PRODUCTION_POST: (id) =>
+    `/api/v1/manufacturing/productions/${id}/post`,
+  MANUFACTURING_PRODUCTION_CANCEL: (id) =>
+    `/api/v1/manufacturing/productions/${id}/cancel`,
+
   // Data Book
   DATA_BOOK_ENTRIES: "/api/v1/data-book/entries",
   DATA_BOOK_ENTRY_BY_ID: (id) => `/api/v1/data-book/entries/${id}`,

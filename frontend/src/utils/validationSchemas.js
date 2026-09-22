@@ -335,6 +335,7 @@ export const itemSchema = z
     hsnCode: z.string().trim().optional(),
     gstRate: nonNegativeNumber("GST rate"),
     trackInventory: z.boolean(),
+    isManufactured: z.boolean(),
     openingStock: nonNegativeNumber("Opening stock"),
     openingStockValue: nonNegativeNumber("Opening stock value"),
     currentStock: nonNegativeNumber("Current stock"),
