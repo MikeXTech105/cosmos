@@ -3,9 +3,9 @@ import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const manufacturingBomService = {
-  list: async (params = {}) => unwrapResponse(await axiosInstance.get(
+  list: async (params = {}, { signal } = {}) => unwrapResponse(await axiosInstance.get(
     ENDPOINTS.MANUFACTURING_BOMS,
-    { params: normalizeParams(params) },
+    { params: normalizeParams(params), signal },
   )),
   getById: async (id) => unwrapResponse(await axiosInstance.get(
     ENDPOINTS.MANUFACTURING_BOM_BY_ID(id),
@@ -27,9 +27,9 @@ export const manufacturingBomService = {
 };
 
 export const manufacturingProductionService = {
-  list: async (params = {}) => unwrapResponse(await axiosInstance.get(
+  list: async (params = {}, { signal } = {}) => unwrapResponse(await axiosInstance.get(
     ENDPOINTS.MANUFACTURING_PRODUCTIONS,
-    { params: normalizeParams(params) },
+    { params: normalizeParams(params), signal },
   )),
   getById: async (id) => unwrapResponse(await axiosInstance.get(
     ENDPOINTS.MANUFACTURING_PRODUCTION_BY_ID(id),

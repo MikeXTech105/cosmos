@@ -12,8 +12,10 @@ import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import useManufacturingPreference from "../../../hooks/useManufacturingPreference";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { itemSchema } from "../../../utils/validationSchemas";
+import ItemManufacturingTab from "./ItemManufacturingTab";
 import {
   buildItemPayload,
   generateItemCode,
@@ -192,6 +194,8 @@ const ItemFormModal = ({
   });
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
+  const isManufactured = useWatch({ control, name: "isManufactured" });
+  const { manufacturingEnabled } = useManufacturingPreference();
   const itemName = useWatch({ control, name: "name" });
 
   useEffect(() => {
@@ -201,7 +205,8 @@ const ItemFormModal = ({
   }, [isOpen, item, reset]);
 
   const visibleTab =
-    itemType === ITEM_TYPE.SERVICE && activeTab === "stock"
+    (itemType === ITEM_TYPE.SERVICE && activeTab !== "pricing")
+      || (!manufacturingEnabled && activeTab === "manufacturing")
       ? "pricing"
       : activeTab;
 
@@ -468,6 +473,9 @@ const ItemFormModal = ({
                   ...(itemType === ITEM_TYPE.PRODUCT
                     ? [{ id: "stock", label: "Stock" }]
                     : []),
+                  ...(itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled
+                    ? [{ id: "manufacturing", label: "Manufacturing" }]
+                    : []),
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -595,6 +603,18 @@ const ItemFormModal = ({
               </div>
             )}
 
+            {visibleTab === "manufacturing" && itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled && (
+              <ItemManufacturingTab
+                disabled={isSubmitting}
+                enabled={Boolean(isManufactured)}
+                item={isEdit ? item : null}
+                onEnabledChange={(value) => setValue("isManufactured", value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })}
+              />
+            )}
+
             <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
               <div>
                 <label
@@ -616,7 +636,7 @@ const ItemFormModal = ({
                 )}
               </div>
 
-              <div className="space-y-3">
+              <div>
                 <Controller
                   control={control}
                   name="isActive"
@@ -629,20 +649,6 @@ const ItemFormModal = ({
                     />
                   )}
                 />
-                {itemType === ITEM_TYPE.PRODUCT && (
-                  <Controller
-                    control={control}
-                    name="isManufactured"
-                    render={({ field }) => (
-                      <ToggleRow
-                        checked={field.value}
-                        label="Manufactured item"
-                        description="Allow versioned manufacturing BOMs and production records for this finished item."
-                        onChange={field.onChange}
-                      />
-                    )}
-                  />
-                )}
               </div>
             </section>
           </div>

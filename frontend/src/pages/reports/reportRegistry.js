@@ -1,5 +1,6 @@
 import { expenseReportsService } from "../../services/reports/expenseReportsService";
 import { inventoryReportsService } from "../../services/reports/inventoryReportsService";
+import { manufacturingReportsService } from "../../services/reports/manufacturingReportsService";
 import { partyReportsService } from "../../services/reports/partyReportsService";
 import { purchaseReportsService } from "../../services/reports/purchaseReportsService";
 import { salesReportsService } from "../../services/reports/salesReportsService";
@@ -22,6 +23,10 @@ import {
   stockSummaryColumns,
   stockValuationColumns,
 } from "./columns/inventoryColumns";
+import {
+  manufacturingHistoryColumns,
+  materialConsumptionColumns,
+} from "./columns/manufacturingColumns";
 import {
   payableAgingColumns,
   partyLedgerColumns,
@@ -76,6 +81,13 @@ export const reportGroups = [
     route: "/reports/inventory",
   },
   {
+    description: "Production history and raw-material consumption.",
+    icon: "manufacturing",
+    id: "manufacturing",
+    label: "Manufacturing",
+    route: "/reports/manufacturing",
+  },
+  {
     description: "Party ledgers, statements and aging reports.",
     icon: "users",
     id: "party",
@@ -106,6 +118,7 @@ const party = (label, param = "PartyId") => ({
   param,
 });
 const item = "item";
+const finishedItem = { key: "item", param: "FinishedItemId" };
 const itemLedgerItem = {
   key: "item",
   param: "itemId",
@@ -661,6 +674,51 @@ export const reportRegistry = [
     title: "Slow Moving Items",
   },
   {
+    columns: manufacturingHistoryColumns,
+    defaultSort: { by: "productionDate", dir: "desc" },
+    description: "Production drafts, posted runs, reversals and finished quantities.",
+    exportable: true,
+    fetcher: manufacturingReportsService.getProductionHistory,
+    filters: [dateRange, search, finishedItem, status("manufacturingProduction")],
+    group: "manufacturing",
+    icon: "production",
+    id: "manufacturing-history",
+    kind: "table",
+    paginated: true,
+    permission: "Manufacturing.Reports",
+    route: "/reports/manufacturing/history",
+    slug: "history",
+    summaryKpis: [
+      { format: "number", key: "productionCount", label: "Production Runs" },
+      { format: "number", key: "postedCount", label: "Posted" },
+      { format: "number", key: "cancelledCount", label: "Cancelled" },
+      { format: "qty", key: "totalProducedQuantity", label: "Produced Quantity" },
+    ],
+    title: "Manufacturing History",
+  },
+  {
+    columns: materialConsumptionColumns,
+    defaultSort: { by: "productionDate", dir: "desc" },
+    description: "Raw materials consumed from each production BOM snapshot.",
+    exportable: true,
+    fetcher: manufacturingReportsService.getConsumptionHistory,
+    filters: [dateRange, search, finishedItem, status("manufacturingProduction")],
+    group: "manufacturing",
+    icon: "boxes",
+    id: "manufacturing-consumption",
+    kind: "table",
+    paginated: false,
+    permission: "Manufacturing.Reports",
+    route: "/reports/manufacturing/consumption",
+    slug: "consumption",
+    summaryKpis: [
+      { format: "number", key: "productionCount", label: "Production Runs" },
+      { format: "number", key: "materialLineCount", label: "Material Lines" },
+      { format: "qty", key: "totalConsumedQuantity", label: "Consumed Quantity" },
+    ],
+    title: "Raw Material Consumption",
+  },
+  {
     columns: partyLedgerColumns,
     defaultSort: { by: "entryDate", dir: "desc" },
     description: "Debit, credit and running balance entries for parties.",
@@ -936,6 +994,7 @@ export const getReportGroup = (groupId) => {
 const REPORT_GROUP_PERMISSION_NAMES = {
   expense: "Reports.Expenses",
   inventory: "Reports.Inventory",
+  manufacturing: "Manufacturing.Reports",
   party: "Reports.Parties",
   purchase: "Reports.Purchase",
   sales: "Reports.Sales",
