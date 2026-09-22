@@ -32,6 +32,7 @@ const ITEM_CREATE_FORM_FIELDS = [
   ["HSNCode", "hsnCode"],
   ["GSTRate", "gstRate"],
   ["TrackInventory", "trackInventory"],
+  ["IsManufactured", "isManufactured"],
   ["OpeningStock", "openingStock"],
   ["OpeningStockValue", "openingStockValue"],
   ["CurrentStock", "currentStock"],

@@ -1,4 +1,5 @@
 export const REPORT_PERMISSION_PAGES = [
+  { pageName: "Manufacturing.Reports", route: "/manufacturing/reports" },
   { pageName: "Rojmel.Reports", route: "/rojmel/reports" },
   { pageName: "Rojmel.Admin", route: "/rojmel/admin" },
   { pageName: "Reports", route: "/reports" },
