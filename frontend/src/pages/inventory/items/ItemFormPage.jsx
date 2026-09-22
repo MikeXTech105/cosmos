@@ -18,6 +18,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useManufacturingPreference from "../../../hooks/useManufacturingPreference";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
 import {
@@ -31,6 +32,7 @@ import { getActionError, getSuccessMessage } from "../inventoryHelpers";
 import useInventoryCapabilities from "../useInventoryCapabilities";
 import CategoryFormModal from "../categories/CategoryFormModal";
 import UnitFormModal from "../units/UnitFormModal";
+import ItemManufacturingTab from "./ItemManufacturingTab";
 import {
   buildItemPayload,
   generateItemCode,
@@ -174,6 +176,7 @@ const ItemFormPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const capabilities = useInventoryCapabilities({ label: "Items", resource: "items", route: "/items" });
+  const { manufacturingEnabled } = useManufacturingPreference();
   const canCreateCategory = useCreatePermission({ label: "Categories", resource: "categories", route: "/categories" });
   const canCreateUnit = useCreatePermission({ label: "Units", resource: "units", route: "/units" });
   const detailLoading = useSelector((state) => state.items.detailLoading);
@@ -201,6 +204,7 @@ const ItemFormPage = () => {
   });
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
+  const isManufactured = useWatch({ control, name: "isManufactured" });
   const itemName = useWatch({ control, name: "name" });
 
   const loadLookup = useCallback((type) => {
@@ -268,7 +272,10 @@ const ItemFormPage = () => {
     [lookups.units],
   );
 
-  const visibleTab = itemType === ITEM_TYPE.SERVICE && activeTab === "stock" ? "pricing" : activeTab;
+  const visibleTab = (
+    (itemType === ITEM_TYPE.SERVICE && activeTab !== "pricing")
+    || (!manufacturingEnabled && activeTab === "manufacturing")
+  ) ? "pricing" : activeTab;
   const saveDisabledReason = (isEdit ? capabilities.canUpdate : capabilities.canCreate)
     ? ""
     : `You need ${isEdit ? "edit" : "create"} permission for items.`;
@@ -526,12 +533,13 @@ const ItemFormPage = () => {
             </div>
           </Section>
 
-          <Section title="Pricing, tax & stock">
+          <Section title="Pricing, stock & manufacturing">
             <div className="border-b border-slate-200">
               <div className="flex gap-1 overflow-x-auto">
                 {[
                   { id: "pricing", label: "Pricing" },
                   ...(itemType === ITEM_TYPE.PRODUCT ? [{ id: "stock", label: "Stock" }] : []),
+                  ...(itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled ? [{ id: "manufacturing", label: "Manufacturing" }] : []),
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -592,6 +600,20 @@ const ItemFormPage = () => {
                 </div>
               </div>
             )}
+
+            {visibleTab === "manufacturing" && itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled && (
+              <div className="mt-5">
+                <ItemManufacturingTab
+                  disabled={isSubmitting}
+                  enabled={Boolean(isManufactured)}
+                  item={isEdit ? detailItem : null}
+                  onEnabledChange={(value) => setValue("isManufactured", value, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })}
+                />
+              </div>
+            )}
           </Section>
 
           <Section title="Description & status">
@@ -607,7 +629,7 @@ const ItemFormPage = () => {
                 {errors.description?.message && <p className="mt-1.5 text-xs font-medium text-red-600">{errors.description.message}</p>}
               </div>
 
-              <div className="space-y-3">
+              <div>
                 <Controller
                   control={control}
                   name="isActive"
@@ -615,15 +637,6 @@ const ItemFormPage = () => {
                     <ToggleRow checked={field.value} label="Active item" description="Active items are available for inventory and transaction workflows." onChange={field.onChange} />
                   )}
                 />
-                {itemType === ITEM_TYPE.PRODUCT && (
-                  <Controller
-                    control={control}
-                    name="isManufactured"
-                    render={({ field }) => (
-                      <ToggleRow checked={field.value} label="Manufactured item" description="Allow versioned manufacturing BOMs and production records for this finished item." onChange={field.onChange} />
-                    )}
-                  />
-                )}
               </div>
             </div>
           </Section>
