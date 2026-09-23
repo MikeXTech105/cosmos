@@ -41,6 +41,57 @@ public sealed class SystemOwnerAuthorizationTests
         permissionRepository.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(PermissionAction.View)]
+    [InlineData(PermissionAction.Create)]
+    [InlineData(PermissionAction.Edit)]
+    [InlineData(PermissionAction.Delete)]
+    public async Task UserHasPermissionAsync_SystemOwnerPassesManufacturingBomActionsWithoutRolePermissions(PermissionAction action)
+    {
+        var userRepository = new Mock<IUserRepository>();
+        userRepository
+            .Setup(x => x.GetEntityByIdAsync(42, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { Id = 42, IsActive = true, IsDeleted = false, IsSystemUser = true });
+        userRepository
+            .Setup(x => x.IsSystemOwnerAsync(42, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var permissionRepository = new Mock<IPermissionRepository>(MockBehavior.Strict);
+        var service = CreateService(permissionRepository, userRepository);
+
+        var allowed = await service.UserHasPermissionAsync(42, "Manufacturing.Boms", action, CancellationToken.None);
+
+        Assert.True(allowed);
+        permissionRepository.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(PermissionAction.View)]
+    [InlineData(PermissionAction.Create)]
+    [InlineData(PermissionAction.Edit)]
+    [InlineData(PermissionAction.Delete)]
+    public async Task UserHasPermissionAsync_NormalSuperAdminUsesRolePermissionsForManufacturingBomActions(PermissionAction action)
+    {
+        var userRepository = new Mock<IUserRepository>();
+        userRepository
+            .Setup(x => x.GetEntityByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { Id = 1, IsActive = true, IsDeleted = false, IsSystemUser = false });
+        userRepository
+            .Setup(x => x.IsSystemOwnerAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var permissionRepository = new Mock<IPermissionRepository>();
+        permissionRepository
+            .Setup(x => x.UserHasPermissionAsync(1, "Manufacturing.Boms", action, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        var service = CreateService(permissionRepository, userRepository);
+
+        var allowed = await service.UserHasPermissionAsync(1, "Manufacturing.Boms", action, CancellationToken.None);
+
+        Assert.True(allowed);
+        permissionRepository.Verify(
+            x => x.UserHasPermissionAsync(1, "Manufacturing.Boms", action, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     [Fact]
     public async Task UserHasPermissionAsync_NormalUserStillUsesRolePermissions()
     {
@@ -62,6 +113,30 @@ public sealed class SystemOwnerAuthorizationTests
         Assert.False(allowed);
         permissionRepository.Verify(
             x => x.UserHasPermissionAsync(7, "Users", PermissionAction.View, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UserHasPermissionAsync_NormalUserWithoutManufacturingPermissionIsDenied()
+    {
+        var userRepository = new Mock<IUserRepository>();
+        userRepository
+            .Setup(x => x.GetEntityByIdAsync(7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new User { Id = 7, IsActive = true, IsDeleted = false });
+        userRepository
+            .Setup(x => x.IsSystemOwnerAsync(7, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var permissionRepository = new Mock<IPermissionRepository>();
+        permissionRepository
+            .Setup(x => x.UserHasPermissionAsync(7, "Manufacturing.Boms", PermissionAction.View, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        var service = CreateService(permissionRepository, userRepository);
+
+        var allowed = await service.UserHasPermissionAsync(7, "Manufacturing.Boms", PermissionAction.View, CancellationToken.None);
+
+        Assert.False(allowed);
+        permissionRepository.Verify(
+            x => x.UserHasPermissionAsync(7, "Manufacturing.Boms", PermissionAction.View, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
