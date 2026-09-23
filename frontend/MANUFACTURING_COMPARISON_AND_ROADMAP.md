@@ -76,8 +76,9 @@ The primary button can say **Manufacture** while COSMOS internally creates and p
 - Existing items immediately show BOM and Production sections when the item checkbox is enabled.
 - New items require one initial save because the backend needs an item ID for BOM and production records.
 - Added versioned BOM creation, raw-material quantity and wastage.
-- Added BOM activation/default handling.
-- Added production Draft creation with material-consumption preview.
+- Added BOM effective dates, notes, component notes, activation, deactivation and default handling.
+- Added edit/delete actions for non-active BOMs.
+- Added production Draft creation/editing with planned quantity, produced quantity and material-consumption preview.
 - Added Post and Cancel/reversal actions.
 - Added Manufacturing History and Raw Material Consumption to the existing Reports module.
 
@@ -104,10 +105,9 @@ The primary button can say **Manufacture** while COSMOS internally creates and p
    - Add production-history and material-consumption report APIs with server-side date, item, status and location filters.
    - The current consumption report loads production details record-by-record; this will not scale to large histories.
 
-5. **BOM and Draft maintenance UI**
-   - Add View, Edit and Delete for Draft BOM versions.
-   - Add Edit/Delete for Draft production entries.
-   - Services already expose update/delete capabilities where supported, but the Item UI does not expose them.
+5. **Production Draft deletion**
+   - Draft production editing is available, but the supplied API has no production delete endpoint.
+   - Add a backend delete/void contract only if the business wants users to discard unused drafts.
 
 ### P1 — important for a practical production rollout
 

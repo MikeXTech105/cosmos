@@ -1,7 +1,7 @@
 const productionStatusMap = {
-  0: { className: "bg-amber-50 text-amber-700 ring-amber-200", label: "Draft" },
-  1: { className: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: "Posted" },
-  2: { className: "bg-red-50 text-red-700 ring-red-200", label: "Cancelled" },
+  1: { className: "bg-amber-50 text-amber-700 ring-amber-200", label: "Draft" },
+  2: { className: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: "Posted" },
+  3: { className: "bg-red-50 text-red-700 ring-red-200", label: "Cancelled" },
   Draft: { className: "bg-amber-50 text-amber-700 ring-amber-200", label: "Draft" },
   Posted: { className: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: "Posted" },
   Cancelled: { className: "bg-red-50 text-red-700 ring-red-200", label: "Cancelled" },
@@ -14,6 +14,7 @@ export const manufacturingHistoryColumns = [
   { format: "date", header: "Date", key: "productionDate", width: "130px" },
   { header: "Reference", key: ["referenceNumber", "referenceNo"], width: "150px" },
   { header: "Finished Item", key: ["finishedItemName", "itemName"], width: "240px" },
+  { align: "right", format: "qty", header: "Planned Qty", key: "plannedQuantity" },
   { align: "right", format: "qty", header: "Produced Qty", key: ["producedQuantity", "quantity"] },
   { header: "Unit", key: "unitShortName" },
   { header: "BOM Version", key: ["bomVersion", "version"] },

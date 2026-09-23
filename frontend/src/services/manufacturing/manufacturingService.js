@@ -21,6 +21,9 @@ export const manufacturingBomService = {
   activate: async (id) => unwrapResponse(await axiosInstance.post(
     ENDPOINTS.MANUFACTURING_BOM_ACTIVATE(id),
   )),
+  deactivate: async (id) => unwrapResponse(await axiosInstance.post(
+    ENDPOINTS.MANUFACTURING_BOM_DEACTIVATE(id),
+  )),
   remove: async (id) => unwrapResponse(await axiosInstance.delete(
     ENDPOINTS.MANUFACTURING_BOM_BY_ID(id),
   )),

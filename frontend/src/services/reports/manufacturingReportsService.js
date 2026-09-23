@@ -15,7 +15,7 @@ const pageOf = (response) => {
 const statusOf = (record) => {
   const value = record?.statusName ?? record?.status ?? "Draft";
   return typeof value === "number"
-    ? (["Draft", "Posted", "Cancelled"][value] ?? String(value))
+    ? ({ 1: "Draft", 2: "Posted", 3: "Cancelled" }[value] ?? String(value))
     : String(value);
 };
 
