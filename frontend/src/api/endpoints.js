@@ -556,6 +556,8 @@ export const ENDPOINTS = {
   MANUFACTURING_BOM_BY_ID: (id) => `/api/v1/manufacturing/boms/${id}`,
   MANUFACTURING_BOM_ACTIVATE: (id) =>
     `/api/v1/manufacturing/boms/${id}/activate`,
+  MANUFACTURING_BOM_DEACTIVATE: (id) =>
+    `/api/v1/manufacturing/boms/${id}/deactivate`,
   MANUFACTURING_PRODUCTIONS: "/api/v1/manufacturing/productions",
   MANUFACTURING_PRODUCTION_BY_ID: (id) =>
     `/api/v1/manufacturing/productions/${id}`,

@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Factory,
   GitBranch,
+  Pencil,
   Plus,
   RefreshCw,
   Send,
@@ -20,22 +21,46 @@ import { getApiErrorMessage } from "../../../utils/apiError";
 import { ProcurementItemAutocomplete } from "../../procurement/ProcurementShared";
 import { ManufacturingInlineError, ManufacturingStatusPill } from "../../manufacturing/ManufacturingShared";
 import {
+  buildBomUpdatePayload,
   buildBomPayload,
+  buildProductionUpdatePayload,
   buildProductionPayload,
   calculateRequiredQuantity,
   formatDate,
   formatQuantity,
   getBomLines,
+  getBomStatus,
   getRecordId,
+  getStatus,
+  isBomActive,
   isDraftProduction,
   normalizePage,
 } from "../../manufacturing/manufacturingHelpers";
 
-const emptyLine = () => ({ baseQuantity: "", item: null, wastagePercentage: "0" });
-const emptyBom = () => ({ components: [emptyLine()], description: "", isDefault: true, version: "1" });
 const today = () => new Date().toISOString().slice(0, 10);
-const isBomActive = (bom) =>
-  bom?.isActive === true || String(bom?.status ?? "").toLowerCase() === "active";
+const emptyLine = () => ({ item: null, notes: "", quantity: "", unitId: null, wastagePercentage: "0" });
+const emptyBom = () => ({ components: [emptyLine()], effectiveFrom: today(), effectiveTo: "", isDefault: true, notes: "", version: "1" });
+const componentItem = (line) => line.item ?? line.componentItem ?? {
+  id: line.componentItemId ?? line.itemId,
+  itemCode: line.componentItemCode ?? line.itemCode,
+  name: line.componentItemName ?? line.itemName,
+  unitId: line.unitId,
+  unitName: line.unitName,
+};
+const toBomForm = (bom) => bom ? {
+  components: getBomLines(bom).map((line) => ({
+    item: componentItem(line),
+    notes: line.notes ?? "",
+    quantity: String(line.quantity ?? line.baseQuantity ?? ""),
+    unitId: line.unitId ?? line.unit?.id ?? null,
+    wastagePercentage: String(line.wastagePercentage ?? 0),
+  })),
+  effectiveFrom: String(bom.effectiveFrom ?? today()).slice(0, 10),
+  effectiveTo: bom.effectiveTo ? String(bom.effectiveTo).slice(0, 10) : "",
+  isDefault: Boolean(bom.isDefault),
+  notes: bom.notes ?? bom.description ?? "",
+  version: String(bom.version ?? bom.versionNumber ?? ""),
+} : emptyBom();
 
 const Panel = ({ actions, children, description, title }) => (
   <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -50,8 +75,8 @@ const Panel = ({ actions, children, description, title }) => (
   </section>
 );
 
-const BomEditor = ({ item, onClose, onSaved, open }) => {
-  const [form, setForm] = useState(emptyBom);
+const BomEditor = ({ bom, item, onClose, onSaved, open }) => {
+  const [form, setForm] = useState(() => toBomForm(bom));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -63,17 +88,20 @@ const BomEditor = ({ item, onClose, onSaved, open }) => {
   const submit = async () => {
     const ids = form.components.map((line) => String(line.item?.id ?? line.item?.itemId ?? ""));
     if (!form.version.trim()) { setError("BOM version is required."); return; }
+    if (form.components.length === 0) { setError("Add at least one raw material."); return; }
     if (ids.some((id) => !id)) { setError("Select every raw material."); return; }
     if (new Set(ids).size !== ids.length) { setError("A raw material cannot be added twice."); return; }
-    if (form.components.some((line) => Number(line.baseQuantity) <= 0)) { setError("Base quantity must be greater than zero."); return; }
+    if (!form.effectiveFrom) { setError("Effective from date is required."); return; }
+    if (form.effectiveTo && form.effectiveTo < form.effectiveFrom) { setError("Effective to date cannot be before effective from date."); return; }
+    if (form.components.some((line) => Number(line.quantity) <= 0)) { setError("Component quantity must be greater than zero."); return; }
 
     setSaving(true); setError("");
     try {
-      const response = await manufacturingBomService.create(buildBomPayload({
-        ...form,
-        finishedItem: item,
-      }));
-      toast.success(response.message || "BOM version created.");
+      const values = { ...form, finishedItem: item };
+      const response = bom
+        ? await manufacturingBomService.update(getRecordId(bom), buildBomUpdatePayload(values))
+        : await manufacturingBomService.create(buildBomPayload(values));
+      toast.success(response.message || (bom ? "BOM updated." : "BOM version created."));
       onSaved(); onClose();
     } catch (requestError) {
       const message = getApiErrorMessage(requestError, "Unable to create the BOM version.");
@@ -81,23 +109,30 @@ const BomEditor = ({ item, onClose, onSaved, open }) => {
     } finally { setSaving(false); }
   };
 
-  return <AppModal isOpen={open} isBusy={saving} onClose={onClose} maxWidth="max-w-5xl" title={`Add BOM · ${item?.name ?? "Item"}`}>
+  return <AppModal isOpen={open} isBusy={saving} onClose={onClose} maxWidth="max-w-5xl" title={`${bom ? "Edit" : "Add"} BOM · ${item?.name ?? "Item"}`}>
     <div className="space-y-4">
       <ManufacturingInlineError message={error} title="BOM could not be saved" />
-      <div className="grid gap-4 sm:grid-cols-2"><AppInput required label="Version" value={form.version} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, version: event.target.value }))} /><AppInput label="Description" value={form.description} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} /></div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><AppInput required label="Version" value={form.version} disabled={saving || Boolean(bom)} onChange={(event) => setForm((current) => ({ ...current, version: event.target.value }))} /><AppInput required type="date" label="Effective from" value={form.effectiveFrom} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, effectiveFrom: event.target.value }))} /><AppInput type="date" label="Effective to" value={form.effectiveTo} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, effectiveTo: event.target.value }))} /><AppInput label="Notes" value={form.notes} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} /></div>
       <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" className="h-4 w-4 accent-brand" checked={form.isDefault} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, isDefault: event.target.checked }))} />Set as default when activated</label>
       <Panel title="Raw materials" description="Enter material required for one finished unit, plus expected wastage." actions={<AppButton className="h-9" variant="secondary" disabled={saving} onClick={() => setForm((current) => ({ ...current, components: [...current.components, emptyLine()] }))}><Plus className="h-4 w-4" />Add material</AppButton>}>
-        <div className="space-y-3 p-4">{form.components.map((line, index) => <div key={index} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 lg:grid-cols-[1fr_150px_140px_42px]"><ProcurementItemAutocomplete required mode="component" excludeItemId={item?.id} label={`Raw material ${index + 1}`} disabled={saving} value={line.item} onChange={(selected) => setLine(index, { item: selected })} /><AppInput required type="number" min="0.000001" step="any" label="Qty / unit" value={line.baseQuantity} disabled={saving} onChange={(event) => setLine(index, { baseQuantity: event.target.value })} /><AppInput type="number" min="0" step="any" label="Wastage %" value={line.wastagePercentage} disabled={saving} onChange={(event) => setLine(index, { wastagePercentage: event.target.value })} /><button type="button" aria-label="Remove material" className="mt-6 flex h-10 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40" disabled={saving || form.components.length === 1} onClick={() => setForm((current) => ({ ...current, components: current.components.filter((_, lineIndex) => lineIndex !== index) }))}><Trash2 className="h-4 w-4" /></button></div>)}</div>
+        <div className="space-y-3 p-4">{form.components.map((line, index) => <div key={index} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 lg:grid-cols-[minmax(240px,1fr)_130px_120px_minmax(180px,1fr)_42px]"><ProcurementItemAutocomplete required mode="component" excludeItemId={item?.id} label={`Raw material ${index + 1}`} disabled={saving} value={line.item} onChange={(selected) => setLine(index, { item: selected, unitId: selected?.unitId ?? selected?.unit?.id ?? null })} /><AppInput required type="number" min="0.000001" step="any" label="Qty / unit" value={line.quantity} disabled={saving} onChange={(event) => setLine(index, { quantity: event.target.value })} /><AppInput type="number" min="0" step="any" label="Wastage %" value={line.wastagePercentage} disabled={saving} onChange={(event) => setLine(index, { wastagePercentage: event.target.value })} /><AppInput label="Component notes" value={line.notes} disabled={saving} onChange={(event) => setLine(index, { notes: event.target.value })} /><button type="button" aria-label="Remove material" className="mt-6 flex h-10 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40" disabled={saving || form.components.length === 1} onClick={() => setForm((current) => ({ ...current, components: current.components.filter((_, lineIndex) => lineIndex !== index) }))}><Trash2 className="h-4 w-4" /></button></div>)}</div>
       </Panel>
-      <div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={saving} onClick={onClose}>Cancel</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>Save BOM</AppButton></div>
+      <div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={saving} onClick={onClose}>Cancel</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>{bom ? "Update BOM" : "Save BOM"}</AppButton></div>
     </div>
   </AppModal>;
 };
 
-const ProductionEditor = ({ boms, item, onClose, onSaved, open }) => {
+const ProductionEditor = ({ boms, item, onClose, onSaved, open, production }) => {
   const activeBoms = boms.filter(isBomActive);
   const defaultBom = activeBoms.find((bom) => bom.isDefault) ?? activeBoms[0] ?? null;
-  const [form, setForm] = useState(() => ({ bomId: getRecordId(defaultBom) ?? "", notes: "", producedQuantity: "", productionDate: today(), referenceNumber: "" }));
+  const [form, setForm] = useState(() => ({
+    bomId: production?.bomId ?? getRecordId(defaultBom) ?? "",
+    notes: production?.notes ?? "",
+    plannedQuantity: String(production?.plannedQuantity ?? production?.producedQuantity ?? production?.quantity ?? ""),
+    producedQuantity: String(production?.producedQuantity ?? production?.quantity ?? ""),
+    productionDate: production?.productionDate ? String(production.productionDate).slice(0, 10) : today(),
+    referenceNumber: production?.referenceNumber ?? production?.referenceNo ?? "",
+  }));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -106,11 +141,15 @@ const ProductionEditor = ({ boms, item, onClose, onSaved, open }) => {
 
   const submit = async () => {
     if (!form.bomId) { setError("Select an active BOM."); return; }
+    if (Number(form.plannedQuantity) <= 0) { setError("Planned quantity must be greater than zero."); return; }
     if (Number(form.producedQuantity) <= 0) { setError("Quantity to manufacture must be greater than zero."); return; }
     setSaving(true); setError("");
     try {
-      const response = await manufacturingProductionService.create(buildProductionPayload({ ...form, finishedItem: item }));
-      toast.success(response.message || "Production draft created. Review it and post to update stock.");
+      const values = { ...form, finishedItem: item };
+      const response = production
+        ? await manufacturingProductionService.update(getRecordId(production), buildProductionUpdatePayload(values))
+        : await manufacturingProductionService.create(buildProductionPayload(values));
+      toast.success(response.message || (production ? "Production draft updated." : "Production draft created. Review it and post to update stock."));
       onSaved(); onClose();
     } catch (requestError) {
       const message = getApiErrorMessage(requestError, "Unable to create the production draft.");
@@ -118,9 +157,9 @@ const ProductionEditor = ({ boms, item, onClose, onSaved, open }) => {
     } finally { setSaving(false); }
   };
 
-  return <AppModal isOpen={open} isBusy={saving} onClose={onClose} maxWidth="max-w-4xl" title={`Manufacture · ${item?.name ?? "Item"}`}><div className="space-y-4"><ManufacturingInlineError message={error} title="Production draft" /><div className="grid gap-4 sm:grid-cols-2"><AppSelect required label="BOM version" value={form.bomId} disabled={saving} options={activeBoms.map((bom) => ({ value: getRecordId(bom), label: `Version ${bom.version ?? bom.versionNumber}${bom.isDefault ? " · Default" : ""}` }))} onChange={(bomId) => setForm((current) => ({ ...current, bomId }))} /><AppInput required type="number" min="0.000001" step="any" label="Units to manufacture" value={form.producedQuantity} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, producedQuantity: event.target.value }))} /><AppInput required type="date" label="Production date" value={form.productionDate} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, productionDate: event.target.value }))} /><AppInput label="Reference" value={form.referenceNumber} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, referenceNumber: event.target.value }))} /></div><AppInput label="Notes" value={form.notes} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} />
+  return <AppModal isOpen={open} isBusy={saving} onClose={onClose} maxWidth="max-w-4xl" title={`${production ? "Edit production" : "Manufacture"} · ${item?.name ?? "Item"}`}><div className="space-y-4"><ManufacturingInlineError message={error} title="Production draft" /><div className="grid gap-4 sm:grid-cols-2"><AppSelect required label="BOM version" value={form.bomId} disabled={saving || Boolean(production)} options={activeBoms.map((bom) => ({ value: getRecordId(bom), label: `Version ${bom.version ?? bom.versionNumber}${bom.isDefault ? " · Default" : ""}` }))} onChange={(bomId) => setForm((current) => ({ ...current, bomId }))} /><AppInput required type="number" min="0.000001" step="any" label="Planned quantity" value={form.plannedQuantity} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, plannedQuantity: event.target.value, producedQuantity: current.producedQuantity || event.target.value }))} /><AppInput required type="number" min="0.000001" step="any" label="Produced quantity" value={form.producedQuantity} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, producedQuantity: event.target.value }))} /><AppInput required type="date" label="Production date" value={form.productionDate} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, productionDate: event.target.value }))} /><AppInput label="Reference" value={form.referenceNumber} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, referenceNumber: event.target.value }))} /></div><AppInput label="Notes" value={form.notes} disabled={saving} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} />
     <Panel title="Material consumption preview" description="The saved draft keeps its own BOM snapshot."><div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm"><thead className="bg-slate-50"><tr>{["Raw material", "Qty / unit", "Wastage", "Required"].map((label) => <th key={label} className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">{label}</th>)}</tr></thead><tbody>{lines.length ? lines.map((line, index) => <tr key={line.id ?? line.componentItemId ?? index} className="border-t border-slate-100"><td className="px-4 py-3 font-medium">{line.componentItemName ?? line.itemName ?? line.item?.name ?? "—"}</td><td className="px-4 py-3">{formatQuantity(line.baseQuantity ?? line.quantity)}</td><td className="px-4 py-3">{line.wastagePercentage ?? 0}%</td><td className="px-4 py-3 font-semibold">{formatQuantity(calculateRequiredQuantity(line, form.producedQuantity))}</td></tr>) : <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Select an active BOM.</td></tr>}</tbody></table></div></Panel>
-    <div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={saving} onClick={onClose}>Cancel</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>Save production draft</AppButton></div></div></AppModal>;
+    <div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={saving} onClick={onClose}>Cancel</AppButton><AppButton isLoading={saving} loadingText="Saving…" onClick={submit}>{production ? "Update production draft" : "Save production draft"}</AppButton></div></div></AppModal>;
 };
 
 const ItemManufacturingTab = ({ disabled, enabled, item, onEnabledChange }) => {
@@ -129,8 +168,11 @@ const ItemManufacturingTab = ({ disabled, enabled, item, onEnabledChange }) => {
   const [productions, setProductions] = useState([]);
   const [state, setState] = useState({ error: "", loading: false });
   const [bomOpen, setBomOpen] = useState(false);
+  const [editingBom, setEditingBom] = useState(null);
   const [productionOpen, setProductionOpen] = useState(false);
+  const [editingProduction, setEditingProduction] = useState(null);
   const [actionId, setActionId] = useState(null);
+  const [deleteBomRecord, setDeleteBomRecord] = useState(null);
   const [cancelRecord, setCancelRecord] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
 
@@ -174,10 +216,50 @@ const ItemManufacturingTab = ({ disabled, enabled, item, onEnabledChange }) => {
     finally { setActionId(null); }
   };
 
+  const deactivate = async (bom) => {
+    const id = getRecordId(bom); setActionId(id);
+    try { const response = await manufacturingBomService.deactivate(id); toast.success(response.message || "BOM deactivated."); await load(); }
+    catch (error) { toast.error(getApiErrorMessage(error, "Unable to deactivate the BOM.")); }
+    finally { setActionId(null); }
+  };
+
+  const openBomEditor = async (bom = null) => {
+    if (!bom) { setEditingBom(null); setBomOpen(true); return; }
+    const id = getRecordId(bom); setActionId(id);
+    try {
+      const response = await manufacturingBomService.getById(id);
+      setEditingBom(response?.data ?? response);
+      setBomOpen(true);
+    } catch (error) { toast.error(getApiErrorMessage(error, "Unable to load the BOM.")); }
+    finally { setActionId(null); }
+  };
+
+  const removeBom = async () => {
+    const id = getRecordId(deleteBomRecord); setActionId(id);
+    try {
+      const response = await manufacturingBomService.remove(id);
+      toast.success(response.message || "BOM deleted.");
+      setDeleteBomRecord(null);
+      await load();
+    } catch (error) { toast.error(getApiErrorMessage(error, "Unable to delete the BOM.")); }
+    finally { setActionId(null); }
+  };
+
   const post = async (record) => {
     const id = getRecordId(record); setActionId(id);
     try { const response = await manufacturingProductionService.post(id); toast.success(response.message || "Production posted and stock updated."); await load(); }
     catch (error) { toast.error(getApiErrorMessage(error, "Unable to post production.")); }
+    finally { setActionId(null); }
+  };
+
+  const openProductionEditor = async (record = null) => {
+    if (!record) { setEditingProduction(null); setProductionOpen(true); return; }
+    const id = getRecordId(record); setActionId(id);
+    try {
+      const response = await manufacturingProductionService.getById(id);
+      setEditingProduction(response?.data ?? response);
+      setProductionOpen(true);
+    } catch (error) { toast.error(getApiErrorMessage(error, "Unable to load the production draft.")); }
     finally { setActionId(null); }
   };
 
@@ -193,15 +275,22 @@ const ItemManufacturingTab = ({ disabled, enabled, item, onEnabledChange }) => {
     <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><span><span className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Factory className="h-4 w-4 text-brand" />Enable manufacturing</span><span className="mt-0.5 block text-xs leading-5 text-slate-500">Create this item from raw materials using a bill of materials.</span></span><input type="checkbox" className="h-4 w-4 accent-brand" checked={enabled} disabled={disabled} onChange={(event) => onEnabledChange(event.target.checked)} /></label>
     {!enabled ? <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center"><Factory className="mx-auto h-7 w-7 text-slate-400" /><p className="mt-3 text-sm font-semibold text-slate-800">Manufacturing is disabled</p><p className="mt-1 text-xs text-slate-500">Enable it to add a BOM and record production for this item.</p></div> : !itemId ? <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-800"><p className="font-semibold">Save the item first</p><p className="mt-1 text-xs leading-5">After the item is created, reopen its Manufacturing tab to add raw materials and manufacture units.</p></div> : <>
       <ManufacturingInlineError message={state.error} onRetry={load} title="Manufacturing details unavailable" />
-      <Panel title="Bill of materials" description="BOM versions and raw-material recipe for this finished item." actions={<><AppButton className="h-9" variant="secondary" disabled={state.loading} onClick={load}><RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} /></AppButton><AppButton className="h-9" onClick={() => setBomOpen(true)}><Plus className="h-4 w-4" />Add BOM</AppButton></>}>
-        {boms.length === 0 ? <div className="px-5 py-10 text-center"><GitBranch className="mx-auto h-6 w-6 text-slate-400" /><p className="mt-2 text-sm font-medium text-slate-800">No BOM added yet</p><p className="mt-1 text-xs text-slate-500">Add raw materials required to make one unit.</p></div> : <div className="divide-y divide-slate-100">{boms.map((bom) => { const active = bom.isActive === true || String(bom.status ?? "").toLowerCase() === "active"; return <div key={getRecordId(bom)} className="p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><p className="text-sm font-semibold text-slate-900">Version {bom.version ?? bom.versionNumber}</p>{bom.isDefault && <span className="rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-semibold text-brand">Default</span>}<span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{active ? "Active" : "Draft"}</span></div><p className="mt-1 text-xs text-slate-500">{getBomLines(bom).length || bom.componentCount || 0} raw materials</p></div>{!active && <AppButton className="h-9" variant="secondary" disabled={actionId === getRecordId(bom)} onClick={() => activate(bom)}><CheckCircle2 className="h-4 w-4" />Activate</AppButton>}</div>{getBomLines(bom).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{getBomLines(bom).map((line, index) => <span key={line.id ?? index} className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">{line.componentItemName ?? line.itemName ?? "Material"}: {formatQuantity(line.baseQuantity ?? line.quantity)} + {line.wastagePercentage ?? 0}%</span>)}</div>}</div>; })}</div>}
+      <Panel title="Bill of materials" description="Versioned recipe, validity dates and raw materials for this finished item." actions={<><AppButton className="h-9" variant="secondary" disabled={state.loading} onClick={load}><RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} /></AppButton><AppButton className="h-9" onClick={() => openBomEditor()}><Plus className="h-4 w-4" />Add BOM</AppButton></>}>
+        {boms.length === 0 ? <div className="px-5 py-10 text-center"><GitBranch className="mx-auto h-6 w-6 text-slate-400" /><p className="mt-2 text-sm font-medium text-slate-800">No BOM added yet</p><p className="mt-1 text-xs text-slate-500">Add raw materials required to make one unit.</p></div> : <div className="divide-y divide-slate-100">{boms.map((bom) => {
+          const id = getRecordId(bom);
+          const status = getBomStatus(bom);
+          const active = isBomActive(bom);
+          const editable = !active;
+          return <div key={id} className="p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><p className="text-sm font-semibold text-slate-900">Version {bom.version ?? bom.versionNumber}</p>{bom.isDefault && <span className="rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-semibold text-brand">Default</span>}<span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{status}</span></div><p className="mt-1 text-xs text-slate-500">{getBomLines(bom).length || bom.componentCount || 0} raw materials · {formatDate(bom.effectiveFrom)}{bom.effectiveTo ? ` to ${formatDate(bom.effectiveTo)}` : " onward"}</p></div><div className="flex flex-wrap gap-2">{editable && <><AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => openBomEditor(bom)}><Pencil className="h-4 w-4" />Edit</AppButton><AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => setDeleteBomRecord(bom)}><Trash2 className="h-4 w-4" />Delete</AppButton></>}{active ? <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => deactivate(bom)}><Ban className="h-4 w-4" />Deactivate</AppButton> : <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => activate(bom)}><CheckCircle2 className="h-4 w-4" />Activate</AppButton>}</div></div>{getBomLines(bom).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{getBomLines(bom).map((line, index) => <span key={line.id ?? index} className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">{line.componentItemName ?? line.itemName ?? "Material"}: {formatQuantity(line.quantity ?? line.baseQuantity)} + {line.wastagePercentage ?? 0}%</span>)}</div>}{bom.notes && <p className="mt-3 text-xs text-slate-500">{bom.notes}</p>}</div>;
+        })}</div>}
       </Panel>
-      <Panel title="Production" description="Manufacture this item, then post the draft to update raw-material and finished-goods stock." actions={<AppButton className="h-9" disabled={!boms.some(isBomActive)} onClick={() => setProductionOpen(true)}><Factory className="h-4 w-4" />Manufacture</AppButton>}>
-        {productions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-slate-500">No production history for this item.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-sm"><thead className="bg-slate-50"><tr>{["Date", "Reference", "Quantity", "BOM", "Status", "Actions"].map((label) => <th key={label} className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">{label}</th>)}</tr></thead><tbody>{productions.map((record) => { const id = getRecordId(record); const status = String(record.statusName ?? record.status ?? "").toLowerCase(); return <tr key={id} className="border-t border-slate-100"><td className="px-4 py-3">{formatDate(record.productionDate)}</td><td className="px-4 py-3 font-medium">{record.referenceNumber ?? `PR-${id}`}</td><td className="px-4 py-3">{formatQuantity(record.producedQuantity ?? record.quantity)}</td><td className="px-4 py-3">v{record.bomVersion ?? record.version ?? "—"}</td><td className="px-4 py-3"><ManufacturingStatusPill record={record} /></td><td className="px-4 py-3"><div className="flex gap-1">{isDraftProduction(record) && <button type="button" title="Post and update stock" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40" onClick={() => post(record)}><Send className="h-4 w-4" /></button>}{status === "posted" && <button type="button" title="Cancel and reverse stock" className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600" onClick={() => setCancelRecord(record)}><Ban className="h-4 w-4" /></button>}</div></td></tr>; })}</tbody></table></div>}
+      <Panel title="Production" description="Plan and record output, then post the draft to update raw-material and finished-goods stock." actions={<AppButton className="h-9" disabled={!boms.some(isBomActive)} onClick={() => openProductionEditor()}><Factory className="h-4 w-4" />Manufacture</AppButton>}>
+        {productions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-slate-500">No production history for this item.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[820px] text-sm"><thead className="bg-slate-50"><tr>{["Date", "Reference", "Planned", "Produced", "BOM", "Status", "Actions"].map((label) => <th key={label} className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">{label}</th>)}</tr></thead><tbody>{productions.map((record) => { const id = getRecordId(record); const status = getStatus(record).toLowerCase(); return <tr key={id} className="border-t border-slate-100"><td className="px-4 py-3">{formatDate(record.productionDate)}</td><td className="px-4 py-3 font-medium">{record.referenceNumber ?? `PR-${id}`}</td><td className="px-4 py-3">{formatQuantity(record.plannedQuantity)}</td><td className="px-4 py-3">{formatQuantity(record.producedQuantity ?? record.quantity)}</td><td className="px-4 py-3">v{record.bomVersion ?? record.version ?? "—"}</td><td className="px-4 py-3"><ManufacturingStatusPill record={record} /></td><td className="px-4 py-3"><div className="flex gap-1">{isDraftProduction(record) && <><button type="button" title="Edit production draft" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-brand-light hover:text-brand disabled:opacity-40" onClick={() => openProductionEditor(record)}><Pencil className="h-4 w-4" /></button><button type="button" title="Post and update stock" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40" onClick={() => post(record)}><Send className="h-4 w-4" /></button></>}{status === "posted" && <button type="button" title="Cancel and reverse stock" className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600" onClick={() => setCancelRecord(record)}><Ban className="h-4 w-4" /></button>}</div></td></tr>; })}</tbody></table></div>}
       </Panel>
     </>}
-    {bomOpen && <BomEditor item={item} open onClose={() => setBomOpen(false)} onSaved={load} />}
-    {productionOpen && <ProductionEditor boms={boms} item={item} open onClose={() => setProductionOpen(false)} onSaved={load} />}
+    {bomOpen && <BomEditor bom={editingBom} item={item} open onClose={() => { setBomOpen(false); setEditingBom(null); }} onSaved={load} />}
+    {productionOpen && <ProductionEditor boms={boms} item={item} open production={editingProduction} onClose={() => { setProductionOpen(false); setEditingProduction(null); }} onSaved={load} />}
+    <AppModal isOpen={Boolean(deleteBomRecord)} isBusy={Boolean(actionId)} onClose={() => setDeleteBomRecord(null)} title="Delete BOM"><div className="space-y-4"><p className="text-sm text-slate-600">Delete BOM version {deleteBomRecord?.version ?? deleteBomRecord?.versionNumber}? This action cannot be undone.</p><div className="flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setDeleteBomRecord(null)}>Keep BOM</AppButton><AppButton variant="danger" isLoading={Boolean(actionId)} onClick={removeBom}>Delete BOM</AppButton></div></div></AppModal>
     <AppModal isOpen={Boolean(cancelRecord)} isBusy={Boolean(actionId)} onClose={() => setCancelRecord(null)} title="Cancel production"><div className="space-y-4"><p className="text-sm text-slate-600">This reverses the posted raw-material and finished-goods stock movements.</p><div><label className="mb-1.5 block text-xs font-semibold text-slate-700">Reason <span className="text-red-500">*</span></label><textarea rows={4} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20" value={cancelReason} onChange={(event) => setCancelReason(event.target.value)} /></div><div className="flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setCancelRecord(null)}>Keep production</AppButton><AppButton variant="danger" disabled={!cancelReason.trim()} isLoading={Boolean(actionId)} onClick={cancel}>Cancel production</AppButton></div></div></AppModal>
   </div>;
 };
