@@ -10,6 +10,7 @@ using Dapper;
 namespace Cosmos.Persistence.Repositories;
 public sealed class ManufacturingRepository(ISqlConnectionFactory factory) : IManufacturingRepository
 {
+ static ManufacturingRepository()=>TemporalTypeHandlers.Configure();
  public Task<PagedResult<ManufacturingBomListItemDto>> GetBomsAsync(ManufacturingBomQuery q,CancellationToken ct)=>Page<ManufacturingBomListItemDto>("sp_ManufacturingBom_GetList",q,q.PageNumber,q.PageSize,ct);
  public Task<ManufacturingBomDto?> GetBomAsync(long id,CancellationToken ct)=>Detail<ManufacturingBomDto,ManufacturingBomComponentDto>("sp_ManufacturingBom_GetById",id,(h,l)=>h with { Components=l },ct);
  public Task<ManufacturingBomDto> CreateBomAsync(CreateManufacturingBomRequest r,long? u,CancellationToken ct)=>SaveBom("sp_ManufacturingBom_Create",null,r,u,ct);
