@@ -1,7 +1,23 @@
 using System.Data;
+using System.Threading;
 using Dapper;
 
 namespace Cosmos.Persistence.Dapper;
+
+internal static class TemporalTypeHandlers
+{
+    private static int isConfigured;
+
+    public static void Configure()
+    {
+        if (Interlocked.Exchange(ref isConfigured, 1) != 0) return;
+
+        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new NullableDateOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new TimeOnlyTypeHandler());
+        SqlMapper.AddTypeHandler(new NullableTimeOnlyTypeHandler());
+    }
+}
 
 internal sealed class DateOnlyTypeHandler : SqlMapper.TypeHandler<DateOnly>
 {
