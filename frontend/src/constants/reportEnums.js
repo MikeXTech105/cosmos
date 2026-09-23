@@ -17,9 +17,9 @@ export const REPORT_PAYMENT_STATUS = SALES_PAYMENT_STATUS;
 
 export const REPORT_STATUS_OPTIONS = {
   manufacturingProduction: [
-    { label: "Draft", value: "Draft" },
-    { label: "Posted", value: "Posted" },
-    { label: "Cancelled", value: "Cancelled" },
+    { label: "Draft", value: 1 },
+    { label: "Posted", value: 2 },
+    { label: "Cancelled", value: 3 },
   ],
   purchaseDocument: [
     { label: "Draft", value: PURCHASE_STATUS.DRAFT },

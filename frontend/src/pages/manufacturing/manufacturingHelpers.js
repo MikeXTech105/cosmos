@@ -4,6 +4,12 @@ export const PRODUCTION_STATUS = {
   CANCELLED: "Cancelled",
 };
 
+export const BOM_STATUS = {
+  DRAFT: "Draft",
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+};
+
 export const getRecordId = (record) =>
   record?.id ?? record?.bomId ?? record?.productionId ?? record?.productionRecordId;
 
@@ -14,7 +20,11 @@ export const getStatus = (record) => {
   const value = record?.statusName ?? record?.status ?? PRODUCTION_STATUS.DRAFT;
 
   if (typeof value === "number") {
-    return [PRODUCTION_STATUS.DRAFT, PRODUCTION_STATUS.POSTED, PRODUCTION_STATUS.CANCELLED][value] ?? String(value);
+    return {
+      1: PRODUCTION_STATUS.DRAFT,
+      2: PRODUCTION_STATUS.POSTED,
+      3: PRODUCTION_STATUS.CANCELLED,
+    }[value] ?? String(value);
   }
 
   return String(value);
@@ -22,6 +32,16 @@ export const getStatus = (record) => {
 
 export const isDraftProduction = (record) =>
   getStatus(record).toLowerCase() === PRODUCTION_STATUS.DRAFT.toLowerCase();
+
+export const getBomStatus = (bom) => {
+  const value = bom?.statusName ?? bom?.status ?? BOM_STATUS.DRAFT;
+  if (typeof value === "number") {
+    return { 1: BOM_STATUS.DRAFT, 2: BOM_STATUS.ACTIVE, 3: BOM_STATUS.INACTIVE }[value] ?? String(value);
+  }
+  return String(value);
+};
+
+export const isBomActive = (bom) => getBomStatus(bom).toLowerCase() === "active";
 
 export const normalizePage = (response) => {
   const data = response?.data ?? response ?? {};
@@ -62,7 +82,7 @@ export const getSnapshotLines = (production) =>
   production?.materialSnapshots ?? production?.materials ?? production?.components ?? [];
 
 export const calculateRequiredQuantity = (line, producedQuantity = 1) => {
-  const base = Number(line?.baseQuantity ?? line?.quantity ?? line?.quantityPerUnit ?? 0);
+  const base = Number(line?.quantity ?? line?.baseQuantity ?? line?.quantityPerUnit ?? 0);
   const wastage = Number(line?.wastagePercentage ?? line?.wastagePercent ?? 0);
   return base * Number(producedQuantity || 0) * (1 + wastage / 100);
 };
@@ -70,20 +90,48 @@ export const calculateRequiredQuantity = (line, producedQuantity = 1) => {
 export const buildBomPayload = (form) => ({
   finishedItemId: Number(form.finishedItem?.id ?? form.finishedItem?.itemId),
   version: String(form.version ?? "").trim(),
-  description: String(form.description ?? "").trim() || null,
+  effectiveFrom: form.effectiveFrom,
+  effectiveTo: form.effectiveTo || null,
+  notes: String(form.notes ?? "").trim() || null,
   isDefault: Boolean(form.isDefault),
-  components: form.components.map((line) => ({
+  components: form.components.map((line, index) => ({
     componentItemId: Number(line.item?.id ?? line.item?.itemId),
-    baseQuantity: Number(line.baseQuantity),
+    quantity: Number(line.quantity),
+    unitId: Number(line.unitId ?? line.item?.unitId ?? line.item?.unit?.id) || null,
     wastagePercentage: Number(line.wastagePercentage || 0),
+    notes: String(line.notes ?? "").trim() || null,
+    sortOrder: index + 1,
   })),
 });
 
+export const buildBomUpdatePayload = (form) => {
+  const payload = buildBomPayload(form);
+  return {
+    components: payload.components,
+    effectiveFrom: payload.effectiveFrom,
+    effectiveTo: payload.effectiveTo,
+    isDefault: payload.isDefault,
+    notes: payload.notes,
+  };
+};
+
 export const buildProductionPayload = (form) => ({
   finishedItemId: Number(form.finishedItem?.id ?? form.finishedItem?.itemId),
-  bomId: Number(form.bomId),
+  bomId: form.bomId ? Number(form.bomId) : null,
+  plannedQuantity: Number(form.plannedQuantity),
   producedQuantity: Number(form.producedQuantity),
   productionDate: form.productionDate,
   referenceNumber: String(form.referenceNumber ?? "").trim() || null,
   notes: String(form.notes ?? "").trim() || null,
 });
+
+export const buildProductionUpdatePayload = (form) => {
+  const payload = buildProductionPayload(form);
+  return {
+    notes: payload.notes,
+    plannedQuantity: payload.plannedQuantity,
+    producedQuantity: payload.producedQuantity,
+    productionDate: payload.productionDate,
+    referenceNumber: payload.referenceNumber,
+  };
+};
