@@ -119,6 +119,7 @@ public sealed class ItemRepository : IItemRepository
         parameters.Add("HSNCode", TrimToNull(command.HSNCode));
         parameters.Add("GSTRate", command.GSTRate);
         parameters.Add("TrackInventory", command.TrackInventory);
+        parameters.Add("IsManufactured", command.IsManufactured);
         parameters.Add("OpeningStock", command.OpeningStock);
         parameters.Add("OpeningStockValue", command.OpeningStockValue);
         parameters.Add("CurrentStock", command.CurrentStock);

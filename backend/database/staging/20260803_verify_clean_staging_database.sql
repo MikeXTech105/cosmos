@@ -62,6 +62,7 @@ INSERT #ExpectedTables VALUES
 (N'OeeMachines','A',N'OEE'),(N'OeeMoulds','A',N'OEE'),(N'OeeDowntimeReasons','A',N'OEE'),(N'OeeProductionEntries','C',N'OEE'),
 (N'SalesChannels','A',N'Supply chain'),(N'ChannelSkuMappings','A',N'Supply chain'),(N'ChannelWarehouses','A',N'Supply chain'),(N'ItemPackagingProfiles','A',N'Supply chain'),(N'SupplyChainImportBatches','C',N'Supply chain'),(N'SupplyChainImportRows','C',N'Supply chain'),
 (N'ProductBomComponents','A',N'Procurement planning'),(N'ProcurementSettings','A',N'Procurement planning'),(N'ProcurementSalesImportBatches','C',N'Procurement planning'),(N'ProcurementSalesHistory','C',N'Procurement planning'),(N'ProcurementLeadTimeHistory','C',N'Procurement planning'),(N'ProcurementInboundStockSnapshots','C',N'Procurement planning'),(N'ProcurementPlanningRuns','C',N'Procurement planning'),(N'ProcurementPlanningRunLines','C',N'Procurement planning'),
+(N'ManufacturingBoms','C',N'Manufacturing'),(N'ManufacturingBomItems','C',N'Manufacturing'),(N'ManufacturingProductions','C',N'Manufacturing'),(N'ManufacturingProductionMaterials','C',N'Manufacturing'),
 (N'DispatchSkuSettings','A',N'Dispatch planning'),(N'DispatchImportStagedRows','C',N'Dispatch planning'),(N'DispatchWarehouseSalesSnapshots','C',N'Dispatch planning'),(N'DispatchWarehouseStockSnapshots','C',N'Dispatch planning'),(N'DispatchWarehouseInboundSnapshots','C',N'Dispatch planning'),(N'DispatchPlanningRuns','C',N'Dispatch planning'),(N'DispatchCompanyStockSnapshots','C',N'Dispatch planning'),(N'DispatchRecommendationResults','C',N'Dispatch planning'),(N'DispatchAllocations','C',N'Dispatch planning'),
 (N'Wallets','B',N'Rojmel'),(N'WalletCategories','A',N'Rojmel'),(N'WalletTransfers','C',N'Rojmel'),(N'WalletTransactions','C',N'Rojmel'),
 (N'Shipments','C',N'Shipment operations'),(N'ShipmentItems','C',N'Shipment operations'),(N'ShipmentPackages','C',N'Shipment operations'),(N'ShipmentPackageItems','C',N'Shipment operations'),(N'ShipmentDockets','C',N'Shipment operations'),(N'ShipmentAppointments','C',N'Shipment operations'),(N'ShipmentTrackingEvents','C',N'Shipment operations'),(N'ShipmentDeliveryAttempts','C',N'Shipment operations'),(N'ShipmentReceipts','C',N'Shipment operations'),(N'ShipmentReceiptItems','C',N'Shipment operations'),(N'ShipmentReturns','C',N'Shipment operations'),(N'ShipmentReturnItems','C',N'Shipment operations'),(N'ShipmentFreightCharges','C',N'Shipment operations'),(N'ShipmentImportStagedRows','C',N'Shipment operations');
@@ -129,9 +130,9 @@ IF EXISTS(SELECT 1 FROM #TableCounts WHERE Classification='A' AND RowTotal=0)
     INSERT #Findings VALUES('WARNING',N'Empty preserved master table',N'At least one Category A table is empty. Compare the full master table count report to the pre-cleanup report before staging approval.');
 
 /* Stock and financial policy checks. */
-IF @ExpectResetItemStock=1 AND EXISTS(SELECT 1 FROM dbo.Items WHERE OpeningStock<>0 OR OpeningStockValue<>0 OR CurrentStock<>0 OR ReservedStock<>0)
+IF @ExpectResetItemStock=1 AND EXISTS(SELECT 1 FROM dbo.Items WHERE OpeningStock<>0 OR OpeningStockValue<>0 OR CurrentStock<>0 OR ReservedStock<>0 OR IsManufactured<>0)
     INSERT #Findings VALUES('FAIL',N'Item stock reset',N'One or more stored item stock values remain non-zero.');
-ELSE IF @ExpectResetItemStock=1 INSERT #Findings VALUES('PASS',N'Item stock reset',N'OpeningStock, OpeningStockValue, CurrentStock and ReservedStock are zero for every item.');
+ELSE IF @ExpectResetItemStock=1 INSERT #Findings VALUES('PASS',N'Item stock reset',N'OpeningStock, OpeningStockValue, CurrentStock, ReservedStock and IsManufactured are reset for every item.');
 IF @ExpectResetPartyOpeningBalances=1 AND EXISTS(SELECT 1 FROM dbo.Parties WHERE OpeningBalance<>0)
     INSERT #Findings VALUES('FAIL',N'Party opening balance reset',N'One or more party opening balances remain non-zero.');
 ELSE IF @ExpectResetPartyOpeningBalances=1 INSERT #Findings VALUES('PASS',N'Party opening balance reset',N'All preserved party opening balances are zero.');
@@ -170,7 +171,7 @@ IF @ExpectAuditLogsPreserved=0 AND EXISTS(SELECT 1 FROM dbo.AuditLogs)
 IF @ExpectResetDocumentSequences=1 AND EXISTS
 (
     SELECT 1 FROM dbo.NumberSequences
-    WHERE ModuleName IN(N'SalesInvoice',N'PurchaseBill',N'SupplierPayment',N'Expense',N'PurchaseOrder',N'PurchaseReturn',N'ProcurementSalesImport',N'ProcurementPlanning',N'Shipment',N'ShipmentReceipt',N'ShipmentReturn')
+    WHERE ModuleName IN(N'SalesInvoice',N'PurchaseBill',N'SupplierPayment',N'Expense',N'PurchaseOrder',N'PurchaseReturn',N'ProcurementSalesImport',N'ProcurementPlanning',N'Shipment',N'ShipmentReceipt',N'ShipmentReturn',N'ManufacturingBom',N'ManufacturingProduction')
       AND NextNumber<>1
 )
     INSERT #Findings VALUES('FAIL',N'Document sequence reset',N'At least one known transactional NumberSequences row does not have NextNumber = 1.');

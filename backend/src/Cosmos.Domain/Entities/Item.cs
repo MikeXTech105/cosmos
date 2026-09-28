@@ -15,6 +15,7 @@ public sealed class Item
     public string? HSNCode { get; set; }
     public decimal GSTRate { get; set; }
     public bool TrackInventory { get; set; }
+    public bool IsManufactured { get; set; }
     public decimal OpeningStock { get; set; }
     public decimal OpeningStockValue { get; set; }
     public decimal CurrentStock { get; set; }
