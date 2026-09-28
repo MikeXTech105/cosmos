@@ -13,6 +13,7 @@ public sealed record CreateItemCommand(
     string? HSNCode,
     decimal GSTRate,
     bool TrackInventory,
+    bool IsManufactured,
     decimal OpeningStock,
     decimal OpeningStockValue,
     decimal CurrentStock,
