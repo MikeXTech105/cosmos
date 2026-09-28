@@ -6,7 +6,7 @@
     - Do not run it against production. Stop the application and take a tested full backup
       before changing @ExecuteCleanup to 1.
     - The script does not drop/recreate the database and never changes program objects.
-    - It is written for the current repository schema through 2026-07-29. It fails closed
+   - It is written for the current repository schema through 2026-09-23. It fails closed
       when a populated user table is not classified below.
 
     Run this script in SQL Server Management Studio while connected to the intended copy.
@@ -36,9 +36,9 @@ DROP TABLE IF EXISTS #TableClassification;
 /* =============================================================================
    1. OPERATOR CONFIGURATION -- review every value before enabling execution
    ============================================================================= */
-DECLARE @ExecuteCleanup bit = 1;
+DECLARE @ExecuteCleanup bit = 0;
 DECLARE @ExpectedDatabaseName sysname = N'CosmosERP_Staging';
-DECLARE @BackupConfirmed bit = 1;
+DECLARE @BackupConfirmed bit = 0;
 DECLARE @AllowProductionLikeDatabaseName bit = 0; -- Must remain 0 for a staging cleanup.
 
 /* The staging administrator must be a distinct, existing account. Set exactly one identifier. */
@@ -183,7 +183,11 @@ INSERT #TableClassification(SchemaName,TableName,Category,ModuleName,Preservatio
 (N'dbo',N'ShipmentReturns','C',N'Shipment operations',N'Delete return headers.',1),
 (N'dbo',N'ShipmentReturnItems','C',N'Shipment operations',N'Delete return details.',1),
 (N'dbo',N'ShipmentFreightCharges','C',N'Shipment operations',N'Delete freight transactions before Rojmel ledger rows.',1),
-(N'dbo',N'ShipmentImportStagedRows','C',N'Shipment operations',N'Delete Work List import staging rows.',1);
+(N'dbo',N'ShipmentImportStagedRows','C',N'Shipment operations',N'Delete Work List import staging rows.',1),
+(N'dbo',N'ManufacturingBoms','C',N'Manufacturing',N'Delete all versioned manufacturing BOM headers after their components and productions.',1),
+(N'dbo',N'ManufacturingBomItems','C',N'Manufacturing',N'Delete BOM component rows before BOM headers.',1),
+(N'dbo',N'ManufacturingProductions','C',N'Manufacturing',N'Delete production headers after their material-consumption snapshots.',1),
+(N'dbo',N'ManufacturingProductionMaterials','C',N'Manufacturing',N'Delete production material-consumption snapshots first.',1);
 
 /* D is intentionally empty for the repository schema. New/unclassified user tables are inserted into #UnresolvedTables below and block execution when populated. */
 
@@ -528,6 +532,10 @@ INSERT #DeletionPlan VALUES
 (540,N'Purchase',N'PurchaseBills',N'Purchase bill headers.'),
 (550,N'Purchase and expenses',N'Expenses',N'Expense transactions and attachment references.'),
 (560,N'Parties',N'PartyLedgerEntries',N'Party receivable/payable ledger.'),
+(565,N'Manufacturing',N'ManufacturingProductionMaterials',N'Child material-consumption snapshots.'),
+(566,N'Manufacturing',N'ManufacturingProductions',N'Production headers after material snapshots.'),
+(567,N'Manufacturing',N'ManufacturingBomItems',N'BOM component rows.'),
+(568,N'Manufacturing',N'ManufacturingBoms',N'BOM headers after all productions.'),
 (570,N'Inventory',N'StockMovements',N'All operational stock movements.');
 
 /* Verify that the hand-reviewed plan contains every Category C table exactly once. */
@@ -631,12 +639,12 @@ WHERE w.IsDeleted=1
 
     /* Items are preserved; all fields reset here are stored operational values, not computed columns. */
     IF @ResetItemStock=1
-        UPDATE dbo.Items SET OpeningStock=0,OpeningStockValue=0,CurrentStock=0,ReservedStock=0,ModifiedAt=@NowUtc;
+        UPDATE dbo.Items SET OpeningStock=0,OpeningStockValue=0,CurrentStock=0,ReservedStock=0,IsManufactured=0,ModifiedAt=@NowUtc;
 
     /* Keep sequence definitions/prefixes. Reset only sequence modules proven to generate deleted transactional documents. */
     IF @ResetDocumentSequences=1
         UPDATE dbo.NumberSequences SET NextNumber=1,UpdatedAtUtc=@NowUtc
-        WHERE ModuleName IN(N'SalesInvoice',N'PurchaseBill',N'SupplierPayment',N'Expense',N'PurchaseOrder',N'PurchaseReturn',N'ProcurementSalesImport',N'ProcurementPlanning',N'Shipment',N'ShipmentReceipt',N'ShipmentReturn');
+        WHERE ModuleName IN(N'SalesInvoice',N'PurchaseBill',N'SupplierPayment',N'Expense',N'PurchaseOrder',N'PurchaseReturn',N'ProcurementSalesImport',N'ProcurementPlanning',N'Shipment',N'ShipmentReceipt',N'ShipmentReturn',N'ManufacturingBom',N'ManufacturingProduction');
 
     /* Re-enable and verify each temporary trigger change before committing. */
     IF EXISTS(SELECT 1 FROM #ChangedTriggers WHERE TriggerName=N'TR_ShipmentTrackingEvents_AppendOnly' AND WasTemporarilyDisabled=1)
