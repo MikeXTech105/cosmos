@@ -30,7 +30,11 @@ public sealed record ItemDto(
     long? CreatedBy,
     DateTime? ModifiedAt,
     long? ModifiedBy,
-    bool IsDeleted);
+    bool IsDeleted)
+{
+    // Lets Dapper materialize older deployed Item procedures that do not yet return IsManufactured.
+    public ItemDto() : this(0, string.Empty, string.Empty, null, 0, string.Empty, 0, string.Empty, string.Empty, 0, null, 0, 0, null, 0, false, false, 0, 0, 0, 0, 0, null, null, false, default, null, null, null, false) { }
+}
 
 public sealed record ItemListItemDto(
     long Id,
@@ -54,7 +58,11 @@ public sealed record ItemListItemDto(
     bool IsActive,
     DateTime CreatedAt,
     DateTime? ModifiedAt,
-    int TotalCount);
+    int TotalCount)
+{
+    // Existing SQL installations may not have applied the IsManufactured migration yet.
+    public ItemListItemDto() : this(0, string.Empty, string.Empty, null, 0, string.Empty, 0, string.Empty, string.Empty, 0, null, 0, 0, 0, 0, 0, false, false, false, default, null, 0) { }
+}
 
 public sealed record ItemListSummaryDto(int TotalCount, int ProductCount, int ServiceCount, int LowStockCount);
 
