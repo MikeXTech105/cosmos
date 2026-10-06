@@ -9,7 +9,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -175,6 +175,7 @@ const ItemFormPage = () => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const capabilities = useInventoryCapabilities({ label: "Items", resource: "items", route: "/items" });
   const { manufacturingEnabled } = useManufacturingPreference();
   const canCreateCategory = useCreatePermission({ label: "Categories", resource: "categories", route: "/categories" });
@@ -183,7 +184,7 @@ const ItemFormPage = () => {
   const detailError = useSelector((state) => state.items.detailError);
   const detailItem = useSelector((state) => state.items.selected);
 
-  const [activeTab, setActiveTab] = useState("pricing");
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") === "manufacturing" ? "manufacturing" : "pricing");
   const [lookupCreateModal, setLookupCreateModal] = useState({ isOpen: false, type: null });
   const [lookups, setLookups] = useState({
     categories: [], categoriesError: null, categoriesLoading: true,

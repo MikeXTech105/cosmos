@@ -28,11 +28,6 @@ export const fetchProductBom = createThunk(
   bomService.getProductBom,
   "Unable to load the product BOM.",
 );
-export const saveProductBom = createThunk(
-  "procurementBom/saveProductBom",
-  ({ productId, payload }) => bomService.saveProductBom(productId, payload),
-  "Unable to save the product BOM.",
-);
 export const fetchBomIssues = createThunk(
   "procurementBom/fetchIssues",
   bomService.getIssues,
@@ -64,9 +59,6 @@ const slice = createSlice({
         state.selected = action.payload.data;
       })
       .addCase(fetchProductBom.rejected, setDetailRejected)
-      .addCase(saveProductBom.fulfilled, (state, action) => {
-        state.selected = action.payload.data;
-      })
       .addCase(fetchBomIssues.pending, (state) => {
         state.issuesLoading = true;
         state.issuesError = null;
