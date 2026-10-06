@@ -7,6 +7,7 @@ public interface IManufacturingRepository
 {
     Task<PagedResult<ManufacturingBomListItemDto>> GetBomsAsync(ManufacturingBomQuery query, CancellationToken ct);
     Task<ManufacturingBomDto?> GetBomAsync(long id, CancellationToken ct);
+    Task<ManufacturingBomDto?> GetApplicableBomAsync(long finishedItemId, DateOnly asOfDate, CancellationToken ct);
     Task<ManufacturingBomDto> CreateBomAsync(CreateManufacturingBomRequest request, long? userId, CancellationToken ct);
     Task<ManufacturingBomDto> UpdateBomAsync(long id, UpdateManufacturingBomRequest request, long? userId, CancellationToken ct);
     Task SetBomStatusAsync(long id, bool active, long? userId, CancellationToken ct);
