@@ -12,13 +12,6 @@ export const bomService = {
     );
     return unwrapResponse(response);
   },
-  saveProductBom: async (productId, payload) => {
-    const response = await axiosInstance.put(
-      ENDPOINTS.PP_BOM_BY_PRODUCT(productId),
-      payload,
-    );
-    return unwrapResponse(response);
-  },
   getIssues: async (params) => {
     const response = await axiosInstance.get(ENDPOINTS.PP_BOM_ISSUES, {
       params: sanitizeProcurementListParams(params, ISSUE_SORT_FIELDS),

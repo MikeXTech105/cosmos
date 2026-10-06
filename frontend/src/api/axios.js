@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 import { ENDPOINTS } from "./endpoints";
 import { getAuthData } from "../utils/authStorage";
 import { unwrapResponse } from "../services/apiServiceUtils";
@@ -67,6 +68,12 @@ axiosInstance.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
+
+    if (error.response?.status === 409 && originalRequest?.method?.toLowerCase() === "put"
+      && /^\/api\/v1\/procurement-planning\/boms\/products\/[^/]+$/.test(normalizeEndpointPath(originalRequest.url))) {
+      toast.error("Procurement BOM editing has moved to Manufacturing. Open the Manufacturing BOM to make changes.");
+      return Promise.reject(error);
+    }
 
     if (
       error.response?.status === 401 &&
