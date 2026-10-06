@@ -3,6 +3,10 @@ import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const manufacturingBomService = {
+  applicable: async (finishedItemId, asOfDate) => unwrapResponse(await axiosInstance.get(
+    ENDPOINTS.MANUFACTURING_BOM_APPLICABLE,
+    { params: { finishedItemId, asOfDate } },
+  )),
   list: async (params = {}, { signal } = {}) => unwrapResponse(await axiosInstance.get(
     ENDPOINTS.MANUFACTURING_BOMS,
     { params: normalizeParams(params), signal },

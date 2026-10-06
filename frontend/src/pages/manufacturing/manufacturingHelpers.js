@@ -34,14 +34,14 @@ export const isDraftProduction = (record) =>
   getStatus(record).toLowerCase() === PRODUCTION_STATUS.DRAFT.toLowerCase();
 
 export const getBomStatus = (bom) => {
-  const value = bom?.statusName ?? bom?.status ?? BOM_STATUS.DRAFT;
+  const value = bom?.status ?? bom?.statusName ?? BOM_STATUS.DRAFT;
   if (typeof value === "number") {
     return { 1: BOM_STATUS.DRAFT, 2: BOM_STATUS.ACTIVE, 3: BOM_STATUS.INACTIVE }[value] ?? String(value);
   }
   return String(value);
 };
 
-export const isBomActive = (bom) => getBomStatus(bom).toLowerCase() === "active";
+export const isBomActive = (bom) => bom?.status === 2 || bom?.isActive === true;
 
 export const normalizePage = (response) => {
   const data = response?.data ?? response ?? {};

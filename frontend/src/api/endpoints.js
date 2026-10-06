@@ -553,6 +553,7 @@ export const ENDPOINTS = {
 
   // Manufacturing (separate from Procurement Planning BOMs and OEE)
   MANUFACTURING_BOMS: "/api/v1/manufacturing/boms",
+  MANUFACTURING_BOM_APPLICABLE: "/api/v1/manufacturing/boms/applicable",
   MANUFACTURING_BOM_BY_ID: (id) => `/api/v1/manufacturing/boms/${id}`,
   MANUFACTURING_BOM_ACTIVATE: (id) =>
     `/api/v1/manufacturing/boms/${id}/activate`,

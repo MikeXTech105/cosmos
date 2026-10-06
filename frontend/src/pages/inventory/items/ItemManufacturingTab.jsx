@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -143,11 +144,10 @@ const BomEditor = ({ bom, item, onClose, onSaved, open }) => {
   </AppModal>;
 };
 
-const ProductionEditor = ({ boms, item, onClose, onSaved, open, production }) => {
-  const activeBoms = boms.filter(isBomActive);
-  const defaultBom = activeBoms.find((bom) => bom.isDefault) ?? activeBoms[0] ?? null;
+const ProductionEditor = ({ boms, applicableBom, item, onClose, onSaved, open, production }) => {
+  const activeBoms = production ? boms.filter(isBomActive) : applicableBom ? [applicableBom] : [];
   const [form, setForm] = useState(() => ({
-    bomId: production?.bomId ?? getRecordId(defaultBom) ?? "",
+    bomId: production?.bomId ?? getRecordId(applicableBom) ?? "",
     notes: production?.notes ?? "",
     plannedQuantity: String(production?.plannedQuantity ?? production?.producedQuantity ?? production?.quantity ?? ""),
     producedQuantity: String(production?.producedQuantity ?? production?.quantity ?? ""),
@@ -158,7 +158,8 @@ const ProductionEditor = ({ boms, item, onClose, onSaved, open, production }) =>
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
-  const selectedBom = useMemo(() => boms.find((bom) => String(getRecordId(bom)) === String(form.bomId)), [boms, form.bomId]);
+  const selectedBom = useMemo(() => String(getRecordId(applicableBom)) === String(form.bomId)
+    ? applicableBom : boms.find((bom) => String(getRecordId(bom)) === String(form.bomId)), [applicableBom, boms, form.bomId]);
   const lines = getBomLines(selectedBom);
 
   const submit = async () => {
@@ -210,6 +211,7 @@ const ProductionDetail = ({ onClose, open, production }) => {
 };
 
 const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChange, trackInventory }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const itemId = item?.id;
   const bomCapabilities = useCapabilities({ actions: ["view", "create", "update", "delete"], pageName: "Manufacturing.Boms", resource: "Manufacturing.Boms" });
   const productionCapabilities = useCapabilities({ actions: ["view", "create", "update"], pageName: "Manufacturing.Productions", resource: "Manufacturing.Productions" });
@@ -220,6 +222,8 @@ const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChan
   const [editingBom, setEditingBom] = useState(null);
   const [productionOpen, setProductionOpen] = useState(false);
   const [editingProduction, setEditingProduction] = useState(null);
+  const [applicableBom, setApplicableBom] = useState(null);
+  const [applicableMissing, setApplicableMissing] = useState(false);
   const [actionId, setActionId] = useState(null);
   const [deleteBomRecord, setDeleteBomRecord] = useState(null);
   const [cancelRecord, setCancelRecord] = useState(null);
@@ -294,6 +298,18 @@ const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChan
     finally { setActionId(null); }
   };
 
+  useEffect(() => {
+    const requestedId = searchParams.get("bomId");
+    if (!requestedId || !itemId || !bomCapabilities.canUpdate || !boms.some((bom) => String(getRecordId(bom)) === requestedId)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("bomId");
+    setSearchParams(next, { replace: true });
+    void manufacturingBomService.getById(requestedId).then((response) => {
+      setEditingBom(response?.data ?? response);
+      setBomOpen(true);
+    }).catch((error) => toast.error(requestErrorMessage(error, "Unable to load the BOM.")));
+  }, [itemId, searchParams, boms, bomCapabilities.canUpdate, setSearchParams]);
+
   const removeBom = async () => {
     const id = getRecordId(deleteBomRecord); setActionId(id);
     try {
@@ -344,11 +360,28 @@ const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChan
   };
 
   const openProductionEditor = async (record = null) => {
-    if (!record) { setEditingProduction(null); setProductionOpen(true); return; }
+    if (!record) {
+      try {
+        const response = await manufacturingBomService.applicable(itemId, today());
+        setApplicableBom(response?.data ?? response);
+        setApplicableMissing(false);
+        setEditingProduction(null);
+        setProductionOpen(true);
+      } catch (error) {
+        if (error?.response?.status === 404) { setApplicableBom(null); setApplicableMissing(true); }
+        else toast.error(requestErrorMessage(error, "Unable to load the applicable BOM."));
+      }
+      return;
+    }
     const id = getRecordId(record); setActionId(id);
     try {
       const response = await manufacturingProductionService.getById(id);
-      setEditingProduction(response?.data ?? response);
+      const detail = response?.data ?? response;
+      if (detail.bomId) {
+        const bomResponse = await manufacturingBomService.getById(detail.bomId);
+        setApplicableBom(bomResponse?.data ?? bomResponse);
+      }
+      setEditingProduction(detail);
       setProductionOpen(true);
     } catch (error) { toast.error(requestErrorMessage(error, "Unable to load the production draft.")); }
     finally { setActionId(null); }
@@ -373,18 +406,19 @@ const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChan
       {bomCapabilities.canView && <Panel title="Bill of materials" description="Versioned recipe, validity dates and raw materials for this finished item." actions={<><AppButton className="h-9" variant="secondary" disabled={state.loading} onClick={load}><RefreshCw className={`h-4 w-4 ${state.loading ? "animate-spin" : ""}`} /></AppButton>{bomCapabilities.canCreate && <AppButton className="h-9" onClick={() => openBomEditor()}><Plus className="h-4 w-4" />Add BOM</AppButton>}</>}>
         {boms.length === 0 ? <div className="px-5 py-10 text-center"><GitBranch className="mx-auto h-6 w-6 text-slate-400" /><p className="mt-2 text-sm font-medium text-slate-800">No BOM added yet</p><p className="mt-1 text-xs text-slate-500">Add raw materials required to make one unit.</p></div> : <div className="divide-y divide-slate-100">{boms.map((bom) => {
           const id = getRecordId(bom);
-          const status = getBomStatus(bom);
+          const status = isBomActive(bom) ? "Active" : getBomStatus(bom) === "Active" ? "Inactive" : getBomStatus(bom);
           const active = isBomActive(bom);
           const editable = !active;
-          return <div key={id} className="p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><p className="text-sm font-semibold text-slate-900">Version {bom.version ?? bom.versionNumber}</p>{bom.isDefault && <span className="rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-semibold text-brand">Default</span>}<span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{status}</span></div><p className="mt-1 text-xs text-slate-500">{getBomLines(bom).length || bom.componentCount || 0} raw materials · {formatDate(bom.effectiveFrom)}{bom.effectiveTo ? ` to ${formatDate(bom.effectiveTo)}` : " onward"}</p></div><div className="flex flex-wrap gap-2">{editable && bomCapabilities.canUpdate && <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => openBomEditor(bom)}><Pencil className="h-4 w-4" />Edit</AppButton>}{editable && bomCapabilities.canDelete && <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => setDeleteBomRecord(bom)}><Trash2 className="h-4 w-4" />Delete</AppButton>}{bomCapabilities.canUpdate && (active ? <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => deactivate(bom)}><Ban className="h-4 w-4" />Deactivate</AppButton> : <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => activate(bom)}><CheckCircle2 className="h-4 w-4" />Activate</AppButton>)}</div></div>{getBomLines(bom).length > 0 && <div className="mt-3 flex flex-wrap gap-2">{getBomLines(bom).map((line, index) => <span key={line.id ?? index} className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">{line.componentItemName ?? line.itemName ?? "Material"}: {formatQuantity(line.quantity ?? line.baseQuantity)} + {line.wastagePercentage ?? 0}%</span>)}</div>}{bom.notes && <p className="mt-3 text-xs text-slate-500">{bom.notes}</p>}</div>;
+          return <div key={id} className="p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><p className="text-sm font-semibold text-slate-900">{bom.bomNumber} · {bom.finishedItemCode} · {bom.finishedItemName} · Version {bom.version}</p>{bom.isDefault === true && <span className="rounded-full bg-brand-light px-2 py-0.5 text-[10px] font-semibold text-brand">Default</span>}<span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{status}</span></div><p className="mt-1 text-xs text-slate-500">{bom.componentCount} raw materials · {formatDate(bom.effectiveFrom)}{bom.effectiveTo ? ` to ${formatDate(bom.effectiveTo)}` : " onward"}</p></div><div className="flex flex-wrap gap-2">{editable && bomCapabilities.canUpdate && <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => openBomEditor(bom)}><Pencil className="h-4 w-4" />Edit</AppButton>}{editable && bomCapabilities.canDelete && <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => setDeleteBomRecord(bom)}><Trash2 className="h-4 w-4" />Delete</AppButton>}{bomCapabilities.canUpdate && (active ? <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => deactivate(bom)}><Ban className="h-4 w-4" />Deactivate</AppButton> : <AppButton className="h-9" variant="secondary" disabled={actionId === id} onClick={() => activate(bom)}><CheckCircle2 className="h-4 w-4" />Activate</AppButton>)}</div></div>{bom.notes && <p className="mt-3 text-xs text-slate-500">{bom.notes}</p>}</div>;
         })}</div>}
       </Panel>}
-      {productionCapabilities.canView && <Panel title="Production" description="Plan and record output, then post the draft to update raw-material and finished-goods stock." actions={productionCapabilities.canCreate && <AppButton className="h-9" disabled={!boms.some(isBomActive)} onClick={() => openProductionEditor()}><Factory className="h-4 w-4" />Manufacture</AppButton>}>
+      {productionCapabilities.canView && <Panel title="Production" description="Plan and record output, then post the draft to update raw-material and finished-goods stock." actions={productionCapabilities.canCreate && <AppButton className="h-9" onClick={() => openProductionEditor()}><Factory className="h-4 w-4" />Manufacture</AppButton>}>
+        {applicableMissing && <ManufacturingInlineError title="No active effective Manufacturing BOM" message="Create or activate a BOM effective for today before manufacturing." />}
         {productions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-slate-500">No production history for this item.</p> : <div className="overflow-x-auto"><table className="w-full min-w-[820px] text-sm"><thead className="bg-slate-50"><tr>{["Date", "Reference", "Planned", "Produced", "BOM", "Status", "Actions"].map((label) => <th key={label} className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">{label}</th>)}</tr></thead><tbody>{productions.map((record) => { const id = getRecordId(record); const status = getStatus(record).toLowerCase(); return <tr key={id} className="border-t border-slate-100"><td className="px-4 py-3">{formatDate(record.productionDate)}</td><td className="px-4 py-3 font-medium">{record.referenceNumber ?? `PR-${id}`}</td><td className="px-4 py-3">{formatQuantity(record.plannedQuantity)}</td><td className="px-4 py-3">{formatQuantity(record.producedQuantity ?? record.quantity)}</td><td className="px-4 py-3">v{record.bomVersion ?? record.version ?? "—"}</td><td className="px-4 py-3"><ManufacturingStatusPill record={record} /></td><td className="px-4 py-3"><div className="flex gap-1"><button type="button" title="View production detail" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40" onClick={() => openProductionDetail(record)}><Eye className="h-4 w-4" /></button>{productionCapabilities.canUpdate && isDraftProduction(record) && <><button type="button" title="Edit production draft" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-brand-light hover:text-brand disabled:opacity-40" onClick={() => openProductionEditor(record)}><Pencil className="h-4 w-4" /></button><button type="button" title="Post and update stock" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40" onClick={() => setPostRecord(record)}><Send className="h-4 w-4" /></button></>}{productionCapabilities.canUpdate && status === "posted" && <button type="button" title="Cancel and reverse stock" disabled={actionId === id} className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40" onClick={() => setCancelRecord(record)}><Ban className="h-4 w-4" /></button>}</div></td></tr>; })}</tbody></table></div>}
       </Panel>}
     </>}
     {bomOpen && <BomEditor bom={editingBom} item={item} open onClose={() => { setBomOpen(false); setEditingBom(null); }} onSaved={load} />}
-    {productionOpen && <ProductionEditor boms={boms} item={item} open production={editingProduction} onClose={() => { setProductionOpen(false); setEditingProduction(null); }} onSaved={load} />}
+    {productionOpen && <ProductionEditor boms={boms} applicableBom={applicableBom} item={item} open production={editingProduction} onClose={() => { setProductionOpen(false); setEditingProduction(null); }} onSaved={load} />}
     {detailRecord && <ProductionDetail production={detailRecord} open onClose={() => setDetailRecord(null)} />}
     <AppModal isOpen={Boolean(postRecord)} isBusy={Boolean(actionId)} onClose={() => setPostRecord(null)} title="Post production"><div className="space-y-4"><p className="text-sm text-slate-600">Post {postRecord?.referenceNumber ?? `PR-${getRecordId(postRecord)}`}? This atomically consumes raw materials and receives {formatQuantity(postRecord?.producedQuantity ?? postRecord?.quantity)} finished units into stock.</p><p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">Do not repeat this action if the request times out. COSMOS will reload the production first to verify whether posting completed.</p><div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={Boolean(actionId)} onClick={() => setPostRecord(null)}>Keep as draft</AppButton><AppButton isLoading={Boolean(actionId)} loadingText="Posting…" onClick={post}>Post and update stock</AppButton></div></div></AppModal>
     <AppModal isOpen={Boolean(deleteBomRecord)} isBusy={Boolean(actionId)} onClose={() => setDeleteBomRecord(null)} title="Delete BOM"><div className="space-y-4"><p className="text-sm text-slate-600">Delete BOM version {deleteBomRecord?.version ?? deleteBomRecord?.versionNumber}? This action cannot be undone.</p><div className="flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setDeleteBomRecord(null)}>Keep BOM</AppButton><AppButton variant="danger" isLoading={Boolean(actionId)} onClick={removeBom}>Delete BOM</AppButton></div></div></AppModal>
