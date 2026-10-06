@@ -153,14 +153,14 @@ const getStatusMessage = (status, correlationId) => {
   return "";
 };
 
-const isTimeoutError = (error) => {
+export const isTimeoutError = (error) => {
   const code = normalizeMessage(error?.code).toLowerCase();
   const message = normalizeMessage(error?.message).toLowerCase();
 
   return code === "econnaborted" || message.includes("timeout");
 };
 
-const isNetworkError = (error) => {
+export const isNetworkError = (error) => {
   const message = normalizeMessage(error?.message).toLowerCase();
 
   return (
