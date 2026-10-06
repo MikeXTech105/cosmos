@@ -167,8 +167,8 @@ Summary rows contain a dynamic `channelQuantities: Record<string, number>` and a
 
 | Method | Route | Permission | Purpose |
 |---|---|---|---|
-| GET | `/boms/products/{productId}` | BomMapping/View | Product plus active components. |
-| PUT | `/boms/products/{productId}` | BomMapping/Edit | Replace the active BOM transactionally. |
+| GET | `/boms/products/{productId}` | BomMapping/View | Compatibility projection of the applicable Manufacturing BOM. |
+| PUT | `/boms/products/{productId}` | BomMapping/Edit | Deprecated; returns 409. Maintain BOMs in Manufacturing. |
 | GET | `/boms/issues` | BomMapping/View | Missing BOM and inactive-component issues. |
 
 ```json
@@ -180,7 +180,7 @@ Summary rows contain a dynamic `channelQuantities: Record<string, number>` and a
 }
 ```
 
-Treat the PUT as replace-all. Keep a dirty-state warning. Reject duplicates client-side, prevent selecting the product itself, and display server validation messages. The backend preserves the previous rows as inactive history.
+Manufacturing owns versioning, activation, defaults, effective dates, and components. Do not offer a Procurement-side BOM editor or infer a default BOM from list order. Use the Manufacturing BOM routes and the applicable-BOM endpoint described in `MANUFACTURING_PROCUREMENT_BOM_FRONTEND_CHANGES.md`.
 
 ### Procurement Settings and Lead Time
 
@@ -417,11 +417,8 @@ File responses have no JSON envelope. For downloads, read `Content-Disposition`;
 
 ### 3. BOM Mapping
 
-- Finished Product Item selector (`procurementClassification=1`).
-- Component Item selector filtered to active non-finished-product Items.
-- Editable quantity and read-only Item unit.
-- Replace-all save confirmation and dirty-state guard.
-- Issues panel for sold products with missing BOM.
+- Display the applicable Manufacturing BOM and link authorized users to Manufacturing maintenance.
+- Issues panel must distinguish missing BOM, empty BOM, and inactive components.
 
 ### 4. Procurement Settings
 

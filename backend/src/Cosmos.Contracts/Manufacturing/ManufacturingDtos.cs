@@ -14,10 +14,11 @@ public sealed record ManufacturingBomDto(long Id, string BomNumber, long Finishe
 {
     public ManufacturingBomDto() : this(0, string.Empty, 0, string.Empty, string.Empty, string.Empty, default, default, null, null, false, false, Array.Empty<ManufacturingBomComponentDto>()) { }
 }
-public sealed record ManufacturingBomListItemDto(long Id, string BomNumber, long FinishedItemId, string FinishedItemCode, string FinishedItemName, string Version, ManufacturingBomStatus Status, DateOnly EffectiveFrom, bool IsDefault, int TotalCount)
+public sealed record ManufacturingBomListItemDto(long Id, string BomNumber, long FinishedItemId, string FinishedItemCode, string FinishedItemName, string Version, ManufacturingBomStatus Status, DateOnly EffectiveFrom, DateOnly? EffectiveTo, bool IsDefault, bool IsActive, int ComponentCount, int TotalCount)
 {
-    public ManufacturingBomListItemDto() : this(0, string.Empty, 0, string.Empty, string.Empty, string.Empty, default, default, false, 0) { }
+    public ManufacturingBomListItemDto() : this(0, string.Empty, 0, string.Empty, string.Empty, string.Empty, default, default, null, false, false, 0, 0) { }
 }
+public sealed record ApplicableManufacturingBomQuery(long FinishedItemId, DateOnly? AsOfDate = null);
 
 public sealed record CreateManufacturingProductionRequest(DateOnly ProductionDate, long FinishedItemId, long? BomId, decimal PlannedQuantity, decimal ProducedQuantity, string? Notes = null, string? ReferenceNumber = null);
 public sealed record UpdateManufacturingProductionRequest(DateOnly ProductionDate, decimal PlannedQuantity, decimal ProducedQuantity, string? Notes = null, string? ReferenceNumber = null);

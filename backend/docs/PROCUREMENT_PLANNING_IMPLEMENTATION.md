@@ -87,7 +87,7 @@ Migration: `database/migrations/20260715_procurement_planning_module.sql`
 | `ChannelSkuMappings` | One active Item mapping per channel/SKU. |
 | `ProcurementSalesImportBatches` | File hash, counts, state, correction/cancellation reason, and audit history. |
 | `ProcurementSalesHistory` | Daily/channel/SKU sales, optional resolved Item, source row, import batch or manual origin. |
-| `ProductBomComponents` | Active and historical finished-product/component coefficients. |
+| `ProductBomComponents` | Legacy active/historical finished-product/component coefficients retained for history. From the Manufacturing consolidation migration, live planning reads the applicable versioned Manufacturing BOM instead. |
 | `ProcurementSettings` | Material lead time, safety factor, MOQ, order multiple, calculation/manual flags, rounding. |
 | `ProcurementLeadTimeHistory` | Ordered/received dates and calculated lead-time days. |
 | `ProcurementPlanningRuns` | Draft/finalized run header and calculation metadata. |

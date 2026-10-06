@@ -14,6 +14,13 @@ public sealed class ManufacturingService(IManufacturingRepository repository, IC
     private long? UserId => user.UserId;
     public Task<ApiResponse<PagedResult<ManufacturingBomListItemDto>>> GetBomsAsync(ManufacturingBomQuery q, CancellationToken ct) => Wrap(repository.GetBomsAsync(q, ct));
     public async Task<ApiResponse<ManufacturingBomDto>> GetBomAsync(long id, CancellationToken ct) => ApiResponse<ManufacturingBomDto>.Success(await Bom(id, ct));
+    public async Task<ApiResponse<ManufacturingBomDto>> GetApplicableBomAsync(ApplicableManufacturingBomQuery q, CancellationToken ct)
+    {
+        if (q.FinishedItemId <= 0) throw new CosmosException("Finished item is required.");
+        var bom = await repository.GetApplicableBomAsync(q.FinishedItemId, q.AsOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow), ct);
+        if (bom is null) throw new NotFoundException("No active effective Manufacturing BOM was found for the finished item.");
+        return ApiResponse<ManufacturingBomDto>.Success(bom);
+    }
     public async Task<ApiResponse<ManufacturingBomDto>> CreateBomAsync(CreateManufacturingBomRequest r, CancellationToken ct) { await ValidationRunner.ValidateAsync(bomValidator,r,ct); if (string.IsNullOrWhiteSpace(r.Version)) throw new CosmosException("Manufacturing BOM version is required."); Validate(r.Components, r.EffectiveFrom, r.EffectiveTo); var saved=await repository.CreateBomAsync(r, UserId, ct); await Audit("ManufacturingBoms",saved.Id,"Create",null,saved,ct); return ApiResponse<ManufacturingBomDto>.Success(saved, "Manufacturing BOM created."); }
     public async Task<ApiResponse<ManufacturingBomDto>> UpdateBomAsync(long id, UpdateManufacturingBomRequest r, CancellationToken ct) { Validate(r.Components, r.EffectiveFrom, r.EffectiveTo); var before=await Bom(id,ct);var saved=await repository.UpdateBomAsync(id, r, UserId, ct);await Audit("ManufacturingBoms",id,"Update",before,saved,ct); return ApiResponse<ManufacturingBomDto>.Success(saved, "Manufacturing BOM updated."); }
     public async Task<ApiResponse> SetBomStatusAsync(long id, bool active, CancellationToken ct) { await repository.SetBomStatusAsync(id, active, UserId, ct); return ApiResponse.Success(active ? "Manufacturing BOM activated." : "Manufacturing BOM deactivated."); }
