@@ -205,6 +205,7 @@ const ItemFormPage = () => {
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
   const isManufactured = useWatch({ control, name: "isManufactured" });
+  const isActive = useWatch({ control, name: "isActive" });
   const itemName = useWatch({ control, name: "name" });
 
   const loadLookup = useCallback((type) => {
@@ -606,7 +607,9 @@ const ItemFormPage = () => {
                 <ItemManufacturingTab
                   disabled={isSubmitting}
                   enabled={Boolean(isManufactured)}
+                  isActive={Boolean(isActive)}
                   item={isEdit ? detailItem : null}
+                  trackInventory={Boolean(trackInventory)}
                   onEnabledChange={(value) => setValue("isManufactured", value, {
                     shouldDirty: true,
                     shouldValidate: true,

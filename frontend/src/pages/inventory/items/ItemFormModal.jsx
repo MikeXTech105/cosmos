@@ -195,6 +195,7 @@ const ItemFormModal = ({
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
   const isManufactured = useWatch({ control, name: "isManufactured" });
+  const isActive = useWatch({ control, name: "isActive" });
   const { manufacturingEnabled } = useManufacturingPreference();
   const itemName = useWatch({ control, name: "name" });
 
@@ -607,7 +608,9 @@ const ItemFormModal = ({
               <ItemManufacturingTab
                 disabled={isSubmitting}
                 enabled={Boolean(isManufactured)}
+                isActive={Boolean(isActive)}
                 item={isEdit ? item : null}
+                trackInventory={Boolean(trackInventory)}
                 onEnabledChange={(value) => setValue("isManufactured", value, {
                   shouldDirty: true,
                   shouldValidate: true,

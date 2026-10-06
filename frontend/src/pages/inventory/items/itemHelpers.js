@@ -98,7 +98,7 @@ export const buildItemPayload = (values) => {
     gstRate: toNumber(values.gstRate),
     trackInventory: tracksStock,
     isManufactured:
-      itemType === ITEM_TYPE.PRODUCT && Boolean(values.isManufactured),
+      tracksStock && Boolean(values.isActive) && Boolean(values.isManufactured),
     openingStock: tracksStock ? toNumber(values.openingStock) : 0,
     openingStockValue: tracksStock
       ? toNumber(values.openingStockValue)
