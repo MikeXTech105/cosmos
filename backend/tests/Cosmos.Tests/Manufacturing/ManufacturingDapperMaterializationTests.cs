@@ -25,11 +25,14 @@ public sealed class ManufacturingDapperMaterializationTests
             ("FinishedItemId", typeof(long), 4L), ("FinishedItemCode", typeof(string), "FG-001"),
             ("FinishedItemName", typeof(string), "Finished good"), ("Version", typeof(string), "1"),
             ("Status", typeof(int), 1), ("EffectiveFrom", typeof(DateTime), new DateTime(2026, 9, 23)),
-            ("IsDefault", typeof(bool), true), ("TotalCount", typeof(int), 1));
+            ("EffectiveTo", typeof(DateTime), DBNull.Value), ("IsDefault", typeof(bool), true),
+            ("IsActive", typeof(bool), false), ("ComponentCount", typeof(int), 2), ("TotalCount", typeof(int), 1));
 
         Assert.Equal(new DateOnly(2026, 9, 23), detail.EffectiveFrom);
         Assert.Null(detail.EffectiveTo);
         Assert.Equal(new DateOnly(2026, 9, 23), list.EffectiveFrom);
+        Assert.Null(list.EffectiveTo);
+        Assert.Equal(2, list.ComponentCount);
     }
 
     [Fact]

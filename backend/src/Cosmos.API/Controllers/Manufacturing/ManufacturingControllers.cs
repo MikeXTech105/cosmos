@@ -10,6 +10,7 @@ namespace Cosmos.API.Controllers.Manufacturing;
 public sealed class ManufacturingBomsController(IManufacturingService service):ApiControllerBase
 {
  [HttpGet,RequirePermission(ManufacturingPermissions.Boms,PermissionAction.View)] public async Task<IActionResult> List([FromQuery] ManufacturingBomQuery q,CancellationToken ct)=>FromResponse(await service.GetBomsAsync(q,ct));
+ [HttpGet("applicable"),RequirePermission(ManufacturingPermissions.Boms,PermissionAction.View)] public async Task<IActionResult> Applicable([FromQuery] ApplicableManufacturingBomQuery q,CancellationToken ct)=>FromResponse(await service.GetApplicableBomAsync(q,ct));
  [HttpGet("{id:long}"),RequirePermission(ManufacturingPermissions.Boms,PermissionAction.View)] public async Task<IActionResult> Get(long id,CancellationToken ct)=>FromResponse(await service.GetBomAsync(id,ct));
  [HttpPost,RequirePermission(ManufacturingPermissions.Boms,PermissionAction.Create)] public async Task<IActionResult> Create(CreateManufacturingBomRequest r,CancellationToken ct)=>FromResponse(await service.CreateBomAsync(r,ct),201);
  [HttpPut("{id:long}"),RequirePermission(ManufacturingPermissions.Boms,PermissionAction.Edit)] public async Task<IActionResult> Update(long id,UpdateManufacturingBomRequest r,CancellationToken ct)=>FromResponse(await service.UpdateBomAsync(id,r,ct));

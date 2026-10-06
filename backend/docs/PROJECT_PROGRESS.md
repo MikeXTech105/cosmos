@@ -1,5 +1,9 @@
 # Project Progress
 
+## 2026-10-06 — Manufacturing BOM / Procurement Consolidation
+
+Procurement Planning now resolves its BOM inputs from the active, effective, versioned Manufacturing BOM contract. The additive deployment migration retains legacy `ProductBomComponents` history but redirects Procurement calculation, issue detection, settings coverage, and compatibility reads through one date-aware Manufacturing BOM resolver. The Manufacturing list contract exposes effective-to, activity, and actual component count; an applicable-BOM endpoint exposes the canonical header and components. The legacy Procurement BOM write endpoint returns a migration conflict rather than creating data Procurement will not use. See `MANUFACTURING_PROCUREMENT_BOM_CONSOLIDATION.md` and `MANUFACTURING_PROCUREMENT_BOM_FRONTEND_CHANGES.md` for deployment, API, and client guidance.
+
 ## 2026-09-21 — Manufacturing / BOM / Production Foundation
 
 Added the native Cosmos Manufacturing foundation without replacing Procurement Planning's BOM or creating a second inventory engine. The source contains Manufacturing contracts, permissions, service/repository registrations, JWT-protected controllers, a `manufacturing` Swagger group, and migration/verification assets. The design adds `Items.IsManufactured`, versioned BOM tables, and production/material snapshots. Production posting consumes component stock, adds the finished item, and records both effects in the existing `StockMovements`; cancellation reverses them atomically.
