@@ -39,4 +39,14 @@ public sealed class PurchaseExpenseValidatorTests
         var result = await new CreateExpenseValidator(_repository.Object).ValidateAsync(request);
         Assert.Contains(result.Errors, x => x.PropertyName == nameof(request.Amount));
     }
+
+    [Fact]
+    public async Task Purchase_order_conversion_rejects_an_unknown_payment_type()
+    {
+        var request = new ConvertPurchaseOrderRequest(DateOnly.FromDateTime(DateTime.Today), PaymentType: 0);
+
+        var result = await new ConvertPurchaseOrderValidator().ValidateAsync(request);
+
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(request.PaymentType));
+    }
 }
