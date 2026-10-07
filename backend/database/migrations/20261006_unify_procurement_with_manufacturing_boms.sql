@@ -211,6 +211,13 @@ BEGIN
     SELECT ItemId, i.ItemCode, i.Name AS ItemName, i.IsActive, i.ProcurementClassification, Quantity
     FROM ProductSales ps JOIN dbo.Items i ON i.Id=ps.ItemId;
 
+    WITH ProductSales AS
+    (
+        SELECT s.ItemId, SUM(s.Quantity) AS Quantity
+        FROM dbo.ProcurementSalesHistory s
+        WHERE s.IsDeleted=0 AND s.ItemId IS NOT NULL AND s.SalesDate BETWEEN @FromDate AND @ToDate
+        GROUP BY s.ItemId
+    )
     SELECT b.FinishedItemId AS FinishedProductItemId, x.ComponentItemId,
            ci.ItemCode AS ComponentItemCode, ci.Name AS ComponentItemName,
            ci.IsActive AS ComponentIsActive, ci.ProcurementClassification,
@@ -235,11 +242,11 @@ BEGIN
         WHERE h.ItemId=x.ComponentItemId AND h.IsDeleted=0
     ) history;
 
-    SELECT c.ChannelCode, s.ChannelSku, COUNT(*) AS OccurrenceCount
+    SELECT c.Code AS ChannelCode, s.ChannelSku, COUNT(*) AS OccurrenceCount
     FROM dbo.ProcurementSalesHistory s
     JOIN dbo.SalesChannels c ON c.Id=s.SalesChannelId
     WHERE s.IsDeleted=0 AND s.ItemId IS NULL AND s.SalesDate BETWEEN @FromDate AND @ToDate
-    GROUP BY c.ChannelCode,s.ChannelSku;
+    GROUP BY c.Code,s.ChannelSku;
 END;
 GO
 
