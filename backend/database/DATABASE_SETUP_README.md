@@ -15,6 +15,7 @@ This folder contains the clean SQL Server deployment package for the current Dap
 9. `verify_system_owner.sql` - verifies owner uniqueness, linkage, protected-role independence, indexes, and bootstrap objects after first API startup.
 10. `migrations/20260720_rojmel_wallet_module.sql` - adds the Rojmel wallet ledger schema, permissions, procedures, and company-wallet seed.
 11. `verify_rojmel_my_wallet_403.sql` - read-only verification for the My Wallet permission mapping, User 2's linked wallet, duplicate/orphan checks, and required Rojmel objects.
+12. `migrations/20261007_purchase_order_conversion_validation.sql` - prevents invalid purchase-order conversion payment types from producing a database foreign-key error.
 
 ## SSMS Run Order
 
@@ -34,6 +35,7 @@ For an existing server that is at the pre-fix API/database level, stop or drain 
 2. `migrations/20260720_backend_api_frontend_fixes.sql`.
 3. `migrations/20260721_runtime_api_contract_fixes.sql`.
 4. `verify_runtime_api_contracts.sql` and require it to complete without a `THROW` error.
+5. `migrations/20261007_purchase_order_conversion_validation.sql` before deploying the matching API.
 
 The verification script is read-only. It validates the five-parameter `sp_PurchaseBill_GetListSummary` signature, describes and validates the sixteen-column Party list result contract, and reports procedure definition hashes and any EF migration history if such a table exists. Run it as a required deployment gate before the upgraded API receives traffic.
 

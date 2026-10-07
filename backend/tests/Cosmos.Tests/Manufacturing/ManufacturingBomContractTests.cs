@@ -28,6 +28,8 @@ public sealed class ManufacturingBomContractTests
         Assert.Contains("b.IsDefault DESC, b.EffectiveFrom DESC, b.Version DESC", source, StringComparison.Ordinal);
         Assert.Contains("sp_ManufacturingBom_GetApplicable", source, StringComparison.Ordinal);
         Assert.Contains("sp_ProcurementPlanning_CalculationInputs", source, StringComparison.Ordinal);
+        Assert.Contains("SELECT c.Code AS ChannelCode, s.ChannelSku", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("c.ChannelCode", source, StringComparison.Ordinal);
         Assert.DoesNotContain("JOIN dbo.ProductBomComponents b ON b.FinishedProductItemId=sales.ItemId", source, StringComparison.Ordinal);
     }
 
