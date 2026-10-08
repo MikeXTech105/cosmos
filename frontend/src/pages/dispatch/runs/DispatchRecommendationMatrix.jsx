@@ -214,29 +214,20 @@ const DispatchRecommendationMatrix = ({
     );
   }, [recommendations]);
   const itemRows = useMemo(() => {
-    const map = new Map();
-    recommendations.forEach((record) => {
-      const key = String(record.itemId);
-      if (!map.has(key)) {
-        map.set(key, {
-          channelSku: record.channelSku,
-          code: record.itemCode,
-          id: record.itemId,
-          name: record.itemName,
-          records: [],
-          tier: record.tier,
-        });
-      }
-      map.get(key).records.push(record);
-    });
-    return [...map.values()];
+    return recommendations.map((record) => ({
+      channelSku: record.channelSku,
+      code: record.itemCode,
+      id: record.id,
+      name: record.itemName,
+      record,
+    }));
   }, [recommendations]);
 
-  const toggleExpanded = (itemId) => {
+  const toggleExpanded = (recommendationId) => {
     setExpandedItems((current) => {
       const next = new Set(current);
-      if (next.has(String(itemId))) next.delete(String(itemId));
-      else next.add(String(itemId));
+      if (next.has(String(recommendationId))) next.delete(String(recommendationId));
+      else next.add(String(recommendationId));
       return next;
     });
   };
@@ -399,12 +390,6 @@ const DispatchRecommendationMatrix = ({
                     </tr>
                   )
                 : itemRows.flatMap((item) => {
-                    const recordsByWarehouse = new Map(
-                      item.records.map((record) => [
-                        String(record.warehouseId),
-                        record,
-                      ]),
-                    );
                     const expanded = expandedItems.has(String(item.id));
                     const mainRow = (
                       <tr key={item.id} className="hover:bg-slate-50">
@@ -430,9 +415,10 @@ const DispatchRecommendationMatrix = ({
                           </button>
                         </td>
                         {warehouses.map((warehouse) => {
-                          const record = recordsByWarehouse.get(
-                            String(warehouse.id),
-                          );
+                          const record =
+                            String(item.record.warehouseId) === String(warehouse.id)
+                              ? item.record
+                              : null;
                           return (
                             <td
                               key={warehouse.id}
@@ -446,7 +432,7 @@ const DispatchRecommendationMatrix = ({
                                   {canOverride ? (
                                     <AppTooltip label="Override recommendation">
                                       <button
-                                        aria-label={`Override ${item.code} for ${warehouse.code}`}
+                                        aria-label={`Override ${item.channelSku} for ${warehouse.code}`}
                                         className="absolute -right-1 -top-1 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-400 opacity-0 shadow-sm ring-1 ring-slate-200 transition hover:text-brand group-hover:opacity-100 focus:opacity-100"
                                         type="button"
                                         onClick={() => onOverride(record)}
@@ -473,12 +459,7 @@ const DispatchRecommendationMatrix = ({
                               colSpan={warehouses.length + 1}
                             >
                               <div className="grid gap-3 xl:grid-cols-2">
-                                {item.records.map((record) => (
-                                  <CalculationStrip
-                                    key={record.id}
-                                    recommendation={record}
-                                  />
-                                ))}
+                                <CalculationStrip recommendation={item.record} />
                               </div>
                             </td>
                           </tr>,

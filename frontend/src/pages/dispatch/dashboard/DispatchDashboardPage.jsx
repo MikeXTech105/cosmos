@@ -342,7 +342,7 @@ const DispatchDashboardPage = () => {
           >
             {topRows.map((row, index) => (
               <tr
-                key={`${row.runNumber}-${row.warehouseCode}-${row.itemCode}-${index}`}
+                key={row.id ?? `${row.runNumber}-${row.warehouseCode}-${row.channelSku}-${index}`}
               >
                 <td className="text-xs font-semibold tabular-nums text-slate-400">
                   {index + 1}
@@ -354,7 +354,7 @@ const DispatchDashboardPage = () => {
                 <td>{row.warehouseCode}</td>
                 <td>
                   <p className="font-medium">{row.itemName}</p>
-                  <p className="text-xs text-slate-500">{row.itemCode}</p>
+                  <p className="text-xs text-slate-500">{row.itemCode} · {row.channelSku}</p>
                 </td>
                 <td className="text-right tabular-nums">{formatDispatchNumber(row.recommendedQuantity, "0")}</td>
                 <td className="text-right tabular-nums">{formatDispatchNumber(row.allocatedQuantity, "0")}</td>
