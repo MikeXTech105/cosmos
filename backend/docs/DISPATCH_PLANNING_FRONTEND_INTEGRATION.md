@@ -35,6 +35,12 @@ Do not send Item codes or product names as a fallback for `channelSku`; mapping 
 
 `CreateDispatchPlanningRunRequest` names the selected Channel, planning date, committed sales batch, committed warehouse-stock batch, optional inbound batch, and notes. The released source is system company stock (`companyStockSourceType: 1`).
 
+### Warehouse + SKU result identity
+
+As of the 2026-10-08 database migration, a recommendation is identified by **run + warehouse + channel SKU mapping**, not only by internal Item. A channel can map more than one channel SKU to the same Item. Frontends must therefore use the returned recommendation `id` as the row key and display `channelSku` alongside `itemCode`; do not de-duplicate or aggregate rows using only `itemId + warehouseId`.
+
+Inbound rows are also resolved at that same mapping identity. When preparing inbound imports, submit the exact channel SKU represented by the inbound row. Do not merge multiple channel SKUs that happen to map to the same internal Item.
+
 `UpdateDispatchRecommendationRequest` contains non-negative `finalRecommendationQuantity` and non-empty `overrideReason`. Do not offer it once allocation has occurred.
 
 ## Recommended screens and behavior
@@ -43,7 +49,7 @@ Do not send Item codes or product names as a fallback for `channelSku`; mapping 
 - **Dispatch SKU Settings:** show global and channel rows distinctly; enforce effective-date overlap errors returned by the API.
 - **Import Centre:** parse files through the common import experience, call validate with typed rows, show exact-mapping errors, and retain the returned batch id for Commit.
 - **Planning Run Wizard:** require committed snapshot batches for the same Channel before Create; then call Calculate.
-- **Recommendation Matrix:** pivot API rows visually by warehouse but keep each API row as a `run + item + warehouse` record. Show calculation and final quantities side by side.
+- **Recommendation Matrix:** pivot API rows visually by warehouse but keep each API row as a `run + item + warehouse + channel SKU mapping` record. Use the recommendation `id` for React/table keys and show calculation and final quantities side by side.
 - **Allocation Screen:** call Allocate once, then show company snapshot available/allocated values and zero allocations. The backend, not the browser, is authoritative.
 - **Planning Detail:** use status to control buttons: Draft → Calculate; Calculated → Override/Allocate; Allocated → Finalize; Finalized → read only; Finalized has no cancel/edit controls.
 - **Reports:** use pagination; CSV export follows the same filters.

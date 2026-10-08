@@ -24,6 +24,8 @@ IF COL_LENGTH(N'dbo.DispatchWarehouseStockSnapshots',N'SellableQuantity') IS NUL
     THROW 52002,N'SellableQuantity computed snapshot column is missing.',1;
 IF NOT EXISTS(SELECT 1 FROM sys.check_constraints WHERE parent_object_id=OBJECT_ID(N'dbo.DispatchRecommendationResults') AND name=N'CK_DispatchRecommendationResults_Values')
     THROW 52003,N'Dispatch recommendation allocation bounds constraint is missing.',1;
+IF NOT EXISTS(SELECT 1 FROM sys.key_constraints WHERE parent_object_id=OBJECT_ID(N'dbo.DispatchRecommendationResults') AND name=N'UQ_DispatchRecommendationResults_RunItemWarehouseMapping')
+    THROW 52007,N'Dispatch recommendation warehouse/SKU identity constraint is missing.',1;
 IF NOT EXISTS(SELECT 1 FROM dbo.Pages WHERE Name=N'DispatchPlanning')
     THROW 52004,N'Dispatch Planning parent page is missing.',1;
 IF EXISTS(SELECT 1 FROM dbo.Pages WHERE Name IN(N'DispatchPlanning.SkuSettings',N'DispatchPlanning.Imports',N'DispatchPlanning.PlanningRuns',N'DispatchPlanning.Allocation',N'DispatchPlanning.Reports') GROUP BY Name HAVING COUNT(*)<>1)

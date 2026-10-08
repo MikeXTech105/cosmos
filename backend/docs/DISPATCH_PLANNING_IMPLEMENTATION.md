@@ -4,6 +4,8 @@
 
 Implemented in source on 2026-07-28. Build, unit tests, and disposable SQL Server migration/verification status are recorded in the companion tracker. Role smoke testing and live Swagger verification remain environment-dependent.
 
+**2026-10-08 integrity repair:** `20261008_dispatch_planning_sku_snapshot_integrity.sql` fixes calculation persistence at the documented warehouse + channel-SKU grain. A channel may have distinct SKU mappings to the same internal Item; inbound, calculation validation, and the result uniqueness contract now retain `ChannelItemMappingId`. Apply this migration after the original Dispatch migration before using or verifying the module.
+
 ## Repository-first decisions
 
 The module reuses the existing `Items` product master, `SalesChannels`, `ChannelWarehouses`, `ChannelSkuMappings`, `ItemPackagingProfiles`, `SupplyChainImportBatches` / `SupplyChainImportRows`, Dapper stored-procedure conventions, API response envelopes, JWT/page-action authorization, and audit middleware/repository. It does not add an Item, channel, warehouse, mapping, packaging, user, permission, or generic import master.
@@ -24,7 +26,7 @@ The shared batch remains the owner of import file identity, validation counts, b
 
 ## Calculation and allocation rules
 
-For every `PlanningRunId + ItemId + WarehouseId` result:
+For every `PlanningRunId + ItemId + WarehouseId + ChannelItemMappingId` result:
 
 ```text
 total warehouse stock = sellable warehouse stock + eligible inbound
@@ -37,6 +39,8 @@ recommendation        = box/loose rounding of pre-rounded quantity
 ```
 
 Eligible inbound statuses are `Dispatched` and `InTransit`; `Planned`, `Received`, and `Cancelled` do not contribute. Warehouse stock is stored as gross available, reserved, and damaged values; persisted `SellableQuantity` is `max(0, available − reserved − damaged)`.
+
+Sales, stock, and inbound snapshots are each grouped by warehouse, Item, and channel-SKU mapping. This prevents inbound associated with one mapped channel SKU from being applied to a different mapped SKU that resolves to the same internal Item.
 
 Packaging selection is explicit setting profile, then active channel default, then active global default. Setting selection is active channel-specific policy, then active global policy, constrained by effective dates. Missing settings or packaging profiles intentionally prevent a complete result from being generated; they must be corrected before calculation.
 
@@ -65,8 +69,9 @@ The following need client confirmation against the original workbook:
 2. Apply Supply Chain common foundation.
 3. Apply Procurement shared-foundation alignment.
 4. Apply `20260728_dispatch_planning_module.sql`.
-5. Run `backend/database/verify_dispatch_planning.sql`.
-6. Deploy the API after the migration, then assign page/action permissions to non-SuperAdmin roles.
+5. Apply `20261008_dispatch_planning_sku_snapshot_integrity.sql`.
+6. Run `backend/database/verify_dispatch_planning.sql`.
+7. Deploy the API after the migration, then assign page/action permissions to non-SuperAdmin roles.
 
 ## Explicit exclusions
 
