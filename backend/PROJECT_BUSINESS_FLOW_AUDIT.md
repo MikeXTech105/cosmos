@@ -192,6 +192,8 @@ Validated/imported warehouse sales + stock + inbound snapshots
 
 **Technical:** `DispatchPlanningControllers` → validators → `DispatchPlanningService` / pure `DispatchCalculationService` / `DispatchAllocationService` → `DispatchPlanningRepository` → `usp_DispatchPlanning_*` → snapshot/run/result/allocation tables. Finalization does not update `Items` or `StockMovements`; shipment dispatch does.
 
+**2026-10-08 correction:** Dispatch calculation rows are now retained at warehouse + channel-SKU mapping granularity. The forward migration `20261008_dispatch_planning_sku_snapshot_integrity.sql` fixes inbound aggregation and result uniqueness for different channel SKUs mapped to the same Item.
+
 Implemented: dispatch planning, Item/quantity, units-per-box and number of boxes, warehouse/channel, recommendation and allocation. Missing/limited: no invoice generation in this flow (shipment accepts invoice number/id), no automatic docket, no external channel handoff, and no warehouse stock ledger.
 
 ## 10. Amazon Flow
