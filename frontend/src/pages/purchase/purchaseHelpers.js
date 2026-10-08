@@ -1,10 +1,25 @@
 import { getApiErrorMessage } from "../../utils/apiError";
 
 export const PURCHASE_STATUS = {
-  DRAFT: 0,
-  CONFIRMED: 1,
-  CANCELLED: 2,
-  CONVERTED: 3,
+  DRAFT: 1,
+  CONFIRMED: 2,
+  PARTIALLY_PAID: 3,
+  PAID: 4,
+  CANCELLED: 5,
+};
+
+export const PURCHASE_ORDER_STATUS = {
+  DRAFT: 1,
+  SENT: 2,
+  PARTIALLY_CONVERTED: 3,
+  CONVERTED: 4,
+  CANCELLED: 5,
+};
+
+export const PURCHASE_PAYMENT_STATUS = {
+  UNPAID: 1,
+  PARTIAL: 2,
+  PAID: 3,
 };
 
 export const PAYMENT_TYPE = {
@@ -14,20 +29,29 @@ export const PAYMENT_TYPE = {
 };
 
 export const PAYMENT_MODE = {
-  CASH: 0,
-  BANK_TRANSFER: 1,
-  UPI: 2,
-  CARD: 3,
+  CASH: 1,
+  BANK_TRANSFER: 2,
+  UPI: 3,
   CHEQUE: 4,
-  OTHER: 5,
+  CARD: 5,
 };
 
 export const STATUS_OPTIONS = [
   { value: "all", label: "All status" },
   { value: PURCHASE_STATUS.DRAFT, label: "Draft" },
   { value: PURCHASE_STATUS.CONFIRMED, label: "Confirmed" },
+  { value: PURCHASE_STATUS.PARTIALLY_PAID, label: "Partially Paid" },
+  { value: PURCHASE_STATUS.PAID, label: "Paid" },
   { value: PURCHASE_STATUS.CANCELLED, label: "Cancelled" },
-  { value: PURCHASE_STATUS.CONVERTED, label: "Converted" },
+];
+
+export const ORDER_STATUS_OPTIONS = [
+  { value: "all", label: "All status" },
+  { value: PURCHASE_ORDER_STATUS.DRAFT, label: "Draft" },
+  { value: PURCHASE_ORDER_STATUS.SENT, label: "Sent" },
+  { value: PURCHASE_ORDER_STATUS.PARTIALLY_CONVERTED, label: "Partially Converted" },
+  { value: PURCHASE_ORDER_STATUS.CONVERTED, label: "Converted" },
+  { value: PURCHASE_ORDER_STATUS.CANCELLED, label: "Cancelled" },
 ];
 
 export const ACTIVE_OPTIONS = [
@@ -46,9 +70,8 @@ export const PAYMENT_MODE_OPTIONS = [
   { value: PAYMENT_MODE.CASH, label: "Cash" },
   { value: PAYMENT_MODE.BANK_TRANSFER, label: "Bank Transfer" },
   { value: PAYMENT_MODE.UPI, label: "UPI" },
-  { value: PAYMENT_MODE.CARD, label: "Card" },
   { value: PAYMENT_MODE.CHEQUE, label: "Cheque" },
-  { value: PAYMENT_MODE.OTHER, label: "Other" },
+  { value: PAYMENT_MODE.CARD, label: "Card" },
 ];
 
 export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200];
@@ -62,24 +85,63 @@ const STATUS_META = {
     label: "Confirmed",
     className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   },
+  [PURCHASE_STATUS.PARTIALLY_PAID]: {
+    label: "Partially Paid",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  [PURCHASE_STATUS.PAID]: {
+    label: "Paid",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
   [PURCHASE_STATUS.CANCELLED]: {
     label: "Cancelled",
     className: "bg-red-50 text-red-700 ring-red-200",
   },
-  [PURCHASE_STATUS.CONVERTED]: {
+};
+
+const ORDER_STATUS_META = {
+  [PURCHASE_ORDER_STATUS.DRAFT]: STATUS_META[PURCHASE_STATUS.DRAFT],
+  [PURCHASE_ORDER_STATUS.SENT]: {
+    label: "Sent",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
+  [PURCHASE_ORDER_STATUS.PARTIALLY_CONVERTED]: {
+    label: "Partially Converted",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  [PURCHASE_ORDER_STATUS.CONVERTED]: {
     label: "Converted",
     className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
+  [PURCHASE_ORDER_STATUS.CANCELLED]: STATUS_META[PURCHASE_STATUS.CANCELLED],
 };
 
-export const getStatusMeta = (status) => {
+const PAYMENT_STATUS_META = {
+  [PURCHASE_PAYMENT_STATUS.UNPAID]: {
+    label: "Unpaid",
+    className: "bg-red-50 text-red-700 ring-red-200",
+  },
+  [PURCHASE_PAYMENT_STATUS.PARTIAL]: {
+    label: "Partial",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  [PURCHASE_PAYMENT_STATUS.PAID]: STATUS_META[PURCHASE_STATUS.PAID],
+};
+
+export const getStatusMeta = (status, type = "bills") => {
   return (
-    STATUS_META[Number(status)] ?? {
+    (type === "purchaseOrders" ? ORDER_STATUS_META : STATUS_META)[Number(status)] ?? {
       label: status === null || status === undefined ? "-" : `Status ${status}`,
       className: "bg-slate-50 text-slate-600 ring-slate-200",
     }
   );
 };
+
+export const getPaymentStatusMeta = (status) =>
+  PAYMENT_STATUS_META[Number(status)] ?? {
+    label: status === null || status === undefined ? "-" : `Payment ${status}`,
+    className: "bg-slate-50 text-slate-600 ring-slate-200",
+  };
 
 export const getPaymentModeLabel = (mode) => {
   return (
