@@ -78,8 +78,10 @@ const extractBlockingItems = (error) => {
   if (!candidates) return [];
   return candidates
     .map((item) => ({
+      channelSku: item?.channelSku ?? "",
       code: item?.itemCode ?? item?.code ?? "",
       id: item?.itemId ?? item?.id ?? "",
+      key: item?.recommendationId ?? item?.id ?? `${item?.itemId}-${item?.warehouseId}-${item?.channelSku}`,
       name: item?.itemName ?? item?.name ?? "",
       reason:
         item?.reason ??
@@ -219,7 +221,7 @@ const OverrideModal = ({ onClose, onSaved, recommendation, runId }) => {
       onClose={saving ? undefined : onClose}
     >
       <div className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
-        {recommendation?.itemCode} · {recommendation?.warehouseCode}
+        {recommendation?.itemCode} · {recommendation?.channelSku} · {recommendation?.warehouseCode}
       </div>
       <div className="mt-4">
         <AppInput
@@ -694,9 +696,11 @@ const DispatchRunDetailPage = () => {
     const map = new Map();
     allRecords.forEach((record) => {
       if (!record.dispatchSkuSettingId || !record.packagingProfileId) {
-        map.set(String(record.itemId), {
+        map.set(String(record.id), {
+          channelSku: record.channelSku,
           code: record.itemCode,
           id: record.itemId,
+          key: record.id,
           name: record.itemName,
           reason: !record.dispatchSkuSettingId
             ? "No effective dispatch SKU setting."
@@ -946,14 +950,15 @@ const DispatchRunDetailPage = () => {
                     (item, index, collection) =>
                       collection.findIndex(
                         (candidate) =>
-                          String(candidate.id || candidate.code) ===
-                          String(item.id || item.code),
+                          String(candidate.key || candidate.id || candidate.code) ===
+                          String(item.key || item.id || item.code),
                       ) === index,
                   )
                   .map((item) => (
-                    <li key={item.id || item.code}>
+                    <li key={item.key || item.id || item.code}>
                       <span className="font-semibold">
                         {item.code || item.name || `Item ${item.id}`}
+                        {item.channelSku ? ` · ${item.channelSku}` : ""}
                       </span>
                       {" — "}
                       {item.reason}

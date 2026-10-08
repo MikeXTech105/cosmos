@@ -336,7 +336,7 @@ const DispatchReportsPage = () => {
       >
         {state.list.map((row, index) => (
           <tr
-            key={`${row.runNumber}-${row.warehouseCode}-${row.itemCode}-${index}`}
+            key={row.id ?? `${row.runNumber}-${row.warehouseCode}-${row.channelSku}-${index}`}
           >
             <td className="text-xs font-semibold tabular-nums text-slate-400">
               {(state.pageNumber - 1) * state.pageSize + index + 1}

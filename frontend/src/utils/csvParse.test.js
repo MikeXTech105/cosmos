@@ -82,4 +82,47 @@ describe("CSV parsing", () => {
       ]),
     );
   });
+
+  it.each([
+    [
+      DISPATCH_IMPORT_TYPES.Sales,
+      ["RowNumber", "WarehouseCode", "ChannelSku", "PeriodFrom", "PeriodTo", "SalesQuantity"],
+      (sku, rowNumber) => [String(rowNumber), "WH-1", sku, "2026-10-01", "2026-10-07", "5"],
+    ],
+    [
+      DISPATCH_IMPORT_TYPES.WarehouseStock,
+      ["RowNumber", "WarehouseCode", "ChannelSku", "SnapshotDate", "AvailableQuantity", "ReservedQuantity", "DamagedQuantity"],
+      (sku, rowNumber) => [String(rowNumber), "WH-1", sku, "2026-10-08", "5", "0", "0"],
+    ],
+    [
+      DISPATCH_IMPORT_TYPES.Inbound,
+      ["RowNumber", "WarehouseCode", "ChannelSku", "SnapshotDate", "InboundQuantity", "InboundStatus", "ExpectedArrivalDate", "ReferenceNumber"],
+      (sku, rowNumber) => [String(rowNumber), "WH-1", sku, "2026-10-08", "5", "1", "2026-10-09", "REF"],
+    ],
+  ])("preserves separate exact channel SKUs in import type %i", (importType, headers, makeRow) => {
+    const result = buildDispatchImportRows({
+      headers,
+      importType,
+      rows: [makeRow("CHANNEL-SKU-A", 1), makeRow("CHANNEL-SKU-B", 2)],
+      warehouses: [{ id: 5, warehouseCode: "WH-1" }],
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.rows.map((row) => row.channelSku)).toEqual([
+      "CHANNEL-SKU-A",
+      "CHANNEL-SKU-B",
+    ]);
+    expect(result.rows.map((row) => row.warehouseId)).toEqual([5, 5]);
+  });
+
+  it("sends the source channel SKU without replacing or trimming it", () => {
+    const result = buildDispatchImportRows({
+      headers: ["RowNumber", "WarehouseCode", "ChannelSku", "PeriodFrom", "PeriodTo", "SalesQuantity"],
+      importType: DISPATCH_IMPORT_TYPES.Sales,
+      rows: [["1", "WH-1", " SKU-X ", "2026-10-01", "2026-10-07", "5"]],
+      warehouses: [{ id: 5, warehouseCode: "WH-1" }],
+    });
+
+    expect(result.rows[0].channelSku).toBe(" SKU-X ");
+  });
 });
