@@ -493,7 +493,7 @@ const ReportFilterBar = ({
       );
     }
 
-    if (config.key === "paymentStatus") {
+    if (config.key === "paymentStatus" || config.key === "purchasePaymentStatus") {
       return (
         <AppSelect
           key="PaymentStatus"

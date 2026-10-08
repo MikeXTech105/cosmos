@@ -41,6 +41,7 @@ import {
   setPurchaseReturnPageSize,
   updatePurchaseReturn,
 } from "../../../store/slices/purchase/purchaseReturnSlice";
+import { ORDER_STATUS_OPTIONS } from "../purchaseHelpers";
 
 export const purchaseDocumentConfigs = {
   bills: {
@@ -97,6 +98,7 @@ export const purchaseDocumentConfigs = {
     routeBase: "/purchase/orders",
     secondaryDateLabel: "Expected Delivery",
     selectorKey: "purchaseOrders",
+    statusOptions: ORDER_STATUS_OPTIONS,
     setFilters: setPurchaseOrderFilters,
     setPage: setPurchaseOrderPage,
     setPageSize: setPurchaseOrderPageSize,

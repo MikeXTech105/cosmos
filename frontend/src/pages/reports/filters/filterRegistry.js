@@ -1,5 +1,6 @@
 import {
   REPORT_PAYMENT_STATUS_OPTIONS,
+  REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS,
   REPORT_STATUS_OPTIONS,
 } from "../../../constants/reportEnums";
 import {
@@ -170,6 +171,10 @@ export const filterRegistry = {
   },
   paymentStatus: {
     options: REPORT_PAYMENT_STATUS_OPTIONS,
+    param: "PaymentStatus",
+  },
+  purchasePaymentStatus: {
+    options: REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS,
     param: "PaymentStatus",
   },
   search: {
