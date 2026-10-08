@@ -5,6 +5,7 @@ import {
 } from "../pages/sales/invoices/invoiceHelpers";
 import {
   PAYMENT_MODE,
+  PURCHASE_PAYMENT_STATUS,
   PURCHASE_STATUS,
 } from "../pages/purchase/purchaseHelpers";
 
@@ -24,8 +25,9 @@ export const REPORT_STATUS_OPTIONS = {
   purchaseDocument: [
     { label: "Draft", value: PURCHASE_STATUS.DRAFT },
     { label: "Confirmed", value: PURCHASE_STATUS.CONFIRMED },
+    { label: "Partially Paid", value: PURCHASE_STATUS.PARTIALLY_PAID },
+    { label: "Paid", value: PURCHASE_STATUS.PAID },
     { label: "Cancelled", value: PURCHASE_STATUS.CANCELLED },
-    { label: "Converted", value: PURCHASE_STATUS.CONVERTED },
   ],
   salesInvoice: [
     { label: "Draft", value: SALES_INVOICE_STATUS.DRAFT },
@@ -38,6 +40,12 @@ export const REPORT_PAYMENT_STATUS_OPTIONS = [
   { label: "Unpaid", value: SALES_PAYMENT_STATUS.UNPAID },
   { label: "Partial", value: SALES_PAYMENT_STATUS.PARTIAL },
   { label: "Paid", value: SALES_PAYMENT_STATUS.PAID },
+];
+
+export const REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS = [
+  { label: "Unpaid", value: PURCHASE_PAYMENT_STATUS.UNPAID },
+  { label: "Partial", value: PURCHASE_PAYMENT_STATUS.PARTIAL },
+  { label: "Paid", value: PURCHASE_PAYMENT_STATUS.PAID },
 ];
 
 export const REPORT_PAYMENT_MODE_OPTIONS = [
@@ -53,9 +61,8 @@ export const REPORT_PURCHASE_PAYMENT_MODE_OPTIONS = [
   { label: "Cash", value: PAYMENT_MODE.CASH },
   { label: "Bank Transfer", value: PAYMENT_MODE.BANK_TRANSFER },
   { label: "UPI", value: PAYMENT_MODE.UPI },
-  { label: "Card", value: PAYMENT_MODE.CARD },
   { label: "Cheque", value: PAYMENT_MODE.CHEQUE },
-  { label: "Other", value: PAYMENT_MODE.OTHER },
+  { label: "Card", value: PAYMENT_MODE.CARD },
 ];
 
 const STATUS_TONES = {
@@ -65,6 +72,7 @@ const STATUS_TONES = {
   draft: "bg-amber-50 text-amber-700 ring-amber-200",
   paid: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   partial: "bg-sky-50 text-sky-700 ring-sky-200",
+  "partially paid": "bg-sky-50 text-sky-700 ring-sky-200",
   unpaid: "bg-red-50 text-red-700 ring-red-200",
 };
 
@@ -92,6 +100,10 @@ export const REPORT_STATUS_PILL_MAP = {
 
 export const REPORT_PAYMENT_STATUS_PILL_MAP = toReportPillMap(
   REPORT_PAYMENT_STATUS_OPTIONS,
+);
+
+export const REPORT_PURCHASE_PAYMENT_STATUS_PILL_MAP = toReportPillMap(
+  REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS,
 );
 
 export const REPORT_PAYMENT_MODE_MAP = toReportPillMap(

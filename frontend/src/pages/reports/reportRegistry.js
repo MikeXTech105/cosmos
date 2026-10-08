@@ -344,7 +344,7 @@ export const reportRegistry = [
     description: "Purchase bill register with supplier, status and balances.",
     exportable: true,
     fetcher: purchaseReportsService.getPurchaseBills,
-    filters: [dateRange, search, party("Supplier"), status("purchaseDocument"), paymentStatus],
+    filters: [dateRange, search, party("Supplier"), status("purchaseDocument"), "purchasePaymentStatus"],
     group: "purchase",
     icon: "receipt",
     id: "purchase-bills",

@@ -18,6 +18,7 @@ import {
   getDocumentTotals,
   getLineCalculations,
   getPaidAmount,
+  getPaymentStatusMeta,
   getPaymentTypeLabel,
   getRecordTotal,
   getStatusMeta,
@@ -228,9 +229,19 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     Status
                   </p>
                   <div className="mt-1">
-                    <PurchaseStatusPill meta={getStatusMeta(record.status)} />
+                    <PurchaseStatusPill meta={getStatusMeta(record.status, config.selectorKey)} />
                   </div>
                 </div>
+                {config.selectorKey === "purchaseBills" && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Payment
+                    </p>
+                    <div className="mt-1">
+                      <PurchaseStatusPill meta={getPaymentStatusMeta(record.paymentStatus)} />
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
