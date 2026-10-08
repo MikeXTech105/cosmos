@@ -8,6 +8,7 @@
 | SKU settings, effective dates, soft deletion | Implemented | Contracts, validator, repository, procedures, controller |
 | Shared import-batch extension and snapshots | Implemented | Shared batch reuse plus `DispatchImportStagedRows` and committed snapshot tables |
 | Pure calculation engine | Implemented | `DispatchCalculationService` plus unit tests |
+| Warehouse/SKU snapshot identity repair | Implemented | `20261008_dispatch_planning_sku_snapshot_integrity.sql`; inbound grouping, calculation duplicate validation, and result uniqueness include `ChannelItemMappingId` |
 | Pure allocation engine | Implemented | `DispatchAllocationService` plus priority/cap test; SQL validates persisted allocations |
 | Run lifecycle, override, allocation, finalization/cancellation | Implemented | Procedures, controller, finalized-state database triggers |
 | Reports and CSV export | Implemented | Report procedure and Export-permission endpoint |
