@@ -28,6 +28,9 @@ services:
     ports:
       - "3000:80"
 
+    environment:
+      API_BASE_URL: ${COSMOS_API_BASE_URL:?Set COSMOS_API_BASE_URL to the frontend API origin}
+
     restart: always
 
     depends_on:

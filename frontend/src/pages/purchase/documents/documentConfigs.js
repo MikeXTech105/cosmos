@@ -75,6 +75,7 @@ export const purchaseDocumentConfigs = {
     supportsPaidAmount: true,
     supportsPaymentType: true,
     supportsRoundOff: true,
+    statusKind: "document",
     updateThunk: updatePurchaseBill,
   },
   orders: {
@@ -105,6 +106,7 @@ export const purchaseDocumentConfigs = {
     supportsConvert: true,
     supportsDiscount: true,
     supportsTerms: true,
+    statusKind: "order",
     updateThunk: updatePurchaseOrder,
   },
   returns: {

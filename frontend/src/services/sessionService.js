@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { ENDPOINTS } from "../api/endpoints";
+import { buildApiUrl, runtimeConfig } from "../config/runtimeConfig";
 import { clearCredentials, setTokens } from "../store/slices/authSlice";
 import {
   clearAuthData,
@@ -11,17 +12,6 @@ import { unwrapResponse } from "./apiServiceUtils";
 
 let refreshPromise = null;
 let sessionStore = null;
-
-const getApiBaseUrl = () => {
-  const value = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
-  const url = new URL(value);
-
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error("VITE_API_BASE_URL must be a valid HTTP(S) URL.");
-  }
-
-  return value.replace(/\/+$/, "");
-};
 
 export const configureSessionStore = (store) => {
   sessionStore = store;
@@ -39,8 +29,12 @@ const performRefresh = async () => {
     throw new Error("Missing refresh token");
   }
 
+  if (runtimeConfig.error) {
+    throw new Error(runtimeConfig.error);
+  }
+
   const response = await axios.post(
-    `${getApiBaseUrl()}${ENDPOINTS.REFRESH_TOKEN}`,
+    buildApiUrl(ENDPOINTS.REFRESH_TOKEN),
     { refreshToken },
     { headers: { "Content-Type": "application/json" } },
   );

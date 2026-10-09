@@ -43,10 +43,10 @@ import {
   getDocumentNumber,
   getPaidAmount,
   getRecordTotal,
-  getStatusMeta,
+  getPurchaseStatusMeta,
   getSuccessMessage,
   getSupplierName,
-  STATUS_OPTIONS,
+  getPurchaseStatusOptions,
 } from "../purchaseHelpers";
 import {
   PurchaseConfirmDialog,
@@ -729,7 +729,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                 dispatch(config.setFilters({ Status: value }));
                 dispatch(config.setPage(1));
               }}
-              options={STATUS_OPTIONS}
+              options={getPurchaseStatusOptions(config.statusKind)}
               aria-label="Filter by status"
             />
           ) : (
@@ -858,7 +858,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                       {formatCurrency(getBalanceAmount(record))}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3">
-                      <PurchaseStatusPill meta={getStatusMeta(record.status)} />
+                      <PurchaseStatusPill meta={getPurchaseStatusMeta(record.status, config.statusKind)} />
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
                       <div className="flex items-center justify-end gap-0.5">

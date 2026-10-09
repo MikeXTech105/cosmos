@@ -5,11 +5,11 @@ import {
 } from "../pages/sales/invoices/invoiceHelpers";
 import {
   PAYMENT_MODE,
-  PURCHASE_STATUS,
+  PURCHASE_DOCUMENT_STATUS,
 } from "../pages/purchase/purchaseHelpers";
 
 export const REPORT_STATUS = {
-  purchaseDocument: PURCHASE_STATUS,
+  purchaseDocument: PURCHASE_DOCUMENT_STATUS,
   salesInvoice: SALES_INVOICE_STATUS,
 };
 
@@ -17,40 +17,42 @@ export const REPORT_PAYMENT_STATUS = SALES_PAYMENT_STATUS;
 
 export const REPORT_STATUS_OPTIONS = {
   purchaseDocument: [
-    { label: "Draft", value: PURCHASE_STATUS.DRAFT },
-    { label: "Confirmed", value: PURCHASE_STATUS.CONFIRMED },
-    { label: "Cancelled", value: PURCHASE_STATUS.CANCELLED },
-    { label: "Converted", value: PURCHASE_STATUS.CONVERTED },
+    { label: "Draft", value: PURCHASE_DOCUMENT_STATUS.DRAFT },
+    { label: "Confirmed", value: PURCHASE_DOCUMENT_STATUS.CONFIRMED },
+    { label: "Partially paid", value: PURCHASE_DOCUMENT_STATUS.PARTIALLY_PAID },
+    { label: "Paid", value: PURCHASE_DOCUMENT_STATUS.PAID },
+    { label: "Cancelled", value: PURCHASE_DOCUMENT_STATUS.CANCELLED },
   ],
   salesInvoice: [
     { label: "Draft", value: SALES_INVOICE_STATUS.DRAFT },
     { label: "Confirmed", value: SALES_INVOICE_STATUS.CONFIRMED },
+    { label: "Partially paid", value: SALES_INVOICE_STATUS.PARTIALLY_PAID },
+    { label: "Paid", value: SALES_INVOICE_STATUS.PAID },
     { label: "Cancelled", value: SALES_INVOICE_STATUS.CANCELLED },
   ],
 };
 
 export const REPORT_PAYMENT_STATUS_OPTIONS = [
   { label: "Unpaid", value: SALES_PAYMENT_STATUS.UNPAID },
-  { label: "Partial", value: SALES_PAYMENT_STATUS.PARTIAL },
+  { label: "Partially paid", value: SALES_PAYMENT_STATUS.PARTIALLY_PAID },
   { label: "Paid", value: SALES_PAYMENT_STATUS.PAID },
 ];
 
 export const REPORT_PAYMENT_MODE_OPTIONS = [
   { label: "Cash", value: SALES_PAYMENT_MODE.CASH },
   { label: "Bank Transfer", value: SALES_PAYMENT_MODE.BANK_TRANSFER },
-  { label: "UPI", value: SALES_PAYMENT_MODE.UPI },
   { label: "Card", value: SALES_PAYMENT_MODE.CARD },
+  { label: "UPI", value: SALES_PAYMENT_MODE.UPI },
   { label: "Cheque", value: SALES_PAYMENT_MODE.CHEQUE },
   { label: "Other", value: SALES_PAYMENT_MODE.OTHER },
 ];
 
 export const REPORT_PURCHASE_PAYMENT_MODE_OPTIONS = [
   { label: "Cash", value: PAYMENT_MODE.CASH },
-  { label: "Bank Transfer", value: PAYMENT_MODE.BANK_TRANSFER },
+  { label: "Bank", value: PAYMENT_MODE.BANK },
   { label: "UPI", value: PAYMENT_MODE.UPI },
-  { label: "Card", value: PAYMENT_MODE.CARD },
   { label: "Cheque", value: PAYMENT_MODE.CHEQUE },
-  { label: "Other", value: PAYMENT_MODE.OTHER },
+  { label: "Card", value: PAYMENT_MODE.CARD },
 ];
 
 const STATUS_TONES = {

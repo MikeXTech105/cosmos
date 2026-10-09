@@ -13,8 +13,7 @@ import PurchaseLineItems, {
 } from "../PurchaseLineItems";
 import {
   addDaysToInputDate,
-  buildLinePayload,
-  cleanNullableString,
+  buildPurchaseDocumentPayload,
   extractItems,
   formatCurrency,
   getDefaultLine,
@@ -23,7 +22,6 @@ import {
   PAYMENT_TYPE,
   PAYMENT_TYPE_OPTIONS,
   toInputDate,
-  toNumber,
 } from "../purchaseHelpers";
 
 const lineSchema = z.object({
@@ -70,7 +68,7 @@ const getDefaultValues = (record, config) => {
     expectedDeliveryDate:
       toInputDate(record?.expectedDeliveryDate) || addDaysToInputDate(today, 7),
     returnDate: toInputDate(record?.returnDate) || today,
-    paymentType: record?.paymentType ?? PAYMENT_TYPE.CREDIT,
+    paymentType: record?.paymentType ?? PAYMENT_TYPE.CASH,
     discountAmount: String(record?.discountAmount ?? 0),
     roundOff: String(record?.roundOff ?? 0),
     paidAmount: String(record?.paidAmount ?? 0),
@@ -81,47 +79,6 @@ const getDefaultValues = (record, config) => {
     items: record ? extractItems(record) : [getDefaultLine()],
     activeDate: toInputDate(record?.[config.dateField]) || today,
   };
-};
-
-const buildPayload = (values, config) => {
-  const base = {
-    supplierId: values.supplierId,
-    items: buildLinePayload(values.items),
-    notes: cleanNullableString(values.notes),
-  };
-
-  if (config.supportsBillSelect) {
-    base.purchaseBillId = values.purchaseBillId
-      ? Math.trunc(toNumber(values.purchaseBillId))
-      : null;
-  }
-
-  if (config.supportsReason) {
-    base.reason = cleanNullableString(values.reason);
-  }
-
-  if (config.dateField === "billDate") {
-    base.supplierInvoiceNo = cleanNullableString(values.supplierInvoiceNo);
-    base.billDate = values.billDate;
-    base.dueDate = values.dueDate || null;
-    base.paymentType = Number(values.paymentType);
-    base.discountAmount = toNumber(values.discountAmount);
-    base.roundOff = toNumber(values.roundOff);
-    base.paidAmount = toNumber(values.paidAmount);
-  }
-
-  if (config.dateField === "orderDate") {
-    base.orderDate = values.orderDate;
-    base.expectedDeliveryDate = values.expectedDeliveryDate || null;
-    base.discountAmount = toNumber(values.discountAmount);
-    base.termsAndConditions = cleanNullableString(values.termsAndConditions);
-  }
-
-  if (config.dateField === "returnDate") {
-    base.returnDate = values.returnDate;
-  }
-
-  return base;
 };
 
 const PurchaseDocumentFormModal = ({
@@ -194,7 +151,7 @@ const PurchaseDocumentFormModal = ({
       ) : (
         <form
           className="mt-5 flex max-h-[calc(100vh-13rem)] min-h-0 flex-col"
-          onSubmit={handleSubmit((values) => onSubmit(buildPayload(values, config)))}
+          onSubmit={handleSubmit((values) => onSubmit(buildPurchaseDocumentPayload(values, config)))}
         >
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
             <section className="rounded-xl border border-slate-200 bg-slate-50 p-4">

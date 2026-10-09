@@ -27,7 +27,7 @@ import {
   getPaidAmount,
   getPaymentTypeLabel,
   getRecordTotal,
-  getStatusMeta,
+  getPurchaseStatusMeta,
   getSuccessMessage,
   getSupplierName,
 } from "../purchaseHelpers";
@@ -397,7 +397,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     Status
                   </p>
                   <div className="mt-1">
-                    <PurchaseStatusPill meta={getStatusMeta(record.status)} />
+                    <PurchaseStatusPill meta={getPurchaseStatusMeta(record.status, config.statusKind)} />
                   </div>
                 </div>
               </div>
