@@ -37,7 +37,7 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
     defaultValues: {
       billDate: today,
       dueDate: addDaysToInputDate(today, 15),
-      paymentType: PAYMENT_TYPE.CREDIT,
+      paymentType: PAYMENT_TYPE.CASH,
       paidAmount: "0",
       supplierInvoiceNo: "",
     },
@@ -48,7 +48,7 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
       reset({
         billDate: today,
         dueDate: addDaysToInputDate(today, 15),
-        paymentType: PAYMENT_TYPE.CREDIT,
+        paymentType: PAYMENT_TYPE.CASH,
         paidAmount: "0",
         supplierInvoiceNo: "",
       });

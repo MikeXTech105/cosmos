@@ -5,12 +5,12 @@ import {
 } from "../pages/sales/invoices/invoiceHelpers";
 import {
   PAYMENT_MODE,
+  PURCHASE_DOCUMENT_STATUS,
   PURCHASE_PAYMENT_STATUS,
-  PURCHASE_STATUS,
 } from "../pages/purchase/purchaseHelpers";
 
 export const REPORT_STATUS = {
-  purchaseDocument: PURCHASE_STATUS,
+  purchaseDocument: PURCHASE_DOCUMENT_STATUS,
   salesInvoice: SALES_INVOICE_STATUS,
 };
 
@@ -23,22 +23,24 @@ export const REPORT_STATUS_OPTIONS = {
     { label: "Cancelled", value: 3 },
   ],
   purchaseDocument: [
-    { label: "Draft", value: PURCHASE_STATUS.DRAFT },
-    { label: "Confirmed", value: PURCHASE_STATUS.CONFIRMED },
-    { label: "Partially Paid", value: PURCHASE_STATUS.PARTIALLY_PAID },
-    { label: "Paid", value: PURCHASE_STATUS.PAID },
-    { label: "Cancelled", value: PURCHASE_STATUS.CANCELLED },
+    { label: "Draft", value: PURCHASE_DOCUMENT_STATUS.DRAFT },
+    { label: "Confirmed", value: PURCHASE_DOCUMENT_STATUS.CONFIRMED },
+    { label: "Partially paid", value: PURCHASE_DOCUMENT_STATUS.PARTIALLY_PAID },
+    { label: "Paid", value: PURCHASE_DOCUMENT_STATUS.PAID },
+    { label: "Cancelled", value: PURCHASE_DOCUMENT_STATUS.CANCELLED },
   ],
   salesInvoice: [
     { label: "Draft", value: SALES_INVOICE_STATUS.DRAFT },
     { label: "Confirmed", value: SALES_INVOICE_STATUS.CONFIRMED },
+    { label: "Partially paid", value: SALES_INVOICE_STATUS.PARTIALLY_PAID },
+    { label: "Paid", value: SALES_INVOICE_STATUS.PAID },
     { label: "Cancelled", value: SALES_INVOICE_STATUS.CANCELLED },
   ],
 };
 
 export const REPORT_PAYMENT_STATUS_OPTIONS = [
   { label: "Unpaid", value: SALES_PAYMENT_STATUS.UNPAID },
-  { label: "Partial", value: SALES_PAYMENT_STATUS.PARTIAL },
+  { label: "Partially paid", value: SALES_PAYMENT_STATUS.PARTIALLY_PAID },
   { label: "Paid", value: SALES_PAYMENT_STATUS.PAID },
 ];
 
@@ -51,15 +53,15 @@ export const REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS = [
 export const REPORT_PAYMENT_MODE_OPTIONS = [
   { label: "Cash", value: SALES_PAYMENT_MODE.CASH },
   { label: "Bank Transfer", value: SALES_PAYMENT_MODE.BANK_TRANSFER },
-  { label: "UPI", value: SALES_PAYMENT_MODE.UPI },
   { label: "Card", value: SALES_PAYMENT_MODE.CARD },
+  { label: "UPI", value: SALES_PAYMENT_MODE.UPI },
   { label: "Cheque", value: SALES_PAYMENT_MODE.CHEQUE },
   { label: "Other", value: SALES_PAYMENT_MODE.OTHER },
 ];
 
 export const REPORT_PURCHASE_PAYMENT_MODE_OPTIONS = [
   { label: "Cash", value: PAYMENT_MODE.CASH },
-  { label: "Bank Transfer", value: PAYMENT_MODE.BANK_TRANSFER },
+  { label: "Bank", value: PAYMENT_MODE.BANK },
   { label: "UPI", value: PAYMENT_MODE.UPI },
   { label: "Cheque", value: PAYMENT_MODE.CHEQUE },
   { label: "Card", value: PAYMENT_MODE.CARD },
@@ -72,7 +74,6 @@ const STATUS_TONES = {
   draft: "bg-amber-50 text-amber-700 ring-amber-200",
   paid: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   partial: "bg-sky-50 text-sky-700 ring-sky-200",
-  "partially paid": "bg-sky-50 text-sky-700 ring-sky-200",
   unpaid: "bg-red-50 text-red-700 ring-red-200",
 };
 

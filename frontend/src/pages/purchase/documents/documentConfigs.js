@@ -41,8 +41,6 @@ import {
   setPurchaseReturnPageSize,
   updatePurchaseReturn,
 } from "../../../store/slices/purchase/purchaseReturnSlice";
-import { ORDER_STATUS_OPTIONS } from "../purchaseHelpers";
-
 export const purchaseDocumentConfigs = {
   bills: {
     actionIcon: CheckCircle2,
@@ -76,6 +74,7 @@ export const purchaseDocumentConfigs = {
     supportsPaidAmount: true,
     supportsPaymentType: true,
     supportsRoundOff: true,
+    statusKind: "document",
     updateThunk: updatePurchaseBill,
   },
   orders: {
@@ -98,7 +97,6 @@ export const purchaseDocumentConfigs = {
     routeBase: "/purchase/orders",
     secondaryDateLabel: "Expected Delivery",
     selectorKey: "purchaseOrders",
-    statusOptions: ORDER_STATUS_OPTIONS,
     setFilters: setPurchaseOrderFilters,
     setPage: setPurchaseOrderPage,
     setPageSize: setPurchaseOrderPageSize,
@@ -107,6 +105,7 @@ export const purchaseDocumentConfigs = {
     supportsConvert: true,
     supportsDiscount: true,
     supportsTerms: true,
+    statusKind: "order",
     updateThunk: updatePurchaseOrder,
   },
   returns: {
