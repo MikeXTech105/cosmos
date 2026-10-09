@@ -36,6 +36,7 @@ const NumberInput = ({ control, error, maxAmount }) => {
           type="text"
           inputMode="decimal"
           placeholder="0"
+          required
           value={field.value ?? ""}
           name={field.name}
           error={error}

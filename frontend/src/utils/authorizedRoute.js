@@ -1,7 +1,9 @@
 import { getEnabledSidebarModules } from "../config/sidebar";
 import {
   canPerformAction,
+  canViewPermission,
   findPermissionPage,
+  getPageRoute,
   isSuperAdminAuth,
   normalizeRoute,
 } from "./permissionResolver";
@@ -23,10 +25,19 @@ const canViewModule = ({ module, pages, roles, user }) => {
     target: {
       id: module.id,
       label: module.permissionPageName ?? module.label,
+      pageName: module.permissionPageName,
       route: module.route,
     },
     user,
   });
+};
+
+const getFirstGrantedPageRoute = (pages) => {
+  const grantedPage = (Array.isArray(pages) ? pages : []).find((page) => {
+    return page && canViewPermission(page) && getPageRoute(page);
+  });
+
+  return getPageRoute(grantedPage);
 };
 
 export const getDefaultAuthorizedRoute = ({
@@ -45,7 +56,13 @@ export const getDefaultAuthorizedRoute = ({
     return module.route && canViewModule({ module, pages, roles, user });
   });
 
-  return normalizeRoute(firstAuthorizedModule?.route) || "/403";
+  return (
+    normalizeRoute(firstAuthorizedModule?.route) ||
+    // Land on whatever the backend actually granted rather than /403 when no
+    // configured module lines up with the page list.
+    getFirstGrantedPageRoute(pages) ||
+    "/403"
+  );
 };
 
 export const isRouteAuthorized = ({
@@ -82,10 +99,6 @@ export const isRouteAuthorized = ({
         user,
       })
     );
-  }
-
-  if (normalizedRoute.startsWith("/reports/") && !isSuperAdmin) {
-    return false;
   }
 
   const matchingModule = modules

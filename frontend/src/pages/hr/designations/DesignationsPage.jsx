@@ -52,11 +52,13 @@ const DesignationsPage = () => {
   const designationsState = useSelector((state) => state.hrDesignations);
   const capabilities = useHrCapabilities({
     label: "Designations",
+    pageName: "HR.Designation",
     resource: "designations",
     route: "/hr/designations",
   });
   const canCreateDepartment = useCreatePermission({
     label: "Departments",
+    pageName: "HR.Department",
     resource: "departments",
     route: "/hr/departments",
   });

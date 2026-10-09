@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import CosmosLoader from "../components/common/CosmosLoader";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
@@ -14,11 +15,14 @@ const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 const Pages = lazy(() => import("../pages/rbac/pages/index.js"));
+const PageForm = lazy(() => import("../pages/rbac/pages/PageFormPage.jsx"));
 const Permissions = lazy(() => import("../pages/rbac/permissions/index.js"));
 const Party = lazy(() => import("../pages/party/index.js"));
+const PartyForm = lazy(() => import("../pages/party/PartyFormPage.jsx"));
 const Roles = lazy(() => import("../pages/rbac/roles/index.js"));
 const Users = lazy(() => import("../pages/rbac/users/index.js"));
 const Items = lazy(() => import("../pages/inventory/items/index.js"));
+const ItemForm = lazy(() => import("../pages/inventory/items/ItemFormPage.jsx"));
 const Categories = lazy(() => import("../pages/inventory/categories/index.js"));
 const Units = lazy(() => import("../pages/inventory/units/index.js"));
 const RojmelDashboard = lazy(
@@ -44,6 +48,7 @@ const RojmelReportRoute = lazy(
 );
 const HrDashboard = lazy(() => import("../pages/hr/dashboard/index.js"));
 const HrEmployees = lazy(() => import("../pages/hr/employees/index.js"));
+const HrEmployeeForm = lazy(() => import("../pages/hr/employees/EmployeeFormPage.jsx"));
 const HrDepartments = lazy(() => import("../pages/hr/departments/index.js"));
 const HrDesignations = lazy(() => import("../pages/hr/designations/index.js"));
 const HrAttendance = lazy(() => import("../pages/hr/attendance/index.js"));
@@ -54,17 +59,29 @@ const SalesInvoices = lazy(() => import("../pages/sales/invoices/index.js"));
 const SalesInvoiceDetail = lazy(
   () => import("../pages/sales/invoices/InvoiceDetailPage.jsx"),
 );
+const SalesInvoiceForm = lazy(
+  () => import("../pages/sales/invoices/InvoiceFormPage.jsx"),
+);
 const PurchaseBills = lazy(() => import("../pages/purchase/bills/index.js"));
 const PurchaseBillDetail = lazy(
   () => import("../pages/purchase/bills/PurchaseBillDetailPage.jsx"),
+);
+const PurchaseBillForm = lazy(
+  () => import("../pages/purchase/bills/PurchaseBillFormPage.jsx"),
 );
 const PurchaseOrders = lazy(() => import("../pages/purchase/orders/index.js"));
 const PurchaseOrderDetail = lazy(
   () => import("../pages/purchase/orders/PurchaseOrderDetailPage.jsx"),
 );
+const PurchaseOrderForm = lazy(
+  () => import("../pages/purchase/orders/PurchaseOrderFormPage.jsx"),
+);
 const PurchaseReturns = lazy(() => import("../pages/purchase/returns/index.js"));
 const PurchaseReturnDetail = lazy(
   () => import("../pages/purchase/returns/PurchaseReturnDetailPage.jsx"),
+);
+const PurchaseReturnForm = lazy(
+  () => import("../pages/purchase/returns/PurchaseReturnFormPage.jsx"),
 );
 const SupplierPayments = lazy(
   () => import("../pages/purchase/supplierPayments/index.js"),
@@ -97,6 +114,9 @@ const ProcurementHome = lazy(
 const ProcurementSetup = lazy(
   () => import("../pages/procurement/setup/index.js"),
 );
+const ProcurementSettingForm = lazy(
+  () => import("../pages/procurement/settings/ProcurementSettingFormPage.jsx"),
+);
 const ProcurementGeneratePlan = lazy(
   () => import("../pages/procurement/generatePlan/index.js"),
 );
@@ -114,6 +134,9 @@ const SupplyChainItemMappings = lazy(
 );
 const SupplyChainPackagingProfiles = lazy(
   () => import("../pages/supplyChain/packagingProfiles/index.js"),
+);
+const SupplyChainPackagingProfileForm = lazy(
+  () => import("../pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx"),
 );
 const SupplyChainImports = lazy(
   () => import("../pages/supplyChain/imports/index.js"),
@@ -133,6 +156,9 @@ const DispatchImports = lazy(
 const DispatchSettings = lazy(
   () => import("../pages/dispatch/settings/index.js"),
 );
+const DispatchSettingForm = lazy(
+  () => import("../pages/dispatch/settings/DispatchSettingFormPage.jsx"),
+);
 const DispatchReports = lazy(
   () => import("../pages/dispatch/reports/index.js"),
 );
@@ -141,6 +167,12 @@ const ShipmentDashboard = lazy(
 );
 const ShipmentWorkList = lazy(
   () => import("../pages/shipments/workList/index.js"),
+);
+const ManualShipmentForm = lazy(
+  () => import("../pages/shipments/workList/ManualShipmentFormPage.jsx"),
+);
+const DispatchPlanShipmentForm = lazy(
+  () => import("../pages/shipments/workList/DispatchPlanShipmentFormPage.jsx"),
 );
 const ShipmentDetail = lazy(
   () => import("../pages/shipments/detail/index.js"),
@@ -177,11 +209,7 @@ const AccessDeniedPage = lazy(
 const NotFoundPage = lazy(() => import("../pages/errors/NotFoundPage.jsx"));
 
 const RouteFallback = () => {
-  return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50">
-      <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-brand" />
-    </div>
-  );
+  return <CosmosLoader fullScreen size="md" />;
 };
 
 const AppRoutes = () => {
@@ -248,6 +276,22 @@ const AppRoutes = () => {
               </PermissionGuard>
             }
           />
+          <Route
+            path="/rbac/pages/new"
+            element={
+              <PermissionGuard route="/rbac/pages" pageName="Pages">
+                <PageForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/rbac/pages/:id/edit"
+            element={
+              <PermissionGuard route="/rbac/pages" pageName="Pages">
+                <PageForm />
+              </PermissionGuard>
+            }
+          />
           <Route path="/pages" element={<Navigate to="/rbac/pages" replace />} />
           <Route
             path="/permissions"
@@ -260,8 +304,24 @@ const AppRoutes = () => {
           <Route
             path="/party"
             element={
-              <PermissionGuard route="/party" pageName="Party Master">
+              <PermissionGuard route="/party" pageName="Party">
                 <Party />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/party/new"
+            element={
+              <PermissionGuard route="/party" pageName="Party">
+                <PartyForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/party/:id/edit"
+            element={
+              <PermissionGuard route="/party" pageName="Party">
+                <PartyForm />
               </PermissionGuard>
             }
           />
@@ -270,6 +330,22 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/items" pageName="Items">
                 <Items />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/items/new"
+            element={
+              <PermissionGuard route="/items" pageName="Items">
+                <ItemForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/items/:id/edit"
+            element={
+              <PermissionGuard route="/items" pageName="Items">
+                <ItemForm />
               </PermissionGuard>
             }
           />
@@ -362,7 +438,7 @@ const AppRoutes = () => {
           <Route
             path="/hr/dashboard"
             element={
-              <PermissionGuard route="/hr/dashboard" pageName="HR Dashboard">
+              <PermissionGuard route="/hr/dashboard" pageName="HR.Employee">
                 <HrDashboard />
               </PermissionGuard>
             }
@@ -370,15 +446,31 @@ const AppRoutes = () => {
           <Route
             path="/hr/employees"
             element={
-              <PermissionGuard route="/hr/employees" pageName="Employees">
+              <PermissionGuard route="/hr/employees" pageName="HR.Employee">
                 <HrEmployees />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/employees/new"
+            element={
+              <PermissionGuard route="/hr/employees" pageName="HR.Employee">
+                <HrEmployeeForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/hr/employees/:id/edit"
+            element={
+              <PermissionGuard route="/hr/employees" pageName="HR.Employee">
+                <HrEmployeeForm />
               </PermissionGuard>
             }
           />
           <Route
             path="/hr/departments"
             element={
-              <PermissionGuard route="/hr/departments" pageName="Departments">
+              <PermissionGuard route="/hr/departments" pageName="HR.Department">
                 <HrDepartments />
               </PermissionGuard>
             }
@@ -388,7 +480,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/hr/designations"
-                pageName="Designations"
+                pageName="HR.Designation"
               >
                 <HrDesignations />
               </PermissionGuard>
@@ -397,7 +489,7 @@ const AppRoutes = () => {
           <Route
             path="/hr/attendance"
             element={
-              <PermissionGuard route="/hr/attendance" pageName="Attendance">
+              <PermissionGuard route="/hr/attendance" pageName="HR.Attendance">
                 <HrAttendance />
               </PermissionGuard>
             }
@@ -405,7 +497,7 @@ const AppRoutes = () => {
           <Route
             path="/hr/leaves"
             element={
-              <PermissionGuard route="/hr/leaves" pageName="Leaves">
+              <PermissionGuard route="/hr/leaves" pageName="HR.Leave">
                 <HrLeaves />
               </PermissionGuard>
             }
@@ -413,7 +505,7 @@ const AppRoutes = () => {
           <Route
             path="/hr/shifts"
             element={
-              <PermissionGuard route="/hr/shifts" pageName="Shifts">
+              <PermissionGuard route="/hr/shifts" pageName="HR.Shift">
                 <HrShifts />
               </PermissionGuard>
             }
@@ -421,7 +513,7 @@ const AppRoutes = () => {
           <Route
             path="/hr/payroll"
             element={
-              <PermissionGuard route="/hr/payroll" pageName="Payroll">
+              <PermissionGuard route="/hr/payroll" pageName="HR.Payroll">
                 <HrPayroll />
               </PermissionGuard>
             }
@@ -431,9 +523,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/sales/invoices"
-                pageName="Sale Invoices"
+                pageName="Sales.Invoice"
               >
                 <SalesInvoices />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/sales/invoices/new"
+            element={
+              <PermissionGuard
+                route="/sales/invoices"
+                pageName="Sales.Invoice"
+              >
+                <SalesInvoiceForm />
               </PermissionGuard>
             }
           />
@@ -442,9 +545,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/sales/invoices"
-                pageName="Sale Invoices"
+                pageName="Sales.Invoice"
               >
                 <SalesInvoiceDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/sales/invoices/:id/edit"
+            element={
+              <PermissionGuard
+                route="/sales/invoices"
+                pageName="Sales.Invoice"
+              >
+                <SalesInvoiceForm />
               </PermissionGuard>
             }
           />
@@ -453,9 +567,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/bills"
-                pageName="Purchase Bills"
+                pageName="PurchaseExpense.PurchaseBill"
               >
                 <PurchaseBills />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/bills/new"
+            element={
+              <PermissionGuard
+                route="/purchase/bills"
+                pageName="PurchaseExpense.PurchaseBill"
+              >
+                <PurchaseBillForm />
               </PermissionGuard>
             }
           />
@@ -464,9 +589,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/bills"
-                pageName="Purchase Bills"
+                pageName="PurchaseExpense.PurchaseBill"
               >
                 <PurchaseBillDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/bills/:id/edit"
+            element={
+              <PermissionGuard
+                route="/purchase/bills"
+                pageName="PurchaseExpense.PurchaseBill"
+              >
+                <PurchaseBillForm />
               </PermissionGuard>
             }
           />
@@ -475,9 +611,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/orders"
-                pageName="Purchase Orders"
+                pageName="PurchaseExpense.PurchaseOrder"
               >
                 <PurchaseOrders />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/orders/new"
+            element={
+              <PermissionGuard
+                route="/purchase/orders"
+                pageName="PurchaseExpense.PurchaseOrder"
+              >
+                <PurchaseOrderForm />
               </PermissionGuard>
             }
           />
@@ -486,9 +633,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/orders"
-                pageName="Purchase Orders"
+                pageName="PurchaseExpense.PurchaseOrder"
               >
                 <PurchaseOrderDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/orders/:id/edit"
+            element={
+              <PermissionGuard
+                route="/purchase/orders"
+                pageName="PurchaseExpense.PurchaseOrder"
+              >
+                <PurchaseOrderForm />
               </PermissionGuard>
             }
           />
@@ -497,9 +655,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/returns"
-                pageName="Purchase Returns"
+                pageName="PurchaseExpense.PurchaseReturn"
               >
                 <PurchaseReturns />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/returns/new"
+            element={
+              <PermissionGuard
+                route="/purchase/returns"
+                pageName="PurchaseExpense.PurchaseReturn"
+              >
+                <PurchaseReturnForm />
               </PermissionGuard>
             }
           />
@@ -508,9 +677,20 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/returns"
-                pageName="Purchase Returns"
+                pageName="PurchaseExpense.PurchaseReturn"
               >
                 <PurchaseReturnDetail />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/purchase/returns/:id/edit"
+            element={
+              <PermissionGuard
+                route="/purchase/returns"
+                pageName="PurchaseExpense.PurchaseReturn"
+              >
+                <PurchaseReturnForm />
               </PermissionGuard>
             }
           />
@@ -519,7 +699,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/supplier-payments"
-                pageName="Supplier Payments"
+                pageName="PurchaseExpense.PaymentOut"
               >
                 <SupplierPayments />
               </PermissionGuard>
@@ -528,7 +708,10 @@ const AppRoutes = () => {
           <Route
             path="/purchase/expenses"
             element={
-              <PermissionGuard route="/purchase/expenses" pageName="Expenses">
+              <PermissionGuard
+                route="/purchase/expenses"
+                pageName="PurchaseExpense.Expense"
+              >
                 <Expenses />
               </PermissionGuard>
             }
@@ -538,7 +721,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/expense-categories"
-                pageName="Expense Categories"
+                pageName="PurchaseExpense.ExpenseCategory"
               >
                 <ExpenseCategories />
               </PermissionGuard>
@@ -549,7 +732,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/purchase/reports"
-                pageName="Purchase Reports"
+                pageName="PurchaseExpense.Report"
               >
                 <PurchaseReports />
               </PermissionGuard>
@@ -574,7 +757,7 @@ const AppRoutes = () => {
           <Route
             path="/oee/dashboard"
             element={
-              <PermissionGuard route="/oee/dashboard" pageName="OEE Dashboard">
+              <PermissionGuard route="/oee/dashboard" pageName="OEE.Dashboard">
                 <OeeDashboard />
               </PermissionGuard>
             }
@@ -584,7 +767,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/oee/production-entries"
-                pageName="OEE Production Entries"
+                pageName="OEE.ProductionEntries"
               >
                 <OeeProductionEntries />
               </PermissionGuard>
@@ -593,7 +776,7 @@ const AppRoutes = () => {
           <Route
             path="/oee/machines"
             element={
-              <PermissionGuard route="/oee/machines" pageName="OEE Machines">
+              <PermissionGuard route="/oee/machines" pageName="OEE.Machines">
                 <OeeMachines />
               </PermissionGuard>
             }
@@ -601,7 +784,7 @@ const AppRoutes = () => {
           <Route
             path="/oee/moulds"
             element={
-              <PermissionGuard route="/oee/moulds" pageName="OEE Moulds">
+              <PermissionGuard route="/oee/moulds" pageName="OEE.Moulds">
                 <OeeMoulds />
               </PermissionGuard>
             }
@@ -611,7 +794,7 @@ const AppRoutes = () => {
             element={
               <PermissionGuard
                 route="/oee/downtime-reasons"
-                pageName="OEE Downtime Reasons"
+                pageName="OEE.DowntimeReasons"
               >
                 <OeeDowntimeReasons />
               </PermissionGuard>
@@ -620,7 +803,7 @@ const AppRoutes = () => {
           <Route
             path="/oee/reports"
             element={
-              <PermissionGuard route="/oee/reports" pageName="OEE Reports">
+              <PermissionGuard route="/oee/reports" pageName="OEE.Reports">
                 <OeeReports />
               </PermissionGuard>
             }
@@ -666,6 +849,28 @@ const AppRoutes = () => {
                 pageName="SupplyChain.PackagingProfiles"
               >
                 <SupplyChainPackagingProfiles />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/packaging-profiles/new"
+            element={
+              <PermissionGuard
+                route="/supply-chain/packaging-profiles"
+                pageName="SupplyChain.PackagingProfiles"
+              >
+                <SupplyChainPackagingProfileForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/supply-chain/packaging-profiles/:id/edit"
+            element={
+              <PermissionGuard
+                route="/supply-chain/packaging-profiles"
+                pageName="SupplyChain.PackagingProfiles"
+              >
+                <SupplyChainPackagingProfileForm />
               </PermissionGuard>
             }
           />
@@ -738,6 +943,17 @@ const AppRoutes = () => {
           <Route
             path="/procurement/setup"
             element={<ProcurementSetup />}
+          />
+          <Route
+            path="/procurement/settings/:itemId/edit"
+            element={
+              <PermissionGuard
+                route="/procurement/settings"
+                pageName="ProcurementPlanning.Settings"
+              >
+                <ProcurementSettingForm />
+              </PermissionGuard>
+            }
           />
           <Route
             path="/procurement/generate-plan"
@@ -821,6 +1037,28 @@ const AppRoutes = () => {
             }
           />
           <Route
+            path="/dispatch/settings/new"
+            element={
+              <PermissionGuard
+                route="/dispatch/settings"
+                pageName="DispatchPlanning.SkuSettings"
+              >
+                <DispatchSettingForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/dispatch/settings/:id/edit"
+            element={
+              <PermissionGuard
+                route="/dispatch/settings"
+                pageName="DispatchPlanning.SkuSettings"
+              >
+                <DispatchSettingForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
             path="/dispatch/reports"
             element={
               <PermissionGuard
@@ -854,6 +1092,28 @@ const AppRoutes = () => {
                 pageName="ShipmentOperations.Shipments"
               >
                 <ShipmentWorkList />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list/new"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <ManualShipmentForm />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/shipments/work-list/new-from-plan"
+            element={
+              <PermissionGuard
+                route="/shipments/work-list"
+                pageName="ShipmentOperations.Shipments"
+              >
+                <DispatchPlanShipmentForm />
               </PermissionGuard>
             }
           />

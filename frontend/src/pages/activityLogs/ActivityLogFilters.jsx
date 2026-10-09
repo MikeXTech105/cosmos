@@ -10,6 +10,7 @@ import { useId, useMemo } from "react";
 
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
+import AppDateRangeFilter from "../../components/common/AppDateRangeFilter";
 import AppSelect from "../../components/common/AppSelect";
 
 const optionList = (values, anyLabel) => [
@@ -202,20 +203,15 @@ const ActivityLogFilters = ({
             onChange={setActor}
           />
 
-          <AppInput
-            label="From"
-            type="datetime-local"
-            value={filters.FromDate}
-            error={errors.fromDate}
-            onChange={(event) => onChange({ FromDate: event.target.value })}
-          />
-          <AppInput
-            label="To"
-            type="datetime-local"
-            value={filters.ToDate}
-            error={errors.toDate}
-            onChange={(event) => onChange({ ToDate: event.target.value })}
-          />
+          <div className="min-w-0 self-end md:col-span-2">
+            <AppDateRangeFilter
+              includeTime
+              fromDate={filters.FromDate}
+              toDate={filters.ToDate}
+              onChange={({ fromDate, toDate }) => onChange({ FromDate: fromDate, ToDate: toDate })}
+            />
+            {(errors.fromDate || errors.toDate) && <p role="alert" className="mt-1 text-xs text-red-600">{errors.fromDate || errors.toDate}</p>}
+          </div>
         </div>
 
         <div className="mt-3 flex items-center gap-2 text-[11px] leading-5 text-slate-500">

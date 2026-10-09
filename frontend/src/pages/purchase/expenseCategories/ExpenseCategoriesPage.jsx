@@ -157,6 +157,7 @@ const ExpenseCategoriesPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete"],
     label: "Expense Categories",
+    pageName: "PurchaseExpense.ExpenseCategory",
     resource: ["expenseCategories", "expenseCategory"],
     route: "/purchase/expense-categories",
   });

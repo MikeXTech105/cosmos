@@ -96,7 +96,12 @@ const normalizeHeader = (value) => String(value ?? "").trim().toLowerCase();
 
 const buildRecord = (headers, values) =>
   Object.fromEntries(
-    headers.map((header, index) => [header, values[index]?.trim?.() ?? ""]),
+    headers.map((header, index) => [
+      header,
+      header === "ChannelSku"
+        ? (values[index] ?? "")
+        : (values[index]?.trim?.() ?? ""),
+    ]),
   );
 
 const parseNumber = (value, field, rowNumber, errors, { optional = false } = {}) => {
@@ -235,7 +240,7 @@ export const buildDispatchImportRows = ({
         rowNumber,
       });
     }
-    if (!record.ChannelSku) {
+    if (!record.ChannelSku.trim()) {
       errors.push({
         field: "ChannelSku",
         message: "ChannelSku is required.",

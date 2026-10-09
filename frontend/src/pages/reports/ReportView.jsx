@@ -35,7 +35,10 @@ import {
   getReportFiltersFromSearchParams,
 } from "./filters/filterRegistry";
 import ReportFilterBar from "./filters/ReportFilterBar";
-import { getReportGroup } from "./reportRegistry";
+import {
+  getReportGroup,
+  getReportPermissionTarget,
+} from "./reportRegistry";
 import ReportSummary from "./ReportSummary";
 import ReportTable from "./ReportTable";
 
@@ -200,20 +203,10 @@ const ReportView = ({ report }) => {
         action: "export",
         pages: auth.pages,
         roles: auth.roles,
-        target: {
-          label: report.permission,
-          route: report.permissionRoute ?? report.route,
-        },
+        target: getReportPermissionTarget(report),
         user: auth.user,
       }),
-    [
-      auth.pages,
-      auth.roles,
-      auth.user,
-      report.permission,
-      report.permissionRoute,
-      report.route,
-    ],
+    [auth.pages, auth.roles, auth.user, report],
   );
 
   useEffect(() => {

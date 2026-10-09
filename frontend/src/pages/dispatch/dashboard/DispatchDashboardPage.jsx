@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import DataTableShell, {
   DATA_TABLE_HEADER_CLASS,
@@ -291,32 +291,13 @@ const DispatchDashboardPage = () => {
             setFilters((current) => ({ ...current, ChannelId: value }))
           }
         />
-        <AppInput
-          className="w-44"
-          label="From date"
-          max={filters.ToDate || undefined}
-          type="date"
-          value={filters.FromDate}
-          onChange={(event) =>
-            setFilters((current) => ({
-              ...current,
-              FromDate: event.target.value,
-            }))
-          }
-        />
-        <AppInput
-          className="w-44"
-          label="To date"
-          min={filters.FromDate || undefined}
-          type="date"
-          value={filters.ToDate}
-          onChange={(event) =>
-            setFilters((current) => ({
-              ...current,
-              ToDate: event.target.value,
-            }))
-          }
-        />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={filters.FromDate}
+            toDate={filters.ToDate}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => setFilters((current) => ({ ...current, FromDate: fromDate, ToDate: toDate }))}
+          />
       </SupplyChainFilterBar>
 
       <SupplyChainInlineError message={channelError} title="Channels unavailable" />
@@ -361,7 +342,7 @@ const DispatchDashboardPage = () => {
           >
             {topRows.map((row, index) => (
               <tr
-                key={`${row.runNumber}-${row.warehouseCode}-${row.itemCode}-${index}`}
+                key={row.id ?? `${row.runNumber}-${row.warehouseCode}-${row.channelSku}-${index}`}
               >
                 <td className="text-xs font-semibold tabular-nums text-slate-400">
                   {index + 1}
@@ -373,7 +354,7 @@ const DispatchDashboardPage = () => {
                 <td>{row.warehouseCode}</td>
                 <td>
                   <p className="font-medium">{row.itemName}</p>
-                  <p className="text-xs text-slate-500">{row.itemCode}</p>
+                  <p className="text-xs text-slate-500">{row.itemCode} · {row.channelSku}</p>
                 </td>
                 <td className="text-right tabular-nums">{formatDispatchNumber(row.recommendedQuantity, "0")}</td>
                 <td className="text-right tabular-nums">{formatDispatchNumber(row.allocatedQuantity, "0")}</td>

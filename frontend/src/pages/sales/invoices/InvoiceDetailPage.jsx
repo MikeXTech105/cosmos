@@ -11,8 +11,6 @@ import {
 import {
   useCallback,
   useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,19 +21,13 @@ import AppButton from "../../../components/common/AppButton";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
-import { itemService } from "../../../services/inventory/itemService";
 import {
   cancelInvoice,
   confirmInvoice,
   fetchInvoiceById,
   fetchInvoicePayments,
   recordInvoicePayment,
-  updateInvoice,
 } from "../../../store/slices/sales/invoiceSlice";
-import {
-  getPartyDisplayName,
-  getPartyType,
-} from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
 import { exportInvoicePdf } from "../invoiceTemplates/exportInvoicePdf";
 import {
@@ -43,7 +35,6 @@ import {
   invoiceTemplates,
 } from "../invoiceTemplates/templateRegistry";
 import { getStoredInvoiceTemplate } from "../invoiceTemplates/templateStorage";
-import InvoiceFormModal from "./InvoiceFormModal";
 import PaymentModal from "./PaymentModal";
 import {
   buildTemplateInvoice,
@@ -62,16 +53,6 @@ import {
   InvoiceConfirmDialog,
   InvoiceStatusPill,
 } from "./InvoiceShared";
-
-const getLookupList = (response) => {
-  const data = response?.data;
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  return data?.items ?? [];
-};
 
 const PaymentHistory = ({ error, isLoading, payments }) => {
   return (
@@ -146,6 +127,7 @@ const InvoiceDetailPage = () => {
   const capabilities = useCapabilities({
     actions: ["view", "update", "confirm", "cancel", "payment", "export"],
     label: "Sale Invoices",
+    pageName: "Sales.Invoice",
     resource: ["saleInvoices", "salesInvoices", "invoices"],
     route: "/sales/invoices",
   });
@@ -157,29 +139,11 @@ const InvoiceDetailPage = () => {
   const [templateId, setTemplateId] = useState(getStoredInvoiceTemplate);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
-  const [modal, setModal] = useState({
-    entity: null,
-    isLoading: false,
-    isOpen: false,
-    mode: "edit",
-  });
   const [confirmation, setConfirmation] = useState({
     action: "confirm",
     entity: null,
     isLoading: false,
     isOpen: false,
-  });
-  const [lookups, setLookups] = useState({
-    customers: [],
-    customersError: null,
-    customersLoading: false,
-    items: [],
-    itemsError: null,
-    itemsLoading: false,
-  });
-  const lookupCacheRef = useRef({
-    customers: { loaded: false, promise: null },
-    items: { loaded: false, promise: null },
   });
 
   const loadInvoice = useCallback(async () => {
@@ -225,119 +189,6 @@ const InvoiceDetailPage = () => {
     };
   }, [invoice?.customerPartyId]);
 
-  const loadLookup = useCallback((type) => {
-    const cache = lookupCacheRef.current[type];
-
-    if (cache.loaded) {
-      return Promise.resolve(null);
-    }
-
-    if (cache.promise) {
-      return cache.promise;
-    }
-
-    const isCustomers = type === "customers";
-    const loadingKey = isCustomers ? "customersLoading" : "itemsLoading";
-    const errorKey = isCustomers ? "customersError" : "itemsError";
-    const request = isCustomers
-      ? partyService.getParties({
-          PageNumber: 1,
-          PageSize: 200,
-          IsActive: true,
-        })
-      : itemService.getItems({
-          PageNumber: 1,
-          PageSize: 200,
-          IsActive: true,
-        });
-
-    setLookups((current) => ({
-      ...current,
-      [loadingKey]: true,
-      [errorKey]: null,
-    }));
-
-    cache.promise = request
-      .then((response) => {
-        const records = getLookupList(response).filter((entry) => {
-          if (entry?.id === null || entry?.id === undefined) {
-            return false;
-          }
-
-          if (entry?.isActive === false) {
-            return false;
-          }
-
-          if (isCustomers) {
-            return ["customer", "both"].includes(getPartyType(entry));
-          }
-
-          return Boolean(String(entry?.name ?? "").trim());
-        });
-
-        cache.loaded = true;
-        setLookups((current) => ({
-          ...current,
-          [type]: records,
-          [loadingKey]: false,
-          [errorKey]: null,
-        }));
-
-        return null;
-      })
-      .catch((error) => {
-        const message = getActionError(
-          error,
-          `Unable to load ${isCustomers ? "customers" : "items"}.`,
-        );
-
-        setLookups((current) => ({
-          ...current,
-          [loadingKey]: false,
-          [errorKey]: message,
-        }));
-
-        return message;
-      })
-      .finally(() => {
-        cache.promise = null;
-      });
-
-    return cache.promise;
-  }, []);
-
-  const loadLookups = useCallback(async () => {
-    const errors = (
-      await Promise.all([loadLookup("customers"), loadLookup("items")])
-    ).filter(Boolean);
-
-    if (errors.length > 0) {
-      toast.error([...new Set(errors)].join(" "));
-    }
-  }, [loadLookup]);
-
-  const customerOptions = useMemo(
-    () =>
-      lookups.customers.map((entry) => ({
-        value: entry.id,
-        label: getPartyDisplayName(entry),
-      })),
-    [lookups.customers],
-  );
-
-  const itemOptions = useMemo(
-    () =>
-      lookups.items.map((item) => ({
-        value: Number(item.id),
-        label: [item.name, item.itemCode].filter(Boolean).join(" - "),
-      })),
-    [lookups.items],
-  );
-
-  const itemsById = useMemo(() => {
-    return new Map(lookups.items.map((item) => [String(item.id), item]));
-  }, [lookups.items]);
-
   const template = getInvoiceTemplate(templateId);
   const TemplateComponent = template.Component;
   const templateInvoice = invoice ? buildTemplateInvoice(invoice, customer) : null;
@@ -352,37 +203,8 @@ const InvoiceDetailPage = () => {
       return;
     }
 
-    void loadLookups();
-    setModal({
-      entity: invoice,
-      isLoading: false,
-      isOpen: true,
-      mode: "edit",
-    });
-  }, [capabilities.canUpdate, invoice, loadLookups]);
-
-  const submitInvoice = useCallback(
-    async (payload) => {
-      if (!capabilities.canUpdate) {
-        toast.error("You don't have permission to update invoices.");
-        return;
-      }
-
-      try {
-        const response = await dispatch(
-          updateInvoice({ id: invoice.id, payload }),
-        ).unwrap();
-
-        toast.success(getSuccessMessage(response, "Invoice updated"));
-        setModal((current) => ({ ...current, isOpen: false }));
-        await loadInvoice();
-      } catch (error) {
-        toast.error(getActionError(error, "Unable to update invoice."));
-        throw error;
-      }
-    },
-    [capabilities.canUpdate, dispatch, invoice, loadInvoice],
-  );
+    navigate(`/sales/invoices/${invoice.id}/edit`);
+  }, [capabilities.canUpdate, invoice, navigate]);
 
   const openConfirmation = useCallback((action) => {
     const allowed =
@@ -760,31 +582,6 @@ const InvoiceDetailPage = () => {
           </dl>
         </section>
       </div>
-
-      <InvoiceFormModal
-        key={`${modal.isOpen}-${modal.entity?.id ?? "edit"}`}
-        customerEmptyMessage={
-          lookups.customersError
-            ? "Unable to load customers. Close and reopen to retry."
-            : "No customers found in Party Master."
-        }
-        customerLoading={lookups.customersLoading}
-        customerOptions={customerOptions}
-        invoice={modal.entity}
-        isLoading={modal.isLoading}
-        isOpen={modal.isOpen}
-        itemEmptyMessage={
-          lookups.itemsError
-            ? "Unable to load items. Close and reopen to retry."
-            : "No items found in inventory."
-        }
-        itemLoading={lookups.itemsLoading}
-        itemOptions={itemOptions}
-        itemsById={itemsById}
-        mode="edit"
-        onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-        onSubmit={submitInvoice}
-      />
 
       <PaymentModal
         balanceAmount={Number(invoice?.dueAmount || 0)}

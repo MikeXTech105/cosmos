@@ -1,7 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
-import { LockKeyhole, Mail, RotateCcw, ShieldCheck, User, X } from "lucide-react";
-import { memo, useEffect, useMemo } from "react";
+import {
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  LockKeyhole,
+  Mail,
+  RotateCcw,
+  Save,
+  ShieldCheck,
+  User,
+  UserPlus,
+  X,
+} from "lucide-react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -112,6 +124,7 @@ const UserModal = ({
   user,
 }) => {
   const isEdit = mode === "edit";
+  const [showPassword, setShowPassword] = useState(false);
   const schema = useMemo(() => userSchema(mode), [mode]);
   const defaultRoleId = useMemo(
     () => getPrimaryRoleId(user, roleOptions),
@@ -136,6 +149,11 @@ const UserModal = ({
     }
   }, [defaultRoleId, isOpen, mode, reset, user]);
 
+  const closeModal = () => {
+    setShowPassword(false);
+    onClose();
+  };
+
   const submitForm = async (values) => {
     const selectedRole = roleOptions.find((role) => {
       return String(role.id) === String(values.roleId);
@@ -159,6 +177,7 @@ const UserModal = ({
 
     try {
       await onSubmit(payload);
+      setShowPassword(false);
     } catch (error) {
       applyApiErrorsToForm({
         error,
@@ -172,6 +191,8 @@ const UserModal = ({
   const hasRoleOptions = roleOptions.length > 0;
   const rolesUnavailable = !hasRoleOptions && (isRolesLoading || Boolean(rolesError));
   const submitDisabled = isSubmitting || !hasRoleOptions;
+  const roleStatusId = "role-availability";
+  const roleStatusVisible = isRolesLoading || Boolean(rolesError) || !hasRoleOptions;
 
   return (
     <AnimatePresence>
@@ -181,7 +202,7 @@ const UserModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onMouseDown={onClose}
+          onMouseDown={closeModal}
         >
           <motion.section
             role="dialog"
@@ -216,7 +237,7 @@ const UserModal = ({
 
               <button
                 type="button"
-                onClick={onClose}
+                onClick={closeModal}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Close user modal"
               >
@@ -273,6 +294,7 @@ const UserModal = ({
                           id="roleId"
                           label="Role"
                           required
+                          aria-describedby={roleStatusVisible ? roleStatusId : undefined}
                           disabled={rolesUnavailable}
                           error={errors.roleId?.message}
                           value={field.value}
@@ -290,16 +312,59 @@ const UserModal = ({
                         />
                       )}
                     />
+                    {isRolesLoading && !hasRoleOptions && (
+                      <p
+                        id={roleStatusId}
+                        role="status"
+                        className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500"
+                      >
+                        <LoaderCircle className="h-3.5 w-3.5 animate-spin text-brand" />
+                        Preparing access roles…
+                      </p>
+                    )}
+                    {isRolesLoading && hasRoleOptions && (
+                      <p
+                        id={roleStatusId}
+                        role="status"
+                        className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500"
+                      >
+                        <LoaderCircle className="h-3.5 w-3.5 animate-spin text-brand" />
+                        Refreshing access roles…
+                      </p>
+                    )}
                     {rolesError && (
-                      <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-inset ring-red-100">
-                        <span>{rolesError}</span>
+                      <div
+                        id={roleStatusId}
+                        role="alert"
+                        className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700 ring-1 ring-inset ring-red-100"
+                      >
+                        <span className="leading-4">{rolesError}</span>
                         <button
                           type="button"
                           onClick={onRetryRoles}
-                          className="inline-flex items-center gap-1 font-bold"
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 font-bold transition-colors hover:bg-red-100"
                         >
                           <RotateCcw className="h-3.5 w-3.5" />
                           Retry
+                        </button>
+                      </div>
+                    )}
+                    {!isRolesLoading && !rolesError && !hasRoleOptions && (
+                      <div
+                        id={roleStatusId}
+                        role="status"
+                        className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-100"
+                      >
+                        <span className="leading-4">
+                          No roles are available yet. Refresh access roles to continue.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={onRetryRoles}
+                          className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 font-bold transition-colors hover:bg-amber-100"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Refresh
                         </button>
                       </div>
                     )}
@@ -353,17 +418,31 @@ const UserModal = ({
                         <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                         <input
                           id="password"
-                          type="password"
-                          className={`${inputClassName} pl-9`}
+                          type={showPassword ? "text" : "password"}
+                          className={`${inputClassName} pl-9 pr-10`}
                           placeholder="Minimum 8 characters"
+                          autoComplete="new-password"
                           {...register("password")}
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((visible) => !visible)}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          aria-pressed={showPassword}
+                          className="absolute right-1.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                       <FieldError error={errors.password?.message} />
                     </div>
                   )}
 
-                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <label className="sm:col-span-2 flex cursor-pointer items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-all hover:border-slate-300 hover:bg-slate-50/80 focus-within:border-brand/40 focus-within:ring-2 focus-within:ring-brand/10">
                     <span>
                       <span className="block text-sm font-semibold text-slate-900">
                         Active account
@@ -374,16 +453,17 @@ const UserModal = ({
                     </span>
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-brand"
+                      className="peer sr-only"
                       {...register("isActive")}
                     />
+                    <span className="relative h-6 w-11 shrink-0 rounded-full bg-slate-300 shadow-inner transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-brand/30 peer-focus-visible:ring-offset-2" />
                   </label>
                 </div>
 
                 <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                   <button
                     type="button"
-                    onClick={onClose}
+                    onClick={closeModal}
                     className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50"
                   >
                     Cancel
@@ -391,13 +471,27 @@ const UserModal = ({
                   <button
                     type="submit"
                     disabled={submitDisabled}
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                    aria-busy={isSubmitting || undefined}
+                    aria-describedby={!hasRoleOptions ? roleStatusId : undefined}
+                    title={!hasRoleOptions ? "A role is required before this account can be saved." : undefined}
+                    className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-xl bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {isSubmitting
-                      ? "Saving..."
-                      : isEdit
-                        ? "Save Changes"
-                        : "Create User"}
+                    {isSubmitting ? (
+                      <>
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        Saving…
+                      </>
+                    ) : isEdit ? (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Save Changes
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        Create User
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

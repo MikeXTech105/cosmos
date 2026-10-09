@@ -73,13 +73,17 @@ export const normalizeRoute = (route) => {
 
 export const getPageLabel = (page) => {
   return (
-    page?.pageName ??
     page?.displayName ??
-    page?.name ??
-    page?.title ??
     page?.label ??
+    page?.title ??
+    page?.pageName ??
+    page?.name ??
     ""
   );
+};
+
+export const getPageName = (page) => {
+  return page?.pageName ?? page?.name ?? "";
 };
 
 export const getPageRoute = (page) => {
@@ -111,14 +115,27 @@ export const normalizePermissionPage = (page) => {
   };
 };
 
+const findUniquePageByName = (pageList, normalizedName) => {
+  if (!normalizedName) {
+    return null;
+  }
+
+  const nameMatches = pageList.filter((page) => {
+    return normalizeText(getPageName(page)) === normalizedName;
+  });
+
+  return nameMatches.length === 1 ? nameMatches[0] : null;
+};
+
 export const findPermissionPage = (pages, target) => {
   const pageList = Array.isArray(pages) ? pages.filter(Boolean) : [];
   const normalizedTarget = {
     id: normalizeIdentifier(typeof target === "string" ? "" : target?.id),
     label: normalizeText(
-      typeof target === "string"
-        ? target
-        : target?.pageName ?? target?.label ?? target?.name,
+      typeof target === "string" ? target : target?.label ?? target?.name,
+    ),
+    pageName: normalizeText(
+      typeof target === "string" ? "" : target?.pageName,
     ),
     route: normalizeRoute(typeof target === "string" ? "" : target?.route),
   };
@@ -134,10 +151,26 @@ export const findPermissionPage = (pages, target) => {
   }
 
   if (normalizedTarget.route) {
-    return (
-      pageList.find((page) => getPageRoute(page) === normalizedTarget.route) ??
-      null
-    );
+    const routeMatch = pageList.find((page) => {
+      return getPageRoute(page) === normalizedTarget.route;
+    });
+
+    if (routeMatch) {
+      return routeMatch;
+    }
+  }
+
+  if (normalizedTarget.pageName) {
+    // The backend owns each page's route string and may store it differently
+    // from the app router (or leave it empty). An explicit backend name is the
+    // stable fallback, but it must identify exactly one page.
+    return findUniquePageByName(pageList, normalizedTarget.pageName);
+  }
+
+  if (normalizedTarget.route) {
+    // An explicit route mismatch must never fall through to an editable display
+    // label; without a stable backend name the target is ambiguous.
+    return null;
   }
 
   if (!normalizedTarget.label) {
@@ -189,42 +222,79 @@ const getActionCodeAliases = (action) => {
   return [String(action).toLowerCase()];
 };
 
-export const hasPageCapability = (page, { action, resource } = {}) => {
+// The backend permission model (AuthLoginPagePermissionDto /
+// PermissionsPermissionUpsertDto) only stores six flags per page:
+// canView, canCreate, canEdit, canDelete, canExport, canApprove. Screens
+// across the app gate finer-grained actions (activate/deactivate a user,
+// assign a role, confirm/cancel/convert a document, record a payment,
+// open settings) that have no dedicated backend flag, so without a
+// fallback those buttons stay permanently locked for every non-SuperAdmin
+// role regardless of what an admin grants on the Permissions screen. Map
+// each of those actions onto the closest real flag until the backend
+// exposes dedicated ones.
+const ACTION_FALLBACK = {
+  activate: "update",
+  deactivate: "update",
+  assignRole: "update",
+  settings: "update",
+  confirm: "approve",
+  cancel: "approve",
+  convert: "approve",
+  payment: "approve",
+};
+
+export const hasPageCapability = (page, { action, resource } = {}, _visited) => {
   if (!page) {
     return false;
   }
 
   const normalizedAction = normalizeAction(action);
+  const visited = _visited ?? new Set();
+
+  if (visited.has(normalizedAction)) {
+    return false;
+  }
+
+  visited.add(normalizedAction);
+
   const explicitCapability = getExplicitBooleanCapability(page, normalizedAction);
 
   if (explicitCapability !== null) {
     return explicitCapability;
   }
 
-  if (!Array.isArray(page.permissions)) {
-    return false;
+  if (Array.isArray(page.permissions)) {
+    const resources = (Array.isArray(resource) ? resource : [resource])
+      .map(normalizePermissionCode)
+      .filter(Boolean);
+    const permissionSet = new Set(page.permissions.map(normalizePermissionCode));
+    const actionAliases = getActionCodeAliases(normalizedAction);
+    const matched =
+      resources.length === 0
+        ? Array.from(permissionSet).some((permissionCode) => {
+            const separatorIndex = permissionCode.lastIndexOf(".");
+            const permissionAction = permissionCode.slice(separatorIndex + 1);
+
+            return separatorIndex > 0 && actionAliases.includes(permissionAction);
+          })
+        : resources.some((resourceName) => {
+            return actionAliases.some((actionName) => {
+              return permissionSet.has(`${resourceName}.${actionName}`);
+            });
+          });
+
+    if (matched) {
+      return true;
+    }
   }
 
-  const resources = (Array.isArray(resource) ? resource : [resource])
-    .map(normalizePermissionCode)
-    .filter(Boolean);
-  const permissionSet = new Set(page.permissions.map(normalizePermissionCode));
-  const actionAliases = getActionCodeAliases(normalizedAction);
+  const fallbackAction = ACTION_FALLBACK[normalizedAction];
 
-  if (resources.length === 0) {
-    return Array.from(permissionSet).some((permissionCode) => {
-      const separatorIndex = permissionCode.lastIndexOf(".");
-      const permissionAction = permissionCode.slice(separatorIndex + 1);
-
-      return separatorIndex > 0 && actionAliases.includes(permissionAction);
-    });
+  if (fallbackAction) {
+    return hasPageCapability(page, { action: fallbackAction, resource }, visited);
   }
 
-  return resources.some((resourceName) => {
-    return actionAliases.some((actionName) => {
-      return permissionSet.has(`${resourceName}.${actionName}`);
-    });
-  });
+  return false;
 };
 
 export const canViewPermission = (page, resource) => {

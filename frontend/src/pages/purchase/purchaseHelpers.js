@@ -127,6 +127,21 @@ const PURCHASE_ORDER_STATUS_META = {
   },
 };
 
+const PURCHASE_PAYMENT_STATUS_META = {
+  [PURCHASE_PAYMENT_STATUS.UNPAID]: {
+    label: "Unpaid",
+    className: "bg-red-50 text-red-700 ring-red-200",
+  },
+  [PURCHASE_PAYMENT_STATUS.PARTIAL]: {
+    label: "Partial",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  [PURCHASE_PAYMENT_STATUS.PAID]: {
+    label: "Paid",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
+};
+
 export const getPurchaseStatusMeta = (status, kind = "document") => {
   const statusMeta = kind === "order" ? PURCHASE_ORDER_STATUS_META : PURCHASE_DOCUMENT_STATUS_META;
 
@@ -140,6 +155,15 @@ export const getPurchaseStatusMeta = (status, kind = "document") => {
 
 export const getPurchaseStatusOptions = (kind = "document") =>
   kind === "order" ? PURCHASE_ORDER_STATUS_OPTIONS : PURCHASE_DOCUMENT_STATUS_OPTIONS;
+
+export const getPaymentStatusMeta = (status) => {
+  return (
+    PURCHASE_PAYMENT_STATUS_META[Number(status)] ?? {
+      label: status === null || status === undefined ? "-" : `Payment ${status}`,
+      className: "bg-slate-50 text-slate-600 ring-slate-200",
+    }
+  );
+};
 
 export const getPaymentModeLabel = (mode) => {
   return (

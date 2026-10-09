@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
+import CosmosBrand from "../branding/CosmosBrand";
 import { useSidebar } from "../../hooks/useSidebar";
 import useSidebarTheme from "../../hooks/useSidebarTheme";
 import { getDisplayName, getInitial, getRoleName } from "../../utils/userDisplay";
@@ -34,55 +35,11 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
           classes.footer,
         ].join(" ")}
       >
-        <div
-          aria-label="COSMOS — A WEWEL product"
-          className="flex min-w-0 select-none flex-col items-center py-1 text-center"
-          role="img"
-        >
-          <div aria-hidden="true" className="flex items-center leading-none">
-            <span
-              className={[
-                "font-display text-[22px] font-extrabold tracking-[0.075em]",
-                classes.brandTitle,
-              ].join(" ")}
-            >
-              COSM
-            </span>
-            <span className="relative ml-0.5 mr-1 h-5 w-5 shrink-0 text-brand">
-              <span className="absolute inset-[2px] rounded-full border-2 border-current" />
-              <span className="absolute -inset-x-0.5 top-1/2 h-[8px] -translate-y-1/2 rotate-[-18deg] rounded-[50%] border border-brand/60" />
-              <span className="absolute right-[-1px] top-[1px] h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_7px_var(--app-accent)]" />
-            </span>
-            <span
-              className={[
-                "font-display text-[22px] font-extrabold",
-                classes.brandTitle,
-              ].join(" ")}
-            >
-              S
-            </span>
-          </div>
-
-          <div
-            aria-hidden="true"
-            className="mt-1.5 flex items-center justify-center gap-1.5"
-          >
-            <span
-              className="h-px w-5 bg-gradient-to-r from-transparent to-brand/80"
-            />
-            <span
-              className={[
-                "whitespace-nowrap text-[7px] font-semibold uppercase tracking-[0.2em]",
-                classes.brandSubtitle,
-              ].join(" ")}
-            >
-              A WEWEL PRODUCT
-            </span>
-            <span
-              className="h-px w-5 bg-gradient-to-r from-brand/80 to-transparent"
-            />
-          </div>
-        </div>
+        <CosmosBrand
+          className="py-1"
+          subtitleClassName={classes.brandSubtitle}
+          titleClassName={classes.brandTitle}
+        />
         {closeAction && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {closeAction}

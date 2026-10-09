@@ -1,5 +1,6 @@
 import { expenseReportsService } from "../../services/reports/expenseReportsService";
 import { inventoryReportsService } from "../../services/reports/inventoryReportsService";
+import { manufacturingReportsService } from "../../services/reports/manufacturingReportsService";
 import { partyReportsService } from "../../services/reports/partyReportsService";
 import { purchaseReportsService } from "../../services/reports/purchaseReportsService";
 import { salesReportsService } from "../../services/reports/salesReportsService";
@@ -22,6 +23,10 @@ import {
   stockSummaryColumns,
   stockValuationColumns,
 } from "./columns/inventoryColumns";
+import {
+  manufacturingHistoryColumns,
+  materialConsumptionColumns,
+} from "./columns/manufacturingColumns";
 import {
   payableAgingColumns,
   partyLedgerColumns,
@@ -76,6 +81,13 @@ export const reportGroups = [
     route: "/reports/inventory",
   },
   {
+    description: "Production history and raw-material consumption.",
+    icon: "manufacturing",
+    id: "manufacturing",
+    label: "Manufacturing",
+    route: "/reports/manufacturing",
+  },
+  {
     description: "Party ledgers, statements and aging reports.",
     icon: "users",
     id: "party",
@@ -106,6 +118,7 @@ const party = (label, param = "PartyId") => ({
   param,
 });
 const item = "item";
+const finishedItem = { key: "item", param: "FinishedItemId" };
 const itemLedgerItem = {
   key: "item",
   param: "itemId",
@@ -331,7 +344,7 @@ export const reportRegistry = [
     description: "Purchase bill register with supplier, status and balances.",
     exportable: true,
     fetcher: purchaseReportsService.getPurchaseBills,
-    filters: [dateRange, search, party("Supplier"), status("purchaseDocument"), paymentStatus],
+    filters: [dateRange, search, party("Supplier"), status("purchaseDocument"), "purchasePaymentStatus"],
     group: "purchase",
     icon: "receipt",
     id: "purchase-bills",
@@ -661,6 +674,51 @@ export const reportRegistry = [
     title: "Slow Moving Items",
   },
   {
+    columns: manufacturingHistoryColumns,
+    defaultSort: { by: "productionDate", dir: "desc" },
+    description: "Production drafts, posted runs, reversals and finished quantities.",
+    exportable: true,
+    fetcher: manufacturingReportsService.getProductionHistory,
+    filters: [dateRange, search, finishedItem, status("manufacturingProduction")],
+    group: "manufacturing",
+    icon: "production",
+    id: "manufacturing-history",
+    kind: "table",
+    paginated: true,
+    permission: "Manufacturing.Reports",
+    route: "/reports/manufacturing/history",
+    slug: "history",
+    summaryKpis: [
+      { format: "number", key: "productionCount", label: "Production Runs" },
+      { format: "number", key: "postedCount", label: "Posted" },
+      { format: "number", key: "cancelledCount", label: "Cancelled" },
+      { format: "qty", key: "totalProducedQuantity", label: "Produced Quantity" },
+    ],
+    title: "Manufacturing History",
+  },
+  {
+    columns: materialConsumptionColumns,
+    defaultSort: { by: "productionDate", dir: "desc" },
+    description: "Raw materials consumed from each production BOM snapshot.",
+    exportable: true,
+    fetcher: manufacturingReportsService.getConsumptionHistory,
+    filters: [dateRange, search, finishedItem, status("manufacturingProduction")],
+    group: "manufacturing",
+    icon: "boxes",
+    id: "manufacturing-consumption",
+    kind: "table",
+    paginated: false,
+    permission: "Manufacturing.Reports",
+    route: "/reports/manufacturing/consumption",
+    slug: "consumption",
+    summaryKpis: [
+      { format: "number", key: "productionCount", label: "Production Runs" },
+      { format: "number", key: "materialLineCount", label: "Material Lines" },
+      { format: "qty", key: "totalConsumedQuantity", label: "Consumed Quantity" },
+    ],
+    title: "Raw Material Consumption",
+  },
+  {
     columns: partyLedgerColumns,
     defaultSort: { by: "entryDate", dir: "desc" },
     description: "Debit, credit and running balance entries for parties.",
@@ -837,7 +895,7 @@ export const reportRegistry = [
     description: "Income, expense and net result with all non-P&L movements excluded.",
     exportable: true,
     fetcher: rojmelReportService.getIncomeExpense,
-    filters: [dateRange, rojmelWallet],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelStatus, search],
     group: "rojmel",
     icon: "chartBar",
     id: "rojmel-income-expense",
@@ -861,7 +919,7 @@ export const reportRegistry = [
     description: "Expense totals and counts grouped by cash-book category.",
     exportable: true,
     fetcher: rojmelReportService.getCategoryExpense,
-    filters: [dateRange, rojmelWallet, rojmelCategory],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelStatus, search],
     group: "rojmel",
     icon: "chartPie",
     id: "rojmel-category-expense",
@@ -894,7 +952,7 @@ export const reportRegistry = [
     description: "Daily income, expense and net cash result for the period.",
     exportable: true,
     fetcher: rojmelReportService.getDailyCashFlow,
-    filters: [dateRange, rojmelWallet],
+    filters: [dateRange, rojmelWallet, rojmelCategory, rojmelTransactionType, rojmelStatus, search],
     group: "rojmel",
     icon: "chartBar",
     id: "rojmel-daily-cash-flow",
@@ -910,12 +968,12 @@ export const reportRegistry = [
     description: "Current balances for wallets linked to users.",
     exportable: true,
     fetcher: rojmelReportService.getUserWalletBalances,
-    filters: [search],
+    filters: [rojmelWallet, search],
     group: "rojmel",
     icon: "wallets",
     id: "rojmel-user-wallet-balances",
     kind: "table",
-    permission: "Rojmel.Admin/View",
+    permission: "Rojmel.Admin",
     permissionRoute: "/rojmel/admin",
     route: "/rojmel/reports/user-wallet-balances",
     slug: "user-wallet-balances",
@@ -931,6 +989,26 @@ export const getReportById = (reportId) => reportById[reportId] ?? null;
 
 export const getReportGroup = (groupId) => {
   return reportGroups.find((group) => group.id === groupId) ?? null;
+};
+
+const REPORT_GROUP_PERMISSION_NAMES = {
+  expense: "Reports.Expenses",
+  inventory: "Reports.Inventory",
+  manufacturing: "Manufacturing.Reports",
+  party: "Reports.Parties",
+  purchase: "Reports.Purchase",
+  sales: "Reports.Sales",
+};
+
+export const getReportPermissionTarget = (report) => {
+  const pageName = REPORT_GROUP_PERMISSION_NAMES[report?.group] ?? report?.permission;
+  const groupRoute = getReportGroup(report?.group)?.route;
+
+  return {
+    label: report?.title ?? pageName,
+    pageName,
+    route: report?.permissionRoute ?? groupRoute ?? report?.route,
+  };
 };
 
 export const getReportsByGroup = (groupId) => {

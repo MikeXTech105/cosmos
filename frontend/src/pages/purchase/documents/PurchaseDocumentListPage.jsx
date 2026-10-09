@@ -42,6 +42,7 @@ import {
   getBalanceAmount,
   getDocumentNumber,
   getPaidAmount,
+  getPaymentStatusMeta,
   getRecordTotal,
   getPurchaseStatusMeta,
   getSuccessMessage,
@@ -810,6 +811,11 @@ const PurchaseDocumentListPage = ({ config }) => {
                 <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
                   Status
                 </th>
+                {config.selectorKey === "purchaseBills" && (
+                  <th className="border-b border-slate-200 px-3 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Payment
+                  </th>
+                )}
                 <th className="w-52 border-b border-slate-200 px-3 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
@@ -819,7 +825,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               {state.loading ? (
                 Array.from({ length: 6 }, (_, index) => (
                   <tr key={index}>
-                    <td colSpan={9} className="px-3 py-3">
+                    <td colSpan={config.selectorKey === "purchaseBills" ? 10 : 9} className="px-3 py-3">
                       <div className="h-12 animate-pulse rounded-xl bg-slate-100" />
                     </td>
                   </tr>
@@ -827,7 +833,7 @@ const PurchaseDocumentListPage = ({ config }) => {
               ) : state.error || state.list.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={config.selectorKey === "purchaseBills" ? 10 : 9}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     {state.error || `No ${config.pluralLabel} found.`}
@@ -860,6 +866,11 @@ const PurchaseDocumentListPage = ({ config }) => {
                     <td className="border-b border-slate-100 px-3 py-3">
                       <PurchaseStatusPill meta={getPurchaseStatusMeta(record.status, config.statusKind)} />
                     </td>
+                    {config.selectorKey === "purchaseBills" && (
+                      <td className="border-b border-slate-100 px-3 py-3">
+                        <PurchaseStatusPill meta={getPaymentStatusMeta(record.paymentStatus)} />
+                      </td>
+                    )}
                     <td className="border-b border-slate-100 px-3 py-3 text-right">
                       <div className="flex items-center justify-end gap-0.5">
                         <ActionButton

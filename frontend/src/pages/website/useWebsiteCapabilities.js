@@ -7,6 +7,7 @@ const useWebsitePageCapabilities = (name, actions = CONTENT_ACTIONS) => {
   const capabilities = useCapabilities({
     actions,
     label: `WebsiteManagement.${name}`,
+    pageName: `WebsiteManagement.${name}`,
     resource: `WebsiteManagement.${name}`,
   });
   return {

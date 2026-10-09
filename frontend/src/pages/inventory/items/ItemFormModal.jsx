@@ -12,8 +12,10 @@ import AppImageUpload from "../../../components/common/AppImageUpload";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import useManufacturingPreference from "../../../hooks/useManufacturingPreference";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { itemSchema } from "../../../utils/validationSchemas";
+import ItemManufacturingTab from "./ItemManufacturingTab";
 import {
   buildItemPayload,
   generateItemCode,
@@ -27,7 +29,7 @@ import {
 const ITEM_FIELDS = [
   "name", "itemCode", "barcode", "categoryId", "unitId", "itemType",
   "procurementClassification", "purchasePrice", "salesPrice", "hsnCode",
-  "gstRate", "trackInventory", "openingStock", "openingStockValue",
+  "gstRate", "trackInventory", "isManufactured", "openingStock", "openingStockValue",
   "currentStock", "reservedStock", "minimumStock", "description", "isActive",
   "imageFile",
 ];
@@ -192,6 +194,9 @@ const ItemFormModal = ({
   });
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
+  const isManufactured = useWatch({ control, name: "isManufactured" });
+  const isActive = useWatch({ control, name: "isActive" });
+  const { manufacturingEnabled } = useManufacturingPreference();
   const itemName = useWatch({ control, name: "name" });
 
   useEffect(() => {
@@ -201,7 +206,8 @@ const ItemFormModal = ({
   }, [isOpen, item, reset]);
 
   const visibleTab =
-    itemType === ITEM_TYPE.SERVICE && activeTab === "stock"
+    (itemType === ITEM_TYPE.SERVICE && activeTab !== "pricing")
+      || (!manufacturingEnabled && activeTab === "manufacturing")
       ? "pricing"
       : activeTab;
 
@@ -230,7 +236,7 @@ const ItemFormModal = ({
     <AppModal
       isBusy={isSubmitting}
       isOpen={isOpen}
-      maxWidth="max-w-6xl"
+      maxWidth="max-w-[1480px]"
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">
@@ -468,6 +474,9 @@ const ItemFormModal = ({
                   ...(itemType === ITEM_TYPE.PRODUCT
                     ? [{ id: "stock", label: "Stock" }]
                     : []),
+                  ...(itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled
+                    ? [{ id: "manufacturing", label: "Manufacturing" }]
+                    : []),
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -595,6 +604,20 @@ const ItemFormModal = ({
               </div>
             )}
 
+            {visibleTab === "manufacturing" && itemType === ITEM_TYPE.PRODUCT && manufacturingEnabled && (
+              <ItemManufacturingTab
+                disabled={isSubmitting}
+                enabled={Boolean(isManufactured)}
+                isActive={Boolean(isActive)}
+                item={isEdit ? item : null}
+                trackInventory={Boolean(trackInventory)}
+                onEnabledChange={(value) => setValue("isManufactured", value, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })}
+              />
+            )}
+
             <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
               <div>
                 <label
@@ -616,18 +639,20 @@ const ItemFormModal = ({
                 )}
               </div>
 
-              <Controller
-                control={control}
-                name="isActive"
-                render={({ field }) => (
-                  <ToggleRow
-                    checked={field.value}
-                    label="Active item"
-                    description="Active items are available for inventory and transaction workflows."
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+              <div>
+                <Controller
+                  control={control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <ToggleRow
+                      checked={field.value}
+                      label="Active item"
+                      description="Active items are available for inventory and transaction workflows."
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
             </section>
           </div>
 

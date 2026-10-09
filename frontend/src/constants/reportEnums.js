@@ -6,6 +6,7 @@ import {
 import {
   PAYMENT_MODE,
   PURCHASE_DOCUMENT_STATUS,
+  PURCHASE_PAYMENT_STATUS,
 } from "../pages/purchase/purchaseHelpers";
 
 export const REPORT_STATUS = {
@@ -16,6 +17,11 @@ export const REPORT_STATUS = {
 export const REPORT_PAYMENT_STATUS = SALES_PAYMENT_STATUS;
 
 export const REPORT_STATUS_OPTIONS = {
+  manufacturingProduction: [
+    { label: "Draft", value: 1 },
+    { label: "Posted", value: 2 },
+    { label: "Cancelled", value: 3 },
+  ],
   purchaseDocument: [
     { label: "Draft", value: PURCHASE_DOCUMENT_STATUS.DRAFT },
     { label: "Confirmed", value: PURCHASE_DOCUMENT_STATUS.CONFIRMED },
@@ -36,6 +42,12 @@ export const REPORT_PAYMENT_STATUS_OPTIONS = [
   { label: "Unpaid", value: SALES_PAYMENT_STATUS.UNPAID },
   { label: "Partially paid", value: SALES_PAYMENT_STATUS.PARTIALLY_PAID },
   { label: "Paid", value: SALES_PAYMENT_STATUS.PAID },
+];
+
+export const REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS = [
+  { label: "Unpaid", value: PURCHASE_PAYMENT_STATUS.UNPAID },
+  { label: "Partial", value: PURCHASE_PAYMENT_STATUS.PARTIAL },
+  { label: "Paid", value: PURCHASE_PAYMENT_STATUS.PAID },
 ];
 
 export const REPORT_PAYMENT_MODE_OPTIONS = [
@@ -89,6 +101,10 @@ export const REPORT_STATUS_PILL_MAP = {
 
 export const REPORT_PAYMENT_STATUS_PILL_MAP = toReportPillMap(
   REPORT_PAYMENT_STATUS_OPTIONS,
+);
+
+export const REPORT_PURCHASE_PAYMENT_STATUS_PILL_MAP = toReportPillMap(
+  REPORT_PURCHASE_PAYMENT_STATUS_OPTIONS,
 );
 
 export const REPORT_PAYMENT_MODE_MAP = toReportPillMap(

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppInput from "../../../components/common/AppInput";
+import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import { itemService } from "../../../services/inventory/itemService";
@@ -307,28 +307,13 @@ const PurchaseReportsPage = () => {
         <div className="grid gap-3 md:grid-cols-[160px_160px_minmax(240px,1fr)_auto]">
           {showDateFilters ? (
             <>
-              <AppInput
-                type="date"
-                value={dateFilters.FromDate}
-                onChange={(event) =>
-                  dispatch(
-                    setPurchaseReportFilters({ FromDate: event.target.value }),
-                  )
-                }
-                aria-label="From date"
-                className="h-10"
-              />
-              <AppInput
-                type="date"
-                value={dateFilters.ToDate}
-                onChange={(event) =>
-                  dispatch(
-                    setPurchaseReportFilters({ ToDate: event.target.value }),
-                  )
-                }
-                aria-label="To date"
-                className="h-10"
-              />
+<AppDateRangeFilter
+            className="w-full sm:col-span-2 sm:min-w-[260px]"
+            fromDate={dateFilters.FromDate}
+            toDate={dateFilters.ToDate}
+            allowLifetime={false}
+            onChange={({ fromDate, toDate }) => dispatch(setPurchaseReportFilters({ FromDate: fromDate, ToDate: toDate }))}
+          />
             </>
           ) : (
             <>

@@ -140,7 +140,9 @@ const WalletFormModal = ({ isOpen, mode, onClose, onSubmit, users, wallet }) => 
               disabled={isView}
               error={errors.walletCode?.message}
               label="Wallet Code"
-              placeholder="Auto if blank"
+              helperText="Required by the wallet record; leave blank to auto-generate."
+              placeholder="Auto-generated if blank"
+              requiredIndicator
               {...register("walletCode")}
             />
           )}

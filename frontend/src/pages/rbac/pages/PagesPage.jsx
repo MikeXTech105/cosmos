@@ -1,6 +1,7 @@
 import { AlertTriangle, FolderTree, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -8,13 +9,9 @@ import AppModal from "../../../components/common/AppModal";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
-import useLatestRequest from "../../../hooks/useLatestRequest";
-import { getApiStatus } from "../../../utils/apiError";
 import {
   clearRbacPageFilters,
-  createRbacPage,
   deleteRbacPage,
-  fetchRbacPageById,
   fetchRbacPages,
   setRbacPageFilters,
   setRbacPageGroupsExpanded,
@@ -22,31 +19,12 @@ import {
   setRbacPageViewMode,
   toggleRbacPageGroup,
   toggleRbacPageTreeNode,
-  updateRbacPage,
 } from "../../../store/slices/rbac/pageSlice";
 import PageFilters from "./PageFilters";
-import PageFormModal from "./PageFormModal";
 import PageStats from "./PageStats";
 import PageTable from "./PageTable";
 import PageTree from "./PageTree";
-import {
-  extractSinglePage,
-  filterPages,
-  getDescendantIds,
-  getPageErrorMessage,
-  getTopLevelCount,
-  normalizePage,
-  toCreatePagePayload,
-  toUpdatePagePayload,
-} from "./pageHelpers";
-
-const initialModalState = {
-  initialParentId: "",
-  isLoading: false,
-  isOpen: false,
-  mode: "create",
-  page: null,
-};
+import { filterPages, getDescendantIds, getPageErrorMessage, getTopLevelCount } from "./pageHelpers";
 
 const initialConfirmationState = {
   isOpen: false,
@@ -126,17 +104,12 @@ const PagesPage = () => {
     loading,
     viewMode,
   } = useSelector((state) => state.rbacPages);
-  const [modalState, setModalState] = useState(initialModalState);
+  const navigate = useNavigate();
   const [confirmation, setConfirmation] = useState(initialConfirmationState);
-  const detailPromiseRef = useRef(null);
-  const {
-    beginRequest: beginDetailRequest,
-    cancelAllRequests: cancelDetailRequests,
-    isLatestRequest: isLatestDetailRequest,
-  } = useLatestRequest();
 
   const capabilities = useCapabilities({
     label: "Pages",
+    pageName: "Pages",
     resource: "pages",
     route: "/rbac/pages",
   });
@@ -175,149 +148,31 @@ const PagesPage = () => {
       : 0;
   }, [confirmation.page, list]);
 
-  const closeModal = useCallback(() => {
-    cancelDetailRequests();
-    detailPromiseRef.current?.abort?.();
-    detailPromiseRef.current = null;
-    setModalState(initialModalState);
-  }, [cancelDetailRequests]);
-
-  const openCreateModal = useCallback((initialParentId = "") => {
-    if (!capabilities.canCreate) {
-      toast.error("You don't have permission to create pages.");
-      return;
-    }
-
-    cancelDetailRequests();
-    detailPromiseRef.current?.abort?.();
-    detailPromiseRef.current = null;
-    setModalState({
-      initialParentId,
-      isLoading: false,
-      isOpen: true,
-      mode: "create",
-      page: null,
-    });
-  }, [cancelDetailRequests, capabilities.canCreate]);
-
-  const openPageModal = useCallback(async (mode, page) => {
-    const allowed = mode === "edit" ? capabilities.canUpdate : capabilities.canView;
-
-    if (!allowed) {
-      toast.error("You don't have permission to open this page record.");
-      return;
-    }
-
-    setModalState({
-      initialParentId: "",
-      isLoading: true,
-      isOpen: true,
-      mode,
-      page,
-    });
-    detailPromiseRef.current?.abort?.();
-    const requestId = beginDetailRequest();
-    const detailPromise = dispatch(fetchRbacPageById(page.id));
-    detailPromiseRef.current = detailPromise;
-
-    try {
-      const response = await detailPromise.unwrap();
-      if (!isLatestDetailRequest(requestId)) return;
-      const latestPage = normalizePage(extractSinglePage(response.data));
-
-      setModalState({
-        initialParentId: "",
-        isLoading: false,
-        isOpen: true,
-        mode,
-        page: latestPage ?? page,
-      });
-    } catch (detailError) {
-      if (!isLatestDetailRequest(requestId)) return;
-      if (getApiStatus(detailError) === 404) {
-        toast.error("This page no longer exists. The list was refreshed.");
-        closeModal();
-        await loadPages();
+  const openCreateModal = useCallback(
+    (initialParentId = "") => {
+      if (!capabilities.canCreate) {
+        toast.error("You don't have permission to create pages.");
         return;
       }
-      toast.error(
-        getPageErrorMessage(detailError, "Unable to load page details."),
-      );
-      setModalState((current) =>
-        current.isOpen &&
-        current.mode === mode &&
-        String(current.page?.id) === String(page.id)
-          ? { ...current, isLoading: false }
-          : current,
-      );
-    } finally {
-      if (detailPromiseRef.current === detailPromise) {
-        detailPromiseRef.current = null;
-      }
-    }
-  }, [
-    beginDetailRequest,
-    capabilities.canUpdate,
-    capabilities.canView,
-    closeModal,
-    dispatch,
-    isLatestDetailRequest,
-    loadPages,
-  ]);
 
-  const submitPage = useCallback(async (values) => {
-    const allowed =
-      modalState.mode === "edit"
-        ? capabilities.canUpdate
-        : capabilities.canCreate;
+      navigate(initialParentId ? `/rbac/pages/new?parentId=${initialParentId}` : "/rbac/pages/new");
+    },
+    [capabilities.canCreate, navigate],
+  );
 
-    if (!allowed) {
-      toast.error("You don't have permission to save this page.");
-      return;
-    }
+  const openPageModal = useCallback(
+    (mode, page) => {
+      const allowed = mode === "edit" ? capabilities.canUpdate : capabilities.canView;
 
-    try {
-      if (modalState.mode === "edit") {
-        await dispatch(
-          updateRbacPage({
-            id: modalState.page.id,
-            payload: toUpdatePagePayload(values),
-          }),
-        ).unwrap();
-        toast.success("Page updated successfully");
-      } else {
-        await dispatch(createRbacPage(toCreatePagePayload(values))).unwrap();
-        toast.success("Page created successfully");
-      }
-
-      closeModal();
-      await dispatch(fetchRbacPages()).unwrap();
-    } catch (submitError) {
-      if (modalState.mode === "edit" && getApiStatus(submitError) === 404) {
-        toast.error("This page no longer exists. The list was refreshed.");
-        closeModal();
-        await loadPages();
+      if (!allowed) {
+        toast.error("You don't have permission to open this page record.");
         return;
       }
-      toast.error(
-        getPageErrorMessage(
-          submitError,
-          modalState.mode === "edit"
-            ? "Unable to update page."
-            : "Unable to create page.",
-          ),
-      );
-      throw submitError;
-    }
-  }, [
-    capabilities.canCreate,
-    capabilities.canUpdate,
-    closeModal,
-    dispatch,
-    loadPages,
-    modalState.mode,
-    modalState.page,
-  ]);
+
+      navigate(`/rbac/pages/${page.id}/edit`);
+    },
+    [capabilities.canUpdate, capabilities.canView, navigate],
+  );
 
   const openDeleteConfirmation = useCallback((page) => {
     if (!capabilities.canDelete) {
@@ -496,17 +351,6 @@ const PagesPage = () => {
           {viewMode === "tree" ? "Tree View" : "Grouped Table"}
         </span>
       </div>
-
-      <PageFormModal
-        initialParentId={modalState.initialParentId}
-        isLoading={modalState.isLoading}
-        isOpen={modalState.isOpen}
-        mode={modalState.mode}
-        onClose={closeModal}
-        onSubmit={submitPage}
-        page={modalState.page}
-        pages={list}
-      />
 
       <DeleteConfirmDialog
         childCount={childCount}

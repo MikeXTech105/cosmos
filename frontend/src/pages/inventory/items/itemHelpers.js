@@ -47,6 +47,7 @@ export const getItemDefaultValues = (item) => ({
   hsnCode: item?.hsnCode ?? "",
   gstRate: item?.gstRate ?? 0,
   trackInventory: item?.trackInventory ?? true,
+  isManufactured: item?.isManufactured ?? false,
   openingStock: getNumberDefaultValue(item?.openingStock),
   openingStockValue: getNumberDefaultValue(item?.openingStockValue),
   currentStock: getNumberDefaultValue(item?.currentStock),
@@ -96,6 +97,8 @@ export const buildItemPayload = (values) => {
     hsnCode: cleanString(values.hsnCode),
     gstRate: toNumber(values.gstRate),
     trackInventory: tracksStock,
+    isManufactured:
+      tracksStock && Boolean(values.isActive) && Boolean(values.isManufactured),
     openingStock: tracksStock ? toNumber(values.openingStock) : 0,
     openingStockValue: tracksStock
       ? toNumber(values.openingStockValue)

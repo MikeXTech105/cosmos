@@ -1,5 +1,5 @@
 import {
-  REPORT_PAYMENT_STATUS_PILL_MAP,
+  REPORT_PURCHASE_PAYMENT_STATUS_PILL_MAP,
   REPORT_PURCHASE_PAYMENT_MODE_MAP,
   REPORT_STATUS_PILL_MAP,
 } from "../../../constants/reportEnums";
@@ -26,7 +26,7 @@ export const purchaseBillColumns = [
     format: "pill",
     header: "Payment",
     key: "paymentStatus",
-    pillMap: REPORT_PAYMENT_STATUS_PILL_MAP,
+    pillMap: REPORT_PURCHASE_PAYMENT_STATUS_PILL_MAP,
     width: "130px",
   },
   ...amountColumns,

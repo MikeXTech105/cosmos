@@ -12,7 +12,7 @@ const PermissionGuard = ({ route, pageName, children }) => {
     action: "view",
     pages,
     roles,
-    target: { label: pageName, route },
+    target: { label: pageName, pageName, route },
     user,
   });
 

@@ -1,6 +1,7 @@
 import { Plus, RefreshCw, UsersRound } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -28,7 +29,6 @@ import {
   setHrEmployeePage,
   setHrEmployeePageSize,
   setSelectedHrEmployee,
-  updateHrEmployee,
 } from "../../../store/slices/hr/employeeSlice";
 import {
   buildHrQueryParams,
@@ -48,7 +48,6 @@ import EmployeeLifecycleModal from "./EmployeeLifecycleModal";
 import EmployeeList from "./EmployeeList";
 import EmployeeProfilePanel from "./EmployeeProfilePanel";
 import EmployeeStats from "./EmployeeStats";
-import { extractEmployeeBankDetails } from "./employeeFormMappers";
 import DepartmentFormModal from "../departments/DepartmentFormModal";
 import DesignationFormModal from "../designations/DesignationFormModal";
 import ShiftFormModal from "../shifts/ShiftFormModal";
@@ -65,7 +64,7 @@ const extractList = (response) => {
   return [];
 };
 
-const toOption = (record, idResource, labelCandidates) => {
+const toOption = (record, idResource, labelCandidates, metadata = {}) => {
   const value = getHrRecordId(record, idResource);
   const label = labelCandidates
     .map((candidate) =>
@@ -73,7 +72,7 @@ const toOption = (record, idResource, labelCandidates) => {
     )
     .find((candidate) => String(candidate ?? "").trim());
 
-  return label && value ? { label, value } : null;
+  return label && value ? { label, value, ...metadata } : null;
 };
 
 const buildEmployeeQueryParams = ({ filters, pageNumber, pageSize }) => {
@@ -96,24 +95,29 @@ const buildEmployeeQueryParams = ({ filters, pageNumber, pageSize }) => {
 
 const EmployeesPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const employeesState = useSelector((state) => state.hrEmployees);
   const capabilities = useHrCapabilities({
     label: "Employees",
+    pageName: "HR.Employee",
     resource: "employees",
     route: "/hr/employees",
   });
   const canCreateDepartment = useCreatePermission({
     label: "Departments",
+    pageName: "HR.Department",
     resource: "departments",
     route: "/hr/departments",
   });
   const canCreateDesignation = useCreatePermission({
     label: "Designations",
+    pageName: "HR.Designation",
     resource: "designations",
     route: "/hr/designations",
   });
   const canCreateShift = useCreatePermission({
     label: "Shifts",
+    pageName: "HR.Shift",
     resource: "shifts",
     route: "/hr/shifts",
   });
@@ -124,13 +128,6 @@ const EmployeesPage = () => {
   const [designationOptions, setDesignationOptions] = useState([]);
   const [shiftOptions, setShiftOptions] = useState([]);
   const [reportingManagerOptions, setReportingManagerOptions] = useState([]);
-  const [lookupsLoaded, setLookupsLoaded] = useState(false);
-  const [modal, setModal] = useState({
-    entity: null,
-    isLoading: false,
-    isOpen: false,
-    mode: "create",
-  });
   const [lookupCreateModal, setLookupCreateModal] = useState({
     department: false,
     designation: false,
@@ -206,7 +203,15 @@ const EmployeesPage = () => {
       setDesignationOptions(
         extractList(designations)
           .map((designation) =>
-            toOption(designation, "designation", ["designationName"]),
+            toOption(
+              designation,
+              "designation",
+              ["designationName"],
+              {
+                departmentId:
+                  designation.departmentId ?? designation.department?.id ?? null,
+              },
+            ),
           )
           .filter(Boolean),
       );
@@ -226,15 +231,10 @@ const EmployeesPage = () => {
           )
           .filter(Boolean),
       );
-      setLookupsLoaded(true);
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to load HR lookup data."));
     }
   }, []);
-
-  const loadLookupsIfNeeded = useCallback(() => {
-    return lookupsLoaded ? Promise.resolve() : loadLookups();
-  }, [loadLookups, lookupsLoaded]);
 
   useEffect(() => {
     void Promise.resolve().then(loadEmployees);
@@ -325,10 +325,6 @@ const EmployeesPage = () => {
     }
   }, [employeesState.list, employeesState.selected, selectEmployee]);
 
-  const closeModal = useCallback(() => {
-    setModal((current) => ({ ...current, isOpen: false }));
-  }, []);
-
   const openLookupCreate = useCallback(
     (type) => {
       const allowed = {
@@ -405,17 +401,11 @@ const EmployeesPage = () => {
       return;
     }
 
-    void loadLookupsIfNeeded();
-    setModal({
-      entity: null,
-      isLoading: false,
-      isOpen: true,
-      mode: "create",
-    });
-  }, [capabilities.canCreate, loadLookupsIfNeeded]);
+    navigate("/hr/employees/new");
+  }, [capabilities.canCreate, navigate]);
 
   const openEdit = useCallback(
-    async (employee) => {
+    (employee) => {
       if (!capabilities.canUpdate) {
         return;
       }
@@ -427,107 +417,9 @@ const EmployeesPage = () => {
         return;
       }
 
-      setModal({ entity: employee, isLoading: true, isOpen: true, mode: "edit" });
-
-      const [detailResult, bankResult] = await Promise.allSettled([
-        dispatch(fetchHrEmployeeById(id)).unwrap(),
-        dispatch(fetchHrEmployeeBankDetails(id)).unwrap(),
-        loadLookupsIfNeeded(),
-      ]);
-
-      if (detailResult.status === "fulfilled") {
-        const employeeDetail = extractHrEntity(
-          detailResult.value.data,
-          "employee",
-        );
-        const bankDetails =
-          bankResult.status === "fulfilled"
-            ? extractEmployeeBankDetails(bankResult.value.data)
-            : extractEmployeeBankDetails(employeeDetail);
-
-        setModal({
-          entity: {
-            ...employeeDetail,
-            bankDetails,
-          },
-          isLoading: false,
-          isOpen: true,
-          mode: "edit",
-        });
-        return;
-      }
-
-      toast.error(
-        getHrActionError(
-          detailResult.reason,
-          "Unable to load employee details.",
-        ),
-      );
-      setModal((current) => ({ ...current, isLoading: false }));
+      navigate(`/hr/employees/${id}/edit`);
     },
-    [capabilities.canUpdate, dispatch, loadLookupsIfNeeded],
-  );
-
-  const submitEmployee = useCallback(
-    async (payload, options = {}) => {
-      const isAllowed =
-        modal.mode === "edit"
-          ? capabilities.canUpdate
-          : capabilities.canCreate;
-
-      if (!isAllowed) {
-        return;
-      }
-
-      try {
-        const employeeId = getHrRecordId(modal.entity, "employee");
-        const response =
-          modal.mode === "edit"
-            ? await dispatch(
-                updateHrEmployee({
-                  id: employeeId,
-                  payload,
-                }),
-              ).unwrap()
-            : await dispatch(createHrEmployee(payload)).unwrap();
-
-        if (
-          modal.mode === "edit" &&
-          employeeId &&
-          options.shouldSaveBankDetails
-        ) {
-          await dispatch(
-            saveHrEmployeeBankDetails({
-              id: employeeId,
-              payload: options.bankDetails,
-            }),
-          ).unwrap();
-        }
-
-        toast.success(
-          getHrSuccessMessage(
-            response,
-            modal.mode === "edit"
-              ? "Employee updated successfully"
-              : "Employee created successfully",
-          ),
-        );
-        closeModal();
-        await loadEmployees();
-      } catch (error) {
-        toast.error(getHrActionError(error, "Unable to save employee."));
-        throw error;
-      }
-    },
-    [
-      capabilities.canCreate,
-      capabilities.canUpdate,
-      closeModal,
-      dispatch,
-      loadEmployees,
-      modal.entity,
-      modal.mode,
-    ],
+    [capabilities.canUpdate, navigate],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -865,27 +757,6 @@ const EmployeesPage = () => {
           shiftOptions={shiftOptions}
         />
       </div>
-
-      <EmployeeFormModal
-        canCreateDepartment={canCreateDepartment}
-        canCreateDesignation={canCreateDesignation}
-        canCreateReportingManager={capabilities.canCreate}
-        canCreateShift={canCreateShift}
-        departmentOptions={departmentOptions}
-        designationOptions={designationOptions}
-        employee={modal.entity}
-        isLoading={modal.isLoading}
-        isOpen={modal.isOpen}
-        mode={modal.mode}
-        onClose={closeModal}
-        onCreateDepartment={() => openLookupCreate("department")}
-        onCreateDesignation={() => openLookupCreate("designation")}
-        onCreateReportingManager={() => openLookupCreate("employee")}
-        onCreateShift={() => openLookupCreate("shift")}
-        onSubmit={submitEmployee}
-        reportingManagerOptions={reportingManagerOptions}
-        shiftOptions={shiftOptions}
-      />
 
       <DepartmentFormModal
         department={null}

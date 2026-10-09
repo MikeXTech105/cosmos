@@ -16,6 +16,42 @@ import {
   getApiStatus,
 } from "../../../utils/apiError";
 import { sortWebsiteAnnouncements } from "../../../utils/websiteContent";
+import { getMediaUrl, resolveMediaUrl } from "../../../utils/mediaUrl";
+
+const normalizeWebsiteRecordMedia = (record) => {
+  if (!record || typeof record !== "object") return record;
+
+  const media = Array.isArray(record.media)
+    ? record.media.map((item) => ({
+        ...item,
+        publicUrl: resolveMediaUrl(
+          item?.publicUrl ?? item?.url ?? item?.imageUrl ?? item?.path,
+        ),
+      }))
+    : record.media;
+  const primaryFromMedia = media?.find((item) => item?.isPrimary)?.publicUrl
+    ?? media?.find((item) => item?.publicUrl)?.publicUrl;
+
+  return {
+    ...record,
+    coverImageUrl: getMediaUrl(record, [
+      "coverImageUrl",
+      "coverImageURL",
+      "coverUrl",
+      "imageUrl",
+      "imagePath",
+    ]),
+    media,
+    primaryImageUrl:
+      getMediaUrl(record, [
+        "primaryImageUrl",
+        "primaryImageURL",
+        "imageUrl",
+        "imagePath",
+        "thumbnailUrl",
+      ]) || primaryFromMedia || "",
+  };
+};
 
 const serializeError = (error, fallback) => ({
   correlationId: getApiCorrelationId(error) || null,
@@ -115,7 +151,7 @@ const getPage = (response) => {
   const pageSize = Number(data?.pageSize) || DEFAULT_WEBSITE_PAGE_SIZE;
   const totalCount = Number(data?.totalCount ?? items.length) || 0;
   return {
-    items,
+    items: items.map(normalizeWebsiteRecordMedia),
     pageNumber: Math.max(1, Number(data?.pageNumber) || 1),
     pageSize,
     totalCount,
@@ -240,7 +276,7 @@ const websiteSlice = createSlice({
       })
       .addCase(fetchWebsiteProductById.fulfilled, (state, action) => {
         if (state.productDetail.requestId !== action.meta.requestId) return;
-        state.productDetail.data = action.payload.data;
+        state.productDetail.data = normalizeWebsiteRecordMedia(action.payload.data);
         state.productDetail.loading = false;
         state.productDetail.requestId = null;
       })

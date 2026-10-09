@@ -41,7 +41,6 @@ import {
   setPurchaseReturnPageSize,
   updatePurchaseReturn,
 } from "../../../store/slices/purchase/purchaseReturnSlice";
-
 export const purchaseDocumentConfigs = {
   bills: {
     actionIcon: CheckCircle2,
@@ -58,7 +57,7 @@ export const purchaseDocumentConfigs = {
     icon: FileText,
     label: "Purchase Bills",
     listPath: "/purchase/bills",
-    pageName: "Purchase Bills",
+    permissionPageName: "PurchaseExpense.PurchaseBill",
     pluralLabel: "bills",
     routeBase: "/purchase/bills",
     secondaryDateLabel: "Due Date",
@@ -93,7 +92,7 @@ export const purchaseDocumentConfigs = {
     icon: ShoppingCart,
     label: "Purchase Orders",
     listPath: "/purchase/orders",
-    pageName: "Purchase Orders",
+    permissionPageName: "PurchaseExpense.PurchaseOrder",
     pluralLabel: "orders",
     routeBase: "/purchase/orders",
     secondaryDateLabel: "Expected Delivery",
@@ -120,7 +119,7 @@ export const purchaseDocumentConfigs = {
     icon: CornerDownLeft,
     label: "Purchase Returns",
     listPath: "/purchase/returns",
-    pageName: "Purchase Returns",
+    permissionPageName: "PurchaseExpense.PurchaseReturn",
     pluralLabel: "returns",
     reasonField: "reason",
     routeBase: "/purchase/returns",

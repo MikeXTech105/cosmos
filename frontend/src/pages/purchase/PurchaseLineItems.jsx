@@ -25,6 +25,7 @@ export const PurchaseNumberInput = ({
   name,
   allowNegative = false,
   placeholder = "0",
+  required = false,
 }) => {
   return (
     <Controller
@@ -37,6 +38,7 @@ export const PurchaseNumberInput = ({
           type="text"
           inputMode="decimal"
           placeholder={placeholder}
+          required={required}
           disabled={disabled}
           value={field.value ?? ""}
           name={field.name}
@@ -153,10 +155,10 @@ const PurchaseLineItems = ({
           <thead>
             <tr className="border-b border-slate-100 bg-white">
               <th className="w-[28%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Item
+                Item<span className="ml-0.5 text-red-500">*</span>
               </th>
               <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Qty
+                Qty<span className="ml-0.5 text-red-500">*</span>
               </th>
               <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Price
@@ -201,6 +203,7 @@ const PurchaseLineItems = ({
                             itemLoading ? "Loading items..." : "Select item"
                           }
                           disabled={itemLoading}
+                          required
                           error={errors?.[index]?.itemId?.message}
                           creatable={canCreateItem}
                           createLabel="Create new item"
@@ -214,6 +217,7 @@ const PurchaseLineItems = ({
                       control={control}
                       id={`purchase-quantity-${index}`}
                       name={`${name}.${index}.quantity`}
+                      required
                       error={errors?.[index]?.quantity?.message}
                     />
                   </td>

@@ -12,6 +12,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppTooltip from "../../../components/common/AppTooltip";
@@ -35,6 +36,7 @@ import {
   getLookupLabel,
 } from "../hrHelpers";
 import { EmployeeAvatar, EmployeeStatusPill } from "./EmployeeList";
+import { exportEmployeeProfilePdf } from "./exportEmployeeProfilePdf";
 
 const tabs = [
   { id: "overview", icon: UserRound, label: "Overview" },
@@ -242,6 +244,7 @@ const EmployeeProfilePanel = ({
   shiftOptions,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const addresses = Array.isArray(employee?.addresses)
     ? employee.addresses
     : employee?.address
@@ -306,6 +309,31 @@ const EmployeeProfilePanel = ({
           </div>
 
           <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+            <AppButton
+              variant="secondary"
+              className="h-9 rounded-lg px-3"
+              disabled={isExportingPdf}
+              onClick={async () => {
+                setIsExportingPdf(true);
+                try {
+                  await exportEmployeeProfilePdf({
+                    bankDetails: currentBankDetails,
+                    departmentOptions,
+                    designationOptions,
+                    employee,
+                    shiftOptions,
+                  });
+                  toast.success("Employee profile PDF downloaded");
+                } catch (error) {
+                  toast.error(error?.message ?? "Unable to create employee PDF.");
+                } finally {
+                  setIsExportingPdf(false);
+                }
+              }}
+            >
+              <Download className="h-4 w-4" />
+              {isExportingPdf ? "Preparing..." : "Download PDF"}
+            </AppButton>
             {isResignedEmployee && canEdit ? (
               <AppButton
                 className="h-9 rounded-lg px-3"

@@ -17,6 +17,7 @@ import {
   canViewPermission,
   findPermissionPage,
   isSuperAdminAuth,
+  normalizeRoute,
 } from "./usePermission";
 import {
   closeCommand,
@@ -43,9 +44,11 @@ const getParentId = (page) => {
 };
 
 const getPageLabel = (page) => {
+  // displayName is the human label an admin edits on RBAC > Pages; pageName is
+  // the internal key (e.g. "Rojmel.Dashboard") and is only a last resort.
   return (
-    page.pageName ??
     page.displayName ??
+    page.pageName ??
     page.name ??
     page.title ??
     page.route ??
@@ -113,28 +116,113 @@ const createCategoryItem = (category) => ({
   children: [],
 });
 
-const buildMenuTree = (pages, isSuperAdmin) => {
+const createPageItem = (page) => {
+  const iconName = page.icon ?? page.iconName ?? "app";
+
+  return {
+    raw: page,
+    id: getPageId(page),
+    parentId: getParentId(page),
+    label: getPageLabel(page),
+    route: normalizeRoute(page.route ?? ""),
+    iconName,
+    Icon: getIconComponent(iconName),
+    description: page.description ?? "",
+    sortOrder: getSortOrder(page),
+    children: [],
+  };
+};
+
+// A page an admin granted that no configured module claims still has to show
+// up, otherwise the permission is invisible to the user who was given it.
+const appendUnclaimedPages = ({ claimedPageIds, groupMap, pages, rootItems }) => {
+  const grantedPages = (Array.isArray(pages) ? pages : []).filter((page) => {
+    return page && canViewPermission(page);
+  });
+  const pagesById = new Map(
+    grantedPages.map((page) => [getPageId(page), page]),
+  );
+  const parentPageIds = new Set(
+    grantedPages
+      .map(getParentId)
+      .filter((parentId) => parentId && pagesById.has(parentId)),
+  );
+
+  grantedPages.forEach((page) => {
+    const pageId = getPageId(page);
+
+    if (claimedPageIds.has(pageId) || parentPageIds.has(pageId)) {
+      return;
+    }
+
+    const item = createPageItem(page);
+
+    // Only real, parameterless destinations belong in the menu; a detail route
+    // such as /sales/invoices/:id is a page record, not something to link to.
+    if (!item.route || item.route === "/" || /[:{*]/.test(item.route)) {
+      return;
+    }
+
+    const parentId = getParentId(page);
+    const parentPage = parentId ? pagesById.get(parentId) : null;
+
+    if (!parentPage) {
+      rootItems.push(item);
+      return;
+    }
+
+    const groupId = `page-${getPageId(parentPage)}`;
+    const parentIconName = parentPage.icon ?? "foldertree";
+
+    if (!groupMap.has(groupId)) {
+      groupMap.set(groupId, {
+        id: groupId,
+        parentId: null,
+        label: getPageLabel(parentPage),
+        route: null,
+        iconName: parentIconName,
+        Icon: getIconComponent(parentIconName),
+        description: "",
+        sortOrder: getSortOrder(parentPage),
+        children: [],
+      });
+    }
+
+    groupMap.get(groupId).children.push(item);
+  });
+};
+
+export const buildMenuTree = (pages, isSuperAdmin) => {
   const groupMap = new Map();
   const rootItems = [];
   const enabledModules = getEnabledSidebarModules();
+  const claimedPageIds = new Set();
 
   enabledModules.forEach((module) => {
     const permissionTargets = module.permissionTargets ?? [
       {
         id: module.id,
         label: module.label,
+        pageName: module.permissionPageName,
         route: module.route,
       },
     ];
-    const page = isSuperAdmin
-      ? null
+    const matchedPages = isSuperAdmin
+      ? []
       : permissionTargets
           .map((target) => findPermissionPage(pages, target))
-          .find((candidate) => candidate && canViewPermission(candidate));
+          .filter(Boolean);
+    const page = matchedPages.find((candidate) => canViewPermission(candidate));
 
-    if (!isSuperAdmin && (!page || !canViewPermission(page))) {
+    if (!isSuperAdmin && !page) {
       return;
     }
+
+    // Claim every page this module speaks for, not just the one it renders,
+    // so a module covering several pages does not list the rest separately.
+    matchedPages.forEach((matchedPage) => {
+      claimedPageIds.add(getPageId(matchedPage));
+    });
 
     const item = createItem({ module, page });
 
@@ -156,6 +244,10 @@ const buildMenuTree = (pages, isSuperAdmin) => {
 
     groupMap.get(category.id).children.push(item);
   });
+
+  if (!isSuperAdmin) {
+    appendUnclaimedPages({ claimedPageIds, groupMap, pages, rootItems });
+  }
 
   groupMap.forEach((group) => {
     rootItems.push(group);

@@ -1,4 +1,5 @@
 import { canPerformAction } from "./permissionResolver";
+import { getReportPermissionTarget } from "../pages/reports/reportRegistry";
 
 export const canViewReport = ({ pages = [], report, roles = [], user = null }) => {
   if (!report) {
@@ -9,10 +10,7 @@ export const canViewReport = ({ pages = [], report, roles = [], user = null }) =
     action: "view",
     pages,
     roles,
-    target: {
-      label: report.permission,
-      route: report.permissionRoute ?? report.route,
-    },
+    target: getReportPermissionTarget(report),
     user,
   });
 };

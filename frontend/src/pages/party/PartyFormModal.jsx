@@ -39,6 +39,11 @@ import {
 import { getApiErrorMessage } from "../../utils/apiError";
 import { applyApiErrorsToForm } from "../../utils/formApiErrors";
 import {
+  clearFormDraft,
+  readFormDraft,
+  saveFormDraft,
+} from "../../utils/formDraftStorage";
+import {
   PARTY_COMMAND_FIELDS,
   PARTY_FIELD_SECTIONS,
 } from "./partyColumns";
@@ -1069,7 +1074,7 @@ const ModalSkeleton = ({ count = 8 }) => {
   );
 };
 
-const PartyFormContent = ({
+export const PartyFormContent = ({
   fields,
   groupedFields,
   isView,
@@ -1084,7 +1089,11 @@ const PartyFormContent = ({
   const gstState = useSelector((state) => state.partyGst);
   const gstConfig = gstState?.config ?? {};
   const gstVerify = gstState?.verify ?? {};
-  const [values, setValues] = useState(() => buildFormValues(fields, source));
+  const isNewParty = mode === "create" && fields.some((field) => field.name === "gstin");
+  const [values, setValues] = useState(() => {
+    return (isNewParty ? readFormDraft("party-create") : null) ??
+      buildFormValues(fields, source);
+  });
   const [shippingSameAsBilling, setShippingSameAsBilling] = useState(() =>
     getInitialShippingSameAsBilling(buildFormValues(fields, source)),
   );
@@ -1365,6 +1374,9 @@ const PartyFormContent = ({
 
     try {
       await onSubmit(buildApiPayload(fields, values));
+      if (isNewParty) {
+        clearFormDraft("party-create");
+      }
     } catch (error) {
       const result = applyApiErrorsToForm({
         error,
@@ -1611,20 +1623,36 @@ const PartyFormContent = ({
             {isView ? "Close" : "Cancel"}
           </button>
           {!isView && (
-            <button
-              type="submit"
-              disabled={
-                isSubmitting || (hasGstinField && Boolean(gstVerify.loading))
-              }
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {isSubmitting ? "Saving..." : submitLabel ?? "Save"}
-              {isSubmitting ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4" />
+            <>
+              {isNewParty && (
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    saveFormDraft("party-create", values);
+                    toast.success("Party draft saved on this device");
+                    onClose();
+                  }}
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Save as Draft
+                </button>
               )}
-            </button>
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting || (hasGstinField && Boolean(gstVerify.loading))
+                }
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isSubmitting ? "Saving..." : submitLabel ?? "Save"}
+                {isSubmitting ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </button>
+            </>
           )}
         </div>
       </div>
