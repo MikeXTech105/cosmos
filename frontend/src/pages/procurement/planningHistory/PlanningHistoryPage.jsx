@@ -27,7 +27,8 @@ import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import {
-  PlanningRunStatus,
+  isCancelledPlanningRunStatus,
+  isFinalizedPlanningRunStatus,
   PLANNING_RUN_STATUS_LABELS,
   PLANNING_RUN_STATUS_OPTIONS,
 } from "../../../constants/procurementEnums";
@@ -76,7 +77,7 @@ const isFinalizedRun = (run) => {
   const status = getRunStatus(run);
 
   return (
-    Number(status) === PlanningRunStatus.Finalized ||
+    isFinalizedPlanningRunStatus(status) ||
     String(status).toLowerCase() === "finalized"
   );
 };
@@ -85,7 +86,7 @@ const isCancelledRun = (run) => {
   const status = getRunStatus(run);
 
   return (
-    Number(status) === PlanningRunStatus.Cancelled ||
+    isCancelledPlanningRunStatus(status) ||
     String(run?.statusName ?? status).toLowerCase() === "cancelled" ||
     Boolean(run?.cancelledAtUtc ?? run?.cancelledAt)
   );

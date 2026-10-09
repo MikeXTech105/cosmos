@@ -16,17 +16,24 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
+import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import { categoryService } from "../../../services/inventory/categoryService";
+import { itemService } from "../../../services/inventory/itemService";
+import { unitService } from "../../../services/inventory/unitService";
+import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
   getPartyDisplayName,
   getPartyType,
 } from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
 import { PartyFormModal } from "../../party";
+import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
+import ItemFormModal from "../../inventory/items/ItemFormModal";
+import UnitFormModal from "../../inventory/units/UnitFormModal";
 import {
   buildListParams,
   formatCurrency,
@@ -37,10 +44,10 @@ import {
   getPaidAmount,
   getPaymentStatusMeta,
   getRecordTotal,
-  getStatusMeta,
+  getPurchaseStatusMeta,
   getSuccessMessage,
   getSupplierName,
-  STATUS_OPTIONS,
+  getPurchaseStatusOptions,
 } from "../purchaseHelpers";
 import {
   PurchaseConfirmDialog,
@@ -48,6 +55,7 @@ import {
   PurchaseStatCard,
   PurchaseStatusPill,
 } from "../PurchaseShared";
+import PurchaseDocumentFormModal from "./PurchaseDocumentFormModal";
 import ConvertOrderModal from "./ConvertOrderModal";
 
 const getLookupList = (response) => {
@@ -58,6 +66,10 @@ const getLookupList = (response) => {
   }
 
   return data?.items ?? [];
+};
+
+const getResponseRecord = (response, key) => {
+  return response?.data?.[key] ?? response?.data ?? null;
 };
 
 const ActionButton = ({ disabled, icon: Icon, label, onClick, tone = "default" }) => {
@@ -86,27 +98,61 @@ const PurchaseDocumentListPage = ({ config }) => {
   const state = useSelector((store) => store[config.selectorKey]);
   const capabilities = useCapabilities({
     actions: ["view", "create", "update", "delete", "confirm", "cancel", "convert"],
-    label: config.label,
-    pageName: config.permissionPageName,
+    label: config.pageName ?? config.label,
     resource: [config.selectorKey, config.singularLabel, config.pluralLabel],
     route: config.routeBase,
   });
   const canCreateSupplier = useCreatePermission({
     label: "Party Master",
-    pageName: "Party",
     resource: "party",
     route: "/party",
   });
+  const canCreateItem = useCreatePermission({
+    label: "Items",
+    resource: "items",
+    route: "/items",
+  });
+  const canCreateCategory = useCreatePermission({
+    label: "Categories",
+    resource: "categories",
+    route: "/categories",
+  });
+  const canCreateUnit = useCreatePermission({
+    label: "Units",
+    resource: "units",
+    route: "/units",
+  });
   const [searchInput, setSearchInput] = useState(state.filters.Search);
   const [lookups, setLookups] = useState({
+    bills: [],
+    billsLoading: false,
+    items: [],
+    itemsLoading: false,
     suppliers: [],
     suppliersLoading: false,
   });
   const cacheRef = useRef({
+    bills: { loaded: false, promise: null },
+    items: { loaded: false, promise: null },
     suppliers: { loaded: false, promise: null },
   });
+  const [modal, setModal] = useState({
+    isLoading: false,
+    isOpen: false,
+    mode: "create",
+    record: null,
+  });
   const [lookupCreateModal, setLookupCreateModal] = useState({
+    category: false,
+    item: false,
     supplier: false,
+    unit: false,
+  });
+  const [itemCreateLookups, setItemCreateLookups] = useState({
+    categories: [],
+    categoriesLoading: false,
+    units: [],
+    unitsLoading: false,
   });
   const [confirmation, setConfirmation] = useState({
     action: "delete",
@@ -146,13 +192,25 @@ const PurchaseDocumentListPage = ({ config }) => {
       return cache.promise;
     }
 
-    const request = partyService.getParties({
-      PageNumber: 1,
-      PageSize: 200,
-      IsActive: true,
-    });
+    const request =
+      type === "suppliers"
+        ? partyService.getParties({
+            PageNumber: 1,
+            PageSize: 200,
+            IsActive: true,
+          })
+        : type === "items"
+          ? itemService.getItems({
+              PageNumber: 1,
+              PageSize: 200,
+              IsActive: true,
+            })
+          : purchaseBillService.getPurchaseBills({
+              PageNumber: 1,
+              PageSize: 200,
+            });
 
-    setLookups((current) => ({ ...current, suppliersLoading: true }));
+    setLookups((current) => ({ ...current, [`${type}Loading`]: true }));
 
     cache.promise = request
       .then((response) => {
@@ -161,22 +219,26 @@ const PurchaseDocumentListPage = ({ config }) => {
             return false;
           }
 
-          return (
-            entry?.isActive !== false &&
-            ["supplier", "both"].includes(getPartyType(entry))
-          );
+          if (type === "suppliers") {
+            return (
+              entry?.isActive !== false &&
+              ["supplier", "both"].includes(getPartyType(entry))
+            );
+          }
+
+          return entry?.isActive !== false;
         });
 
         cache.loaded = true;
         setLookups((current) => ({
           ...current,
-          suppliers: rows,
-          suppliersLoading: false,
+          [type]: rows,
+          [`${type}Loading`]: false,
         }));
       })
       .catch((error) => {
         toast.error(getActionError(error, `Unable to load ${type}.`));
-        setLookups((current) => ({ ...current, suppliersLoading: false }));
+        setLookups((current) => ({ ...current, [`${type}Loading`]: false }));
       })
       .finally(() => {
         cache.promise = null;
@@ -186,8 +248,13 @@ const PurchaseDocumentListPage = ({ config }) => {
   }, []);
 
   const loadLookups = useCallback(
-    () => loadLookup("suppliers"),
-    [loadLookup],
+    () =>
+      Promise.all([
+        loadLookup("suppliers"),
+        loadLookup("items"),
+        ...(config.supportsBillSelect ? [loadLookup("bills")] : []),
+      ]),
+    [config.supportsBillSelect, loadLookup],
   );
 
   useEffect(() => {
@@ -216,6 +283,29 @@ const PurchaseDocumentListPage = ({ config }) => {
     [lookups.suppliers],
   );
 
+  const itemOptions = useMemo(
+    () =>
+      lookups.items.map((item) => ({
+        value: Number(item.id),
+        label: [item.name, item.itemCode].filter(Boolean).join(" - "),
+      })),
+    [lookups.items],
+  );
+
+  const itemsById = useMemo(
+    () => new Map(lookups.items.map((item) => [String(item.id), item])),
+    [lookups.items],
+  );
+
+  const billOptions = useMemo(
+    () =>
+      lookups.bills.map((bill) => ({
+        value: Number(bill.id),
+        label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
+      })),
+    [lookups.bills],
+  );
+
   const stats = useMemo(() => {
     const total = state.list.reduce(
       (sum, record) => sum + getRecordTotal(record),
@@ -237,45 +327,205 @@ const PurchaseDocumentListPage = ({ config }) => {
     };
   }, [state.list, state.summary, state.summaryScope, state.totalCount]);
 
+  const loadItemCreateLookups = useCallback(async () => {
+    setItemCreateLookups((current) => ({
+      ...current,
+      categoriesLoading: true,
+      unitsLoading: true,
+    }));
+
+    try {
+      const [categories, units] = await Promise.all([
+        categoryService.getCategories({
+          IsActive: true,
+          PageNumber: 1,
+          PageSize: 200,
+        }),
+        unitService.getUnits({
+          IsActive: true,
+          PageNumber: 1,
+          PageSize: 200,
+        }),
+      ]);
+
+      setItemCreateLookups({
+        categories: getLookupList(categories),
+        categoriesLoading: false,
+        units: getLookupList(units),
+        unitsLoading: false,
+      });
+    } catch (error) {
+      toast.error(
+        getActionError(error, "Unable to load item form lookups."),
+      );
+      setItemCreateLookups((current) => ({
+        ...current,
+        categoriesLoading: false,
+        unitsLoading: false,
+      }));
+    }
+  }, []);
+
   const openLookupCreate = useCallback(
     (type) => {
-      if (type === "supplier" && canCreateSupplier) {
-        setLookupCreateModal((current) => ({ ...current, [type]: true }));
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
+        return;
       }
+
+      if (type === "item") {
+        void loadItemCreateLookups();
+      }
+
+      setLookupCreateModal((current) => ({ ...current, [type]: true }));
     },
-    [canCreateSupplier],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      loadItemCreateLookups,
+    ],
   );
 
   const closeLookupCreate = useCallback((type) => {
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
   }, []);
 
+  const refreshItemCreateLookup = useCallback(async (type) => {
+    if (type === "category") {
+      const response = await categoryService.getCategories({
+        IsActive: true,
+        PageNumber: 1,
+        PageSize: 200,
+      });
+      setItemCreateLookups((current) => ({
+        ...current,
+        categories: getLookupList(response),
+      }));
+      return;
+    }
+
+    const response = await unitService.getUnits({
+      IsActive: true,
+      PageNumber: 1,
+      PageSize: 200,
+    });
+    setItemCreateLookups((current) => ({
+      ...current,
+      units: getLookupList(response),
+    }));
+  }, []);
+
   const submitLookupCreate = useCallback(
-    async (type, payload) => {
-      if (type !== "supplier" || !canCreateSupplier) {
+    async (type, payload, saveAndNew = false) => {
+      const allowed = {
+        category: canCreateCategory,
+        item: canCreateItem,
+        supplier: canCreateSupplier,
+        unit: canCreateUnit,
+      }[type];
+
+      if (!allowed) {
         return;
       }
 
       try {
-        await partyService.createParty(payload);
-        toast.success("Supplier created successfully");
-        cacheRef.current.suppliers.loaded = false;
-        await loadLookup("suppliers", { force: true });
-        closeLookupCreate(type);
+        if (type === "supplier") {
+          await partyService.createParty(payload);
+          toast.success("Supplier created successfully");
+          cacheRef.current.suppliers.loaded = false;
+          await loadLookup("suppliers", { force: true });
+        } else if (type === "item") {
+          await itemService.createItem(payload);
+          toast.success("Item created successfully");
+          cacheRef.current.items.loaded = false;
+          await loadLookup("items", { force: true });
+        } else if (type === "category") {
+          await categoryService.createCategory(payload);
+          toast.success("Category created successfully");
+          await refreshItemCreateLookup("category");
+        } else {
+          await unitService.createUnit(payload);
+          toast.success("Unit created successfully");
+          await refreshItemCreateLookup("unit");
+        }
+
+        if (!saveAndNew) {
+          closeLookupCreate(type);
+        }
       } catch (error) {
         toast.error(getActionError(error, "Unable to create record."));
         throw error;
       }
     },
-    [canCreateSupplier, closeLookupCreate, loadLookup],
+    [
+      canCreateCategory,
+      canCreateItem,
+      canCreateSupplier,
+      canCreateUnit,
+      closeLookupCreate,
+      loadLookup,
+      refreshItemCreateLookup,
+    ],
   );
 
-  const openEdit = (record) => {
+  const openEdit = async (record) => {
     if (!capabilities.canUpdate) {
       return;
     }
 
-    navigate(`${config.routeBase}/${record.id}/edit`);
+    setModal({
+      isLoading: true,
+      isOpen: true,
+      mode: "edit",
+      record,
+    });
+
+    try {
+      const response = await dispatch(config.detailThunk(record.id)).unwrap();
+
+      setModal({
+        isLoading: false,
+        isOpen: true,
+        mode: "edit",
+        record: getResponseRecord(response, config.selectorKey.slice(0, -1)),
+      });
+    } catch (error) {
+      toast.error(getActionError(error, "Unable to load details."));
+      setModal((current) => ({ ...current, isLoading: false }));
+    }
+  };
+
+  const submitRecord = async (payload) => {
+    if (
+      (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode !== "edit" && !capabilities.canCreate)
+    ) {
+      return;
+    }
+
+    try {
+      const response =
+        modal.mode === "edit"
+          ? await dispatch(
+              config.updateThunk({ id: modal.record.id, payload }),
+            ).unwrap()
+          : await dispatch(config.createThunk(payload)).unwrap();
+
+      toast.success(getSuccessMessage(response, `${config.singularLabel} saved`));
+      setModal((current) => ({ ...current, isOpen: false }));
+      await loadRecords();
+    } catch (error) {
+      toast.error(getActionError(error, `Unable to save ${config.singularLabel}.`));
+      throw error;
+    }
   };
 
   const runAction = async () => {
@@ -357,7 +607,12 @@ const PurchaseDocumentListPage = ({ config }) => {
       return;
     }
 
-    navigate(`${config.routeBase}/new`);
+    setModal({
+      isLoading: false,
+      isOpen: true,
+      mode: "create",
+      record: null,
+    });
   };
 
   const openAction = (action, record) => {
@@ -475,18 +730,31 @@ const PurchaseDocumentListPage = ({ config }) => {
                 dispatch(config.setFilters({ Status: value }));
                 dispatch(config.setPage(1));
               }}
-              options={config.statusOptions ?? STATUS_OPTIONS}
+              options={getPurchaseStatusOptions(config.statusKind)}
               aria-label="Filter by status"
             />
           ) : (
             <div />
           )}
-<AppDateRangeFilter
-            className="w-full sm:col-span-2 sm:min-w-[260px]"
-            fromDate={state.filters.FromDate}
-            toDate={state.filters.ToDate}
-            allowLifetime={true}
-            onChange={({ fromDate, toDate }) => { dispatch(config.setFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(config.setPage(1)); }}
+          <AppInput
+            type="date"
+            value={state.filters.FromDate}
+            onChange={(event) => {
+              dispatch(config.setFilters({ FromDate: event.target.value }));
+              dispatch(config.setPage(1));
+            }}
+            aria-label="From date"
+            className="h-10"
+          />
+          <AppInput
+            type="date"
+            value={state.filters.ToDate}
+            onChange={(event) => {
+              dispatch(config.setFilters({ ToDate: event.target.value }));
+              dispatch(config.setPage(1));
+            }}
+            aria-label="To date"
+            className="h-10"
           />
           <AppButton
             variant="secondary"
@@ -596,7 +864,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                       {formatCurrency(getBalanceAmount(record))}
                     </td>
                     <td className="border-b border-slate-100 px-3 py-3">
-                      <PurchaseStatusPill meta={getStatusMeta(record.status, config.selectorKey)} />
+                      <PurchaseStatusPill meta={getPurchaseStatusMeta(record.status, config.statusKind)} />
                     </td>
                     {config.selectorKey === "purchaseBills" && (
                       <td className="border-b border-slate-100 px-3 py-3">
@@ -669,6 +937,26 @@ const PurchaseDocumentListPage = ({ config }) => {
         />
       </div>
 
+      <PurchaseDocumentFormModal
+        billOptions={billOptions}
+        canCreateItem={canCreateItem}
+        canCreateSupplier={canCreateSupplier}
+        config={config}
+        isLoading={modal.isLoading}
+        isOpen={modal.isOpen}
+        itemEmptyMessage="No items found in inventory."
+        itemLoading={lookups.itemsLoading}
+        itemOptions={itemOptions}
+        itemsById={itemsById}
+        mode={modal.mode}
+        onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
+        onCreateItem={() => openLookupCreate("item")}
+        onCreateSupplier={() => openLookupCreate("supplier")}
+        onSubmit={submitRecord}
+        record={modal.record}
+        supplierOptions={supplierOptions}
+      />
+
       <PartyFormModal
         isLoading={false}
         isOpen={lookupCreateModal.supplier}
@@ -677,6 +965,53 @@ const PurchaseDocumentListPage = ({ config }) => {
         onSubmit={(payload) => submitLookupCreate("supplier", payload)}
         submitLabel="Create Supplier"
         title="Add Supplier"
+      />
+
+      <ItemFormModal
+        canCreateCategory={canCreateCategory}
+        canCreateUnit={canCreateUnit}
+        categoryOptions={itemCreateLookups.categories.map((category) => ({
+          value: Number(category.id),
+          label: category.name,
+        }))}
+        categoryEmptyMessage="No categories yet - add one in Categories."
+        categoryLoading={itemCreateLookups.categoriesLoading}
+        isLoading={false}
+        isOpen={lookupCreateModal.item}
+        item={null}
+        mode="create"
+        onClose={() => closeLookupCreate("item")}
+        onCreateCategory={() => openLookupCreate("category")}
+        onCreateUnit={() => openLookupCreate("unit")}
+        onSubmit={(payload, saveAndNew) =>
+          submitLookupCreate("item", payload, saveAndNew)
+        }
+        unitOptions={itemCreateLookups.units.map((unit) => ({
+          value: Number(unit.id),
+          label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name,
+        }))}
+        unitEmptyMessage="No units yet - add one in Units."
+        unitLoading={itemCreateLookups.unitsLoading}
+      />
+
+      <CategoryFormModal
+        category={null}
+        isLoading={false}
+        isOpen={lookupCreateModal.category}
+        mode="create"
+        onClose={() => closeLookupCreate("category")}
+        onSubmit={(payload) => submitLookupCreate("category", payload)}
+      />
+
+      <UnitFormModal
+        isLoading={false}
+        isOpen={lookupCreateModal.unit}
+        mode="create"
+        onClose={() => closeLookupCreate("unit")}
+        onSubmit={(payload, saveAndNew) =>
+          submitLookupCreate("unit", payload, saveAndNew)
+        }
+        unit={null}
       />
 
       {config.supportsConvert && (

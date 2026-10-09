@@ -8,7 +8,9 @@ export const ProcurementItemClassification = Object.freeze({
 export const PlanningRunStatus = Object.freeze({
   Draft: 1,
   Finalized: 2,
-  Cancelled: 3,
+  Calculated: 3,
+  Reviewed: 4,
+  Cancelled: 5,
 });
 
 export const PlanningRoundingRule = Object.freeze({
@@ -43,8 +45,16 @@ export const PROCUREMENT_ITEM_CLASSIFICATION_LABELS = Object.freeze({
 export const PLANNING_RUN_STATUS_LABELS = Object.freeze({
   [PlanningRunStatus.Draft]: "Draft",
   [PlanningRunStatus.Finalized]: "Finalized",
+  [PlanningRunStatus.Calculated]: "Calculated",
+  [PlanningRunStatus.Reviewed]: "Reviewed",
   [PlanningRunStatus.Cancelled]: "Cancelled",
 });
+
+export const isFinalizedPlanningRunStatus = (status) =>
+  Number(status) === PlanningRunStatus.Finalized;
+
+export const isCancelledPlanningRunStatus = (status) =>
+  Number(status) === PlanningRunStatus.Cancelled;
 
 export const PLANNING_ROUNDING_RULE_LABELS = Object.freeze({
   [PlanningRoundingRule.None]: "No rounding",

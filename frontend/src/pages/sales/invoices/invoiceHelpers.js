@@ -1,37 +1,41 @@
 import { getApiErrorMessage } from "../../../utils/apiError";
 
 export const SALES_INVOICE_STATUS = {
-  DRAFT: 0,
-  CONFIRMED: 1,
-  CANCELLED: 2,
+  DRAFT: 1,
+  CONFIRMED: 2,
+  PARTIALLY_PAID: 3,
+  PAID: 4,
+  CANCELLED: 5,
 };
 
 export const SALES_PAYMENT_STATUS = {
-  UNPAID: 0,
-  PARTIAL: 1,
-  PAID: 2,
+  UNPAID: 1,
+  PARTIALLY_PAID: 2,
+  PAID: 3,
 };
 
 export const SALES_PAYMENT_MODE = {
-  CASH: 0,
-  BANK_TRANSFER: 1,
-  UPI: 2,
+  CASH: 1,
+  BANK_TRANSFER: 2,
   CARD: 3,
-  CHEQUE: 4,
-  OTHER: 5,
+  UPI: 4,
+  CHEQUE: 5,
+  OTHER: 99,
 };
 
 export const INVOICE_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
   { value: SALES_INVOICE_STATUS.DRAFT, label: "Draft" },
   { value: SALES_INVOICE_STATUS.CONFIRMED, label: "Confirmed" },
+  { value: SALES_INVOICE_STATUS.PARTIALLY_PAID, label: "Partially paid" },
+  { value: SALES_INVOICE_STATUS.PAID, label: "Paid" },
   { value: SALES_INVOICE_STATUS.CANCELLED, label: "Cancelled" },
 ];
 
 export const PAYMENT_STATUS_OPTIONS = [
   { value: "all", label: "All payments" },
   { value: SALES_PAYMENT_STATUS.UNPAID, label: "Unpaid" },
-  { value: SALES_PAYMENT_STATUS.PARTIAL, label: "Partial" },
+  { value: SALES_PAYMENT_STATUS.PARTIALLY_PAID, label: "Partially paid" },
   { value: SALES_PAYMENT_STATUS.PAID, label: "Paid" },
 ];
 
@@ -55,6 +59,14 @@ const STATUS_META = {
     label: "Confirmed",
     className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   },
+  [SALES_INVOICE_STATUS.PARTIALLY_PAID]: {
+    label: "Partially paid",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
+  },
+  [SALES_INVOICE_STATUS.PAID]: {
+    label: "Paid",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
   [SALES_INVOICE_STATUS.CANCELLED]: {
     label: "Cancelled",
     className: "bg-red-50 text-red-700 ring-red-200",
@@ -66,8 +78,8 @@ const PAYMENT_META = {
     label: "Unpaid",
     className: "bg-red-50 text-red-700 ring-red-200",
   },
-  [SALES_PAYMENT_STATUS.PARTIAL]: {
-    label: "Partial",
+  [SALES_PAYMENT_STATUS.PARTIALLY_PAID]: {
+    label: "Partially paid",
     className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
   [SALES_PAYMENT_STATUS.PAID]: {

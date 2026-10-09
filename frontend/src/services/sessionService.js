@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { ENDPOINTS } from "../api/endpoints";
+import { buildApiUrl, runtimeConfig } from "../config/runtimeConfig";
 import {
   clearCredentials,
   replaceAuthSnapshot,
@@ -17,17 +18,6 @@ import { unwrapResponse } from "./apiServiceUtils";
 
 let refreshPromise = null;
 let sessionStore = null;
-
-const getApiBaseUrl = () => {
-  const value = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
-  const url = new URL(value);
-
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error("VITE_API_BASE_URL must be a valid HTTP(S) URL.");
-  }
-
-  return value.replace(/\/+$/, "");
-};
 
 export const configureSessionStore = (store) => {
   sessionStore = store;
@@ -46,8 +36,12 @@ const performRefresh = async () => {
     throw new Error("Missing refresh token");
   }
 
+  if (runtimeConfig.error) {
+    throw new Error(runtimeConfig.error);
+  }
+
   const response = await axios.post(
-    `${getApiBaseUrl()}${ENDPOINTS.REFRESH_TOKEN}`,
+    buildApiUrl(ENDPOINTS.REFRESH_TOKEN),
     { refreshToken },
     { headers: { "Content-Type": "application/json" } },
   );
@@ -61,10 +55,6 @@ const performRefresh = async () => {
     throw new Error("Refresh response did not include an access token");
   }
 
-  // The refresh response carries the same payload as login, including the
-  // current page permissions. Persisting them keeps a live session in step with
-  // role changes an admin just made, instead of serving the page list captured
-  // at sign-in until the user logs out and back in.
   if (Array.isArray(data?.pages)) {
     const snapshot = {
       accessToken: tokens.accessToken,
