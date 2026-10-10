@@ -50,7 +50,6 @@ import { isConflictError } from "../../../utils/apiError";
 import {
   buildDispatchImportRows,
   parseCsv,
-  sha256Hex,
 } from "../../../utils/csvParse";
 import { downloadCsv } from "../../../utils/csv";
 import { ProcurementTabs } from "../../procurement/ProcurementShared";
@@ -250,13 +249,10 @@ const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
     setSaving(true);
     setError("");
     try {
-      const fileHash = await sha256Hex(JSON.stringify({ channelId: entry.channelId, importType: type, row }));
-      const response = await dispatchImportService.validate({
+      const response = await dispatchImportService.validateManual({
         channelId: Number(entry.channelId),
-        fileHash,
         importType: type,
-        originalFileName: `Manual dispatch entry — ${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`,
-        rows: [row],
+        row,
       });
       setValidation(response.data);
       toast.success(response.message || "Manual dispatch entry validated.");
@@ -431,10 +427,7 @@ const ImportWizard = ({
     setParsing(true);
     setValidationError("");
     try {
-      const [text, fileHash] = await Promise.all([
-        choice.file.text(),
-        sha256Hex(choice.file),
-      ]);
+      const text = await choice.file.text();
       const parsed = parseCsv(text);
       const built =
         parsed.errors.length > 0
@@ -447,7 +440,6 @@ const ImportWizard = ({
             });
       setLocalResult({
         errors: built.errors,
-        fileHash,
         rows: built.rows,
         rowsRead: parsed.rows.length,
       });
@@ -470,7 +462,6 @@ const ImportWizard = ({
     try {
       const response = await dispatchImportService.validate({
         channelId: Number(choice.channelId),
-        fileHash: localResult.fileHash,
         importType: Number(choice.importType),
         originalFileName: choice.file.name,
         rows: localResult.rows,

@@ -385,6 +385,8 @@ export const ENDPOINTS = {
 
   DP_IMPORT_VALIDATE: "/api/v1/dispatch-planning/imports/validate",
 
+  DP_MANUAL_IMPORT_VALIDATE: "/api/v1/dispatch-planning/imports/manual/validate",
+
   DP_IMPORTS: "/api/v1/dispatch-planning/imports",
 
   DP_IMPORT_COMMIT: (id) =>
