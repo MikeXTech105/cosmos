@@ -306,8 +306,8 @@ The original Dispatch Scheduling workbook was not supplied. The system implement
 ### 7.4 Operational Workflow
 
 1. Configure channels, destination warehouses, exact SKU mappings, packaging profiles, and Dispatch SKU settings.
-2. Prepare typed warehouse sales, stock, and optional inbound snapshots for one channel.
-3. Validate snapshot import rows. Correct invalid, mismatched, duplicate, or unmapped SKU rows.
+2. Prepare typed warehouse sales, stock, and optional inbound snapshots for one channel, either by CSV import or Manual Entry.
+3. Validate CSV rows or the manual warehouse/SKU entry. Correct invalid, mismatched, duplicate, or unmapped SKU rows.
 4. Commit valid snapshot batches. Only committed batches can be used in a planning run.
 5. Create a **Draft** dispatch run with the selected channel, planning date, committed sales batch, committed warehouse-stock batch, optional inbound batch, and system company-stock source.
 6. The system captures immutable company-stock snapshots for the run.
@@ -770,7 +770,7 @@ The modules enforce permissions at API level as well as using permission-driven 
 | Module user interfaces are not present in the repository frontend. | Business users need an approved API/integration/support interface until screens are delivered. | Build permission-driven Procurement, Dispatch, and Shipment screens against the documented APIs. |
 | Procurement does not create purchase orders or supplier/accounting records. | Procurement team must use the approved downstream purchasing process manually. | Consider controlled Purchase Order hand-off after client approval. |
 | Procurement inbound snapshots are calculation-supported but no public maintenance API was verified. | An approved support/admin load process is needed before relying on inbound availability. | Add a permission-protected inbound-snapshot maintenance workflow. |
-| Dispatch imports use a structured snapshot adapter rather than a direct module CSV/XLSX upload endpoint. | Source transformation must be governed outside the module. | Add approved Dispatch file templates/parser after workbook mapping is confirmed. |
+| Dispatch snapshots are entered through typed CSV import or a one-row Manual Entry form; a direct XLSX parser is not provided. | XLSX source transformation must be governed outside the module. | Add approved Dispatch XLSX templates/parser after workbook mapping is confirmed. |
 | Historical Work List import accepts normalised rows, not a direct Excel/CSV parser. | Historical-file transformation and reconciliation require implementation/support control. | Add an approved file parser/template after column mapping is signed off. |
 | Inventory is global Item stock, not warehouse/bin/batch/serial stock. | Destination warehouse inventory is not maintained as company on-hand; allocation is not a reservation. | Design a location-aware inventory foundation before promising warehouse-level stock control. |
 | Shipment proof is a URL/path reference, not a shared file-storage/upload service. | Evidence documents must be managed externally or by existing approved storage. | Add a shared attachment/document service. |

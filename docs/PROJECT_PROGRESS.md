@@ -1420,6 +1420,12 @@ Status: Implemented / Build Verified / Tests Verified (148/148) / SQL Verified /
 
 Deployment order: base setup → existing migrations → Supply Chain common foundation → Procurement alignment → Dispatch Planning migration → Dispatch verification script → API deployment → role grants.
 
+# Dispatch Planning Manual Snapshot Entry — 2026-10-10
+
+- Added Manual Entry alongside CSV import for one warehouse/SKU sales, stock, or inbound snapshot at a time.
+- Added `POST /api/v1/dispatch-planning/imports/manual/validate`; it uses the existing typed-row validation, shared batch staging, duplicate detection, commit, immutable snapshot, and audit path.
+- CSV `fileHash` is now optional at the API boundary. The service creates a deterministic SHA-256 hash from normalized snapshot content when a browser cannot use `crypto.subtle`; supplied valid hashes remain supported.
+
 Known risks: workbook formula semantics and gross-versus-sellable source-stock interpretation require confirmation; live Swagger and role smoke testing remain pending.
 
 Next recommended module: Shipment Operations / Work List Conversion (not implemented).

@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Application.DispatchPlanning;
@@ -24,6 +26,7 @@ public sealed class DispatchPlanningService : IDispatchPlanningService
     private readonly IValidator<DispatchSkuSettingQuery> _settingQueryValidator;
     private readonly IValidator<SaveDispatchSkuSettingRequest> _settingValidator;
     private readonly IValidator<ValidateDispatchSnapshotImportRequest> _importValidator;
+    private readonly IValidator<ValidateManualDispatchSnapshotRequest> _manualEntryValidator;
     private readonly IValidator<DispatchSnapshotImportBatchQuery> _importQueryValidator;
     private readonly IValidator<CommitDispatchSnapshotImportRequest> _commitImportValidator;
     private readonly IValidator<CancelDispatchSnapshotImportRequest> _cancelImportValidator;
@@ -45,6 +48,7 @@ public sealed class DispatchPlanningService : IDispatchPlanningService
         IValidator<DispatchSkuSettingQuery> settingQueryValidator,
         IValidator<SaveDispatchSkuSettingRequest> settingValidator,
         IValidator<ValidateDispatchSnapshotImportRequest> importValidator,
+        IValidator<ValidateManualDispatchSnapshotRequest> manualEntryValidator,
         IValidator<DispatchSnapshotImportBatchQuery> importQueryValidator,
         IValidator<CommitDispatchSnapshotImportRequest> commitImportValidator,
         IValidator<CancelDispatchSnapshotImportRequest> cancelImportValidator,
@@ -65,6 +69,7 @@ public sealed class DispatchPlanningService : IDispatchPlanningService
         _settingQueryValidator = settingQueryValidator;
         _settingValidator = settingValidator;
         _importValidator = importValidator;
+        _manualEntryValidator = manualEntryValidator;
         _importQueryValidator = importQueryValidator;
         _commitImportValidator = commitImportValidator;
         _cancelImportValidator = cancelImportValidator;
@@ -117,9 +122,23 @@ public sealed class DispatchPlanningService : IDispatchPlanningService
     public async Task<ApiResponse<DispatchSnapshotImportValidationDto>> ValidateSnapshotImportAsync(ValidateDispatchSnapshotImportRequest request, CancellationToken ct)
     {
         await ValidateAsync(_importValidator, request, ct);
+        request = request with { FileHash = string.IsNullOrWhiteSpace(request.FileHash) ? CreateSnapshotHash(request.ChannelId, request.ImportType, request.Rows) : request.FileHash };
         var result = await _repository.ValidateSnapshotImportAsync(request, _currentUser.UserId, Guid.NewGuid().ToString("N"), ct);
         await AuditAsync("SupplyChainImportBatches", result.BatchId, "ValidateDispatchImport", null, new { request.ImportType, result.TotalRows, result.ValidRows, result.InvalidRows }, ct);
         return ApiResponse<DispatchSnapshotImportValidationDto>.Success(result, "Dispatch snapshot import validated.");
+    }
+
+    public async Task<ApiResponse<DispatchSnapshotImportValidationDto>> ValidateManualSnapshotAsync(ValidateManualDispatchSnapshotRequest request, CancellationToken ct)
+    {
+        await ValidateAsync(_manualEntryValidator, request, ct);
+        var fileHash = CreateSnapshotHash(request.ChannelId, request.ImportType, new[] { request.Row });
+        var importRequest = new ValidateDispatchSnapshotImportRequest(
+            $"Manual dispatch entry - {DateTime.UtcNow:yyyyMMddHHmmss}.csv",
+            fileHash,
+            request.ImportType,
+            request.ChannelId,
+            new[] { request.Row });
+        return await ValidateSnapshotImportAsync(importRequest, ct);
     }
 
     public async Task<ApiResponse<DispatchSnapshotImportBatchDto>> CommitSnapshotImportAsync(long id, CommitDispatchSnapshotImportRequest request, CancellationToken ct)
@@ -230,4 +249,10 @@ public sealed class DispatchPlanningService : IDispatchPlanningService
         await _audit.AddAsync(new AuditEntryRequest(table, id.ToString(), action, Serialize(oldValues), Serialize(newValues), _currentUser.UserId), ct);
 
     private static string? Serialize(object? value) => value is null ? null : JsonSerializer.Serialize(value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+    private static string CreateSnapshotHash(long channelId, int importType, IReadOnlyCollection<DispatchSnapshotImportRowRequest> rows)
+    {
+        var payload = JsonSerializer.Serialize(new { ChannelId = channelId, ImportType = importType, Rows = rows }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+    }
 }
