@@ -64,6 +64,12 @@ public sealed class DispatchSnapshotImportsController(IDispatchPlanningService s
     [ProducesResponseType(typeof(ApiResponse<DispatchSnapshotImportValidationDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Validate([FromBody] ValidateDispatchSnapshotImportRequest request, CancellationToken ct) => FromResponse(await service.ValidateSnapshotImportAsync(request, ct));
 
+    [HttpPost("manual/validate")]
+    [RequirePermission(DispatchPlanningPermissions.Imports, PermissionAction.Create)]
+    [SwaggerOperation(Summary = "Validate a manually entered Dispatch snapshot row")]
+    [ProducesResponseType(typeof(ApiResponse<DispatchSnapshotImportValidationDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ValidateManual([FromBody] ValidateManualDispatchSnapshotRequest request, CancellationToken ct) => FromResponse(await service.ValidateManualSnapshotAsync(request, ct));
+
     [HttpPost("{id:long}/commit")]
     [RequirePermission(DispatchPlanningPermissions.Imports, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<DispatchSnapshotImportBatchDto>), StatusCodes.Status200OK)]

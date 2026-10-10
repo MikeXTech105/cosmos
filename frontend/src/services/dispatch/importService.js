@@ -11,6 +11,13 @@ export const dispatchImportService = {
     );
     return unwrapResponse(response);
   },
+  validateManual: async (payload) => {
+    const response = await axiosInstance.post(
+      ENDPOINTS.DP_MANUAL_IMPORT_VALIDATE,
+      payload,
+    );
+    return unwrapResponse(response);
+  },
   list: async (params = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.DP_IMPORTS, {
       params: normalizeParams(sanitizeDispatchImportParams(params)),

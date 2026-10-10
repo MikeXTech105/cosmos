@@ -7,6 +7,7 @@ All endpoints require a JWT. UI access must be driven by the SQL-backed page act
 | `/api/v1/dispatch-planning/settings` | GET/POST | `DispatchPlanning.SkuSettings` View/Create | List or create effective-dated SKU settings |
 | `/api/v1/dispatch-planning/settings/{id}` | GET/PUT/DELETE | Settings View/Edit/Delete | Read, change, or soft-delete a setting |
 | `/api/v1/dispatch-planning/imports/validate` | POST | `DispatchPlanning.Imports.Create` | Store and validate typed snapshot rows in a shared import batch |
+| `/api/v1/dispatch-planning/imports/manual/validate` | POST | `DispatchPlanning.Imports.Create` | Validate one manually entered snapshot row and create its staged batch |
 | `/api/v1/dispatch-planning/imports/{id}/commit` | POST | Imports Create | Commit valid snapshot rows |
 | `/api/v1/dispatch-planning/imports/{id}/cancel` | POST | Imports Delete | Cancel only uncommitted batches |
 | `/api/v1/dispatch-planning/imports` | GET | Imports View | Paginated batch history |
@@ -25,7 +26,11 @@ All endpoints require a JWT. UI access must be driven by the SQL-backed page act
 
 `SaveDispatchSkuSettingRequest` contains Item/optional Channel/optional packaging profile, `tier`, positive safety and recurring factors, minimum quantity, loose flag, rounding mode, allocation priority, active flag, and optional effective dates.
 
-`ValidateDispatchSnapshotImportRequest` is the adapter boundary after the shared importer/parser has read the source file. It contains `originalFileName`, SHA-256 `fileHash`, `importType` (`1` sales, `2` stock, `3` inbound), `channelId`, and typed rows. Every row contains `rowNumber`, `warehouseId`, exact `channelSku`, and type-specific values:
+`ValidateDispatchSnapshotImportRequest` is the adapter boundary after the shared importer/parser has read the source file. It contains `originalFileName`, optional SHA-256 `fileHash`, `importType` (`1` sales, `2` stock, `3` inbound), `channelId`, and typed rows. The API accepts a valid client-generated hash when available; when it is omitted, the server creates a deterministic hash from the normalized channel, type, and rows. This allows the CSV flow to work in browser contexts that do not expose Web Crypto.
+
+`ValidateManualDispatchSnapshotRequest` contains one `row` plus `importType` and `channelId`. Use `POST /imports/manual/validate` for a Manual Entry form; the server creates both the batch name and hash. Manual and CSV entries use the same row validation, duplicate detection, commit endpoint, immutable snapshot tables, and audit trail.
+
+Every row contains `rowNumber`, `warehouseId`, exact `channelSku`, and type-specific values:
 
 - Sales: `periodFrom`, `periodTo`, `salesQuantity`.
 - Stock: `snapshotDate`, `availableQuantity`, optional `reservedQuantity` and `damagedQuantity` (zero when absent).
@@ -47,7 +52,7 @@ Inbound rows are also resolved at that same mapping identity. When preparing inb
 
 - **Dispatch Dashboard:** query final report; show current finalized totals and export only when `Reports.Export` is present.
 - **Dispatch SKU Settings:** show global and channel rows distinctly; enforce effective-date overlap errors returned by the API.
-- **Import Centre:** parse files through the common import experience, call validate with typed rows, show exact-mapping errors, and retain the returned batch id for Commit.
+- **Import Centre:** provide separate **CSV import** and **Manual entry** tabs. CSV parses into typed rows before validation; Manual entry captures one warehouse/SKU row. Call the corresponding validate endpoint, show exact-mapping errors, and retain the returned batch id for Commit.
 - **Planning Run Wizard:** require committed snapshot batches for the same Channel before Create; then call Calculate.
 - **Recommendation Matrix:** pivot API rows visually by warehouse but keep each API row as a `run + item + warehouse + channel SKU mapping` record. Use the recommendation `id` for React/table keys and show calculation and final quantities side by side.
 - **Allocation Screen:** call Allocate once, then show company snapshot available/allocated values and zero allocations. The backend, not the browser, is authoritative.

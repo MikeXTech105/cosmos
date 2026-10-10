@@ -80,7 +80,10 @@ The calculation consumes committed, selected sales/stock/inbound import batches 
 | Endpoint family | Controller/service/procedure |
 |---|---|
 | settings CRUD | `DispatchSkuSettingsController` -> service/repository -> `usp_DispatchPlanning_SkuSettings_*` |
-| import validate/commit/cancel/list | `DispatchSnapshotImportsController` -> service/repository -> `usp_DispatchPlanning_Import_*` |
+| CSV import validate/commit/cancel/list | `DispatchSnapshotImportsController` -> service/repository -> `usp_DispatchPlanning_Import_*` |
+| manual snapshot validation | `POST /imports/manual/validate` -> `DispatchPlanningService` -> shared import validation/commit procedures |
+
+**Manual entry and hash compatibility (2026-10-10):** The frontend offers a Manual Entry path for one sales, warehouse-stock, or inbound warehouse/SKU row. It calls the dedicated manual-validation endpoint, which derives the SHA-256 batch hash server-side and then uses the same shared staging, validation, duplicate detection, commit, immutable snapshot, and audit flow as CSV imports. The ordinary CSV validation request also accepts an omitted `fileHash`; the service generates the same deterministic normalized-payload hash so imports do not fail in HTTP or other browser contexts without `crypto.subtle`.
 | run create/list/get/calculate/recommendations/override/allocate/finalize/cancel | `DispatchPlanningRunsController` -> service/repository -> `usp_DispatchPlanning_Run_*` / recommendation procedures |
 | recommendation report/export | `DispatchPlanningReportsController` -> service/repository -> report procedure |
 
