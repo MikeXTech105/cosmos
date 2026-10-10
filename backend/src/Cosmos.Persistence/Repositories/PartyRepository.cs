@@ -24,8 +24,7 @@ public sealed class PartyRepository : IPartyRepository
     public async Task<PagedResult<PartyListItemDto>> GetListAsync(GetPartiesQuery query, CancellationToken cancellationToken)
     {
         using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
-        var rows = await StoredProcedureExecutor.QueryAsync<PartyListItemDto>(
-            connection,
+        var command = new CommandDefinition(
             "sp_Party_GetList",
             new
             {
@@ -34,12 +33,38 @@ public sealed class PartyRepository : IPartyRepository
                 query.PageSize,
                 query.SortBy,
                 query.SortDirection,
-                query.IsActive
+                query.IsActive,
+                PartyType = NormalizePartyType(query.PartyType),
+                query.HasGstin,
+                query.HasCreditLimit
+            },
+            commandType: System.Data.CommandType.StoredProcedure,
+            cancellationToken: cancellationToken);
+        using var results = await connection.QueryMultipleAsync(command);
+        var rows = (await results.ReadAsync<PartyListItemRow>()).Select(MapListItem).ToArray();
+        var metadata = await results.ReadSingleAsync<PartyListMetadataDto>();
+        var summary = await results.ReadSingleOrDefaultAsync<PartyListSummaryDto>();
+
+        return new PagedResult<PartyListItemDto>(rows, query.PageNumber, query.PageSize, metadata.TotalCount, summary);
+    }
+
+    public async Task<IReadOnlyCollection<PartyExportDto>> ExportAsync(GetPartiesQuery query, CancellationToken cancellationToken)
+    {
+        using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return await StoredProcedureExecutor.QueryAsync<PartyExportDto>(
+            connection,
+            "sp_Party_Export",
+            new
+            {
+                query.Search,
+                query.SortBy,
+                query.SortDirection,
+                query.IsActive,
+                PartyType = NormalizePartyType(query.PartyType),
+                query.HasGstin,
+                query.HasCreditLimit
             },
             cancellationToken);
-
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<PartyListItemDto>(rows, query.PageNumber, query.PageSize, totalCount);
     }
 
     public async Task<PartyDto> CreateAsync(CreatePartyCommand command, CancellationToken cancellationToken)
@@ -109,7 +134,56 @@ public sealed class PartyRepository : IPartyRepository
         parameters.Add("CreditLimit", command.CreditLimit);
         parameters.Add("CreditPeriodDays", command.CreditPeriodDays);
         parameters.Add("IsActive", command.IsActive);
+        parameters.Add("PartyType", NormalizePartyType(command.PartyType));
     }
 
     private static string? TrimToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? NormalizePartyType(string? value) => string.IsNullOrWhiteSpace(value)
+        ? null
+        : string.Concat(value.Trim().ToLowerInvariant() switch
+        {
+            "customer" => "Customer",
+            "supplier" => "Supplier",
+            "both" => "Both",
+            _ => value.Trim()
+        });
+
+    internal static PartyListItemDto MapListItem(PartyListItemRow row) => new(
+        row.Id,
+        row.PartyCode,
+        row.PartyName,
+        row.MobileNo,
+        row.Email,
+        row.GSTTreatment,
+        row.GSTIN,
+        row.OpeningBalance,
+        row.OpeningBalanceType,
+        row.CreditLimit,
+        row.CreditPeriodDays,
+        row.IsActive,
+        row.CreatedOn,
+        row.ModifiedOn,
+        row.TotalCount)
+    {
+        PartyType = row.PartyType
+    };
+
+    internal sealed record PartyListItemRow(
+        Guid Id,
+        string PartyCode,
+        string PartyName,
+        string PartyType,
+        string? MobileNo,
+        string? Email,
+        int GSTTreatment,
+        string? GSTIN,
+        decimal OpeningBalance,
+        int OpeningBalanceType,
+        decimal CreditLimit,
+        int CreditPeriodDays,
+        bool IsActive,
+        DateTime CreatedOn,
+        DateTime? ModifiedOn,
+        int TotalCount);
 }

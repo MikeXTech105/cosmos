@@ -33,6 +33,7 @@ public sealed class ItemRepository : IItemRepository
                 query.Barcode,
                 query.ItemCode,
                 query.CategoryId,
+                query.ProcurementClassification,
                 query.IsActive,
                 query.PageNumber,
                 query.PageSize,
@@ -41,8 +42,12 @@ public sealed class ItemRepository : IItemRepository
             },
             cancellationToken);
 
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<ItemListItemDto>(rows, query.PageNumber, query.PageSize, totalCount);
+        var summary = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<ItemListSummaryDto>(
+            connection,
+            "sp_Item_GetListSummary",
+            new { query.Search, query.Barcode, query.ItemCode, query.CategoryId, query.ProcurementClassification, query.IsActive },
+            cancellationToken) ?? new ItemListSummaryDto(0, 0, 0, 0);
+        return new PagedResult<ItemListItemDto>(rows, query.PageNumber, query.PageSize, summary.TotalCount, summary);
     }
 
     public async Task<ItemDto> CreateAsync(CreateItemCommand command, CancellationToken cancellationToken)
@@ -108,11 +113,13 @@ public sealed class ItemRepository : IItemRepository
         parameters.Add("CategoryId", command.CategoryId);
         parameters.Add("UnitId", command.UnitId);
         parameters.Add("ItemType", command.ItemType);
+        parameters.Add("ProcurementClassification", command.ProcurementClassification);
         parameters.Add("PurchasePrice", command.PurchasePrice);
         parameters.Add("SalesPrice", command.SalesPrice);
         parameters.Add("HSNCode", TrimToNull(command.HSNCode));
         parameters.Add("GSTRate", command.GSTRate);
         parameters.Add("TrackInventory", command.TrackInventory);
+        parameters.Add("IsManufactured", command.IsManufactured);
         parameters.Add("OpeningStock", command.OpeningStock);
         parameters.Add("OpeningStockValue", command.OpeningStockValue);
         parameters.Add("CurrentStock", command.CurrentStock);

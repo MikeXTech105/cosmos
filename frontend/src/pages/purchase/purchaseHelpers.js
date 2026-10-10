@@ -1,6 +1,6 @@
 import { getApiErrorMessage } from "../../utils/apiError";
 
-export const PURCHASE_STATUS = {
+export const PURCHASE_DOCUMENT_STATUS = {
   DRAFT: 1,
   CONFIRMED: 2,
   PARTIALLY_PAID: 3,
@@ -22,34 +22,31 @@ export const PURCHASE_PAYMENT_STATUS = {
   PAID: 3,
 };
 
-export const PAYMENT_TYPE = {
-  CREDIT: 0,
-  CASH: 1,
-  PARTIAL: 2,
-};
-
 export const PAYMENT_MODE = {
   CASH: 1,
-  BANK_TRANSFER: 2,
+  BANK: 2,
   UPI: 3,
   CHEQUE: 4,
   CARD: 5,
 };
 
-export const STATUS_OPTIONS = [
+// The backend currently validates PaymentType against PurchasePaymentMode.
+export const PAYMENT_TYPE = PAYMENT_MODE;
+
+export const PURCHASE_DOCUMENT_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
-  { value: PURCHASE_STATUS.DRAFT, label: "Draft" },
-  { value: PURCHASE_STATUS.CONFIRMED, label: "Confirmed" },
-  { value: PURCHASE_STATUS.PARTIALLY_PAID, label: "Partially Paid" },
-  { value: PURCHASE_STATUS.PAID, label: "Paid" },
-  { value: PURCHASE_STATUS.CANCELLED, label: "Cancelled" },
+  { value: PURCHASE_DOCUMENT_STATUS.DRAFT, label: "Draft" },
+  { value: PURCHASE_DOCUMENT_STATUS.CONFIRMED, label: "Confirmed" },
+  { value: PURCHASE_DOCUMENT_STATUS.PARTIALLY_PAID, label: "Partially paid" },
+  { value: PURCHASE_DOCUMENT_STATUS.PAID, label: "Paid" },
+  { value: PURCHASE_DOCUMENT_STATUS.CANCELLED, label: "Cancelled" },
 ];
 
-export const ORDER_STATUS_OPTIONS = [
+export const PURCHASE_ORDER_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
   { value: PURCHASE_ORDER_STATUS.DRAFT, label: "Draft" },
   { value: PURCHASE_ORDER_STATUS.SENT, label: "Sent" },
-  { value: PURCHASE_ORDER_STATUS.PARTIALLY_CONVERTED, label: "Partially Converted" },
+  { value: PURCHASE_ORDER_STATUS.PARTIALLY_CONVERTED, label: "Partially converted" },
   { value: PURCHASE_ORDER_STATUS.CONVERTED, label: "Converted" },
   { value: PURCHASE_ORDER_STATUS.CANCELLED, label: "Cancelled" },
 ];
@@ -61,14 +58,22 @@ export const ACTIVE_OPTIONS = [
 ];
 
 export const PAYMENT_TYPE_OPTIONS = [
-  { value: PAYMENT_TYPE.CREDIT, label: "Credit" },
   { value: PAYMENT_TYPE.CASH, label: "Cash" },
-  { value: PAYMENT_TYPE.PARTIAL, label: "Partial" },
+  { value: PAYMENT_TYPE.BANK, label: "Bank" },
+  { value: PAYMENT_TYPE.UPI, label: "UPI" },
+  { value: PAYMENT_TYPE.CHEQUE, label: "Cheque" },
+  { value: PAYMENT_TYPE.CARD, label: "Card" },
+];
+
+export const PURCHASE_PAYMENT_STATUS_OPTIONS = [
+  { value: PURCHASE_PAYMENT_STATUS.UNPAID, label: "Unpaid" },
+  { value: PURCHASE_PAYMENT_STATUS.PARTIAL, label: "Partial" },
+  { value: PURCHASE_PAYMENT_STATUS.PAID, label: "Paid" },
 ];
 
 export const PAYMENT_MODE_OPTIONS = [
   { value: PAYMENT_MODE.CASH, label: "Cash" },
-  { value: PAYMENT_MODE.BANK_TRANSFER, label: "Bank Transfer" },
+  { value: PAYMENT_MODE.BANK, label: "Bank" },
   { value: PAYMENT_MODE.UPI, label: "UPI" },
   { value: PAYMENT_MODE.CHEQUE, label: "Cheque" },
   { value: PAYMENT_MODE.CARD, label: "Card" },
@@ -76,47 +81,53 @@ export const PAYMENT_MODE_OPTIONS = [
 
 export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200];
 
-const STATUS_META = {
-  [PURCHASE_STATUS.DRAFT]: {
+const PURCHASE_DOCUMENT_STATUS_META = {
+  [PURCHASE_DOCUMENT_STATUS.DRAFT]: {
     label: "Draft",
     className: "bg-amber-50 text-amber-700 ring-amber-200",
   },
-  [PURCHASE_STATUS.CONFIRMED]: {
+  [PURCHASE_DOCUMENT_STATUS.CONFIRMED]: {
     label: "Confirmed",
     className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   },
-  [PURCHASE_STATUS.PARTIALLY_PAID]: {
-    label: "Partially Paid",
+  [PURCHASE_DOCUMENT_STATUS.PARTIALLY_PAID]: {
+    label: "Partially paid",
     className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
-  [PURCHASE_STATUS.PAID]: {
+  [PURCHASE_DOCUMENT_STATUS.PAID]: {
     label: "Paid",
     className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   },
-  [PURCHASE_STATUS.CANCELLED]: {
+  [PURCHASE_DOCUMENT_STATUS.CANCELLED]: {
     label: "Cancelled",
     className: "bg-red-50 text-red-700 ring-red-200",
   },
 };
 
-const ORDER_STATUS_META = {
-  [PURCHASE_ORDER_STATUS.DRAFT]: STATUS_META[PURCHASE_STATUS.DRAFT],
+const PURCHASE_ORDER_STATUS_META = {
+  [PURCHASE_ORDER_STATUS.DRAFT]: {
+    label: "Draft",
+    className: "bg-amber-50 text-amber-700 ring-amber-200",
+  },
   [PURCHASE_ORDER_STATUS.SENT]: {
     label: "Sent",
-    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+    className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
   [PURCHASE_ORDER_STATUS.PARTIALLY_CONVERTED]: {
-    label: "Partially Converted",
-    className: "bg-sky-50 text-sky-700 ring-sky-200",
+    label: "Partially converted",
+    className: "bg-violet-50 text-violet-700 ring-violet-200",
   },
   [PURCHASE_ORDER_STATUS.CONVERTED]: {
     label: "Converted",
     className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
-  [PURCHASE_ORDER_STATUS.CANCELLED]: STATUS_META[PURCHASE_STATUS.CANCELLED],
+  [PURCHASE_ORDER_STATUS.CANCELLED]: {
+    label: "Cancelled",
+    className: "bg-red-50 text-red-700 ring-red-200",
+  },
 };
 
-const PAYMENT_STATUS_META = {
+const PURCHASE_PAYMENT_STATUS_META = {
   [PURCHASE_PAYMENT_STATUS.UNPAID]: {
     label: "Unpaid",
     className: "bg-red-50 text-red-700 ring-red-200",
@@ -125,23 +136,34 @@ const PAYMENT_STATUS_META = {
     label: "Partial",
     className: "bg-sky-50 text-sky-700 ring-sky-200",
   },
-  [PURCHASE_PAYMENT_STATUS.PAID]: STATUS_META[PURCHASE_STATUS.PAID],
+  [PURCHASE_PAYMENT_STATUS.PAID]: {
+    label: "Paid",
+    className: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  },
 };
 
-export const getStatusMeta = (status, type = "bills") => {
+export const getPurchaseStatusMeta = (status, kind = "document") => {
+  const statusMeta = kind === "order" ? PURCHASE_ORDER_STATUS_META : PURCHASE_DOCUMENT_STATUS_META;
+
   return (
-    (type === "purchaseOrders" ? ORDER_STATUS_META : STATUS_META)[Number(status)] ?? {
+    statusMeta[Number(status)] ?? {
       label: status === null || status === undefined ? "-" : `Status ${status}`,
       className: "bg-slate-50 text-slate-600 ring-slate-200",
     }
   );
 };
 
-export const getPaymentStatusMeta = (status) =>
-  PAYMENT_STATUS_META[Number(status)] ?? {
-    label: status === null || status === undefined ? "-" : `Payment ${status}`,
-    className: "bg-slate-50 text-slate-600 ring-slate-200",
-  };
+export const getPurchaseStatusOptions = (kind = "document") =>
+  kind === "order" ? PURCHASE_ORDER_STATUS_OPTIONS : PURCHASE_DOCUMENT_STATUS_OPTIONS;
+
+export const getPaymentStatusMeta = (status) => {
+  return (
+    PURCHASE_PAYMENT_STATUS_META[Number(status)] ?? {
+      label: status === null || status === undefined ? "-" : `Payment ${status}`,
+      className: "bg-slate-50 text-slate-600 ring-slate-200",
+    }
+  );
+};
 
 export const getPaymentModeLabel = (mode) => {
   return (
@@ -154,6 +176,14 @@ export const getPaymentTypeLabel = (type) => {
   return (
     PAYMENT_TYPE_OPTIONS.find((option) => Number(option.value) === Number(type))
       ?.label ?? "-"
+  );
+};
+
+export const getPurchasePaymentStatusLabel = (status) => {
+  return (
+    PURCHASE_PAYMENT_STATUS_OPTIONS.find(
+      (option) => Number(option.value) === Number(status),
+    )?.label ?? "-"
   );
 };
 
@@ -494,6 +524,47 @@ export const buildLinePayload = (items = []) => {
       ? Math.trunc(toNumber(item.purchaseBillItemId))
       : null,
   }));
+};
+
+export const buildPurchaseDocumentPayload = (values, config) => {
+  const base = {
+    supplierId: values.supplierId,
+    items: buildLinePayload(values.items),
+    notes: cleanNullableString(values.notes),
+  };
+
+  if (config.supportsBillSelect) {
+    base.purchaseBillId = values.purchaseBillId
+      ? Math.trunc(toNumber(values.purchaseBillId))
+      : null;
+  }
+
+  if (config.supportsReason) {
+    base.reason = cleanNullableString(values.reason);
+  }
+
+  if (config.dateField === "billDate") {
+    base.supplierInvoiceNo = cleanNullableString(values.supplierInvoiceNo);
+    base.billDate = values.billDate;
+    base.dueDate = values.dueDate || null;
+    base.paymentType = Number(values.paymentType);
+    base.discountAmount = toNumber(values.discountAmount);
+    base.roundOff = toNumber(values.roundOff);
+    base.paidAmount = toNumber(values.paidAmount);
+  }
+
+  if (config.dateField === "orderDate") {
+    base.orderDate = values.orderDate;
+    base.expectedDeliveryDate = values.expectedDeliveryDate || null;
+    base.discountAmount = toNumber(values.discountAmount);
+    base.termsAndConditions = cleanNullableString(values.termsAndConditions);
+  }
+
+  if (config.dateField === "returnDate") {
+    base.returnDate = values.returnDate;
+  }
+
+  return base;
 };
 
 export const extractItems = (record) => {

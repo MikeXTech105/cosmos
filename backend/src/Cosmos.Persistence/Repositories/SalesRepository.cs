@@ -48,8 +48,20 @@ public sealed class SalesRepository : ISalesRepository
                 query.SortDirection
             },
             cancellationToken);
-        var totalCount = rows.FirstOrDefault()?.TotalCount ?? 0;
-        return new PagedResult<SalesInvoiceDto>(rows, query.PageNumber, query.PageSize, totalCount);
+        var summary = await StoredProcedureExecutor.QuerySingleOrDefaultAsync<SalesInvoiceListSummaryDto>(
+            connection,
+            "sp_SalesInvoice_GetListSummary",
+            new
+            {
+                query.Search,
+                query.CustomerPartyId,
+                query.Status,
+                query.PaymentStatus,
+                FromDate = ToDateTime(query.FromDate),
+                ToDate = ToDateTime(query.ToDate)
+            },
+            cancellationToken) ?? new SalesInvoiceListSummaryDto(0, 0, 0, 0);
+        return new PagedResult<SalesInvoiceDto>(rows, query.PageNumber, query.PageSize, summary.TotalInvoices, summary);
     }
 
     public async Task<SalesInvoiceDetailDto> CreateAsync(CreateSalesInvoiceCommand command, long? userId, CancellationToken cancellationToken)

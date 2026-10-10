@@ -45,6 +45,16 @@ public sealed class PartyService : IPartyService
         return ApiResponse<PagedResult<PartyListItemDto>>.Success(await _repository.GetListAsync(query, cancellationToken));
     }
 
+    public async Task<ApiResponse<IReadOnlyCollection<PartyExportDto>>> ExportAsync(GetPartiesQuery query, CancellationToken cancellationToken)
+    {
+        await ValidationRunner.ValidateAsync(_getListValidator, query, cancellationToken);
+        var rows = await _repository.ExportAsync(query, cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "Parties", "Export", AuditActions.Exported, null, null, null,
+            AuditModules.Parties, "PartyExport", null, "Exported parties."), cancellationToken);
+        return ApiResponse<IReadOnlyCollection<PartyExportDto>>.Success(rows);
+    }
+
     public async Task<ApiResponse<PartyDto>> CreateAsync(CreatePartyCommand command, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_createValidator, command, cancellationToken);

@@ -7,8 +7,17 @@ public sealed record ChangePasswordRequest(string CurrentPassword, string NewPas
 public sealed record ForgotPasswordRequest(string Email);
 public sealed record ResetPasswordRequest(string Email, string ResetToken, string NewPassword, string ConfirmPassword);
 
-public sealed record UserSummaryDto(int Id, string Username, string Email, string FullName, bool IsActive);
+public sealed record UserSummaryDto(int Id, string Username, string Email, string FullName, bool IsActive, bool IsSuperAdmin = false);
 public sealed record RoleDto(int Id, string Name, string? Description, bool IsActive);
+public sealed record CurrentUserProfileDto(
+    int Id,
+    string Username,
+    string FullName,
+    string Email,
+    bool IsActive,
+    bool IsSuperAdmin,
+    IReadOnlyCollection<RoleDto> Roles);
+public sealed record UpdateCurrentUserProfileRequest(string FullName, string Email);
 public sealed record LoginPagePermissionDto(
     int PageId,
     string PageName,
@@ -31,4 +40,5 @@ public sealed record LoginResponse(
     DateTime RefreshTokenExpiresOn,
     UserSummaryDto User,
     IReadOnlyCollection<RoleDto> Roles,
-    IReadOnlyCollection<LoginPagePermissionDto> Pages);
+    IReadOnlyCollection<LoginPagePermissionDto> Pages,
+    bool IsSuperAdmin = false);

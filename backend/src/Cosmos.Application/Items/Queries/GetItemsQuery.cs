@@ -5,6 +5,7 @@ public sealed record GetItemsQuery(
     string? Barcode,
     string? ItemCode,
     long? CategoryId,
+    int? ProcurementClassification,
     bool? IsActive,
     int PageNumber = 1,
     int PageSize = 20,

@@ -25,6 +25,17 @@ import {
   getDownloadErrorMessage,
 } from "../../../utils/fileDownload";
 import UserFilters from "./UserFilters";
+import {
+  extractCollection,
+  filterUsers,
+  getUsersLoadErrorMessage,
+  getRolesLoadErrorMessage,
+  dedupeRoles,
+  normalizeRole,
+  normalizeUser,
+  normalizeUsers,
+  paginate,
+} from "./userListData";
 import UserModal from "./UserModal";
 import UserStats from "./UserStats";
 import UserTable from "./UserTable";
@@ -47,38 +58,8 @@ const USER_EXPORT_COLUMNS = [
   { header: "Status", getValue: (user) => (user.isActive ? "Active" : "Inactive") },
 ];
 
-const LIST_KEYS = ["items", "users", "roles", "records", "results", "content"];
-
 const getErrorMessage = (error, fallback) => {
   return getApiErrorMessage(error, fallback);
-};
-
-const extractCollection = (payload, responseMeta) => {
-  if (Array.isArray(payload)) {
-    return {
-      items: payload,
-      meta: responseMeta ?? {},
-    };
-  }
-
-  const listKey = LIST_KEYS.find((key) => Array.isArray(payload?.[key]));
-  const items = listKey ? payload[listKey] : [];
-
-  return {
-    items,
-    meta: {
-      ...(responseMeta ?? {}),
-      ...(payload?.meta ?? {}),
-      ...(payload?.pagination ?? {}),
-      total:
-        payload?.total ??
-        payload?.totalCount ??
-        payload?.totalElements ??
-        responseMeta?.total ??
-        responseMeta?.totalCount ??
-        responseMeta?.totalElements,
-    },
-  };
 };
 
 const extractSingleUser = (payload) => {
@@ -93,170 +74,6 @@ const extractEntityId = (payload) => {
   }
 
   return entity?.id ?? entity?.userId ?? entity?.userID ?? entity?._id ?? null;
-};
-
-const normalizeRole = (role) => {
-  if (!role) {
-    return null;
-  }
-
-  if (typeof role === "string") {
-    return {
-      description: "Role access profile",
-      id: role,
-      name: role,
-    };
-  }
-
-  const id = role.id ?? role.roleId ?? role.value ?? role.name ?? role.roleName;
-  const name = role.name ?? role.roleName ?? role.label ?? id;
-
-  if (!id || !name) {
-    return null;
-  }
-
-  return {
-    description: role.description ?? role.summary ?? "Role access profile",
-    id,
-    name,
-  };
-};
-
-const normalizeRoles = (roles) => {
-  const roleList = Array.isArray(roles) ? roles : roles ? [roles] : [];
-
-  return roleList.map(normalizeRole).filter(Boolean);
-};
-
-const normalizeLookupValue = (value) => {
-  return String(value ?? "").trim().toLowerCase();
-};
-
-const getRawUserRoles = (user) => {
-  const assignedRoles =
-    user?.roles ?? user?.roleList ?? user?.userRoles ?? user?.assignedRoles;
-
-  if (assignedRoles) {
-    return assignedRoles;
-  }
-
-  if (user?.role && typeof user.role === "object") {
-    return user.role;
-  }
-
-  const roleId = user?.roleId ?? user?.roleID ?? user?.role_id;
-  const roleName =
-    user?.roleName ??
-    user?.roleLabel ??
-    (typeof user?.role === "string" ? user.role : undefined);
-
-  if (roleId !== undefined || roleName !== undefined) {
-    return {
-      id: roleId ?? roleName,
-      name: roleName ?? roleId,
-    };
-  }
-
-  return null;
-};
-
-const findMatchingRoleOption = (role, roleOptions = []) => {
-  const roleId = normalizeLookupValue(role?.id);
-  const roleName = normalizeLookupValue(role?.name);
-
-  return roleOptions.find((option) => {
-    const optionId = normalizeLookupValue(option.id);
-    const optionName = normalizeLookupValue(option.name);
-
-    return (
-      (roleId && optionId === roleId) ||
-      (roleName && optionName === roleName) ||
-      (roleId && optionName === roleId)
-    );
-  });
-};
-
-const reconcileRolesWithOptions = (roles, roleOptions = []) => {
-  return normalizeRoles(roles).map((role) => {
-    const matchedRole = findMatchingRoleOption(role, roleOptions);
-
-    if (!matchedRole) {
-      return role;
-    }
-
-    return {
-      ...role,
-      description: matchedRole.description ?? role.description,
-      id: matchedRole.id,
-      name: matchedRole.name,
-    };
-  });
-};
-
-const dedupeRoles = (roles) => {
-  const roleMap = new Map();
-
-  roles.filter(Boolean).forEach((role) => {
-    const key = String(role.id);
-
-    if (!roleMap.has(key)) {
-      roleMap.set(key, role);
-    }
-  });
-
-  return Array.from(roleMap.values());
-};
-
-const normalizeActiveState = (user) => {
-  const rawValue =
-    user?.isActive ?? user?.active ?? user?.enabled ?? user?.status;
-
-  if (rawValue === undefined || rawValue === null) {
-    return true;
-  }
-
-  if (typeof rawValue === "boolean") {
-    return rawValue;
-  }
-
-  if (typeof rawValue === "number") {
-    return rawValue === 1;
-  }
-
-  if (typeof rawValue === "string") {
-    return ["active", "enabled", "true", "1"].includes(
-      rawValue.trim().toLowerCase(),
-    );
-  }
-
-  return Boolean(rawValue);
-};
-
-const normalizeUser = (user, roleOptions = []) => {
-  const fullName =
-    user?.fullName ??
-    user?.name ??
-    user?.displayName ??
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ");
-  const username =
-    user?.username ??
-    user?.userName ??
-    user?.login ??
-    user?.email?.split("@")?.[0] ??
-    "user";
-  const id = user?.id ?? user?.userId ?? user?.userID ?? user?._id ?? username;
-
-  return {
-    createdAt: user?.createdAt ?? user?.createdDate ?? user?.createdOn,
-    email: user?.email ?? "",
-    fullName: fullName || username,
-    id,
-    isActive: normalizeActiveState(user),
-    roles: dedupeRoles(
-      reconcileRolesWithOptions(getRawUserRoles(user), roleOptions),
-    ),
-    username,
-  };
 };
 
 const getPrimaryRoleId = (user) => {
@@ -276,36 +93,6 @@ const mergeDetailWithFallbackRoles = (detailUser, fallbackUser, roleOptions) => 
     ...normalizedUser,
     roles: normalizeUser(fallbackUser, roleOptions).roles,
   };
-};
-
-const filterUsers = (users, filters) => {
-  const query = filters.search.trim().toLowerCase();
-
-  return users.filter((user) => {
-    const haystack = [
-      user.username,
-      user.fullName,
-      user.email,
-      ...user.roles.map((role) => role.name),
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    const statusMatches =
-      filters.status === "all" ||
-      (filters.status === "active" ? user.isActive : !user.isActive);
-    const roleMatches =
-      filters.roleId === "all" ||
-      user.roles.some((role) => String(role.id) === String(filters.roleId));
-
-    return (!query || haystack.includes(query)) && statusMatches && roleMatches;
-  });
-};
-
-const paginate = (items, currentPage, pageSize) => {
-  const start = (currentPage - 1) * pageSize;
-
-  return items.slice(start, start + pageSize);
 };
 
 const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
@@ -474,7 +261,7 @@ const Users = () => {
       return normalizedRoles;
     } catch (error) {
       setRoleOptions([]);
-      setRolesError(getErrorMessage(error, "Unable to load roles."));
+      setRolesError(getRolesLoadErrorMessage(error));
       return [];
     } finally {
       setIsRolesLoading(false);
@@ -488,16 +275,12 @@ const Users = () => {
     try {
       const response = await userService.getUsers();
       const collection = extractCollection(response.data, response.meta);
-      const normalizedUsers = collection.items
-        .map(normalizeUser)
-        .filter((user) => user.id);
+      const normalizedUsers = normalizeUsers(collection.items);
 
       setUsers(normalizedUsers);
     } catch (error) {
       setUsers([]);
-      setErrorMessage(
-        getErrorMessage(error, "Unable to load users. Please try again."),
-      );
+      setErrorMessage(getUsersLoadErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

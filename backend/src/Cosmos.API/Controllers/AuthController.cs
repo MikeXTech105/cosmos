@@ -17,7 +17,7 @@ public sealed class AuthController : ApiControllerBase
     public AuthController(IAuthService service) => _service = service;
 
     /// <summary>Authenticates a Cosmos ERP user.</summary>
-    /// <remarks>JWT contains only UserId, Username, and Email. Roles, pages, and permissions are returned in the response and must be treated as database-sourced authorization state.</remarks>
+    /// <remarks>JWT contains identity claims only (UserId, Username, Email, and display name). Roles, pages, and permissions are returned in the response and must be treated as database-sourced authorization state.</remarks>
     [AllowAnonymous]
     [HttpPost("login")]
     [SwaggerOperation(Summary = "Login", Description = "Verifies BCrypt password hash, creates a 15-minute JWT access token, creates a 30-day refresh token, and returns roles plus page permissions.")]
@@ -34,12 +34,26 @@ public sealed class AuthController : ApiControllerBase
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.RefreshTokenAsync(request, cancellationToken));
 
+    /// <summary>Gets the authenticated user's current, database-authoritative profile.</summary>
+    [Authorize]
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(ApiResponse<CurrentUserProfileDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken) =>
+        FromResponse(await _service.GetCurrentUserProfileAsync(CurrentUserId, cancellationToken));
+
+    /// <summary>Updates only the authenticated user's display name and email.</summary>
+    [Authorize]
+    [HttpPut("me")]
+    [ProducesResponseType(typeof(ApiResponse<CurrentUserProfileDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateMe(UpdateCurrentUserProfileRequest request, CancellationToken cancellationToken) =>
+        FromResponse(await _service.UpdateCurrentUserProfileAsync(CurrentUserId, request, cancellationToken));
+
     /// <summary>Revokes an active refresh token.</summary>
     [Authorize]
     [HttpPost("logout")]
     [SwaggerOperation(Summary = "Logout", Description = "Revokes the supplied refresh token.")]
     public async Task<IActionResult> Logout(LogoutRequest request, CancellationToken cancellationToken) =>
-        FromResponse(await _service.LogoutAsync(request, cancellationToken));
+        FromResponse(await _service.LogoutAsync(CurrentUserId, request, cancellationToken));
 
     /// <summary>Changes the password for the authenticated user.</summary>
     [Authorize]

@@ -2,6 +2,7 @@ using System.Data;
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Application.Oee;
 using Cosmos.Contracts.Common;
+using Cosmos.Contracts.Items;
 using Cosmos.Contracts.Oee;
 using Cosmos.Persistence.Connection;
 using Cosmos.Persistence.Dapper;
@@ -16,17 +17,35 @@ public sealed class OeeRepository(ISqlConnectionFactory factory) : IOeeRepositor
     public Task<bool> MouldExistsAsync(long id, CancellationToken ct) => Scalar<bool>("sp_OeeMould_Exists", new { Id = id }, ct);
     public Task<bool> DowntimeReasonExistsAsync(long? id, CancellationToken ct) => id is null ? Task.FromResult(true) : Scalar<bool>("sp_OeeDowntimeReason_Exists", new { Id = id }, ct);
 
-    public Task<PagedResult<OeeMachineDto>> GetMachinesAsync(OeeMasterListQuery query, CancellationToken ct) => Paged<OeeMachineDto>("sp_OeeMachine_GetList", query, query.Page, query.PageSize, ct);
+    public async Task<PagedResult<OeeMachineDto>> GetMachinesAsync(OeeMasterListQuery query, CancellationToken ct)
+    {
+        var rows = await Many<OeeMachineDto>("sp_OeeMachine_GetList", query, ct);
+        var summary = await Single<MasterListSummaryDto>("sp_OeeMachine_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<OeeMachineDto>(rows, query.Page, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<OeeMachineDto?> GetMachineAsync(long id, CancellationToken ct) => Single<OeeMachineDto>("sp_OeeMachine_GetById", new { Id = id }, ct);
     public Task<OeeMachineDto> SaveMachineAsync(long? id, CreateOeeMachineRequest request, long? userId, CancellationToken ct) => Save<OeeMachineDto>("sp_OeeMachine_Save", new { Id = id, request.MachineCode, request.MachineName, request.Tonnage, request.Location, request.DisplayOrder, request.IsActive, UserId = userId }, ct);
     public Task DeleteMachineAsync(long id, long? userId, CancellationToken ct) => Status("sp_OeeMachine_Delete", new { Id = id, UserId = userId }, ct);
 
-    public Task<PagedResult<OeeMouldDto>> GetMouldsAsync(OeeMasterListQuery query, CancellationToken ct) => Paged<OeeMouldDto>("sp_OeeMould_GetList", query, query.Page, query.PageSize, ct);
+    public async Task<PagedResult<OeeMouldDto>> GetMouldsAsync(OeeMasterListQuery query, CancellationToken ct)
+    {
+        var rows = await Many<OeeMouldDto>("sp_OeeMould_GetList", query, ct);
+        var summary = await Single<MasterListSummaryDto>("sp_OeeMould_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<OeeMouldDto>(rows, query.Page, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<OeeMouldDto?> GetMouldAsync(long id, CancellationToken ct) => Single<OeeMouldDto>("sp_OeeMould_GetById", new { Id = id }, ct);
     public Task<OeeMouldDto> SaveMouldAsync(long? id, CreateOeeMouldRequest request, long? userId, CancellationToken ct) => Save<OeeMouldDto>("sp_OeeMould_Save", new { Id = id, request.MouldName, request.TargetShotPerDay, request.Cavity, request.CycleTime, request.IsActive, UserId = userId }, ct);
     public Task DeleteMouldAsync(long id, long? userId, CancellationToken ct) => Status("sp_OeeMould_Delete", new { Id = id, UserId = userId }, ct);
 
-    public Task<PagedResult<OeeDowntimeReasonDto>> GetDowntimeReasonsAsync(OeeMasterListQuery query, CancellationToken ct) => Paged<OeeDowntimeReasonDto>("sp_OeeDowntimeReason_GetList", query, query.Page, query.PageSize, ct);
+    public async Task<PagedResult<OeeDowntimeReasonDto>> GetDowntimeReasonsAsync(OeeMasterListQuery query, CancellationToken ct)
+    {
+        var rows = await Many<OeeDowntimeReasonDto>("sp_OeeDowntimeReason_GetList", query, ct);
+        var summary = await Single<MasterListSummaryDto>("sp_OeeDowntimeReason_GetListSummary", new { query.Search, query.IsActive }, ct)
+            ?? new MasterListSummaryDto(0, 0, 0);
+        return new PagedResult<OeeDowntimeReasonDto>(rows, query.Page, query.PageSize, summary.TotalCount, summary);
+    }
     public Task<OeeDowntimeReasonDto?> GetDowntimeReasonAsync(long id, CancellationToken ct) => Single<OeeDowntimeReasonDto>("sp_OeeDowntimeReason_GetById", new { Id = id }, ct);
     public Task<OeeDowntimeReasonDto> SaveDowntimeReasonAsync(long? id, CreateOeeDowntimeReasonRequest request, long? userId, CancellationToken ct) => Save<OeeDowntimeReasonDto>("sp_OeeDowntimeReason_Save", new { Id = id, request.ReasonName, request.IsActive, UserId = userId }, ct);
     public Task DeleteDowntimeReasonAsync(long id, long? userId, CancellationToken ct) => Status("sp_OeeDowntimeReason_Delete", new { Id = id, UserId = userId }, ct);

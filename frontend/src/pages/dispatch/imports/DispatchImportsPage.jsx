@@ -34,6 +34,7 @@ import {
   DISPATCH_IMPORT_STATUS_LABELS,
   DISPATCH_IMPORT_TYPE_LABELS,
   DISPATCH_IMPORT_TYPES,
+  DISPATCH_INBOUND_STATUS_LABELS,
   DISPATCH_MAX_IMPORT_BYTES,
   toDispatchOptions,
 } from "../../../constants/dispatchEnums";
@@ -141,6 +142,198 @@ const ErrorTable = ({ offset = 0, rows }) => (
     ))}
   </DataTableShell>
 );
+
+const emptyManualEntry = () => ({
+  channelId: "",
+  importType: DISPATCH_IMPORT_TYPES.Sales,
+  warehouseId: "",
+  channelSku: "",
+  periodFrom: "",
+  periodTo: "",
+  snapshotDate: "",
+  salesQuantity: "",
+  availableQuantity: "",
+  reservedQuantity: "0",
+  damagedQuantity: "0",
+  inboundQuantity: "",
+  inboundStatus: "",
+  expectedArrivalDate: "",
+  referenceNumber: "",
+  sourceReference: "",
+});
+
+const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
+  const navigate = useNavigate();
+  const [entry, setEntry] = useState(emptyManualEntry);
+  const [warehouses, setWarehouses] = useState([]);
+  const [warehouseError, setWarehouseError] = useState("");
+  const [error, setError] = useState("");
+  const [validation, setValidation] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [committing, setCommitting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [correctionReason, setCorrectionReason] = useState("");
+  const [duplicateConflict, setDuplicateConflict] = useState(false);
+
+  useEffect(() => {
+    if (!entry.channelId) {
+      setWarehouses([]);
+      setWarehouseError("");
+      return undefined;
+    }
+
+    let active = true;
+    void supplyChainWarehouseService.dropdown({ channelId: entry.channelId })
+      .then((response) => {
+        if (!active) return;
+        setWarehouses(Array.isArray(response.data) ? response.data : response.data?.items ?? []);
+        setWarehouseError("");
+      })
+      .catch((requestError) => {
+        if (!active) return;
+        setWarehouses([]);
+        setWarehouseError(getDispatchError(requestError, "Unable to resolve channel warehouses."));
+      });
+    return () => { active = false; };
+  }, [entry.channelId]);
+
+  const update = (field, value) => {
+    setEntry((current) => ({ ...current, [field]: value }));
+    setError("");
+    setValidation(null);
+    setDuplicateConflict(false);
+  };
+
+  const createRow = () => {
+    const type = Number(entry.importType);
+    const quantity = (field) => Number(entry[field]);
+    const base = {
+      rowNumber: 1,
+      warehouseId: Number(entry.warehouseId),
+      channelSku: entry.channelSku.trim(),
+      sourceReference: entry.sourceReference.trim() || null,
+    };
+    if (type === DISPATCH_IMPORT_TYPES.Sales) {
+      return { ...base, periodFrom: entry.periodFrom || null, periodTo: entry.periodTo || null, salesQuantity: quantity("salesQuantity") };
+    }
+    if (type === DISPATCH_IMPORT_TYPES.WarehouseStock) {
+      return { ...base, snapshotDate: entry.snapshotDate || null, availableQuantity: quantity("availableQuantity"), reservedQuantity: quantity("reservedQuantity"), damagedQuantity: quantity("damagedQuantity") };
+    }
+    return { ...base, snapshotDate: entry.snapshotDate || null, inboundQuantity: quantity("inboundQuantity"), inboundStatus: Number(entry.inboundStatus), expectedArrivalDate: entry.expectedArrivalDate || null, referenceNumber: entry.referenceNumber.trim() || null };
+  };
+
+  const validateEntry = async () => {
+    const type = Number(entry.importType);
+    const required = [
+      [entry.channelId, "Choose a channel."],
+      [entry.warehouseId, "Choose a warehouse."],
+      [entry.channelSku.trim(), "Enter the channel SKU."],
+      [type === DISPATCH_IMPORT_TYPES.Sales ? entry.periodFrom : entry.snapshotDate, type === DISPATCH_IMPORT_TYPES.Sales ? "Enter the sales period start date." : "Enter the snapshot date."],
+      [type === DISPATCH_IMPORT_TYPES.Sales ? entry.periodTo : true, "Enter the sales period end date."],
+      [type === DISPATCH_IMPORT_TYPES.Sales ? entry.salesQuantity : type === DISPATCH_IMPORT_TYPES.WarehouseStock ? entry.availableQuantity : entry.inboundQuantity, "Enter a quantity."],
+      [type !== DISPATCH_IMPORT_TYPES.Inbound || entry.inboundStatus, "Choose the inbound status."],
+    ].find(([value]) => !String(value ?? "").trim());
+    if (required) {
+      setError(required[1]);
+      return;
+    }
+    if (warehouseError) {
+      setError(warehouseError);
+      return;
+    }
+
+    const row = createRow();
+    if (Object.values(row).some((value) => typeof value === "number" && !Number.isFinite(value))) {
+      setError("Quantities must be valid numbers.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const fileHash = await sha256Hex(JSON.stringify({ channelId: entry.channelId, importType: type, row }));
+      const response = await dispatchImportService.validate({
+        channelId: Number(entry.channelId),
+        fileHash,
+        importType: type,
+        originalFileName: `Manual dispatch entry — ${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`,
+        rows: [row],
+      });
+      setValidation(response.data);
+      toast.success(response.message || "Manual dispatch entry validated.");
+    } catch (requestError) {
+      const message = getDispatchError(requestError, "Manual entry could not be validated.");
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const commit = async (allowDuplicate = false) => {
+    if (allowDuplicate && !correctionReason.trim()) {
+      setError("A correction reason is required to repeat this entry.");
+      return;
+    }
+    setCommitting(true);
+    setError("");
+    try {
+      const response = await dispatchImportService.commit(validation.batchId, {
+        allowDuplicate,
+        correctionReason: allowDuplicate ? correctionReason.trim() : null,
+      });
+      setResult(response.data ?? { id: validation.batchId, committedRows: validation.validRows });
+      await onCommitted();
+      toast.success(response.message || "Manual dispatch entry committed.");
+    } catch (requestError) {
+      const message = getDispatchError(requestError, "Manual entry could not be committed.");
+      setDuplicateConflict(isConflictError(requestError) && /duplicate|previously committed|hash/i.test(message));
+      setError(message);
+      toast.error(message);
+    } finally {
+      setCommitting(false);
+    }
+  };
+
+  if (result) {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
+        <CheckCircle2 className="h-10 w-10 text-emerald-600" />
+        <h2 className="mt-4 text-xl font-semibold text-slate-900">Manual snapshot committed</h2>
+        <p className="mt-1 text-sm text-slate-500">The entry is now an immutable planning input, just like a CSV import.</p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <AppButton variant="secondary" onClick={onHistory}>View history</AppButton>
+          <AppButton variant="secondary" onClick={() => { setEntry(emptyManualEntry()); setValidation(null); setResult(null); }}>Add another entry</AppButton>
+          <AppButton onClick={() => navigate("/dispatch/runs?new=1")}>Create a planning run</AppButton>
+        </div>
+      </div>
+    );
+  }
+
+  const type = Number(entry.importType);
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-base font-semibold text-slate-900">Manual snapshot entry</h2>
+      <p className="mt-1 text-sm text-slate-500">Enter one warehouse/SKU snapshot. It uses the same server validation and commit audit trail as CSV imports.</p>
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <AppSelect label="Snapshot type" required options={toDispatchOptions(DISPATCH_IMPORT_TYPE_LABELS)} value={entry.importType} onChange={(value) => update("importType", value)} />
+        <AppSelect label="Channel" required options={channels.map((channel) => ({ label: `${channel.code} — ${channel.name}`, value: channel.id }))} value={entry.channelId} onChange={(value) => update("channelId", value)} />
+        <AppSelect label="Warehouse" required error={warehouseError} options={warehouses.map((warehouse) => ({ label: `${warehouse.warehouseCode} — ${warehouse.warehouseName}`, value: warehouse.id }))} value={entry.warehouseId} onChange={(value) => update("warehouseId", value)} />
+        <AppInput label="Channel SKU" required value={entry.channelSku} onChange={(event) => update("channelSku", event.target.value)} />
+        {type === DISPATCH_IMPORT_TYPES.Sales ? <><AppInput label="Period from" required type="date" value={entry.periodFrom} onChange={(event) => update("periodFrom", event.target.value)} /><AppInput label="Period to" required min={entry.periodFrom} type="date" value={entry.periodTo} onChange={(event) => update("periodTo", event.target.value)} /><AppInput label="Sales quantity" required min="0" step="0.000001" type="number" value={entry.salesQuantity} onChange={(event) => update("salesQuantity", event.target.value)} /></> : null}
+        {type === DISPATCH_IMPORT_TYPES.WarehouseStock ? <><AppInput label="Snapshot date" required type="date" value={entry.snapshotDate} onChange={(event) => update("snapshotDate", event.target.value)} /><AppInput label="Available quantity" required min="0" step="0.000001" type="number" value={entry.availableQuantity} onChange={(event) => update("availableQuantity", event.target.value)} /><AppInput label="Reserved quantity" min="0" step="0.000001" type="number" value={entry.reservedQuantity} onChange={(event) => update("reservedQuantity", event.target.value)} /><AppInput label="Damaged quantity" min="0" step="0.000001" type="number" value={entry.damagedQuantity} onChange={(event) => update("damagedQuantity", event.target.value)} /></> : null}
+        {type === DISPATCH_IMPORT_TYPES.Inbound ? <><AppInput label="Snapshot date" required type="date" value={entry.snapshotDate} onChange={(event) => update("snapshotDate", event.target.value)} /><AppInput label="Inbound quantity" required min="0" step="0.000001" type="number" value={entry.inboundQuantity} onChange={(event) => update("inboundQuantity", event.target.value)} /><AppSelect label="Inbound status" required options={toDispatchOptions(DISPATCH_INBOUND_STATUS_LABELS)} value={entry.inboundStatus} onChange={(value) => update("inboundStatus", value)} /><AppInput label="Expected arrival" type="date" value={entry.expectedArrivalDate} onChange={(event) => update("expectedArrivalDate", event.target.value)} /><AppInput label="Reference number" value={entry.referenceNumber} onChange={(event) => update("referenceNumber", event.target.value)} /></> : null}
+        <AppInput label="Source reference" helperText="Optional note or source reference for this snapshot." value={entry.sourceReference} onChange={(event) => update("sourceReference", event.target.value)} />
+      </div>
+      <SupplyChainInlineError message={error} title="Manual entry unavailable" />
+      {validation?.rowErrors?.length ? <div className="mt-5"><ErrorTable rows={validation.rowErrors} /></div> : null}
+      {duplicateConflict ? <div className="mt-4"><AppInput label="Correction reason" required value={correctionReason} onChange={(event) => setCorrectionReason(event.target.value)} /></div> : null}
+      <div className="mt-5 flex flex-wrap justify-end gap-2">
+        <AppButton variant="secondary" onClick={() => { setEntry(emptyManualEntry()); setValidation(null); setError(""); }}>Clear</AppButton>
+        {!validation ? <AppButton disabled={!canCreate || saving} isLoading={saving} loadingText="Validating…" onClick={() => void validateEntry()}>Validate entry</AppButton> : validation.canCommit ? <AppButton disabled={!canCreate || committing} isLoading={committing} loadingText="Committing…" onClick={() => void commit(duplicateConflict)}>Commit entry</AppButton> : null}
+      </div>
+    </div>
+  );
+};
 
 const ImportWizard = ({
   canCreate,
@@ -819,7 +1012,7 @@ const DispatchImportsPage = () => {
     <section className="min-w-0 space-y-5">
       <PageHeader
         badge="Dispatch Planning"
-        description="Parse CSV snapshots locally, validate typed rows, and commit them explicitly."
+        description="Add warehouse snapshots manually or import CSV files, then validate and commit them explicitly."
         title="Imports"
         actions={
           <>
@@ -871,10 +1064,10 @@ const DispatchImportsPage = () => {
               </AppButton>
             )}
             {capabilities.canCreate ? (
-              <AppButton onClick={() => setTab("new")}><Plus className="h-4 w-4" />New import</AppButton>
+              <AppButton onClick={() => setTab("new")}><Plus className="h-4 w-4" />New snapshot</AppButton>
             ) : (
               <DisabledDispatchAction reason="Starting an import requires Imports create permission.">
-                <AppButton disabled><Plus className="h-4 w-4" />New import</AppButton>
+                <AppButton disabled><Plus className="h-4 w-4" />New snapshot</AppButton>
               </DisabledDispatchAction>
             )}
           </>
@@ -891,7 +1084,8 @@ const DispatchImportsPage = () => {
       <ProcurementTabs
         active={tab}
         tabs={[
-          { id: "new", icon: Upload, label: "New import" },
+          { id: "new", icon: Upload, label: "CSV import" },
+          { id: "manual", icon: Plus, label: "Manual entry" },
           { id: "history", icon: History, label: "History" },
         ]}
         onChange={setTab}
@@ -906,6 +1100,17 @@ const DispatchImportsPage = () => {
           />
         ) : (
           <SupplyChainInlineError message="You do not have permission to validate or commit imports." />
+        )
+      ) : tab === "manual" ? (
+        capabilities.canCreate ? (
+          <ManualEntryWizard
+            canCreate={capabilities.canCreate}
+            channels={channels}
+            onCommitted={load}
+            onHistory={() => setTab("history")}
+          />
+        ) : (
+          <SupplyChainInlineError message="You do not have permission to validate or commit manual entries." />
         )
       ) : (
         <>

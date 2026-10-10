@@ -11,7 +11,13 @@ public sealed class JwtClaimsMiddleware
         if (context.User.Identity?.IsAuthenticated == true && context.User.FindFirst("UserId") is null)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { message = "Access token is missing required UserId claim." }, context.RequestAborted);
+            var correlationId = context.Items.TryGetValue(CorrelationIdMiddleware.HeaderName, out var value) ? value?.ToString() : null;
+            await context.Response.WriteAsJsonAsync(
+                Cosmos.Shared.Responses.ApiResponse.Failure(
+                    "Unauthorized",
+                    new[] { "Access token is missing required UserId claim." },
+                    correlationId),
+                context.RequestAborted);
             return;
         }
 

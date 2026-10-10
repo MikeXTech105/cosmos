@@ -38,6 +38,7 @@ public sealed class GetPartiesQueryValidator : AbstractValidator<GetPartiesQuery
         RuleFor(x => x.PageSize).InclusiveBetween(1, 200);
         RuleFor(x => x.SortBy).Must(x => string.IsNullOrWhiteSpace(x) || AllowedSortColumns.Contains(x)).WithMessage("SortBy is invalid.");
         RuleFor(x => x.SortDirection).Must(x => string.IsNullOrWhiteSpace(x) || string.Equals(x, "ASC", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "DESC", StringComparison.OrdinalIgnoreCase)).WithMessage("SortDirection must be ASC or DESC.");
+        RuleFor(x => x.PartyType).Must(PartyTypeValidation.IsValid).When(x => !string.IsNullOrWhiteSpace(x.PartyType)).WithMessage("PartyType must be Customer, Supplier, or Both.");
     }
 }
 
@@ -85,9 +86,18 @@ internal sealed class PartyCommandValidator<T> : AbstractValidator<T>
         RuleFor(x => GetDecimal(x, nameof(CreatePartyCommand.OpeningBalance))).GreaterThanOrEqualTo(0);
         RuleFor(x => GetInt(x, nameof(CreatePartyCommand.GSTTreatment))).GreaterThanOrEqualTo(0);
         RuleFor(x => GetInt(x, nameof(CreatePartyCommand.OpeningBalanceType))).GreaterThanOrEqualTo(0);
+        RuleFor(x => GetString(x, nameof(CreatePartyCommand.PartyType))).NotEmpty().Must(PartyTypeValidation.IsValid).WithMessage("PartyType must be Customer, Supplier, or Both.");
     }
 
     private static string? GetString(T instance, string propertyName) => typeof(T).GetProperty(propertyName)?.GetValue(instance) as string;
     private static int GetInt(T instance, string propertyName) => (int)(typeof(T).GetProperty(propertyName)?.GetValue(instance) ?? 0);
     private static decimal GetDecimal(T instance, string propertyName) => (decimal)(typeof(T).GetProperty(propertyName)?.GetValue(instance) ?? 0m);
+}
+
+internal static class PartyTypeValidation
+{
+    public static bool IsValid(string? value) =>
+        value is not null && (string.Equals(value, "Customer", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "Supplier", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(value, "Both", StringComparison.OrdinalIgnoreCase));
 }

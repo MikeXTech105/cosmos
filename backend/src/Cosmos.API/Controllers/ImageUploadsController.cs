@@ -1,18 +1,19 @@
 using Cosmos.API.Security;
+using Cosmos.API.Hosting;
 using Cosmos.Domain.Security;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Cosmos.API.Controllers;
 
 [Authorize]
 [Route("api/uploads")]
-public sealed class ImageUploadsController(IWebHostEnvironment environment) : ApiControllerBase
+public sealed class ImageUploadsController(IWebHostEnvironment environment, IOptions<ImageUploadOptions> options) : ApiControllerBase
 {
     private const long MaxImageSizeBytes = 5 * 1024 * 1024;
-    private const string WebsiteMediaPermission = "WebsiteManagement.Media";
 
     [HttpPost("images")]
     [ApiExplorerSettings(GroupName = "items")]
@@ -22,19 +23,16 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
     public async Task<IActionResult> UploadImage([FromForm] ImageUploadRequest request, CancellationToken cancellationToken)
         => await UploadImageAsync(request, "items", cancellationToken);
 
-    /// <summary>Uploads public CMS images for Website Products and Blog Posts.</summary>
+    /// <summary>Uploads public CMS images for Website Products and Blog Posts; warranty evidence never uses this endpoint.</summary>
     [HttpPost("website/images")]
     [ApiExplorerSettings(GroupName = "website-management")]
     [Consumes("multipart/form-data")]
-    [RequirePermission(WebsiteMediaPermission, PermissionAction.Create)]
+    [RequirePermission(WebsiteManagementPermissions.Media, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<ImageUploadDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> UploadWebsiteImage([FromForm] ImageUploadRequest request, CancellationToken cancellationToken)
         => await UploadImageAsync(request, "website", cancellationToken);
 
-    private async Task<IActionResult> UploadImageAsync(
-        ImageUploadRequest request,
-        string requiredFolder,
-        CancellationToken cancellationToken)
+    private async Task<IActionResult> UploadImageAsync(ImageUploadRequest request, string requiredFolder, CancellationToken cancellationToken)
     {
         var file = request.File;
         if (file is null || file.Length == 0)
@@ -47,20 +45,22 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
             throw InvalidFile("Image size must be 5 MB or less.");
         }
 
-        var uploadFolder = string.IsNullOrWhiteSpace(request.Folder)
-            ? requiredFolder
-            : request.Folder.Trim().ToLowerInvariant();
+        var uploadFolder = string.IsNullOrWhiteSpace(request.Folder) ? requiredFolder : request.Folder.Trim().ToLowerInvariant();
         if (!string.Equals(uploadFolder, requiredFolder, StringComparison.Ordinal))
         {
             throw InvalidFile($"Only the {requiredFolder} upload folder is allowed.");
         }
 
-        var imageType = await DetectImageTypeAsync(file, cancellationToken)
-            ?? throw InvalidFile("The file signature is not a supported image.");
+        var imageType = await DetectImageTypeAsync(file, cancellationToken) ?? throw InvalidFile("The file signature is not a supported image.");
         if (!string.IsNullOrWhiteSpace(file.ContentType)
             && !string.Equals(file.ContentType, imageType.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw InvalidFile("The declared content type does not match the image signature.");
+        }
+
+        if (!Request.IsHttps && !environment.IsDevelopment() && !options.Value.AllowHttp)
+        {
+            throw HttpsRequired();
         }
 
         var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
@@ -82,20 +82,15 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
         var relativeUrl = $"/uploads/{uploadFolder}/{fileName}";
         var imageUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}";
         return FromResponse(
-            ApiResponse<ImageUploadDto>.Success(
-                new ImageUploadDto(imageUrl, fileName, imageType.ContentType, file.Length),
-                "Image uploaded."),
+            ApiResponse<ImageUploadDto>.Success(new ImageUploadDto(imageUrl, fileName, imageType.ContentType, file.Length), "Image uploaded."),
             StatusCodes.Status201Created);
     }
 
-    private static async Task<ImageType?> DetectImageTypeAsync(
-        IFormFile file,
-        CancellationToken cancellationToken)
+    private static async Task<ImageType?> DetectImageTypeAsync(IFormFile file, CancellationToken cancellationToken)
     {
         var header = new byte[12];
         await using var stream = file.OpenReadStream();
         var bytesRead = await stream.ReadAsync(header.AsMemory(), cancellationToken);
-
         return bytesRead >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF
             ? new ImageType(".jpg", "image/jpeg")
             : bytesRead >= 8 && header[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })
@@ -108,7 +103,14 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment) : Ap
     }
 
     private static CosmosException InvalidFile(string message) =>
-        new(message, StatusCodes.Status400BadRequest, new[] { message });
+        new(message, StatusCodes.Status400BadRequest, new[] { message }, new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
+        {
+            ["file"] = new[] { message }
+        });
+
+    private static CosmosException HttpsRequired() =>
+        new("Image uploads require HTTPS outside development.", StatusCodes.Status403Forbidden,
+            new[] { "Image uploads require HTTPS outside development." });
 
     private sealed record ImageType(string Extension, string ContentType);
 }

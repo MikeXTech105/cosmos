@@ -6,6 +6,7 @@ using Cosmos.Contracts.Users;
 using Cosmos.Domain.Entities;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
+using Cosmos.Shared.Security;
 using FluentValidation;
 
 namespace Cosmos.Application.Services;
@@ -14,26 +15,78 @@ public sealed class UserService : IUserService
 {
     private readonly IUserRepository _repository;
     private readonly IAuditRepository _auditRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IValidator<CreateUserRequest> _createValidator;
     private readonly IValidator<UpdateUserRequest> _updateValidator;
     private readonly IValidator<AssignUserRolesRequest> _assignRolesValidator;
+    private readonly ICurrentUser _currentUser;
 
-    public UserService(IUserRepository repository, IAuditRepository auditRepository, IPasswordHasher passwordHasher, IValidator<CreateUserRequest> createValidator, IValidator<UpdateUserRequest> updateValidator, IValidator<AssignUserRolesRequest> assignRolesValidator)
+    public UserService(
+        IUserRepository repository,
+        IAuditRepository auditRepository,
+        IRoleRepository roleRepository,
+        IPasswordHasher passwordHasher,
+        IValidator<CreateUserRequest> createValidator,
+        IValidator<UpdateUserRequest> updateValidator,
+        IValidator<AssignUserRolesRequest> assignRolesValidator,
+        ICurrentUser currentUser)
     {
         _repository = repository;
         _auditRepository = auditRepository;
+        _roleRepository = roleRepository;
         _passwordHasher = passwordHasher;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
         _assignRolesValidator = assignRolesValidator;
+        _currentUser = currentUser;
     }
 
-    public async Task<ApiResponse<IReadOnlyCollection<UserDto>>> GetAllAsync(CancellationToken cancellationToken) =>
-        ApiResponse<IReadOnlyCollection<UserDto>>.Success(await _repository.GetAllAsync(cancellationToken));
+    public async Task<ApiResponse<IReadOnlyCollection<UserDto>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var users = await _repository.GetAllAsync(cancellationToken);
+        var usersWithRoles = await Task.WhenAll(users.Select(user => IncludeRolesAsync(user, cancellationToken)));
+        return ApiResponse<IReadOnlyCollection<UserDto>>.Success(usersWithRoles);
+    }
 
-    public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        ApiResponse<UserDto>.Success(await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found."));
+    public async Task<ApiResponse<IReadOnlyCollection<UserExportDto>>> ExportAsync(
+        string? search,
+        bool? isActive,
+        int? roleId,
+        string? sortBy,
+        string? sortDirection,
+        CancellationToken cancellationToken)
+    {
+        var allowedSorts = new[] { "FullName", "Username", "Email", "CreatedOn", "IsActive" };
+        var normalizedSort = string.IsNullOrWhiteSpace(sortBy)
+            ? "Username"
+            : allowedSorts.FirstOrDefault(value => string.Equals(value, sortBy.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (normalizedSort is null)
+        {
+            throw new CosmosException("Unsupported sort field.", 400, new[] { "Allowed values: FullName, Username, Email, CreatedOn, IsActive." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortBy"] = new[] { "Allowed values: FullName, Username, Email, CreatedOn, IsActive." } });
+        }
+
+        if (!string.IsNullOrWhiteSpace(sortDirection)
+            && !string.Equals(sortDirection, "ASC", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(sortDirection, "DESC", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CosmosException("SortDirection is invalid.", 400, new[] { "Allowed values: ASC, DESC." },
+                new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal) { ["SortDirection"] = new[] { "Allowed values: ASC, DESC." } });
+        }
+
+        var rows = await _repository.ExportAsync(search, isActive, roleId, normalizedSort, sortDirection, cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest(
+            "Users", "Export", AuditActions.Exported, null, null, _currentUser.UserId,
+            AuditModules.Security, "UserExport", null, "Exported users."), cancellationToken);
+        return ApiResponse<IReadOnlyCollection<UserExportDto>>.Success(rows);
+    }
+
+    public async Task<ApiResponse<UserDto>> GetByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var user = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found.");
+        return ApiResponse<UserDto>.Success(await IncludeRolesAsync(user, cancellationToken));
+    }
 
     public async Task<ApiResponse<UserDto>> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken)
     {
@@ -48,25 +101,27 @@ public sealed class UserService : IUserService
         };
 
         var created = await _repository.CreateAsync(user, cancellationToken);
-        await _auditRepository.AddAsync(new AuditEntryRequest("Users", created.Id.ToString(), "Create", null, AuditSerializer.Serialize(created), null), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("Users", created.Id.ToString(), "Create", null, AuditSerializer.Serialize(created), _currentUser.UserId), cancellationToken);
         return ApiResponse<UserDto>.Success(created, "User created.");
     }
 
     public async Task<ApiResponse<UserDto>> UpdateAsync(int id, UpdateUserRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_updateValidator, request, cancellationToken);
+        await EnsureManageableUserAsync(id, cancellationToken);
         var old = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found.");
         var updated = await _repository.UpdateAsync(id, request, cancellationToken);
-        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), "Update", AuditSerializer.Serialize(old), AuditSerializer.Serialize(updated), null), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), "Update", AuditSerializer.Serialize(old), AuditSerializer.Serialize(updated), _currentUser.UserId), cancellationToken);
         return ApiResponse<UserDto>.Success(updated, "User updated.");
     }
 
     public async Task<ApiResponse> DeleteAsync(int id, CancellationToken cancellationToken)
     {
+        await EnsureManageableUserAsync(id, cancellationToken);
         var old = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("User was not found.");
         var result = await _repository.DeleteAsync(id, cancellationToken);
         if (!result.Succeeded) throw new CosmosException(result.Message, result.StatusCode);
-        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), "Delete", AuditSerializer.Serialize(old), null, null), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), "Delete", AuditSerializer.Serialize(old), null, _currentUser.UserId), cancellationToken);
         return ApiResponse.Success(result.Message);
     }
 
@@ -76,17 +131,39 @@ public sealed class UserService : IUserService
     public async Task<ApiResponse> AssignRolesAsync(int id, AssignUserRolesRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_assignRolesValidator, request, cancellationToken);
+        await EnsureManageableUserAsync(id, cancellationToken);
+        foreach (var roleId in request.RoleIds)
+        {
+            var role = await _roleRepository.GetEntityByIdAsync(roleId, cancellationToken);
+            if (role?.IsSystemRole == true)
+            {
+                throw new NotFoundException("Role was not found.");
+            }
+        }
         var result = await _repository.AssignRolesAsync(id, request.RoleIds, cancellationToken);
         if (!result.Succeeded) throw new CosmosException(result.Message, result.StatusCode);
-        await _auditRepository.AddAsync(new AuditEntryRequest("UserRoles", id.ToString(), "Update", null, AuditSerializer.Serialize(request), null), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("UserRoles", id.ToString(), request.RoleIds.Count == 0 ? AuditActions.Unassigned : AuditActions.Assigned, null, AuditSerializer.Serialize(request), _currentUser.UserId), cancellationToken);
         return ApiResponse.Success(result.Message);
     }
 
     private async Task<ApiResponse> SetActiveAsync(int id, bool isActive, CancellationToken cancellationToken)
     {
+        await EnsureManageableUserAsync(id, cancellationToken);
         var result = await _repository.SetActiveAsync(id, isActive, cancellationToken);
         if (!result.Succeeded) throw new CosmosException(result.Message, result.StatusCode);
-        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), isActive ? "Activate" : "Deactivate", null, null, null), cancellationToken);
+        await _auditRepository.AddAsync(new AuditEntryRequest("Users", id.ToString(), isActive ? "Activate" : "Deactivate", null, null, _currentUser.UserId), cancellationToken);
         return ApiResponse.Success(result.Message);
     }
+
+    private async Task EnsureManageableUserAsync(int id, CancellationToken cancellationToken)
+    {
+        var user = await _repository.GetEntityByIdAsync(id, cancellationToken);
+        if (user is null || user.IsSystemUser)
+        {
+            throw new NotFoundException("User was not found.");
+        }
+    }
+
+    private async Task<UserDto> IncludeRolesAsync(UserDto user, CancellationToken cancellationToken) =>
+        user with { Roles = await _repository.GetRolesByUserIdAsync(user.Id, cancellationToken) };
 }
