@@ -8,17 +8,26 @@ export const DISPATCH_IMPORT_TYPE_LABELS = Object.freeze({
   [DISPATCH_IMPORT_TYPES.Sales]: "Sales",
   [DISPATCH_IMPORT_TYPES.WarehouseStock]: "Warehouse stock",
   [DISPATCH_IMPORT_TYPES.Inbound]: "Inbound",
+  DispatchWarehouseSales: "Sales",
+  DispatchWarehouseStock: "Warehouse stock",
+  DispatchWarehouseInbound: "Inbound",
 });
 
-// CONFIRM: Swagger exposes the import batch status as an integer without labels.
+// Mirrors Cosmos.Domain.SupplyChain.SupplyChainImportStatus and the import procedures.
 export const DISPATCH_IMPORT_STATUS = Object.freeze({
-  Validated: 1,
-  Committed: 2,
-  Cancelled: 3,
+  Uploaded: 1,
+  Validating: 2,
+  Validated: 3,
+  ValidationFailed: 4,
+  Committed: 5,
+  Cancelled: 6,
 });
 
 export const DISPATCH_IMPORT_STATUS_LABELS = Object.freeze({
+  [DISPATCH_IMPORT_STATUS.Uploaded]: "Uploaded",
+  [DISPATCH_IMPORT_STATUS.Validating]: "Validating",
   [DISPATCH_IMPORT_STATUS.Validated]: "Validated",
+  [DISPATCH_IMPORT_STATUS.ValidationFailed]: "Validation failed",
   [DISPATCH_IMPORT_STATUS.Committed]: "Committed",
   [DISPATCH_IMPORT_STATUS.Cancelled]: "Cancelled",
 });
