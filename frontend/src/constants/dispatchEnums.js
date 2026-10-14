@@ -8,9 +8,6 @@ export const DISPATCH_IMPORT_TYPE_LABELS = Object.freeze({
   [DISPATCH_IMPORT_TYPES.Sales]: "Sales",
   [DISPATCH_IMPORT_TYPES.WarehouseStock]: "Warehouse stock",
   [DISPATCH_IMPORT_TYPES.Inbound]: "Inbound",
-  DispatchWarehouseSales: "Sales",
-  DispatchWarehouseStock: "Warehouse stock",
-  DispatchWarehouseInbound: "Inbound",
 });
 
 // Mirrors Cosmos.Domain.SupplyChain.SupplyChainImportStatus and the import procedures.
