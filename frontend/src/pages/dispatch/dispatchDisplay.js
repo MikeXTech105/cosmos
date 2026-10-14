@@ -49,8 +49,8 @@ export const formatDispatchDateTime = (value, fallback = "—") => {
 };
 
 const getLabel = (labels, value, prefix) => {
-  const numericLabel = labels[Number(value)];
-  if (numericLabel) return numericLabel;
+  const directLabel = labels[value] ?? labels[Number(value)];
+  if (directLabel) return directLabel;
 
   const normalized = String(value ?? "").trim().toLowerCase();
   const textLabel = Object.values(labels).find(
