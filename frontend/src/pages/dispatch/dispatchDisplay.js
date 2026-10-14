@@ -10,6 +10,12 @@ import {
   getApiErrorMessage,
 } from "../../utils/apiError";
 
+const DISPATCH_IMPORT_TYPE_DATABASE_LABELS = Object.freeze({
+  DispatchWarehouseSales: "Sales",
+  DispatchWarehouseStock: "Warehouse stock",
+  DispatchWarehouseInbound: "Inbound",
+});
+
 export const formatDispatchNumber = (
   value,
   fallback = "—",
@@ -61,6 +67,7 @@ const getLabel = (labels, value, prefix) => {
 };
 
 export const getDispatchImportTypeLabel = (value) =>
+  DISPATCH_IMPORT_TYPE_DATABASE_LABELS[value] ??
   getLabel(DISPATCH_IMPORT_TYPE_LABELS, value, "Type");
 export const getDispatchImportStatusLabel = (value) =>
   getLabel(DISPATCH_IMPORT_STATUS_LABELS, value, "Status");
