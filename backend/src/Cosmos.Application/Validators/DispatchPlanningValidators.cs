@@ -38,11 +38,22 @@ public sealed class ValidateDispatchSnapshotImportRequestValidator : AbstractVal
     public ValidateDispatchSnapshotImportRequestValidator()
     {
         RuleFor(x => x.OriginalFileName).NotEmpty().MaximumLength(260);
-        RuleFor(x => x.FileHash).NotEmpty().Length(64).Matches("^[A-Fa-f0-9]{64}$");
+        RuleFor(x => x.FileHash).Must(x => string.IsNullOrWhiteSpace(x) || (x.Length == 64 && System.Text.RegularExpressions.Regex.IsMatch(x, "^[A-Fa-f0-9]{64}$")))
+            .WithMessage("FileHash must be a SHA-256 hexadecimal value when supplied.");
         RuleFor(x => x.ImportType).Must(x => Enum.IsDefined(typeof(DispatchSnapshotImportType), x));
         RuleFor(x => x.ChannelId).GreaterThan(0);
         RuleFor(x => x.Rows).NotEmpty().Must(x => x.Count <= 50_000).WithMessage("Import cannot exceed 50,000 rows.");
         RuleForEach(x => x.Rows).SetValidator(new DispatchSnapshotImportRowRequestValidator());
+    }
+}
+
+public sealed class ValidateManualDispatchSnapshotRequestValidator : AbstractValidator<ValidateManualDispatchSnapshotRequest>
+{
+    public ValidateManualDispatchSnapshotRequestValidator()
+    {
+        RuleFor(x => x.ImportType).Must(x => Enum.IsDefined(typeof(DispatchSnapshotImportType), x));
+        RuleFor(x => x.ChannelId).GreaterThan(0);
+        RuleFor(x => x.Row).NotNull().SetValidator(new DispatchSnapshotImportRowRequestValidator());
     }
 }
 

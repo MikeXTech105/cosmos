@@ -6,6 +6,7 @@ public sealed record PartyDto(
     Guid Id,
     string PartyCode,
     string PartyName,
+    string PartyType,
     string? MobileNo,
     string? Email,
     int GSTTreatment,
@@ -35,10 +36,7 @@ public sealed record PartyDto(
     Guid? ModifiedBy,
     bool IsDeleted,
     DateTime? DeletedOn,
-    byte[] RowVersion)
-{
-    public string PartyType { get; init; } = "Both";
-}
+    byte[] RowVersion);
 
 public sealed record PartyListItemDto(
     Guid Id,

@@ -13,6 +13,7 @@ public interface IDispatchPlanningService
     Task<ApiResponse> DeleteSkuSettingAsync(long id, CancellationToken ct);
 
     Task<ApiResponse<DispatchSnapshotImportValidationDto>> ValidateSnapshotImportAsync(ValidateDispatchSnapshotImportRequest request, CancellationToken ct);
+    Task<ApiResponse<DispatchSnapshotImportValidationDto>> ValidateManualSnapshotAsync(ValidateManualDispatchSnapshotRequest request, CancellationToken ct);
     Task<ApiResponse<DispatchSnapshotImportBatchDto>> CommitSnapshotImportAsync(long id, CommitDispatchSnapshotImportRequest request, CancellationToken ct);
     Task<ApiResponse> CancelSnapshotImportAsync(long id, CancelDispatchSnapshotImportRequest request, CancellationToken ct);
     Task<ApiResponse<PagedResult<DispatchSnapshotImportBatchDto>>> GetSnapshotImportBatchesAsync(DispatchSnapshotImportBatchQuery query, CancellationToken ct);

@@ -22,7 +22,7 @@ The migration `20260728_dispatch_planning_module.sql` adds:
 - `DispatchPlanningRuns` and `DispatchCompanyStockSnapshots` – immutable calculation inputs for a run.
 - `DispatchRecommendationResults` and `DispatchAllocations` – calculated/final recommendation and allocation audit rows.
 
-The shared batch remains the owner of import file identity, validation counts, batch status, duplicate-file protection, provenance, and commit history. `DispatchImportStagedRows` is intentionally an extension because the generic staged row has no warehouse, stock, inbound-status, or date-range columns.
+The shared batch remains the owner of import file identity, validation counts, batch status, duplicate-file protection, provenance, and commit history. `DispatchImportStagedRows` is intentionally an extension because the generic staged row has no warehouse, stock, inbound-status, or date-range columns. Snapshots can enter through either CSV import (many typed rows) or a Manual Entry form (one typed row); both validate, stage, commit, and become immutable through the same procedures. When a browser cannot generate a SHA-256 file hash, the API derives a deterministic hash from the normalized snapshot payload; manual entries always use that server-generated hash.
 
 ## Calculation and allocation rules
 

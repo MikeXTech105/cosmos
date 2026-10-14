@@ -73,10 +73,15 @@ public sealed record DispatchSnapshotImportRowRequest(
 
 public sealed record ValidateDispatchSnapshotImportRequest(
     string OriginalFileName,
-    string FileHash,
+    string? FileHash,
     int ImportType,
     long ChannelId,
     IReadOnlyCollection<DispatchSnapshotImportRowRequest> Rows);
+
+public sealed record ValidateManualDispatchSnapshotRequest(
+    int ImportType,
+    long ChannelId,
+    DispatchSnapshotImportRowRequest Row);
 
 public sealed record DispatchSnapshotImportValidationDto(
     long BatchId,

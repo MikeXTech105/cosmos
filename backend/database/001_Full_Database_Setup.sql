@@ -1011,7 +1011,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_Party_GetById
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, PartyCode, PartyName, MobileNo, Email, GSTTreatment, GSTIN, LegalName, TradeName,
+    SELECT Id, PartyCode, PartyName, CAST(N'Both' AS NVARCHAR(10)) AS PartyType, MobileNo, Email, GSTTreatment, GSTIN, LegalName, TradeName,
            BillingAddressLine1, BillingAddressLine2, BillingCity, BillingState, BillingCountry, BillingPincode,
            ShippingAddressLine1, ShippingAddressLine2, ShippingCity, ShippingState, ShippingCountry, ShippingPincode,
            OpeningBalance, OpeningBalanceType, CreditLimit, CreditPeriodDays, IsActive, CreatedOn, CreatedBy,
