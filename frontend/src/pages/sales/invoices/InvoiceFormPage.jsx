@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
+import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -61,7 +62,7 @@ const invoiceLineSchema = z.object({
     .min(0, "Discount amount cannot be negative"),
   taxRateId: z.union([z.number(), z.string(), z.null()]).optional(),
   taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
-});
+}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" });
 
 const initialPaymentSchema = z
   .object({
@@ -70,7 +71,7 @@ const initialPaymentSchema = z
       .number()
       .min(0, "Payment amount cannot be negative")
       .optional(),
-    paymentMode: z.coerce.number().int().min(0, "Payment mode is required"),
+    paymentMode: enumNumber(SALES_PAYMENT_MODE, "Payment mode"),
     referenceNumber: z.string().max(100, "Reference is too long").optional(),
     notes: z.string().max(500, "Payment notes are too long").optional(),
   })
@@ -88,16 +89,16 @@ const invoiceSchema = z.object({
   // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
   customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
   invoiceNumber: z.string().optional(),
-  invoiceDate: z.string().min(1, "Invoice date is required"),
-  dueDate: z.string().optional(),
+  invoiceDate: requiredDate("Invoice date"),
+  dueDate: optionalDate,
   discountAmount: z.coerce
     .number()
     .min(0, "Invoice discount cannot be negative"),
   notes: z.string().max(1000, "Notes are too long").optional(),
-  termsAndConditions: z.string().max(1000, "Terms are too long").optional(),
+  termsAndConditions: z.string().max(2000, "Terms are too long").optional(),
   initialPayment: initialPaymentSchema.optional(),
   items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
-});
+}).superRefine((values, context) => dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date"));
 
 const getLookupList = (response) => {
   const data = response?.data;

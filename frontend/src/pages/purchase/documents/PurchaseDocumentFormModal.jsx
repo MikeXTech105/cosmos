@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -36,23 +37,26 @@ const lineSchema = z.object({
   purchaseBillItemId: z.union([z.number(), z.string(), z.null()]).optional(),
 });
 
-const documentSchema = z.object({
+const documentSchema = (dateField) => z.object({
   supplierId: z.string().uuid("Supplier is required"),
   supplierInvoiceNo: z.string().optional(),
   purchaseBillId: z.union([z.number(), z.string(), z.null()]).optional(),
-  billDate: z.string().optional(),
-  dueDate: z.string().optional(),
-  orderDate: z.string().optional(),
-  expectedDeliveryDate: z.string().optional(),
-  returnDate: z.string().optional(),
-  paymentType: z.coerce.number().optional(),
+  billDate: dateField === "billDate" ? requiredDate("Document date") : optionalDate,
+  dueDate: optionalDate,
+  orderDate: dateField === "orderDate" ? requiredDate("Document date") : optionalDate,
+  expectedDeliveryDate: optionalDate,
+  returnDate: dateField === "returnDate" ? requiredDate("Document date") : optionalDate,
+  paymentType: dateField === "billDate" ? enumNumber(PAYMENT_TYPE, "Payment type") : z.coerce.number().optional(),
   discountAmount: z.coerce.number().min(0),
   roundOff: z.coerce.number(),
   paidAmount: z.coerce.number().min(0),
   reason: z.string().optional(),
   termsAndConditions: z.string().optional(),
-  notes: z.string().optional(),
+  notes: z.string().max(1000, "Notes are too long").optional(),
   items: z.array(lineSchema).min(1, "Add at least one line item"),
+}).superRefine((values, context) => {
+  if (dateField === "billDate") dateOrder(values, context, "billDate", "dueDate", "Due date cannot be before bill date");
+  if (dateField === "orderDate") dateOrder(values, context, "orderDate", "expectedDeliveryDate", "Expected delivery cannot be before order date");
 });
 
 const getDefaultValues = (record, config) => {
@@ -108,7 +112,7 @@ const PurchaseDocumentFormModal = ({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(documentSchema),
+    resolver: zodResolver(documentSchema(config.dateField)),
     defaultValues: getDefaultValues(record, config),
   });
   const watchedItems = useWatch({ control, name: "items" }) ?? [];

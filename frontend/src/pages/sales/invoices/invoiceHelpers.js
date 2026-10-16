@@ -556,6 +556,8 @@ export const buildTemplateInvoice = (invoice, customer = null) => {
     unit: item.unitNameSnapshot ?? item.unitName ?? "",
     quantity: toNumber(item.quantity),
     rate: toNumber(item.rate),
+    taxableAmount: Math.max(0, toNumber(item.quantity) * toNumber(item.rate) *
+      (1 - toNumber(item.discountPercentage) / 100) - toNumber(item.discountAmount)),
     discountPercentage: toNumber(item.discountPercentage),
     discountAmount: toNumber(item.discountAmount),
     taxPercentage: toNumber(
@@ -571,6 +573,19 @@ export const buildTemplateInvoice = (invoice, customer = null) => {
     invoiceNumber: invoice?.invoiceNumber ?? `INV-${invoice?.id ?? "DRAFT"}`,
     invoiceDate: invoice?.invoiceDate,
     dueDate: invoice?.dueDate,
+    documentTitle: invoice?.documentTitle,
+    eWayBillNumber: invoice?.eWayBillNumber,
+    placeOfSupply: invoice?.placeOfSupply,
+    purchaseOrderNumber: invoice?.purchaseOrderNumber,
+    numberOfBoxes: invoice?.numberOfBoxes,
+    purposeOfTransfer: invoice?.purposeOfTransfer,
+    irn: invoice?.irn,
+    shipTo: customer?.shippingAddressLine1 ? {
+      name: invoice?.customerName ?? getCustomerName(customer),
+      address: [customer.shippingAddressLine1, customer.shippingAddressLine2,
+        customer.shippingCity, customer.shippingState, customer.shippingPincode].filter(Boolean).join(", "),
+      gstin: customer.gstin ?? "",
+    } : null,
     status: invoice?.status,
     statusLabel: getInvoiceStatusMeta(invoice?.status).label,
     paymentStatus: invoice?.paymentStatus,

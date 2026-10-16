@@ -256,11 +256,10 @@ const PackagingProfileFormPage = () => {
               disabled={readOnly || saving}
               error={errors.packagingName}
               label="Packaging name"
-              required
               value={form.packagingName}
               onChange={(event) => setField("packagingName", event.target.value)}
             />
-            {numericField("unitsPerBox", "Units per box", { min: "0.000001", required: true })}
+            {numericField("unitsPerBox", "Units per box", { min: "0", required: true, step: "any" })}
             {numericField("length", "Length")}
             {numericField("width", "Width")}
             {numericField("height", "Height")}

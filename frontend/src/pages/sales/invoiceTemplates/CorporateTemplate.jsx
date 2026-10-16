@@ -15,7 +15,7 @@ const CorporateTemplate = ({ invoice }) => {
       <div className="grid gap-8 sm:grid-cols-[220px_1fr]">
         <aside className="rounded-2xl bg-slate-950 p-5 text-white">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl font-bold text-slate-950">
-            C
+            W
           </div>
           <h2 className="mt-6 text-xl font-bold">{COMPANY_PROFILE.name}</h2>
           <p className="mt-3 text-xs leading-5 text-white/65">

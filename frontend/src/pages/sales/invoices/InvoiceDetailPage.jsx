@@ -345,8 +345,20 @@ const InvoiceDetailPage = () => {
       return;
     }
 
-    window.print();
-  }, [capabilities.canExport]);
+    const previousTitle = document.title;
+    document.title = `WEWEL Invoice ${invoice?.invoiceNumber ?? id}`;
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      window.print();
+    } catch (error) {
+      restoreTitle();
+      throw error;
+    }
+  }, [capabilities.canExport, invoice?.invoiceNumber, id]);
 
   if (invoiceState.detailLoading && !invoice) {
     return (

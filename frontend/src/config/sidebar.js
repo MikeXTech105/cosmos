@@ -77,9 +77,9 @@ export const enabledModules = [
 export const sidebarCategories = [
   {
     id: "rbac",
-    label: "RBAC",
+    label: "Administration",
     icon: "shieldcheck",
-    sortOrder: 20,
+    sortOrder: 85,
   },
   {
     id: "inventory",

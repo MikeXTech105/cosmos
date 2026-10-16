@@ -117,6 +117,7 @@ const EmployeeFormPage = () => {
     register,
     reset,
     setValue,
+    setError,
   } = useForm({
     resolver: zodResolver(hrEmployeeSchema),
     defaultValues: mapEmployeeToForm(null),
@@ -252,6 +253,11 @@ const EmployeeFormPage = () => {
       return;
     }
 
+    if (isEdit && hasBankDetails(detailBankDetails) && !hasBankDetails(values)) {
+      setError("bankName", { type: "manual", message: "Existing bank details cannot be cleared here. Enter bank name, account number and IFSC." });
+      return;
+    }
+
     const payload = mapFormToPayload(values, { includeBankDetails: !isEdit });
     const bankDetails = mapFormToBankDetails(values);
     const shouldSaveBankDetails = isEdit && (hasBankDetails(values) || hasBankDetails(detailBankDetails));
@@ -344,7 +350,7 @@ const EmployeeFormPage = () => {
             <div className="grid gap-4 md:grid-cols-3">
               <AppInput id="employeeCode" label="Employee Code" required error={errors.employeeCode?.message} {...register("employeeCode")} />
               <AppInput id="firstName" label="First Name" required error={errors.firstName?.message} {...register("firstName")} />
-              <AppInput id="lastName" label="Last Name" required error={errors.lastName?.message} {...register("lastName")} />
+              <AppInput id="lastName" label="Last Name" error={errors.lastName?.message} {...register("lastName")} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -355,15 +361,15 @@ const EmployeeFormPage = () => {
                   <AppSelect label="Gender" value={field.value} onChange={field.onChange} options={HR_GENDER_OPTIONS} error={errors.gender?.message} />
                 )}
               />
-              <AppInput id="dateOfBirth" label="Date of Birth" type="date" required error={errors.dateOfBirth?.message} {...register("dateOfBirth")} />
+              <AppInput id="dateOfBirth" label="Date of Birth" type="date" error={errors.dateOfBirth?.message} {...register("dateOfBirth")} />
               <AppInput id="joiningDate" label="Joining Date" type="date" required error={errors.joiningDate?.message} {...register("joiningDate")} />
             </div>
           </Section>
 
           <Section title="Contact">
             <div className="grid gap-4 md:grid-cols-2">
-              <AppInput id="mobile" label="Mobile" required error={errors.mobile?.message} {...register("mobile")} />
-              <AppInput id="email" label="Email" type="email" required error={errors.email?.message} {...register("email")} />
+              <AppInput id="mobile" label="Mobile" error={errors.mobile?.message} {...register("mobile")} />
+              <AppInput id="email" label="Email" type="email" error={errors.email?.message} {...register("email")} />
             </div>
           </Section>
 
@@ -452,7 +458,7 @@ const EmployeeFormPage = () => {
                 name="status"
                 control={control}
                 render={({ field }) => (
-                  <AppSelect label="Status" value={field.value} onChange={field.onChange} options={HR_EMPLOYEE_STATUS_OPTIONS} error={errors.status?.message} />
+                  <AppSelect label="Status" value={field.value} onChange={field.onChange} options={isEdit ? HR_EMPLOYEE_STATUS_OPTIONS : HR_EMPLOYEE_STATUS_OPTIONS.filter(option => option.value !== 3)} error={errors.status?.message} />
                 )}
               />
             </div>

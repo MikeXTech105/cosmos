@@ -3,6 +3,7 @@ import { Check, CreditCard } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { enumNumber, requiredDate } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -17,9 +18,9 @@ import {
 } from "./invoiceHelpers";
 
 const paymentSchema = z.object({
-  paymentDate: z.string().min(1, "Payment date is required"),
+  paymentDate: requiredDate("Payment date"),
   amount: z.coerce.number().positive("Amount must be greater than 0"),
-  paymentMode: z.coerce.number().int().min(0, "Payment mode is required"),
+  paymentMode: enumNumber(SALES_PAYMENT_MODE, "Payment mode"),
   referenceNumber: z.string().max(100, "Reference is too long").optional(),
   notes: z.string().max(500, "Notes are too long").optional(),
 });
