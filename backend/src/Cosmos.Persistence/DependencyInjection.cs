@@ -1,4 +1,5 @@
 using Cosmos.Application.Abstractions.Persistence;
+using Cosmos.Application.Abstractions.Services;
 using Cosmos.Persistence.Connection;
 using Cosmos.Persistence.Dapper;
 using Cosmos.Persistence.Repositories;
@@ -42,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IWebsiteManagementRepository, WebsiteManagementRepository>();
         services.AddScoped<IRojmelRepository, RojmelRepository>();
         services.AddScoped<IGstRepository, GstRepository>();
+        services.AddScoped<IHsnGstRepository, HsnGstRepository>();
+        services.AddScoped<IGstCalculationReferenceResolver, GstCalculationReferenceResolver>();
         return services;
     }
 }

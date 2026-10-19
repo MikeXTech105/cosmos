@@ -325,6 +325,8 @@ export const getInvoiceTotals = (items = [], invoiceDiscountAmount = 0) => {
 export const getDefaultInvoiceLine = () => ({
   itemId: "",
   itemName: "",
+  hsnSacCode: "",
+  hsnSource: "",
   quantity: "1",
   rate: "0",
   discountPercentage: "0",
@@ -362,6 +364,8 @@ export const getInvoiceDefaultValues = (invoice) => {
         ? invoice.items.map((item) => ({
             itemId: item.itemId ?? "",
             itemName: item.itemNameSnapshot ?? item.itemName ?? "",
+            hsnSacCode: item.hsnSacCodeSnapshot ?? item.hsnCode ?? "",
+            hsnSource: item.hsnSource ?? "",
             quantity: String(item.quantity ?? 1),
             rate: String(item.rate ?? 0),
             discountPercentage: String(item.discountPercentage ?? 0),

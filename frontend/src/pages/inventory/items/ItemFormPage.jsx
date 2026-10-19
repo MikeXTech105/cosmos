@@ -18,6 +18,8 @@ import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useCapabilities from "../../../hooks/useCapabilities";
+import { hsnGstService } from "../../../services/gst/hsnGstService";
 import useManufacturingPreference from "../../../hooks/useManufacturingPreference";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { unitService } from "../../../services/inventory/unitService";
@@ -177,6 +179,7 @@ const ItemFormPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const capabilities = useInventoryCapabilities({ label: "Items", resource: "items", route: "/items" });
+  const hsnCapabilities = useCapabilities({ actions: ["view", "update"], label: "GST Product Mapping", pageName: "GST.ProductMapping", resource: "GST.ProductMapping", route: "/gst/product-mappings" });
   const { manufacturingEnabled } = useManufacturingPreference();
   const canCreateCategory = useCreatePermission({ label: "Categories", resource: "categories", route: "/categories" });
   const canCreateUnit = useCreatePermission({ label: "Units", resource: "units", route: "/units" });
@@ -190,6 +193,7 @@ const ItemFormPage = () => {
     categories: [], categoriesError: null, categoriesLoading: true,
     units: [], unitsError: null, unitsLoading: true,
   });
+  const [hsnState, setHsnState] = useState({ classification: null, error: "", loading: false, options: [], saving: false, search: "", selectedId: "", effectiveFrom: new Date().toISOString().slice(0, 10) });
 
   const {
     control,
@@ -265,6 +269,47 @@ const ItemFormPage = () => {
     }
   }, [detailItem, id, isEdit, reset]);
 
+  const loadHsnClassification = useCallback(async () => {
+    if (!isEdit || !hsnCapabilities.canView) return;
+
+    setHsnState((current) => ({ ...current, loading: true, error: "" }));
+    try {
+      const [classificationResponse, hsnResponse] = await Promise.all([
+        hsnGstService.getEffectiveClassification(id, new Date().toISOString().slice(0, 10)),
+        hsnGstService.listHsnSac({ IsActive: true, PageNumber: 1, PageSize: 200 }),
+      ]);
+      const hsnData = hsnResponse?.data ?? hsnResponse;
+      setHsnState((current) => ({
+        ...current,
+        classification: classificationResponse?.data ?? classificationResponse,
+        options: Array.isArray(hsnData) ? hsnData : hsnData?.items ?? [],
+        loading: false,
+      }));
+    } catch (error) {
+      setHsnState((current) => ({ ...current, loading: false, error: getActionError(error, "Unable to load HSN/SAC classification.") }));
+    }
+  }, [hsnCapabilities.canView, id, isEdit]);
+
+  useEffect(() => { void loadHsnClassification(); }, [loadHsnClassification]);
+
+  const saveHsnOverride = async () => {
+    if (!hsnState.selectedId) {
+      toast.error("Select an active HSN/SAC code.");
+      return;
+    }
+    setHsnState((current) => ({ ...current, saving: true, error: "" }));
+    try {
+      await hsnGstService.saveItemOverride(id, { hsnSacId: Number(hsnState.selectedId), effectiveFrom: hsnState.effectiveFrom, effectiveTo: null });
+      toast.success("Product HSN/SAC override saved.");
+      setHsnState((current) => ({ ...current, selectedId: "" }));
+      await loadHsnClassification();
+    } catch (error) {
+      setHsnState((current) => ({ ...current, error: getActionError(error, "Unable to save the HSN/SAC override.") }));
+    } finally {
+      setHsnState((current) => ({ ...current, saving: false }));
+    }
+  };
+
   const categoryOptions = useMemo(
     () => lookups.categories.map((category) => ({ value: Number(category.id), label: category.name })),
     [lookups.categories],
@@ -273,6 +318,12 @@ const ItemFormPage = () => {
     () => lookups.units.map((unit) => ({ value: Number(unit.id), label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name })),
     [lookups.units],
   );
+  const hsnOptions = useMemo(() => {
+    const query = hsnState.search.trim().toLowerCase();
+    return hsnState.options
+      .filter((entry) => !query || `${entry.code} ${entry.codeType} ${entry.description}`.toLowerCase().includes(query))
+      .map((entry) => ({ value: String(entry.id), label: `${entry.code} · ${entry.codeType} — ${entry.description}` }));
+  }, [hsnState.options, hsnState.search]);
 
   const visibleTab = (
     (itemType === ITEM_TYPE.SERVICE && activeTab !== "pricing")
@@ -534,6 +585,25 @@ const ItemFormPage = () => {
               />
             </div>
           </Section>
+
+          {isEdit && hsnCapabilities.canView && (
+            <Section title="HSN/SAC classification">
+              <p className="mb-4 text-sm text-slate-500">Classification is stored as a dated product override. It is separate from the legacy GST rate field and does not change invoice tax calculation.</p>
+              {hsnState.loading ? <p className="text-sm text-slate-500">Loading classification…</p> : (
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                    <p className="font-semibold text-slate-900">{hsnState.classification?.code ? `${hsnState.classification.code} · ${hsnState.classification.codeType}` : hsnState.classification?.legacyHsnCode || "No active HSN/SAC mapping"}</p>
+                    <p className="mt-1 text-xs text-slate-500">{hsnState.classification?.description || "Select an active master code to add a product override."}</p>
+                    <p className="mt-2 text-xs font-medium text-slate-600">Source: {hsnState.classification?.source === "ProductOverride" ? "Product override" : hsnState.classification?.source === "CategoryDefault" ? "Category default" : "No active mapping"}</p>
+                  </div>
+                  {hsnCapabilities.canUpdate && <div className="space-y-2"><AppInput label="Search active HSN/SAC" value={hsnState.search} onChange={(event) => setHsnState((current) => ({ ...current, search: event.target.value }))} placeholder="Code or description" /><AppSelect aria-label="HSN/SAC override" options={[{ value: "", label: "Select HSN/SAC" }, ...hsnOptions]} value={hsnState.selectedId} onChange={(selectedId) => setHsnState((current) => ({ ...current, selectedId }))} /><AppInput label="Effective from" type="date" value={hsnState.effectiveFrom} onChange={(event) => setHsnState((current) => ({ ...current, effectiveFrom: event.target.value }))} /></div>}
+                  {hsnCapabilities.canUpdate && <AppButton type="button" isLoading={hsnState.saving} onClick={saveHsnOverride}>Save HSN/SAC</AppButton>}
+                </div>
+              )}
+              {hsnState.error && <p role="alert" className="mt-3 text-sm text-red-600">{hsnState.error}</p>}
+              {hsnState.classification?.source === "ProductOverride" && <p className="mt-3 text-xs text-slate-500">To replace a current override, retire it with its effective end date first from GST → Product HSN overrides; history and audit entries are retained.</p>}
+            </Section>
+          )}
 
           <Section title="Pricing, stock & manufacturing">
             <div className="border-b border-slate-200">
