@@ -59,6 +59,8 @@ public static class DependencyInjection
         services.AddScoped<IEInvoiceService, EInvoiceService>();
         services.AddScoped<IGstSessionService, GstSessionService>();
         services.AddScoped<IGstApiLogService, GstApiLogService>();
+        services.AddScoped<IHsnGstService, HsnGstService>();
+        services.AddScoped<IGstCalculationEngine, GstCalculationEngine>();
         return services;
     }
 }

@@ -25,6 +25,14 @@ const Items = lazy(() => import("../pages/inventory/items/index.js"));
 const ItemForm = lazy(() => import("../pages/inventory/items/ItemFormPage.jsx"));
 const Categories = lazy(() => import("../pages/inventory/categories/index.js"));
 const Units = lazy(() => import("../pages/inventory/units/index.js"));
+const HsnSacMaster = lazy(() => import("../pages/gst/HsnSacMasterPage.jsx"));
+const GstRateHistory = lazy(() => import("../pages/gst/GstRateHistoryPage.jsx"));
+const CategoryHsnMapping = lazy(
+  () => import("../pages/gst/CategoryHsnMappingPage.jsx"),
+);
+const ProductHsnMapping = lazy(
+  () => import("../pages/gst/ProductHsnMappingPage.jsx"),
+);
 const RojmelDashboard = lazy(
   () => import("../pages/rojmel/dashboard/index.js"),
 );
@@ -362,6 +370,47 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/units" pageName="Units">
                 <Units />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/gst/hsn-sac"
+            element={
+              <PermissionGuard route="/gst/hsn-sac" pageName="GST.HsnSac">
+                <HsnSacMaster />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/gst/rate-history"
+            element={
+              <PermissionGuard
+                route="/gst/rate-history"
+                pageName="GST.RateHistory"
+              >
+                <GstRateHistory />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/gst/category-mappings"
+            element={
+              <PermissionGuard
+                route="/gst/category-mappings"
+                pageName="GST.CategoryMapping"
+              >
+                <CategoryHsnMapping />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/gst/product-mappings"
+            element={
+              <PermissionGuard
+                route="/gst/product-mappings"
+                pageName="GST.ProductMapping"
+              >
+                <ProductHsnMapping />
               </PermissionGuard>
             }
           />
