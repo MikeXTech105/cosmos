@@ -20,6 +20,7 @@ import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
+import { hsnGstService } from "../../../services/gst/hsnGstService";
 import { unitService } from "../../../services/inventory/unitService";
 import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
 import ItemFormModal from "../../inventory/items/ItemFormModal";
@@ -61,6 +62,8 @@ const invoiceLineSchema = z.object({
     .min(0, "Discount amount cannot be negative"),
   taxRateId: z.union([z.number(), z.string(), z.null()]).optional(),
   taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
+  hsnSacCode: z.string().optional(),
+  hsnSource: z.string().optional(),
 });
 
 const initialPaymentSchema = z
@@ -284,10 +287,20 @@ const InvoiceFormPage = () => {
     applyItem(lookupItem);
 
     try {
-      const response = await itemService.getItemById(itemId);
-      applyItem(getResponseItem(response));
+      const [itemResult, classificationResult] = await Promise.allSettled([
+        itemService.getItemById(itemId),
+        hsnGstService.getEffectiveClassification(itemId, new Date().toISOString().slice(0, 10)),
+      ]);
+      const itemResponse = itemResult.status === "fulfilled" ? itemResult.value : null;
+      const classificationResponse = classificationResult.status === "fulfilled" ? classificationResult.value : null;
+      applyItem(getResponseItem(itemResponse) ?? lookupItem);
+      const classification = classificationResponse?.data ?? classificationResponse;
+      setValue(`items.${index}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, classification?.source ?? "", { shouldDirty: true });
     } catch {
       applyItem(lookupItem);
+      setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Legacy" : "", { shouldDirty: true });
     }
   };
 
@@ -476,10 +489,11 @@ const InvoiceFormPage = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px] table-fixed text-left">
+              <table className="w-full min-w-[1170px] table-fixed text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-white">
                     <th className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Item<span className="ml-0.5 text-red-500">*</span></th>
+                    <th className="w-[11%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">HSN/SAC</th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Qty<span className="ml-0.5 text-red-500">*</span></th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Rate</th>
                     <th className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Disc %</th>
@@ -520,6 +534,10 @@ const InvoiceFormPage = () => {
                               />
                             )}
                           />
+                        </td>
+                        <td className="px-3 py-3 align-top text-xs text-slate-600">
+                          <p className="font-semibold text-slate-800">{line.hsnSacCode || "—"}</p>
+                          {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource === "ProductOverride" ? "Product override" : line.hsnSource === "CategoryDefault" ? "Category default" : line.hsnSource}</p>}
                         </td>
                         <td className="px-3 py-3 align-top">
                           <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} required error={errors.items?.[index]?.quantity?.message} />
