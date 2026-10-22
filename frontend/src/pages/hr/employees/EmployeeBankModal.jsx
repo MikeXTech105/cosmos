@@ -74,14 +74,12 @@ const EmployeeBankModal = ({
           <AppInput
             id="bankName"
             label="Bank Name"
-            required
             error={errors.bankName?.message}
             {...register("bankName")}
           />
           <AppInput
             id="accountNumber"
             label="Account Number"
-            required
             error={errors.accountNumber?.message}
             {...register("accountNumber")}
           />
@@ -91,7 +89,6 @@ const EmployeeBankModal = ({
           <AppInput
             id="ifscCode"
             label="IFSC Code"
-            required
             error={errors.ifscCode?.message}
             {...register("ifscCode")}
           />

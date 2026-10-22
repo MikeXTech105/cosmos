@@ -11,8 +11,8 @@ public sealed record UpdateDesignationCommand(string DesignationCode, string Des
 public sealed record CreateShiftCommand(string ShiftCode, string ShiftName, TimeSpan StartTime, TimeSpan EndTime, int GraceMinutes, bool IsNightShift, decimal WeeklyHours, bool IsActive = true);
 public sealed record UpdateShiftCommand(string ShiftCode, string ShiftName, TimeSpan StartTime, TimeSpan EndTime, int GraceMinutes, bool IsNightShift, decimal WeeklyHours, bool IsActive = true);
 
-public sealed record EmployeeAddressRequest(string AddressType, string AddressLine1, string? AddressLine2, string? City, string? State, string? Country, string? Pincode);
-public sealed record EmployeeBankAccountRequest(string BankName, string AccountNumber, string IFSCCode, string? BranchName, string? UPIId);
+public sealed record EmployeeAddressRequest(string? AddressType, string? AddressLine1, string? AddressLine2, string? City, string? State, string? Country, string? Pincode);
+public sealed record EmployeeBankAccountRequest(string? BankName, string? AccountNumber, string? IFSCCode, string? BranchName, string? UPIId);
 public sealed record CreateEmployeeCommand(
     string EmployeeCode, string FirstName, string? LastName, int Gender, DateOnly? DateOfBirth,
     DateOnly JoiningDate, string? Mobile, string? Email, long DepartmentId, long DesignationId,
@@ -27,7 +27,56 @@ public sealed record ResignEmployeeCommand(DateOnly LastWorkingDate, string? Res
 public sealed record RejoinEmployeeCommand(DateOnly? RejoinedDate = null, string? Remarks = null);
 public sealed record GetEmployeesQuery(string? Search = null, long? DepartmentId = null, long? DesignationId = null, string? Status = null, bool? IsActive = null, bool IncludeResigned = true, int PageNumber = 1, int PageSize = 20, string? SortBy = "EmployeeCode", string? SortDirection = "ASC");
 public sealed record AddEmployeeDocumentCommand(string DocumentType, string FileName, string FilePath, DateOnly? ExpiryDate);
-public sealed record AddEmployeeBankDetailsCommand(string BankName, string AccountNumber, string IFSCCode, string? BranchName, string? UPIId);
+public sealed record AddEmployeeBankDetailsCommand(string? BankName, string? AccountNumber, string? IFSCCode, string? BranchName, string? UPIId);
+
+/// <summary>Normalizes optional Employee text fields without changing update semantics.</summary>
+public static class EmployeeInputNormalizer
+{
+    public static string? NormalizeMobile(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+
+        // Phone formatting is intentionally normalized to an international, storage-safe form.
+        // Validation runs afterwards, so characters other than common visual separators still fail.
+        return string.Concat(value.Trim().Where(character => !char.IsWhiteSpace(character) && character is not '-' and not '(' and not ')'));
+    }
+
+    public static string? TrimToNull(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public static EmployeeAddressRequest Normalize(EmployeeAddressRequest value) => new(
+        TrimToNull(value.AddressType), TrimToNull(value.AddressLine1), TrimToNull(value.AddressLine2),
+        TrimToNull(value.City), TrimToNull(value.State), TrimToNull(value.Country), TrimToNull(value.Pincode));
+
+    public static EmployeeBankAccountRequest Normalize(EmployeeBankAccountRequest value) => new(
+        TrimToNull(value.BankName), TrimToNull(value.AccountNumber), TrimToNull(value.IFSCCode),
+        TrimToNull(value.BranchName), TrimToNull(value.UPIId));
+
+    public static CreateEmployeeCommand Normalize(CreateEmployeeCommand value) => value with
+    {
+        Mobile = NormalizeMobile(value.Mobile),
+        Email = TrimToNull(value.Email),
+        ProfilePhotoUrl = TrimToNull(value.ProfilePhotoUrl),
+        Addresses = value.Addresses?.Select(Normalize).ToArray(),
+        BankDetails = value.BankDetails is null ? null : Normalize(value.BankDetails)
+    };
+
+    public static UpdateEmployeeCommand Normalize(UpdateEmployeeCommand value) => value with
+    {
+        Mobile = NormalizeMobile(value.Mobile),
+        Email = TrimToNull(value.Email),
+        ProfilePhotoUrl = TrimToNull(value.ProfilePhotoUrl),
+        Addresses = value.Addresses?.Select(Normalize).ToArray()
+    };
+
+    public static AddEmployeeBankDetailsCommand Normalize(AddEmployeeBankDetailsCommand value) => value with
+    {
+        BankName = TrimToNull(value.BankName),
+        AccountNumber = TrimToNull(value.AccountNumber),
+        IFSCCode = TrimToNull(value.IFSCCode),
+        BranchName = TrimToNull(value.BranchName),
+        UPIId = TrimToNull(value.UPIId)
+    };
+}
 
 public sealed record AttendanceCheckInCommand(long EmployeeId, DateTime? CheckInTime = null);
 public sealed record AttendanceCheckOutCommand(long EmployeeId, DateTime? CheckOutTime = null);

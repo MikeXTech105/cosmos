@@ -275,7 +275,6 @@ const EmployeeFormModal = ({
                 <AppInput
                   id="mobile"
                   label="Mobile"
-                  required
                   disabled={isView}
                   error={errors.mobile?.message}
                   {...register("mobile")}
@@ -510,7 +509,7 @@ const EmployeeFormModal = ({
                         addressLine2: "",
                         city: "",
                         state: "",
-                        country: "India",
+                        country: "",
                         pincode: "",
                       })
                     }

@@ -128,6 +128,7 @@ public sealed class HrService : IHrService
 
     public async Task<ApiResponse<EmployeeDto>> CreateEmployeeAsync(CreateEmployeeCommand command, CancellationToken ct)
     {
+        command = EmployeeInputNormalizer.Normalize(command);
         await ValidateAsync(command, ct);
         var result = await _repository.CreateEmployeeAsync(command, UserId, ct);
         await AuditAsync("HR.Employees", result.Id, "Create", null, result, ct);
@@ -137,6 +138,7 @@ public sealed class HrService : IHrService
     public async Task<ApiResponse<EmployeeDto>> UpdateEmployeeAsync(long id, UpdateEmployeeCommand command, CancellationToken ct)
     {
         var old = await _repository.GetEmployeeAsync(id, ct) ?? throw NotFound("Employee");
+        command = EmployeeInputNormalizer.Normalize(command);
         await ValidateAsync(command, ct, id);
         EnsureEmployeeStatusTransition(old, command);
         var result = await _repository.UpdateEmployeeAsync(id, command, UserId, ct);
@@ -195,6 +197,7 @@ public sealed class HrService : IHrService
 
     public async Task<ApiResponse<EmployeeBankAccountDto>> AddEmployeeBankDetailsAsync(long employeeId, AddEmployeeBankDetailsCommand command, CancellationToken ct)
     {
+        command = EmployeeInputNormalizer.Normalize(command);
         await ValidateAsync(command, ct);
         var result = await _repository.AddEmployeeBankDetailsAsync(employeeId, command, UserId, ct);
         await AuditAsync("HR.EmployeeBankAccounts", result.Id, "Create", null, result, ct);

@@ -68,8 +68,8 @@ public sealed class Employee : HrAuditableEntity
 public sealed class EmployeeAddress : HrAuditableEntity
 {
     public long EmployeeId { get; set; }
-    public string AddressType { get; set; } = string.Empty;
-    public string AddressLine1 { get; set; } = string.Empty;
+    public string? AddressType { get; set; }
+    public string? AddressLine1 { get; set; }
     public string? AddressLine2 { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
@@ -80,9 +80,9 @@ public sealed class EmployeeAddress : HrAuditableEntity
 public sealed class EmployeeBankAccount : HrAuditableEntity
 {
     public long EmployeeId { get; set; }
-    public string BankName { get; set; } = string.Empty;
-    public string AccountNumber { get; set; } = string.Empty;
-    public string IFSCCode { get; set; } = string.Empty;
+    public string? BankName { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? IFSCCode { get; set; }
     public string? BranchName { get; set; }
     public string? UPIId { get; set; }
 }

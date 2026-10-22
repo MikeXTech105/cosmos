@@ -83,6 +83,14 @@ const optionalPositiveId = z.preprocess((value) => {
   return Number(value);
 }, z.number().int().positive().nullable());
 
+export const normalizeEmployeeMobile = (value) => {
+  if (typeof value !== "string") return value;
+
+  return value
+    .trim()
+    .replace(/[\s()-]/g, "");
+};
+
 export const hrDepartmentSchema = z.object({
   departmentCode: z
     .string()
@@ -165,9 +173,11 @@ export const hrEmployeeSchema = z.object({
   joiningDate: z.string().trim().min(1, "Joining date is required"),
   mobile: z
     .string()
-    .trim()
-    .min(7, "Mobile number is required")
-    .max(20, "Mobile number is too long"),
+    .transform(normalizeEmployeeMobile)
+    .refine(
+      (value) => value === "" || /^\+?[0-9]{7,15}$/.test(value),
+      "Enter a valid mobile number with 7 to 15 digits; + is allowed only at the start",
+    ),
   email: z.string().trim().email("Enter a valid email address"),
   departmentId: z.coerce.number().int().positive("Department is required"),
   designationId: z.coerce.number().int().positive("Designation is required"),
@@ -208,11 +218,11 @@ export const hrEmployeeSchema = z.object({
 });
 
 export const hrBankDetailsSchema = z.object({
-  bankName: z.string().trim().min(2, "Bank name is required"),
-  accountNumber: z.string().trim().min(4, "Account number is required"),
-  ifscCode: z.string().trim().min(4, "IFSC code is required"),
-  branchName: z.string().trim().optional(),
-  upiId: z.string().trim().optional(),
+  bankName: z.string().trim().max(150, "Bank name is too long").optional(),
+  accountNumber: z.string().trim().max(50, "Account number is too long").optional(),
+  ifscCode: z.string().trim().max(20, "IFSC code is too long").optional(),
+  branchName: z.string().trim().max(150, "Branch name is too long").optional(),
+  upiId: z.string().trim().max(100, "UPI ID is too long").optional(),
 });
 
 export const hrDocumentSchema = z.object({
