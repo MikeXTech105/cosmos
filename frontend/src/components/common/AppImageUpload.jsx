@@ -14,6 +14,7 @@ import {
   uploadService,
 } from "../../services/uploadService";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set([
@@ -31,6 +32,8 @@ const validateFile = (file) => {
     return "Upload a PNG, JPG, or WebP image.";
   }
 
+  if (file.size === 0) return "Choose an image that is not empty.";
+
   if (file.size > MAX_IMAGE_SIZE) {
     return "Image must be 5MB or smaller.";
   }
@@ -44,6 +47,7 @@ const AppImageUpload = ({
   label,
   onChange,
   onFileChange,
+  onUploadStateChange,
   required = false,
   uploadHandler,
   value,
@@ -58,7 +62,7 @@ const AppImageUpload = ({
   const [uploadError, setUploadError] = useState("");
   const isDisabled = disabled || isUploading;
   const currentError = uploadError || error;
-  const displayValue = localPreviewUrl || value;
+  const displayValue = localPreviewUrl || resolveMediaUrl(value);
   const previewError = Boolean(displayValue) && failedPreviewUrl === displayValue;
 
   useEffect(() => {
@@ -84,6 +88,7 @@ const AppImageUpload = ({
     }
 
     setIsUploading(true);
+    onUploadStateChange?.(true);
     setProgress(0);
     setUploadError("");
     setPreviewNotice("");
@@ -120,6 +125,7 @@ const AppImageUpload = ({
       );
     } finally {
       setIsUploading(false);
+      onUploadStateChange?.(false);
 
       if (inputRef.current) {
         inputRef.current.value = "";
@@ -182,6 +188,7 @@ const AppImageUpload = ({
         role="button"
         tabIndex={isDisabled ? -1 : 0}
         aria-disabled={isDisabled}
+        aria-invalid={Boolean(currentError) || undefined}
         onClick={openFilePicker}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -225,7 +232,7 @@ const AppImageUpload = ({
             </div>
             <button
               type="button"
-              disabled={isUploading}
+              disabled={isDisabled}
               onClick={clearImage}
               className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Remove item image"
@@ -270,8 +277,8 @@ const AppImageUpload = ({
       </div>
 
       {currentError && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-          <AlertCircle className="h-3.5 w-3.5" />
+        <p role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           {currentError}
         </p>
       )}
@@ -280,6 +287,7 @@ const AppImageUpload = ({
           {previewNotice}
         </p>
       )}
+      {previewError && <p role="alert" className="mt-1.5 text-xs text-amber-700">The image was selected, but its saved URL could not be loaded. <a className="underline" href={displayValue} target="_blank" rel="noreferrer">Open image</a> to check it, or upload a replacement.</p>}
     </div>
   );
 };

@@ -105,7 +105,12 @@ export const validateWarrantyResolution = (form = {}) => {
 export const validateProductMedia = (media = []) => {
   const errors = {};
   const populated = media.filter((item) => String(item?.publicUrl ?? "").trim());
-  populated.forEach((item, index) => {
+  media.forEach((item, index) => {
+    const url = String(item?.publicUrl ?? "").trim();
+    let validUrl = url.startsWith("/uploads/");
+    try { validUrl ||= ["http:", "https:"].includes(new URL(url).protocol); } catch { /* relative upload paths are allowed */ }
+    if (!url) errors[`media.${index}.publicUrl`] = "Upload an image or remove this row.";
+    else if (!validUrl || url.length > 1000) errors[`media.${index}.publicUrl`] = "Use an HTTP/HTTPS image URL or /uploads/ path (maximum 1000 characters).";
     if (String(item?.altText ?? "").length > 500) {
       errors[`media.${index}.altText`] = "Alt text cannot exceed 500 characters.";
     }
