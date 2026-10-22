@@ -14,6 +14,7 @@ import { websiteProductService } from "../../../services/website/websiteService"
 import { fetchWebsiteDashboard, fetchWebsiteProducts } from "../../../store/slices/website/websiteSlice";
 import { getApiErrorMessage } from "../../../utils/apiError";
 import PublishStatusPill from "../PublishStatusPill";
+import ProductImage from "./ProductImage";
 import useWebsiteCapabilities from "../useWebsiteCapabilities";
 import { formatWebsiteDateTime } from "../websiteFormat";
 import { PUBLISH_STATUS_OPTIONS } from "../websiteStatus";
@@ -105,10 +106,10 @@ const WebsiteProductsPage = () => {
         {products.items.map((product, index) => (
           <tr key={product.id} className={product.publishStatus === "Draft" ? "bg-slate-50/50 text-slate-500" : ""}>
             <td className="tabular-nums text-slate-400">{(products.pageNumber - 1) * products.pageSize + index + 1}</td>
-            <td>{product.primaryImageUrl ? <img className="h-10 w-10 rounded-lg border border-slate-200 object-cover" src={product.primaryImageUrl} alt="" /> : <div className="grid h-10 w-10 place-items-center rounded-lg bg-slate-100"><Package className="h-4 w-4 text-slate-400" /></div>}</td>
+            <td><ProductImage url={product.primaryImageUrl} name={product.name} /></td>
             <td className="font-mono text-xs">{product.code || "—"}</td>
             <td><p className="truncate font-semibold text-slate-900">{product.name || "Untitled product"}</p><p className="mt-0.5 truncate text-xs text-slate-400">{product.brandName || "No brand"} · {formatWebsiteDateTime(product.updatedAt)}</p></td>
-            <td className="text-right font-medium tabular-nums">{product.displayPrice || "—"} {product.currencyCode || ""}</td>
+            <td className="text-right font-medium tabular-nums">{product.displayPrice ?? "—"} {product.currencyCode || ""}</td>
             <td><p className="tabular-nums">{product.rating ?? "—"} / 5</p><p className="mt-0.5 text-xs text-slate-400">{product.reviewCount ?? 0} reviews</p></td>
             <td><PublishStatusPill value={product.publishStatus} /></td>
             <td><WebsiteBooleanPill value={product.isActive} /></td>
