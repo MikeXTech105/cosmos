@@ -69,6 +69,28 @@ export const ENDPOINTS = {
   GST_EWAY_VEHICLE: "/api/v1/gst/eway-bills/update-vehicle",
   GST_SESSION_STATUS: (id) => `/api/v1/gst/sessions/${encodeURIComponent(id)}/status`,
 
+  // GST master data and dated product/category classifications.
+  GST_HSN_SAC: "/api/v1/gst/hsn-sac",
+
+  GST_HSN_SAC_BY_ID: (id) => `/api/v1/gst/hsn-sac/${id}`,
+
+  GST_RATE_VERSIONS: "/api/v1/gst/rate-versions",
+
+  GST_CATEGORY_HSN_DEFAULT: (categoryId) =>
+    `/api/v1/gst/categories/${categoryId}/hsn-default`,
+
+  GST_CATEGORY_HSN_DEFAULT_RETIRE: (categoryId, mappingId) =>
+    `/api/v1/gst/categories/${categoryId}/hsn-default/${mappingId}/retire`,
+
+  GST_ITEM_HSN_OVERRIDE: (itemId) =>
+    `/api/v1/gst/items/${itemId}/hsn-override`,
+
+  GST_ITEM_HSN_OVERRIDE_RETIRE: (itemId, mappingId) =>
+    `/api/v1/gst/items/${itemId}/hsn-override/${mappingId}/retire`,
+
+  GST_ITEM_EFFECTIVE_CLASSIFICATION: (itemId) =>
+    `/api/v1/gst/items/${itemId}/effective-classification`,
+
   SALES_INVOICES: "/api/v1/sales/invoices",
 
   SALES_INVOICE_BY_ID: (id) => `/api/v1/sales/invoices/${id}`,

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildInvoicePayload,
   buildInvoiceQueryParams,
+  getInvoiceDefaultValues,
   getInvoiceStatusMeta,
   getPaymentModeLabel,
   getPaymentStatusMeta,
@@ -91,5 +92,23 @@ describe("sales invoice enum contract", () => {
     expect(isInvoiceConfirmed({ status: SALES_INVOICE_STATUS.CONFIRMED })).toBe(true);
     expect(isInvoiceCancelled({ status: SALES_INVOICE_STATUS.CANCELLED })).toBe(true);
     expect(isInvoiceCancelled({ status: SALES_INVOICE_STATUS.PAID })).toBe(false);
+  });
+
+  it("keeps the saved HSN/SAC snapshot when a draft is reopened", () => {
+    const values = getInvoiceDefaultValues({
+      items: [{
+        itemId: 41,
+        itemNameSnapshot: "Mapped item",
+        hsnSacCodeSnapshot: "847130",
+        quantity: 1,
+        rate: 100,
+      }],
+    });
+
+    expect(values.items[0]).toMatchObject({
+      itemId: 41,
+      itemName: "Mapped item",
+      hsnSacCode: "847130",
+    });
   });
 });
