@@ -55,6 +55,20 @@ export const ENDPOINTS = {
 
   GST_CONFIG_STATUS: "/api/v1/gst/configuration/status",
 
+  GST_REGISTRATIONS: "/api/v1/gst/registrations",
+  GST_REGISTRATION: (id) => `/api/v1/gst/registrations/${encodeURIComponent(id)}`,
+  GST_REGISTRATION_VERIFY: (id) => `/api/v1/gst/registrations/${encodeURIComponent(id)}/verify`,
+  GST_REGISTRATION_DEFAULT: (id) => `/api/v1/gst/registrations/${encodeURIComponent(id)}/set-default`,
+  GST_API_LOGS: "/api/v1/gst/api-logs",
+  GST_EINVOICE: (irn) => `/api/v1/gst/e-invoices/${encodeURIComponent(irn)}`,
+  GST_EINVOICE_DETAILS: "/api/v1/gst/e-invoices/get-details",
+  GST_EINVOICE_CANCEL: "/api/v1/gst/e-invoices/cancel",
+  GST_EWAY: (number) => `/api/v1/gst/eway-bills/${encodeURIComponent(number)}`,
+  GST_EWAY_DETAILS: "/api/v1/gst/eway-bills/get-details",
+  GST_EWAY_CANCEL: "/api/v1/gst/eway-bills/cancel",
+  GST_EWAY_VEHICLE: "/api/v1/gst/eway-bills/update-vehicle",
+  GST_SESSION_STATUS: (id) => `/api/v1/gst/sessions/${encodeURIComponent(id)}/status`,
+
   SALES_INVOICES: "/api/v1/sales/invoices",
 
   SALES_INVOICE_BY_ID: (id) => `/api/v1/sales/invoices/${id}`,

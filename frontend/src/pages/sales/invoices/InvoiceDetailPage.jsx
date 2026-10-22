@@ -1,3 +1,4 @@
+import GstDocumentLinks from "../../gst/GstDocumentLinks";
 import {
   ArrowLeft,
   Ban,
@@ -420,6 +421,7 @@ const InvoiceDetailPage = () => {
         }
       />
 
+      {invoice && <GstDocumentLinks id={invoice.id} />}
       {invoice && (
         <div className="no-print grid gap-4 xl:grid-cols-[1fr_auto]">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

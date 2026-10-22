@@ -1,3 +1,5 @@
+import { GST_PAGES } from "../utils/gstCompliance";
+
 export const enabledModules = [
   "dashboard",
   "users",
@@ -72,9 +74,11 @@ export const enabledModules = [
   "dataBook",
   "activityLogs",
   "settings",
+  ...GST_PAGES.map(page => `gst_${page.key}`),
 ];
 
 export const sidebarCategories = [
+  { id: "gst", label: "GST compliance", icon: "invoice", sortOrder: 57 },
   {
     id: "rbac",
     label: "Administration",
@@ -162,6 +166,10 @@ export const sidebarCategories = [
 ];
 
 export const sidebarModules = {
+  ...Object.fromEntries(GST_PAGES.map((page, index) => [`gst_${page.key}`, {
+    id: `gst_${page.key}`, label: page.title, route: page.route,
+    permissionPageName: page.pageName, icon: "invoice", categoryId: "gst", sortOrder: index + 1,
+  }])),
   wmDashboard: {
     id: "wmDashboard",
     label: "Dashboard",

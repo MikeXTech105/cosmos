@@ -1,0 +1,702 @@
+[
+  {
+    "figure": 1,
+    "id": "dashboard",
+    "route": "/dashboard",
+    "title": "Analytics Overview",
+    "sha256": "9006d3e1c3b11463f6aad6c34054b5a9816ad1099ca8192f229177ee89cdd83d"
+  },
+  {
+    "figure": 2,
+    "id": "users",
+    "route": "/users",
+    "title": "Users",
+    "sha256": "d233e71409c4d65da9d4205025c3568618244613d22ce5ac54c24609da89317e"
+  },
+  {
+    "figure": 3,
+    "id": "roles",
+    "route": "/roles",
+    "title": "Roles",
+    "sha256": "ab30f1546bf32cbcfa86f1730dbff446fe8eddb44e3fe62135efe9e5a66fb1c8"
+  },
+  {
+    "figure": 4,
+    "id": "rbac-pages",
+    "route": "/rbac/pages",
+    "title": "Pages",
+    "sha256": "3ba0661867839450e8c15c6955f274fb414722e240a17af7085a437ccf366f5d"
+  },
+  {
+    "figure": 5,
+    "id": "rbac-pages-new",
+    "route": "/rbac/pages/new",
+    "title": "Add page",
+    "sha256": "a4f3f6df1df317bd129dab87ed829bda23c1655649eeac431f58aac8ea4903af"
+  },
+  {
+    "figure": 6,
+    "id": "permissions",
+    "route": "/permissions",
+    "title": "Permissions",
+    "sha256": "8b39fbaa1feeb27b18b64ac3829ac2db91fdd5417904d242856e4dab563f60e2"
+  },
+  {
+    "figure": 7,
+    "id": "party",
+    "route": "/party",
+    "title": "Party Master",
+    "sha256": "b27934d679ef5128a08f4a78353bd270ee67a319d328e842cb05f2740ba0539e"
+  },
+  {
+    "figure": 8,
+    "id": "party-new",
+    "route": "/party/new",
+    "title": "Add party",
+    "sha256": "fc30d6ad9c26e212e23b4c966b87e41ab1055cf7bd0bfe2601ea7aaad9f59948"
+  },
+  {
+    "figure": 9,
+    "id": "items",
+    "route": "/items",
+    "title": "Items",
+    "sha256": "a6ce8ea0448283bcc4d80e4bbac2f2abc72d05d7d7a385f45f17dae6b62e8283"
+  },
+  {
+    "figure": 10,
+    "id": "items-new",
+    "route": "/items/new",
+    "title": "Add item",
+    "sha256": "7e70566b61a15abe05e3feec09f35457cbd1f6183088c10cfcf53ba8b85be2fb"
+  },
+  {
+    "figure": 11,
+    "id": "categories",
+    "route": "/categories",
+    "title": "Categories",
+    "sha256": "fca6ca07065dc4d9e8ee6c6068756541e645251ace11bf901ad2521dede88442"
+  },
+  {
+    "figure": 12,
+    "id": "units",
+    "route": "/units",
+    "title": "Units",
+    "sha256": "3a97785177454267237b8a1be8e48d800564ee64e21fd1cc59f88513c2014446"
+  },
+  {
+    "figure": 13,
+    "id": "rojmel-dashboard",
+    "route": "/rojmel/dashboard",
+    "title": "Cash position at a glance",
+    "sha256": "d4d9872b4ba71cee92354bfbb6f51cfc98cbde7225770c60686422df1d5b06f3"
+  },
+  {
+    "figure": 14,
+    "id": "rojmel-my-wallet",
+    "route": "/rojmel/my-wallet",
+    "title": "My Wallet",
+    "sha256": "73a4f345ad80f270d50b19c5c25505775d6d17ef024144b100152e674ed9ed97"
+  },
+  {
+    "figure": 15,
+    "id": "rojmel-wallets",
+    "route": "/rojmel/wallets",
+    "title": "Wallets",
+    "sha256": "4a9d0baec76667f4036d2a98f22b09d9f98d0b6d62ae714b304ee401f00e804c"
+  },
+  {
+    "figure": 16,
+    "id": "rojmel-transactions",
+    "route": "/rojmel/transactions",
+    "title": "Transactions",
+    "sha256": "5fabfd00b71951874cc7c8e80d04c83e2ae5efd3ce0e0ede67913ea0bb56bd2b"
+  },
+  {
+    "figure": 17,
+    "id": "rojmel-transfers",
+    "route": "/rojmel/transfers",
+    "title": "Wallet Transfers",
+    "sha256": "caa68ed099538bc8bcb8f8e48a072222148600fe5d4a9d6e5d1a506f81072d97"
+  },
+  {
+    "figure": 18,
+    "id": "rojmel-reports",
+    "route": "/rojmel/reports",
+    "title": "Rojmel Reports",
+    "sha256": "2e0f986fc2a1b3c1a699f327357e34bf73a87c55d1f8d10a575995c615702bbd"
+  },
+  {
+    "figure": 19,
+    "id": "hr-dashboard",
+    "route": "/hr/dashboard",
+    "title": "HR Dashboard",
+    "sha256": "87ebecce0cd710f1ea0cfbb108e3b0de0ee285a86734d509f032d4c87252debc"
+  },
+  {
+    "figure": 20,
+    "id": "hr-employees",
+    "route": "/hr/employees",
+    "title": "Employees",
+    "sha256": "3284fc533e202e79897db5256894c6fa1daed6827acd219e584055dc962cd9c3"
+  },
+  {
+    "figure": 21,
+    "id": "hr-employees-new",
+    "route": "/hr/employees/new",
+    "title": "Add employee",
+    "sha256": "9126ad8ebfb529e4ef4e9a4e134bce875502ef31509fec696e3bb75e36940559"
+  },
+  {
+    "figure": 22,
+    "id": "hr-departments",
+    "route": "/hr/departments",
+    "title": "Departments",
+    "sha256": "90caf235987b27a98d07e3a4dbed9162209080566f51ed0fb0558d4d081236e7"
+  },
+  {
+    "figure": 23,
+    "id": "hr-designations",
+    "route": "/hr/designations",
+    "title": "Designations",
+    "sha256": "e05244d0224d851b043518eb4639162d9771f1e3a8131b77afe1289d234170f2"
+  },
+  {
+    "figure": 24,
+    "id": "hr-attendance",
+    "route": "/hr/attendance",
+    "title": "Attendance Workspace",
+    "sha256": "5231078e5d3a655b1e567095d4193ffe1633cffb3731e4c27fb54e2589b2bbd8"
+  },
+  {
+    "figure": 25,
+    "id": "hr-leaves",
+    "route": "/hr/leaves",
+    "title": "Leaves",
+    "sha256": "f03b1f4325a34c295e8e1a00ff1b2e2faabf8855b5cda0b24dec662ed4231417"
+  },
+  {
+    "figure": 26,
+    "id": "hr-shifts",
+    "route": "/hr/shifts",
+    "title": "Shifts",
+    "sha256": "349c536d885bdbfcca886aedca66f05f6374070199b9e8ac9e66cac8f209e56f"
+  },
+  {
+    "figure": 27,
+    "id": "hr-payroll",
+    "route": "/hr/payroll",
+    "title": "Payroll",
+    "sha256": "4b52a379da24773705e2125007f990bc587ed3a171349c92651e346cad0d0a34"
+  },
+  {
+    "figure": 28,
+    "id": "sales-invoices",
+    "route": "/sales/invoices",
+    "title": "Sale Invoices",
+    "sha256": "3d966e59f0c33f1fff72517ce0f266759a6234b8ea0f84e7cc49e2c8b8b2ae73"
+  },
+  {
+    "figure": 29,
+    "id": "sales-invoices-new",
+    "route": "/sales/invoices/new",
+    "title": "New sale invoice",
+    "sha256": "f32b0a0eb2fa10dddcaddb885b921bcaa0cfa456a40ebd4c76c17a75d39257d3"
+  },
+  {
+    "figure": 30,
+    "id": "purchase-bills",
+    "route": "/purchase/bills",
+    "title": "Purchase Bills",
+    "sha256": "2259acab758be6b1ce20ab95518e8e7dafecc2748b5713af5cfe79c3753b95d1"
+  },
+  {
+    "figure": 31,
+    "id": "purchase-bills-new",
+    "route": "/purchase/bills/new",
+    "title": "New Purchase Bill",
+    "sha256": "56bcf0b9aab38546a67eb1f28ef1cfdaa157dd4d07626d06f906580c88ad0407"
+  },
+  {
+    "figure": 32,
+    "id": "purchase-orders",
+    "route": "/purchase/orders",
+    "title": "Purchase Orders",
+    "sha256": "dde96d78cf00cf82a015fd45a7295dd35c06b853a3b4b44d26e7a6e0fc26ea55"
+  },
+  {
+    "figure": 33,
+    "id": "purchase-orders-new",
+    "route": "/purchase/orders/new",
+    "title": "New Purchase Order",
+    "sha256": "ce4209f6855df3606ea25ef37ef7d389b2f243094c7c02226a292a2a0ff2e978"
+  },
+  {
+    "figure": 34,
+    "id": "purchase-returns",
+    "route": "/purchase/returns",
+    "title": "Purchase Returns",
+    "sha256": "e92dc728f358c71fa62b0792ac395c8cb954b38f86d92d0e69882c73218890ca"
+  },
+  {
+    "figure": 35,
+    "id": "purchase-returns-new",
+    "route": "/purchase/returns/new",
+    "title": "New Purchase Return",
+    "sha256": "d7a336c25a119fee0e3f5c7ad78fbb2a6811bc1f936007c5205536a59e71a7da"
+  },
+  {
+    "figure": 36,
+    "id": "purchase-supplier-payments",
+    "route": "/purchase/supplier-payments",
+    "title": "Supplier Payments",
+    "sha256": "a92145a60686a7ba21ae93977fef78a29595bcf12c7b1f45a4772206df89f2b8"
+  },
+  {
+    "figure": 37,
+    "id": "purchase-expenses",
+    "route": "/purchase/expenses",
+    "title": "Expenses",
+    "sha256": "dbfaaddf60c276cfab4f06f452f94a8cee813c35a836b3fc4e8e47e4edd56ca1"
+  },
+  {
+    "figure": 38,
+    "id": "purchase-expense-categories",
+    "route": "/purchase/expense-categories",
+    "title": "Expense Categories",
+    "sha256": "9ab24d9895ae560f5b001876fe048e574476402232f3cbb105d1fc6884d54b9f"
+  },
+  {
+    "figure": 39,
+    "id": "purchase-reports",
+    "route": "/purchase/reports",
+    "title": "Purchase Reports",
+    "sha256": "533ec1fa46d27fddb31b104c468f98172c854307a0210334eaee4cd1f63dcab1"
+  },
+  {
+    "figure": 40,
+    "id": "reports",
+    "route": "/reports",
+    "title": "All Reports",
+    "sha256": "e356ec85e49bac18fcc83e195a5c23703317ad640a7cf568e0e04f31cb3fd1b2"
+  },
+  {
+    "figure": 41,
+    "id": "oee-dashboard",
+    "route": "/oee/dashboard",
+    "title": "OEE Dashboard",
+    "sha256": "86e7c7407c1f442b314a2a58ced706691b8eb7a1d4adced3494abd76336776eb"
+  },
+  {
+    "figure": 42,
+    "id": "oee-production-entries",
+    "route": "/oee/production-entries",
+    "title": "Production Entries",
+    "sha256": "c78d93c3b5625bea674213ead39653dbc57dc02a11a41e543a08aabbb83998e5"
+  },
+  {
+    "figure": 43,
+    "id": "oee-machines",
+    "route": "/oee/machines",
+    "title": "Machines",
+    "sha256": "eb8abd5ff7a4e302c26382f5baf1dd2b4440ad512d116386aa1f9f38bcae3231"
+  },
+  {
+    "figure": 44,
+    "id": "oee-moulds",
+    "route": "/oee/moulds",
+    "title": "Moulds",
+    "sha256": "31ad1977990f144368959fce86c31df4f0209d4dbdcc0a8ef459b8516cbbf23f"
+  },
+  {
+    "figure": 45,
+    "id": "oee-downtime-reasons",
+    "route": "/oee/downtime-reasons",
+    "title": "Downtime Reasons",
+    "sha256": "bca2126ca0966bc37b0bf379935aadc14aa903f69b14be9dba3213faa8bf16fa"
+  },
+  {
+    "figure": 46,
+    "id": "oee-reports",
+    "route": "/oee/reports",
+    "title": "OEE Reports",
+    "sha256": "baa7aa7591889d12ba570225efca84488f448a89cc3a5d082c763e604ab30fff"
+  },
+  {
+    "figure": 47,
+    "id": "supply-chain-channels",
+    "route": "/supply-chain/channels",
+    "title": "Channels",
+    "sha256": "f286a829e895a25811a5cb84028781ce406342bf220a18c28857a19614da42ae"
+  },
+  {
+    "figure": 48,
+    "id": "supply-chain-warehouses",
+    "route": "/supply-chain/warehouses",
+    "title": "Warehouses",
+    "sha256": "cecdbf9499f791abad6fcca17bbcd163530e00153a30bcb40f962137b4c08715"
+  },
+  {
+    "figure": 49,
+    "id": "supply-chain-item-mappings",
+    "route": "/supply-chain/item-mappings",
+    "title": "Item mappings",
+    "sha256": "d0f53765966b739476d691930034988e76112a5ba21ecc5b94fd26a76216d919"
+  },
+  {
+    "figure": 50,
+    "id": "supply-chain-packaging-profiles",
+    "route": "/supply-chain/packaging-profiles",
+    "title": "Packaging profiles",
+    "sha256": "b0aa4fe8bbee3ca6f7f5cc089ff4acbc0d803a580190f27d7ac136706b0f4f4f"
+  },
+  {
+    "figure": 51,
+    "id": "supply-chain-packaging-profiles-new",
+    "route": "/supply-chain/packaging-profiles/new",
+    "title": "New packaging profile",
+    "sha256": "121f244283d32dda9d062c6f6e4cd0fb92f6050b428bfbba1df92a547fce8ecc"
+  },
+  {
+    "figure": 52,
+    "id": "supply-chain-imports",
+    "route": "/supply-chain/imports",
+    "title": "Imports",
+    "sha256": "87974c7286af11286838282f4285768b4ad8b03c8fd2fd381c6f7b70a17f19c7"
+  },
+  {
+    "figure": 53,
+    "id": "procurement",
+    "route": "/procurement",
+    "title": "Procurement",
+    "sha256": "697ef80c31939009a6a2364c15a8ed0146f91b02d785333b094e918df956ae19"
+  },
+  {
+    "figure": 54,
+    "id": "procurement-sales-import",
+    "route": "/procurement/sales-import",
+    "title": "Sales Data",
+    "sha256": "f948784ae441c8ca259385678b32b6272c402a709c68beaa05f2fa7268cf150b"
+  },
+  {
+    "figure": 55,
+    "id": "procurement-setup",
+    "route": "/procurement/setup",
+    "title": "Channel SKU Mapping",
+    "sha256": "85cb8fae5e9b1c279883005324adb372f5d89bca7b5fa2ca4a46b44036d2e5c7"
+  },
+  {
+    "figure": 56,
+    "id": "procurement-generate-plan",
+    "route": "/procurement/generate-plan",
+    "title": "Create a saved plan",
+    "sha256": "3d138fcfffef1dc3c35471b9a50caacf7eae5a8670331e141e441721f8dc3a22"
+  },
+  {
+    "figure": 57,
+    "id": "procurement-planning-history",
+    "route": "/procurement/planning-history",
+    "title": "Plans",
+    "sha256": "e5085c9a29ef94dea000a56f78dd5afec228c7067bca7ee34357a12215c706e0"
+  },
+  {
+    "figure": 58,
+    "id": "dispatch-dashboard",
+    "route": "/dispatch/dashboard",
+    "title": "Dispatch dashboard",
+    "sha256": "fdcaed82147d7dbb93c43fd106e9e3bd5b92a776c936e30fe972998f9a35c19a"
+  },
+  {
+    "figure": 59,
+    "id": "dispatch-runs",
+    "route": "/dispatch/runs",
+    "title": "Planning runs",
+    "sha256": "f83bd33be68e293011176839c0810f5c8c852a6eb5310edbbd8d8d52388b80a7"
+  },
+  {
+    "figure": 60,
+    "id": "dispatch-imports",
+    "route": "/dispatch/imports",
+    "title": "Imports",
+    "sha256": "bdb4bb46e9d44617af6dfc6f12c350747c37fc233d862a59e21290e1b8156f6e"
+  },
+  {
+    "figure": 61,
+    "id": "dispatch-settings",
+    "route": "/dispatch/settings",
+    "title": "SKU settings",
+    "sha256": "d1d5ba140206ed21e1c616db52481b3bb4e6c0536484f8784ef912ceec01fcb8"
+  },
+  {
+    "figure": 62,
+    "id": "dispatch-settings-new",
+    "route": "/dispatch/settings/new",
+    "title": "New dispatch setting",
+    "sha256": "9a19ca1e9294ef8ca077b7942cc87e1d5a62a7031481d11aadc23093239c72f7"
+  },
+  {
+    "figure": 63,
+    "id": "dispatch-reports",
+    "route": "/dispatch/reports",
+    "title": "Recommendation reports",
+    "sha256": "71c01a2e219ede95d6dd2dbd7eec7946712e1d0dfdcfb59983f1448b822b4f3b"
+  },
+  {
+    "figure": 64,
+    "id": "shipments-dashboard",
+    "route": "/shipments/dashboard",
+    "title": "Shipment dashboard",
+    "sha256": "2e867f2f7350d87aa877524468b9b04dca37ae84a28e7f13186cb64cd52cc590"
+  },
+  {
+    "figure": 65,
+    "id": "shipments-work-list",
+    "route": "/shipments/work-list",
+    "title": "Shipment work list",
+    "sha256": "436a77d1a3693d27111ad75fc2949d0dd1844df5aa43f931167bd6c8b639db65"
+  },
+  {
+    "figure": 66,
+    "id": "shipments-work-list-new",
+    "route": "/shipments/work-list/new",
+    "title": "New manual shipment",
+    "sha256": "db67a386c5cb12f4e577b7383ad9f7116c115b3ded5d13ff01b6f340ad85af72"
+  },
+  {
+    "figure": 67,
+    "id": "shipments-work-list-new-from-plan",
+    "route": "/shipments/work-list/new-from-plan",
+    "title": "Create from dispatch plan",
+    "sha256": "a9d9e7e3db41f18cb5d47b381f2429a25094b4223a9d130ebc6e5303ff55c6a1"
+  },
+  {
+    "figure": 68,
+    "id": "shipments-freight",
+    "route": "/shipments/freight",
+    "title": "Freight",
+    "sha256": "6af7cc7bcb28eeb0b6baba7a0d519c71dc30f85755488fda14807db8e01201b0"
+  },
+  {
+    "figure": 69,
+    "id": "shipments-transporters",
+    "route": "/shipments/transporters",
+    "title": "Transporters",
+    "sha256": "5d8bacf002460f9478b6584ef8c462394c381620bfc7ea34281e3cd1f9cdcf73"
+  },
+  {
+    "figure": 70,
+    "id": "shipments-imports",
+    "route": "/shipments/imports",
+    "title": "Historical import",
+    "sha256": "9da88e221fab8fb33f9c97a6f41ae79644ab1594b03db32ab6026cab5f158f7a"
+  },
+  {
+    "figure": 71,
+    "id": "shipments-reports",
+    "route": "/shipments/reports",
+    "title": "Shipment reports",
+    "sha256": "6c08a45d55781fe8bbe8499c7441056ca301722d24f8fbf6538d3573a99920d3"
+  },
+  {
+    "figure": 72,
+    "id": "data-book",
+    "route": "/data-book",
+    "title": "Data Book",
+    "sha256": "f890221ab8f8e486f0a135a6fa3b60606a77f1753f200ba26495654b17e35a1e"
+  },
+  {
+    "figure": 73,
+    "id": "activity-logs",
+    "route": "/activity-logs",
+    "title": "Activity Logs",
+    "sha256": "a4bc2120c8c20662dc349f20a6efa89cf393d53fc4beefd42600b990017482e0"
+  },
+  {
+    "figure": 74,
+    "id": "website-dashboard",
+    "route": "/website/dashboard",
+    "title": "Dashboard",
+    "sha256": "4260a04e2fed9ce205834753f08b61db0ff87e192b1502784947d6be48206e2c"
+  },
+  {
+    "figure": 75,
+    "id": "website-products",
+    "route": "/website/products",
+    "title": "Products",
+    "sha256": "64b9edf1df317ac75c70681a3be4d6be208feb7393c34b6d8cf603a7912a1d18"
+  },
+  {
+    "figure": 76,
+    "id": "website-products-new",
+    "route": "/website/products/new",
+    "title": "Add product",
+    "sha256": "28f40c51b32de8b3c6635cd15315be096b4794c6ff574d68b225f15eda73f59c"
+  },
+  {
+    "figure": 77,
+    "id": "website-blog",
+    "route": "/website/blog",
+    "title": "Blog",
+    "sha256": "66d088bee1509bd84e3416ad28eaa93d9ef1792a6ad8b41b0ffcd373f659401b"
+  },
+  {
+    "figure": 78,
+    "id": "website-blog-new",
+    "route": "/website/blog/new",
+    "title": "Add post",
+    "sha256": "864b8bed17a578b93d512207cdc8514dad91cc0901e671321c30eed2ac3c9546"
+  },
+  {
+    "figure": 79,
+    "id": "website-announcements",
+    "route": "/website/announcements",
+    "title": "Announcements",
+    "sha256": "ba7db8527173e7db8a6359635d0f543e4b9a005a45229686d82a35a87f1cc9ce"
+  },
+  {
+    "figure": 80,
+    "id": "website-warranty",
+    "route": "/website/warranty",
+    "title": "Warranty claims",
+    "sha256": "618bc9a8982172f7740a351c9851f0b93bd80436ac820e3ad1b55573bfd1b69b"
+  },
+  {
+    "figure": 81,
+    "id": "website-settings",
+    "route": "/website/settings",
+    "title": "Site settings",
+    "sha256": "b848c2ad2bd347f40d99feaa99545e12b24e4d508a22c4f87b05da5d86ea2421"
+  },
+  {
+    "figure": 82,
+    "id": "settings",
+    "route": "/settings",
+    "title": "Settings",
+    "sha256": "05d51d004316052572103ba6db32d86e98e810a2cdf5f1cf40284c6ee9bd0bc0"
+  },
+  {
+    "figure": 83,
+    "id": "profile",
+    "route": "/profile",
+    "title": "My Profile",
+    "sha256": "efd1197b2b5e4641a50d8147520ef598fe3dd9ba8a538fd935278db3575ebe19"
+  },
+  {
+    "figure": 84,
+    "id": "preferences",
+    "route": "/preferences",
+    "title": "Preferences",
+    "sha256": "021dc70af1d2da45116f66791fe10244de76f920aa32af2cfb95c72620f048fd"
+  },
+  {
+    "figure": 85,
+    "id": "gst-configuration",
+    "route": "/gst/configuration",
+    "title": "GST overview",
+    "sha256": "7d52e5d02054f3babce5dede06e3367f1741c5171ff82fda71e4b1c2ccfb912c"
+  },
+  {
+    "figure": 86,
+    "id": "gst-registrations",
+    "route": "/gst/registrations",
+    "title": "GST registrations",
+    "sha256": "1ce6fee8c48ea2490c605f1358633c4b18f85b540431ac3dcf9977210e53e8e3"
+  },
+  {
+    "figure": 87,
+    "id": "gst-verify-gstin",
+    "route": "/gst/verify-gstin",
+    "title": "GSTIN verification",
+    "sha256": "09e57d498e6a278dcc6dca0b372d8c0952da309bc133141afc4d5cd28503cc87"
+  },
+  {
+    "figure": 88,
+    "id": "gst-e-invoices",
+    "route": "/gst/e-invoices",
+    "title": "E-Invoice lookup",
+    "sha256": "395852b4107c5f3c661c33ad1b02389fa69560f6732386f4d315e92d65dc34a5"
+  },
+  {
+    "figure": 89,
+    "id": "gst-eway-bills",
+    "route": "/gst/eway-bills",
+    "title": "E-Way Bill lookup",
+    "sha256": "35f75c74589f40a96aa1c94722d900242e346f69dd790719ba6ba39ee380ce57"
+  },
+  {
+    "figure": 90,
+    "id": "gst-sessions",
+    "route": "/gst/sessions",
+    "title": "GST session status",
+    "sha256": "c5e59fdbd6fa1f25325b2eaf8c7bd8ba26ee1b4bd8f22b299b34b92df88bf9fe"
+  },
+  {
+    "figure": 91,
+    "id": "gst-api-logs",
+    "route": "/gst/api-logs",
+    "title": "GST API logs",
+    "sha256": "8d1e6cc8f86293e90846eacb519fcef3be737f12141b52651c038e4870fa9705"
+  },
+  {
+    "figure": 92,
+    "id": "items-stock-tab",
+    "route": "/items/new",
+    "title": "Item Stock tab",
+    "sha256": "70d710c352c7b8d0e60ff00e3eab8cbbea8eb154fb0e1dce29d76aad64880a7b"
+  },
+  {
+    "figure": 93,
+    "id": "items-manufacturing-tab",
+    "route": "/items/new",
+    "title": "Item Manufacturing tab",
+    "sha256": "6752c5bcf3ef893e3ef911c60d6a73a64518964cbc8b2e2fb68748fd5754c2b1"
+  },
+  {
+    "figure": 94,
+    "id": "users-create-dialog",
+    "route": "/users",
+    "title": "Add User dialog",
+    "sha256": "d5d41f6eaac785b34713610086c04ad5978d88f0396dcf5ee4d97639bb11a35e"
+  },
+  {
+    "figure": 95,
+    "id": "roles-create-dialog",
+    "route": "/roles",
+    "title": "Add Role dialog",
+    "sha256": "32af22822280ce3c3faf2317e9083bbb08e00a63843f3779b70bdd0ec6e728ce"
+  },
+  {
+    "figure": 96,
+    "id": "categories-create-dialog",
+    "route": "/categories",
+    "title": "Add Category dialog",
+    "sha256": "979ddf9c7f660e1cab513ed795016fc25ebdfcb386f394c708f1ca639924bbb3"
+  },
+  {
+    "figure": 97,
+    "id": "units-create-dialog",
+    "route": "/units",
+    "title": "Add Unit dialog",
+    "sha256": "311500f96a0bc760b1ac9664468309a421eb6c007b684e4a84692b884e605982"
+  },
+  {
+    "figure": 98,
+    "id": "channel-create-dialog",
+    "route": "/supply-chain/channels",
+    "title": "New channel dialog",
+    "sha256": "afb74aea7d06476a6943e8593280febdb01d9a95d429af020b283b02f18890af"
+  },
+  {
+    "figure": 99,
+    "id": "warehouse-create-dialog",
+    "route": "/supply-chain/warehouses",
+    "title": "New warehouse dialog",
+    "sha256": "bba4267ee925863e43c3910f2576667ac3fd377f04ae25dc83ffe30b01955189"
+  },
+  {
+    "figure": 100,
+    "id": "wallet-create-dialog",
+    "route": "/rojmel/wallets",
+    "title": "Create Wallet dialog",
+    "sha256": "c4eb29fe6ea98e384a4b6a3974beabc89fd0d9fa378f274d339b0b1625123323"
+  }
+]

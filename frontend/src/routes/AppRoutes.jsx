@@ -6,6 +6,23 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
 import DefaultRouteRedirect from "./DefaultRouteRedirect";
+import { GST_PAGES } from "../utils/gstCompliance";
+
+const GstOverview = lazy(() => import("../pages/gst/GstOverviewPage.jsx"));
+const GstRegistrations = lazy(() => import("../pages/gst/GstRegistrationsPage.jsx"));
+const GstVerification = lazy(() => import("../pages/gst/GstVerificationPage.jsx"));
+const GstDocument = lazy(() => import("../pages/gst/GstDocumentPage.jsx"));
+const GstSessions = lazy(() => import("../pages/gst/GstSessionPage.jsx"));
+const GstLogs = lazy(() => import("../pages/gst/GstLogsPage.jsx"));
+const gstScreens = {
+  configuration: <GstOverview />,
+  registrations: <GstRegistrations />,
+  verification: <GstVerification />,
+  invoices: <GstDocument key="invoice" kind="invoice" />,
+  wayBills: <GstDocument key="wayBill" kind="wayBill" />,
+  sessions: <GstSessions />,
+  logs: <GstLogs />,
+};
 
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
@@ -244,6 +261,11 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
+          <Route
+            path="/gst"
+            element={<Navigate to="/gst/configuration" replace />}
+          />
+          {GST_PAGES.map(page => <Route key={page.key} path={page.route} element={<PermissionGuard route={page.route} pageName={page.pageName}>{gstScreens[page.key]}</PermissionGuard>} />)}
           <Route
             path="/dashboard"
             element={
