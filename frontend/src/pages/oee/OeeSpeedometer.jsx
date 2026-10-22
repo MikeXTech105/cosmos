@@ -81,6 +81,7 @@ const OeeSpeedometer = ({ showTicks = true, size = 220, value = 0 }) => {
   const titleId = useId();
   const descId = useId();
   const safeValue = clampOeeValue(value);
+  const displayValue = Number.isFinite(Number(value)) ? Math.max(0, Number(value)) : 0;
   const [animatedValue, setAnimatedValue] = useState(0);
   const rating = useMemo(() => getOeeRating(safeValue), [safeValue]);
   const rotation = (animatedValue / 100) * 180 - 90;
@@ -103,11 +104,12 @@ const OeeSpeedometer = ({ showTicks = true, size = 220, value = 0 }) => {
         className="h-auto w-full overflow-visible"
       >
         <title id={titleId}>
-          {`OEE gauge showing ${formatOeePercent(safeValue)} - ${rating.label}`}
+          {`OEE gauge showing ${formatOeePercent(displayValue)} - ${rating.label}`}
         </title>
         <desc id={descId}>
           Half-circle OEE speedometer with red, amber, yellow, and green rating
           zones. The needle points to {formatOeePercent(safeValue)}.
+          {displayValue > 100 ? ` Actual OEE is ${formatOeePercent(displayValue)}; the needle stops at 100%.` : ""}
         </desc>
 
         <path

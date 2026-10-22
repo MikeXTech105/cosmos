@@ -84,10 +84,7 @@ export const buildItemPayload = (values) => {
     itemCode: cleanString(values.itemCode),
     barcode: cleanString(values.barcode, { noneAsNull: true }),
     categoryId: serializeId(values.categoryId) ?? 0,
-    unitId:
-      itemType === ITEM_TYPE.PRODUCT
-        ? (serializeId(values.unitId) ?? 0)
-        : 0,
+    unitId: serializeId(values.unitId) ?? 0,
     itemType,
     procurementClassification: normalizeItemClassification(
       values.procurementClassification,

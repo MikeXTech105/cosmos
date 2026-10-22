@@ -536,7 +536,7 @@ const ReturnModal = ({
           <AppInput
             disabled={saving}
             error={errors.returnReason}
-            label="Return reason"
+            label="Return reason" required
             value={form.returnReason}
             onChange={(event) => setField("returnReason", event.target.value)}
           />

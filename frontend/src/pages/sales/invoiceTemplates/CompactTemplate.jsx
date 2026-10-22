@@ -17,8 +17,7 @@ const CompactTemplate = ({ invoice }) => {
             {COMPANY_PROFILE.name}
           </h1>
           <p className="mt-1 max-w-md text-[11px] leading-4 text-slate-500">
-            {COMPANY_PROFILE.address} | {COMPANY_PROFILE.phone} |{" "}
-            {COMPANY_PROFILE.email}
+            {[COMPANY_PROFILE.address, COMPANY_PROFILE.phone, COMPANY_PROFILE.email].filter(Boolean).join(" | ")}
           </p>
           <p className="mt-1 text-[11px] font-semibold text-slate-600">
             {COMPANY_PROFILE.gstin}

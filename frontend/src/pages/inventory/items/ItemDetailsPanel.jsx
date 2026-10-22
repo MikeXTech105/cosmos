@@ -143,6 +143,7 @@ const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
           />
           <DetailRow label="Barcode" value={item.barcode} />
           <DetailRow label="HSN code" value={item.hsnCode} />
+          <p className="py-2 text-xs leading-5 text-slate-500">HSN and GST rate use the existing Item Master fields. Effective-date overrides and category mapping await the matching GST backend module. Historical invoice snapshots are unchanged.</p>
           <DetailRow
             label="GST rate"
             value={`${Number(item.gstRate ?? 0)}%`}

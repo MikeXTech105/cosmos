@@ -106,8 +106,8 @@ export const validateProductMedia = (media = []) => {
   const errors = {};
   const populated = media.filter((item) => String(item?.publicUrl ?? "").trim());
   populated.forEach((item, index) => {
-    if (!String(item?.altText ?? "").trim()) {
-      errors[`media.${index}.altText`] = "Alt text is required for every image.";
+    if (String(item?.altText ?? "").length > 500) {
+      errors[`media.${index}.altText`] = "Alt text cannot exceed 500 characters.";
     }
   });
   if (populated.length > 0 && populated.filter((item) => item.isPrimary).length !== 1) {
