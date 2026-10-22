@@ -1,4 +1,8 @@
+import { GST_PAGES } from "../utils/gstCompliance";
+import { deepDiveModules } from "../pages/deepDive/deepDiveConfig";
+
 export const enabledModules = [
+  ...Object.keys(deepDiveModules),
   "dashboard",
   "users",
   "roles",
@@ -51,6 +55,7 @@ export const enabledModules = [
   "shifts",
   "payroll",
   "oeeDashboard",
+  "oeeInsights",
   "oeeProduction",
   "oeeMachines",
   "oeeMoulds",
@@ -72,14 +77,17 @@ export const enabledModules = [
   "dataBook",
   "activityLogs",
   "settings",
+  ...GST_PAGES.map(page => `gst_${page.key}`),
 ];
 
 export const sidebarCategories = [
+  { id: "deepDive", label: "Deep Dive", icon: "analytics", sortOrder: 81 },
+  { id: "gst", label: "GST compliance", icon: "invoice", sortOrder: 57 },
   {
     id: "rbac",
-    label: "RBAC",
+    label: "Administration",
     icon: "shieldcheck",
-    sortOrder: 20,
+    sortOrder: 85,
   },
   {
     id: "inventory",
@@ -162,6 +170,11 @@ export const sidebarCategories = [
 ];
 
 export const sidebarModules = {
+  ...deepDiveModules,
+  ...Object.fromEntries(GST_PAGES.map((page, index) => [`gst_${page.key}`, {
+    id: `gst_${page.key}`, label: page.title, route: page.route,
+    permissionPageName: page.pageName, icon: "invoice", categoryId: "gst", sortOrder: index + 1,
+  }])),
   wmDashboard: {
     id: "wmDashboard",
     label: "Dashboard",
@@ -768,6 +781,17 @@ export const sidebarModules = {
     icon: "production",
     categoryId: "oee",
     sortOrder: 20,
+  },
+  oeeInsights: {
+    id: "oeeInsights",
+    label: "Production Insights",
+    route: "/oee/insights",
+    permissionPageName: "OEE.ProductionEntries",
+    permissionTargets: [{ pageName: "OEE.ProductionEntries", route: "/oee/production-entries" }],
+    preservePresentation: true,
+    icon: "reports",
+    categoryId: "oee",
+    sortOrder: 15,
   },
   oeeMachines: {
     id: "oeeMachines",

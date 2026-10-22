@@ -7,6 +7,7 @@ import {
   TemplatePage,
   TotalsBlock,
 } from "./InvoiceTemplateShared";
+import { COMPANY_PROFILE } from "./companyProfile";
 
 const ModernTemplate = ({ invoice }) => {
   return (
@@ -22,7 +23,7 @@ const ModernTemplate = ({ invoice }) => {
             </h1>
           </div>
           <div className="text-right text-sm">
-            <p className="text-lg font-bold">COSMOS ERP</p>
+            <p className="text-lg font-bold">{COMPANY_PROFILE.name}</p>
             <p className="mt-1 text-white/75">Professional billing document</p>
           </div>
         </div>

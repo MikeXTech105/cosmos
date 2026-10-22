@@ -2,17 +2,20 @@ import {
   AlertTriangle,
   CalendarDays,
   ClipboardList,
-  Edit3,
   Plus,
   RefreshCw,
   Save,
-  Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import {
+  parseIsoDate,
+  toIsoDate,
+} from "../../../components/common/datePickerUtils";
 import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
@@ -25,7 +28,6 @@ import { oeeMouldService } from "../../../services/oee/oeeMouldService";
 import {
   createOeeProductionEntriesBulk,
   deleteOeeProductionEntry,
-  fetchOeeProductionEntries,
   fetchOeeProductionEntryById,
   setOeeProductionEntryFilters,
   setOeeProductionEntryPage,
@@ -36,22 +38,16 @@ import {
   buildOeeProductionQueryParams,
   extractOeeEntity,
   formatOeeDate,
-  formatOeeNumber,
-  formatOeePercent,
   getOeeActionError,
-  getOeeRating,
   getOeeRecordId,
   getOeeSuccessMessage,
   getTodayInputValue,
 } from "../oeeHelpers";
-import {
-  OeeConfirmDialog,
-  OeeEmptyState,
-  OeeNumberInput,
-  OeePagination,
-  OeeRatingPill,
-} from "../OeeShared";
+import { OeeConfirmDialog, OeeNumberInput } from "../OeeShared";
 import useOeeCapabilities from "../useOeeCapabilities";
+import { oeeProductionEntryService } from "../../../services/oee/oeeProductionEntryService";
+import { loadDowntimeEntries } from "../dashboard/downtimeAnalysis";
+import ProductionHistoryByDate from "./ProductionHistoryByDate";
 
 const getItems = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -79,7 +75,7 @@ const normalizeMachineOnTime = (value) => {
   return trimmed;
 };
 
-const createRowsFromMachines = (machines) => {
+const createRowsFromMachines = (machines, defaultDowntimeReasonId) => {
   return machines.map((machine) => ({
     id: String(getOeeRecordId(machine, "machine")),
     machineCode: machine.machineCode ?? "",
@@ -89,7 +85,7 @@ const createRowsFromMachines = (machines) => {
     machineOnTime: "",
     mouldId: "",
     shotCount: "0",
-    downtimeReasonId: "",
+    downtimeReasonId: defaultDowntimeReasonId,
     remarks: "",
   }));
 };
@@ -101,13 +97,7 @@ const toOptions = (items, getLabel) => {
   }));
 };
 
-const QuickCreateModal = ({
-  isOpen,
-  isSaving,
-  onClose,
-  onSubmit,
-  type,
-}) => {
+const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
   const isMould = type === "mould";
   const [values, setValues] = useState({
     cavity: "",
@@ -135,7 +125,11 @@ const QuickCreateModal = ({
     >
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          {isMould ? <Plus className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
+          {isMould ? (
+            <Plus className="h-5 w-5" />
+          ) : (
+            <AlertTriangle className="h-5 w-5" />
+          )}
         </div>
         <div>
           <h2 className="text-lg font-semibold text-slate-900">
@@ -222,10 +216,8 @@ const EditEntryModal = ({
 
   const machineOptions = useMemo(
     () =>
-      toOptions(
-        lookups.machines,
-        (machine) =>
-          [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
+      toOptions(lookups.machines, (machine) =>
+        [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
       ),
     [lookups.machines],
   );
@@ -234,11 +226,7 @@ const EditEntryModal = ({
     [lookups.moulds],
   );
   const reasonOptions = useMemo(
-    () =>
-      toOptions(
-        lookups.reasons,
-        (reason) => reason.reasonName ?? "-",
-      ),
+    () => toOptions(lookups.reasons, (reason) => reason.reasonName ?? "-"),
     [lookups.reasons],
   );
 
@@ -283,7 +271,8 @@ const EditEntryModal = ({
             Edit Production Entry
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Update the single production record and let the backend recalculate OEE.
+            Update the single production record and let the backend recalculate
+            OEE.
           </p>
         </div>
       </div>
@@ -368,167 +357,24 @@ const EditEntryModal = ({
           </div>
 
           <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
-            <AppButton variant="secondary" disabled={isSubmitting} onClick={onClose}>
+            <AppButton
+              variant="secondary"
+              disabled={isSubmitting}
+              onClick={onClose}
+            >
               Cancel
             </AppButton>
-            <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
+            <AppButton
+              type="submit"
+              isLoading={isSubmitting}
+              loadingText="Saving…"
+            >
               Save Changes
             </AppButton>
           </div>
         </form>
       )}
     </AppModal>
-  );
-};
-
-const HistoryTable = ({
-  actions,
-  entries,
-  error,
-  isLoading,
-  onPageChange,
-  onPageSizeChange,
-  onRetry,
-  pageNumber,
-  pageSize,
-  totalCount,
-  totalPages,
-}) => {
-  if (isLoading) {
-    return (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="space-y-3 p-4">
-          {Array.from({ length: 7 }, (_, index) => (
-            <div
-              key={index}
-              className="h-12 animate-pulse rounded-xl bg-slate-100"
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error || entries.length === 0) {
-    return (
-      <OeeEmptyState
-        icon={ClipboardList}
-        title="No production entries found"
-        description="Saved daily machine entries will appear here for review and edits."
-        error={error}
-        onRetry={onRetry}
-      />
-    );
-  }
-
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1100px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-4 py-3 font-semibold">#</th>
-              <th className="px-4 py-3 font-semibold">Date</th>
-              <th className="px-4 py-3 font-semibold">Machine</th>
-              <th className="px-4 py-3 font-semibold">Mould</th>
-              <th className="px-4 py-3 font-semibold">On-Time</th>
-              <th className="px-4 py-3 font-semibold">Shots</th>
-              <th className="px-4 py-3 font-semibold">Target</th>
-              <th className="px-4 py-3 font-semibold">OEE</th>
-              <th className="px-4 py-3 font-semibold">Downtime</th>
-              <th className="px-4 py-3 font-semibold">Remarks</th>
-              <th className="px-4 py-3 text-right font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry, index) => (
-              <tr key={getOeeRecordId(entry)} className="border-t border-slate-100">
-                <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
-                  {(pageNumber - 1) * pageSize + index + 1}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {formatOeeDate(entry.productionDate)}
-                </td>
-                <td className="px-4 py-3">
-                  <p className="font-semibold text-slate-900">
-                    {entry.machineCode || entry.machineName || "-"}
-                  </p>
-                  {entry.machineCode && entry.machineName && (
-                    <p className="text-xs text-slate-500">{entry.machineName}</p>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {entry.mouldName || "-"}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {entry.machineOnTime || "-"}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {formatOeeNumber(entry.shotCount, { maximumFractionDigits: 0 })}
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {formatOeeNumber(entry.calculatedTargetShot)}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="font-semibold text-slate-900">
-                      {formatOeePercent(entry.calculatedOeePercentage)}
-                    </span>
-                    <OeeRatingPill
-                      rating={getOeeRating(entry.calculatedOeePercentage)}
-                    />
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-slate-700">
-                  {entry.downtimeReasonName || "-"}
-                </td>
-                <td className="max-w-56 truncate px-4 py-3 text-slate-500">
-                  {entry.remarks || "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-0.5">
-                    {actions.canEdit && (
-                      <button
-                        type="button"
-                        aria-label="Edit entry"
-                        title="Edit entry"
-                        onClick={() => actions.onEdit(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-slate-100 hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </button>
-                    )}
-                    {actions.canDelete && (
-                      <button
-                        type="button"
-                        aria-label="Delete entry"
-                        title="Delete entry"
-                        onClick={() => actions.onDelete(entry)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <OeePagination
-        disabled={isLoading}
-        itemCount={entries.length}
-        itemLabel="entries"
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        pageNumber={pageNumber}
-        pageSize={pageSize}
-        totalCount={totalCount}
-        totalPages={totalPages}
-      />
-    </div>
   );
 };
 
@@ -553,7 +399,11 @@ const OeeProductionEntriesPage = () => {
     resource: "oeeDowntimeReasons",
     route: "/oee/downtime-reasons",
   });
-  const [productionDate, setProductionDate] = useState(getTodayInputValue());
+  const [searchParams] = useSearchParams();
+  const [productionDate, setProductionDate] = useState(
+    () =>
+      toIsoDate(parseIsoDate(searchParams.get("date"))) || getTodayInputValue(),
+  );
   const [lookups, setLookups] = useState({
     error: "",
     loading: false,
@@ -585,11 +435,7 @@ const OeeProductionEntriesPage = () => {
     [lookups.moulds],
   );
   const reasonOptions = useMemo(
-    () =>
-      toOptions(
-        lookups.reasons,
-        (reason) => reason.reasonName ?? "-",
-      ),
+    () => toOptions(lookups.reasons, (reason) => reason.reasonName ?? "-"),
     [lookups.reasons],
   );
 
@@ -597,15 +443,20 @@ const OeeProductionEntriesPage = () => {
     () =>
       buildOeeProductionQueryParams({
         filters: production.filters,
-        pageNumber: production.pageNumber,
-        pageSize: production.pageSize,
+        pageNumber: 1,
+        pageSize: 200,
       }),
-    [production.filters, production.pageNumber, production.pageSize],
+    [production.filters],
   );
 
-  const loadHistory = useCallback(() => {
-    return dispatch(fetchOeeProductionEntries(queryParams));
-  }, [dispatch, queryParams]);
+  const [historyRevision, setHistoryRevision] = useState(0);
+  const [history, setHistory] = useState({ key: "", entries: [], error: "" });
+  const historyKey = JSON.stringify([queryParams, historyRevision]);
+  const historyLoading = history.key !== historyKey;
+  const loadHistory = useCallback(
+    () => setHistoryRevision((value) => value + 1),
+    [],
+  );
 
   const loadLookups = useCallback(async () => {
     setLookups((current) => ({ ...current, error: "", loading: true }));
@@ -636,17 +487,30 @@ const OeeProductionEntriesPage = () => {
       ]);
 
       const nextMachines = getItems(machines);
+      const nextReasons = getItems(reasons);
+      const noneReason = nextReasons.find(
+        (reason) =>
+          String(reason.reasonName ?? "")
+            .trim()
+            .toUpperCase() === "NONE",
+      );
+      const defaultDowntimeReasonId = noneReason
+        ? getOeeRecordId(noneReason)
+        : "";
 
       setLookups({
         error: "",
         loading: false,
         machines: nextMachines,
         moulds: getItems(moulds),
-        reasons: getItems(reasons),
+        reasons: nextReasons,
       });
       setRows((current) => {
         const existing = new Map(current.map((row) => [row.id, row]));
-        return createRowsFromMachines(nextMachines).map((row) => ({
+        return createRowsFromMachines(
+          nextMachines,
+          defaultDowntimeReasonId,
+        ).map((row) => ({
           ...row,
           ...existing.get(row.id),
           machineCode: row.machineCode,
@@ -667,8 +531,30 @@ const OeeProductionEntriesPage = () => {
   }, [loadLookups]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadHistory);
-  }, [loadHistory]);
+    const controller = new AbortController();
+    // Group only after every API page has loaded, so a date is never split.
+    loadDowntimeEntries(
+      oeeProductionEntryService.getProductionEntries,
+      queryParams,
+      controller.signal,
+    )
+      .then((entries) => {
+        if (!controller.signal.aborted)
+          setHistory({ key: historyKey, entries, error: "" });
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted)
+          setHistory({
+            key: historyKey,
+            entries: [],
+            error: getOeeActionError(
+              error,
+              "Unable to load production history.",
+            ),
+          });
+      });
+    return () => controller.abort();
+  }, [queryParams, historyKey]);
 
   const updateRow = (rowId, patch) => {
     setRows((current) =>
@@ -680,25 +566,27 @@ const OeeProductionEntriesPage = () => {
   const validateRows = () => {
     const nextErrors = {};
 
-    rows.filter((row) => row.isRunning).forEach((row) => {
-      const errors = [];
+    rows
+      .filter((row) => row.isRunning)
+      .forEach((row) => {
+        const errors = [];
 
-      if (!row.machineOnTime.trim()) {
-        errors.push("on-time");
-      }
+        if (!row.machineOnTime.trim()) {
+          errors.push("on-time");
+        }
 
-      if (!row.mouldId) {
-        errors.push("mould");
-      }
+        if (!row.mouldId) {
+          errors.push("mould");
+        }
 
-      if (Number(row.shotCount) < 0) {
-        errors.push("shots");
-      }
+        if (Number(row.shotCount) < 0) {
+          errors.push("shots");
+        }
 
-      if (errors.length > 0) {
-        nextErrors[row.id] = `Check ${errors.join(", ")}.`;
-      }
-    });
+        if (errors.length > 0) {
+          nextErrors[row.id] = `Check ${errors.join(", ")}.`;
+        }
+      });
 
     setRowErrors(nextErrors);
 
@@ -732,16 +620,18 @@ const OeeProductionEntriesPage = () => {
 
     const payload = {
       productionDate,
-      entries: rows.filter((row) => row.isRunning).map((row) => ({
-        machineId: Number(row.machineId),
-        machineOnTime: normalizeMachineOnTime(row.machineOnTime),
-        mouldId: Number(row.mouldId),
-        shotCount: Number(row.shotCount) || 0,
-        downtimeReasonId: row.downtimeReasonId
-          ? Number(row.downtimeReasonId)
-          : null,
-        remarks: row.remarks.trim(),
-      })),
+      entries: rows
+        .filter((row) => row.isRunning)
+        .map((row) => ({
+          machineId: Number(row.machineId),
+          machineOnTime: normalizeMachineOnTime(row.machineOnTime),
+          mouldId: Number(row.mouldId),
+          shotCount: Number(row.shotCount) || 0,
+          downtimeReasonId: row.downtimeReasonId
+            ? Number(row.downtimeReasonId)
+            : null,
+          remarks: row.remarks.trim(),
+        })),
     };
 
     try {
@@ -762,9 +652,7 @@ const OeeProductionEntriesPage = () => {
 
   const submitQuickCreate = async (values) => {
     const isAllowed =
-      quickCreate.type === "mould"
-        ? canCreateMould
-        : canCreateDowntimeReason;
+      quickCreate.type === "mould" ? canCreateMould : canCreateDowntimeReason;
 
     if (!isAllowed || quickCreate.isSaving) {
       return;
@@ -909,10 +797,8 @@ const OeeProductionEntriesPage = () => {
   const filterMachineOptions = useMemo(
     () => [
       { value: "", label: "All machines" },
-      ...toOptions(
-        lookups.machines,
-        (machine) =>
-          [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
+      ...toOptions(lookups.machines, (machine) =>
+        [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
       ),
     ],
     [lookups.machines],
@@ -971,7 +857,7 @@ const OeeProductionEntriesPage = () => {
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="oee-entry-form rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">
@@ -979,27 +865,30 @@ const OeeProductionEntriesPage = () => {
               Bulk Daily Entry
             </div>
             <h2 className="mt-3 text-lg font-semibold text-slate-900">
-              {rows.filter((row) => row.isRunning).length} of {rows.length} machines running
+              {rows.filter((row) => row.isRunning).length} of {rows.length}{" "}
+              machines running
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Switch on the machines running on this date. Only running machines will be saved.
-              Enter on-time as 12 HR or a number of hours.
+              Switch on the machines running on this date. Only running machines
+              will be saved. Enter on-time as 12 HR or a number of hours.
             </p>
           </div>
-          <AppInput
-            id="productionDate"
-            label="Production Date"
-            type="date"
-            required
-            value={productionDate}
-            disabled={production.bulkSaving}
-            onChange={(event) => setProductionDate(event.target.value)}
-            className="h-10"
-          />
+          <div className="w-full shrink-0 lg:w-52">
+            <AppInput
+              id="productionDate"
+              label="Production Date"
+              type="date"
+              required
+              value={productionDate}
+              disabled={production.bulkSaving}
+              onChange={(event) => setProductionDate(event.target.value)}
+              className="h-10"
+            />
+          </div>
         </div>
 
         <div className="mt-5 space-y-3">
-          <div className="hidden rounded-xl bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 xl:grid xl:grid-cols-[minmax(170px,0.9fr)_120px_minmax(190px,1fr)_110px_minmax(190px,1fr)_minmax(190px,1fr)] xl:gap-3">
+          <div className="oee-entry-grid-heading">
             <span>Machine</span>
             <span>On-Time</span>
             <span>Mould</span>
@@ -1024,23 +913,31 @@ const OeeProductionEntriesPage = () => {
               <div
                 key={row.id}
                 className={[
-                  "grid gap-3 rounded-xl border bg-white p-3",
-                  rowErrors[row.id] ? "border-red-200" : "border-slate-200",
-                  "xl:grid-cols-[minmax(170px,0.9fr)_120px_minmax(190px,1fr)_110px_minmax(190px,1fr)_minmax(190px,1fr)]",
+                  "oee-entry-row rounded-xl border bg-white",
+                  rowErrors[row.id]
+                    ? "oee-entry-invalid border-red-200"
+                    : "border-slate-200",
+                  row.isRunning ? "oee-entry-running" : "",
                 ].join(" ")}
               >
-                <div className="min-w-0">
+                <div className="oee-entry-machine min-w-0">
                   <button
                     type="button"
                     role="switch"
                     aria-checked={row.isRunning}
                     aria-label={`Running machine ${row.machineCode || row.machineName}`}
                     disabled={!capabilities.canCreate || production.bulkSaving}
-                    onClick={() => updateRow(row.id, { isRunning: !row.isRunning })}
+                    onClick={() =>
+                      updateRow(row.id, { isRunning: !row.isRunning })
+                    }
                     className="mb-2 inline-flex items-center gap-2 rounded-md text-xs font-semibold text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <span className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${row.isRunning ? "bg-emerald-500" : "bg-slate-300"}`}>
-                      <span className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${row.isRunning ? "translate-x-4" : "translate-x-0"}`} />
+                    <span
+                      className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${row.isRunning ? "bg-emerald-500" : "bg-slate-300"}`}
+                    >
+                      <span
+                        className={`h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${row.isRunning ? "translate-x-4" : "translate-x-0"}`}
+                      />
                     </span>
                     {row.isRunning ? "Running" : "Off · skipped"}
                   </button>
@@ -1056,77 +953,114 @@ const OeeProductionEntriesPage = () => {
                     </p>
                   )}
                 </div>
-                <AppInput
-                  id={`machineOnTime-${row.id}`}
-                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
-                  aria-label="Machine on-time"
-                  value={row.machineOnTime}
-                  placeholder="12 HR"
-                  onChange={(event) =>
-                    updateRow(row.id, { machineOnTime: event.target.value })
-                  }
-                  className="h-10 px-3"
-                />
-                <AppSelect
-                  value={row.mouldId}
-                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
-                  onChange={(value) => updateRow(row.id, { mouldId: value })}
-                  options={mouldOptions}
-                  placeholder="Select mould"
-                  creatable={canCreateMould}
-                  createLabel="Create mould"
-                  onCreateClick={() => {
-                    if (canCreateMould) {
-                      setQuickCreate({
-                        isOpen: true,
-                        isSaving: false,
-                        rowId: row.id,
-                        type: "mould",
-                      });
+                <div className="oee-entry-field ">
+                  <span className="oee-entry-field-label">On-time</span>
+                  <AppInput
+                    id={`machineOnTime-${row.id}`}
+                    disabled={
+                      !row.isRunning ||
+                      production.bulkSaving ||
+                      !capabilities.canCreate
                     }
-                  }}
-                  aria-label="Mould"
-                />
-                <OeeNumberInput
-                  id={`shotCount-${row.id}`}
-                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
-                  allowDecimal={false}
-                  value={row.shotCount}
-                  onChange={(value) => updateRow(row.id, { shotCount: value })}
-                />
-                <AppSelect
-                  value={row.downtimeReasonId}
-                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
-                  onChange={(value) =>
-                    updateRow(row.id, { downtimeReasonId: value })
-                  }
-                  options={reasonOptions}
-                  placeholder="Select reason"
-                  creatable={canCreateDowntimeReason}
-                  createLabel="Create reason"
-                  onCreateClick={() => {
-                    if (canCreateDowntimeReason) {
-                      setQuickCreate({
-                        isOpen: true,
-                        isSaving: false,
-                        rowId: row.id,
-                        type: "reason",
-                      });
+                    aria-label="Machine on-time"
+                    value={row.machineOnTime}
+                    placeholder="12 HR"
+                    onChange={(event) =>
+                      updateRow(row.id, { machineOnTime: event.target.value })
                     }
-                  }}
-                  aria-label="Downtime reason"
-                />
-                <AppInput
-                  id={`remarks-${row.id}`}
-                  disabled={!row.isRunning || production.bulkSaving || !capabilities.canCreate}
-                  aria-label="Remarks"
-                  value={row.remarks}
-                  placeholder="Remarks"
-                  onChange={(event) =>
-                    updateRow(row.id, { remarks: event.target.value })
-                  }
-                  className="h-10 px-3"
-                />
+                    className="h-10 px-3"
+                  />
+                </div>
+                <div className="oee-entry-field ">
+                  <span className="oee-entry-field-label">Mould</span>
+                  <AppSelect
+                    value={row.mouldId}
+                    disabled={
+                      !row.isRunning ||
+                      production.bulkSaving ||
+                      !capabilities.canCreate
+                    }
+                    onChange={(value) => updateRow(row.id, { mouldId: value })}
+                    options={mouldOptions}
+                    placeholder="Select mould"
+                    creatable={canCreateMould}
+                    createLabel="Create mould"
+                    onCreateClick={() => {
+                      if (canCreateMould) {
+                        setQuickCreate({
+                          isOpen: true,
+                          isSaving: false,
+                          rowId: row.id,
+                          type: "mould",
+                        });
+                      }
+                    }}
+                    aria-label="Mould"
+                  />
+                </div>
+                <div className="oee-entry-field ">
+                  <span className="oee-entry-field-label">Shots</span>
+                  <OeeNumberInput
+                    id={`shotCount-${row.id}`}
+                    disabled={
+                      !row.isRunning ||
+                      production.bulkSaving ||
+                      !capabilities.canCreate
+                    }
+                    allowDecimal={false}
+                    value={row.shotCount}
+                    onChange={(value) =>
+                      updateRow(row.id, { shotCount: value })
+                    }
+                  />
+                </div>
+                <div className="oee-entry-field ">
+                  <span className="oee-entry-field-label">Downtime</span>
+                  <AppSelect
+                    value={row.downtimeReasonId}
+                    disabled={
+                      !row.isRunning ||
+                      production.bulkSaving ||
+                      !capabilities.canCreate
+                    }
+                    onChange={(value) =>
+                      updateRow(row.id, { downtimeReasonId: value })
+                    }
+                    options={reasonOptions}
+                    placeholder="Select reason"
+                    creatable={canCreateDowntimeReason}
+                    createLabel="Create reason"
+                    onCreateClick={() => {
+                      if (canCreateDowntimeReason) {
+                        setQuickCreate({
+                          isOpen: true,
+                          isSaving: false,
+                          rowId: row.id,
+                          type: "reason",
+                        });
+                      }
+                    }}
+                    aria-label="Downtime reason"
+                  />
+                </div>
+                <div className="oee-entry-field oee-entry-remarks">
+                  <span className="oee-entry-field-label">Remarks</span>
+                  <AppInput
+                    id={`remarks-${row.id}`}
+                    disabled={
+                      !row.isRunning ||
+                      production.bulkSaving ||
+                      !capabilities.canCreate
+                    }
+                    aria-label="Remarks"
+                    value={row.remarks}
+                    placeholder="Remarks"
+                    onChange={(event) =>
+                      updateRow(row.id, { remarks: event.target.value })
+                    }
+                    className="h-10 px-3"
+                  />
+                </div>
               </div>
             ))
           )}
@@ -1140,29 +1074,38 @@ const OeeProductionEntriesPage = () => {
               Entry History
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Filter saved entries by period, machine, mould, or downtime reason.
+              One record per production date. Open a date to review and edit its
+              machine entries.
             </p>
           </div>
           <AppButton
             variant="secondary"
             className="h-10"
-            disabled={production.loading}
+            disabled={historyLoading}
             onClick={loadHistory}
           >
             <RefreshCw
-              className={`h-4 w-4 ${production.loading ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${historyLoading ? "animate-spin" : ""}`}
             />
             Refresh History
           </AppButton>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-<AppDateRangeFilter
+          <AppDateRangeFilter
             className="w-full sm:col-span-2 sm:min-w-[260px]"
             fromDate={production.filters.FromDate}
             toDate={production.filters.ToDate}
             allowLifetime={true}
-            onChange={({ fromDate, toDate }) => { dispatch(setOeeProductionEntryFilters({ FromDate: fromDate, ToDate: toDate })); dispatch(setOeeProductionEntryPage(1)); }}
+            onChange={({ fromDate, toDate }) => {
+              dispatch(
+                setOeeProductionEntryFilters({
+                  FromDate: fromDate,
+                  ToDate: toDate,
+                }),
+              );
+              dispatch(setOeeProductionEntryPage(1));
+            }}
           />
           <AppSelect
             value={production.filters.MachineId}
@@ -1214,7 +1157,8 @@ const OeeProductionEntriesPage = () => {
         </div>
       </div>
 
-      <HistoryTable
+      <ProductionHistoryByDate
+        key={historyKey}
         actions={{
           ...capabilities,
           onDelete: (entry) =>
@@ -1225,9 +1169,9 @@ const OeeProductionEntriesPage = () => {
             }),
           onEdit: openEdit,
         }}
-        entries={production.list}
-        error={production.error}
-        isLoading={production.loading}
+        entries={historyLoading ? [] : history.entries}
+        error={historyLoading ? "" : history.error}
+        isLoading={historyLoading}
         onPageChange={(value) => dispatch(setOeeProductionEntryPage(value))}
         onPageSizeChange={(value) =>
           dispatch(setOeeProductionEntryPageSize(value))
@@ -1235,8 +1179,6 @@ const OeeProductionEntriesPage = () => {
         onRetry={loadHistory}
         pageNumber={production.pageNumber}
         pageSize={production.pageSize}
-        totalCount={production.totalCount}
-        totalPages={production.totalPages}
       />
 
       <QuickCreateModal
@@ -1264,7 +1206,9 @@ const OeeProductionEntriesPage = () => {
         isLoading={modal.isLoading}
         isOpen={modal.isOpen}
         lookups={lookups}
-        onClose={() => setModal({ entity: null, isLoading: false, isOpen: false })}
+        onClose={() =>
+          setModal({ entity: null, isLoading: false, isOpen: false })
+        }
         onSubmit={submitEdit}
       />
 

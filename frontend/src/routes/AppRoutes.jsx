@@ -6,6 +6,26 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
 import DefaultRouteRedirect from "./DefaultRouteRedirect";
+import { GST_PAGES } from "../utils/gstCompliance";
+import { DEEP_PAGES } from "../pages/deepDive/deepDiveConfig";
+
+const DeepDivePage = lazy(() => import("../pages/deepDive/DeepDivePage.jsx"));
+
+const GstOverview = lazy(() => import("../pages/gst/GstOverviewPage.jsx"));
+const GstRegistrations = lazy(() => import("../pages/gst/GstRegistrationsPage.jsx"));
+const GstVerification = lazy(() => import("../pages/gst/GstVerificationPage.jsx"));
+const GstDocument = lazy(() => import("../pages/gst/GstDocumentPage.jsx"));
+const GstSessions = lazy(() => import("../pages/gst/GstSessionPage.jsx"));
+const GstLogs = lazy(() => import("../pages/gst/GstLogsPage.jsx"));
+const gstScreens = {
+  configuration: <GstOverview />,
+  registrations: <GstRegistrations />,
+  verification: <GstVerification />,
+  invoices: <GstDocument key="invoice" kind="invoice" />,
+  wayBills: <GstDocument key="wayBill" kind="wayBill" />,
+  sessions: <GstSessions />,
+  logs: <GstLogs />,
+};
 
 const AuthLayout = lazy(() => import("../layouts/AuthLayout"));
 const MainLayout = lazy(() => import("../layouts/MainLayout"));
@@ -104,6 +124,7 @@ const ReportRoutePage = lazy(
   () => import("../pages/reports/ReportRoutePage.jsx"),
 );
 const OeeDashboard = lazy(() => import("../pages/oee/dashboard/index.js"));
+const OeeInsights = lazy(() => import("../pages/oee/insights/ProductionInsightsPage.jsx"));
 const OeeProductionEntries = lazy(
   () => import("../pages/oee/productionEntries/index.js"),
 );
@@ -252,6 +273,13 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
+          <Route
+            path="/gst"
+            element={<Navigate to="/gst/configuration" replace />}
+          />
+          <Route path="/deep-dive-analytics" element={<Navigate to="/deep-dive-analytics/executive-command-center" replace />} />
+          {DEEP_PAGES.map(page => <Route key={page.id} path={page.route} element={<DeepDivePage key={page.id} pageId={page.id} />} />)}
+          {GST_PAGES.map(page => <Route key={page.key} path={page.route} element={<PermissionGuard route={page.route} pageName={page.pageName}>{gstScreens[page.key]}</PermissionGuard>} />)}
           <Route
             path="/dashboard"
             element={
@@ -808,6 +836,14 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/oee/dashboard" pageName="OEE.Dashboard">
                 <OeeDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/insights"
+            element={
+              <PermissionGuard route="/oee/production-entries" pageName="OEE.ProductionEntries">
+                <OeeInsights />
               </PermissionGuard>
             }
           />

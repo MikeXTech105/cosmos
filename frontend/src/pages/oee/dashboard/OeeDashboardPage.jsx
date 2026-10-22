@@ -1,695 +1,1009 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
-  AlertTriangle,
-  BarChart3,
+  ArrowDownRight,
+  ArrowUpRight,
+  ChevronRight,
+  Download,
   Factory,
-  Gauge,
-  Hash,
+  Info,
   RefreshCw,
-  Search,
   Target,
-  Trophy,
+  TrendingUp,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-
-import AppButton from "../../../components/common/AppButton";
-import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import AppSelect from "../../../components/common/AppSelect";
+import AppButton from "../../../components/common/AppButton";
+import AppInput from "../../../components/common/AppInput";
+import MetricCard from "../../../components/common/MetricCard";
 import PageHeader from "../../../components/common/PageHeader";
-import { oeeMachineService } from "../../../services/oee/oeeMachineService";
-import {
-  fetchOeeDashboard,
-  setOeeDashboardFilters,
-} from "../../../store/slices/oee/oeeDashboardSlice";
-import {
-  buildOeeRangeParams,
-  formatOeeDate,
-  formatOeeNumber,
-  formatOeePercent,
-  getOeeActionError,
-  getOeeRating,
-  getOeeRecordId,
-  OEE_HORIZON_OPTIONS,
-  OEE_RATING_FILTER_OPTIONS,
-} from "../oeeHelpers";
-import { OeeRatingPill, OeeStatCard } from "../OeeShared";
+import { getQuickDateRange } from "../../../components/common/dateRangePresets";
+import { oeeProductionEntryService } from "../../../services/oee/oeeProductionEntryService";
+import { getApiErrorMessage } from "../../../utils/apiError";
+import { downloadCsv } from "../../../utils/csv";
+import useOeeCapabilities from "../useOeeCapabilities";
 import OeeSpeedometer from "../OeeSpeedometer";
-import OeeDowntimeAnalysis from "./OeeDowntimeAnalysis";
+import OeeAggregateDashboard from "./OeeAggregateDashboard";
+import { loadDowntimeEntries } from "./downtimeAnalysis";
+import {
+  buildProductionAnalytics,
+  selectReadings,
+} from "./productionAnalytics";
+import DailySubmissionAudit from "./DailySubmissionAudit";
+import "./oeeDashboard.css";
 
-const asArray = (value) => (Array.isArray(value) ? value : []);
-
-const PanelSkeleton = ({ className = "" }) => {
-  return (
-    <div
-      className={[
-        "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm",
-        className,
-      ].join(" ")}
-    >
-      <div className="h-4 w-36 animate-pulse rounded-full bg-slate-100" />
-      <div className="mt-5 h-40 animate-pulse rounded-xl bg-slate-100" />
-    </div>
-  );
-};
-
-const PanelError = ({ message }) => {
-  if (!message) {
-    return null;
-  }
-
-  return (
-    <div className="rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-100">
-      {message}
-    </div>
-  );
-};
-
-const EmptyPanel = ({ label }) => {
-  return (
-    <div className="rounded-xl bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
-      {label}
-    </div>
-  );
-};
-
-const MachineGaugeCard = ({ machine, meta }) => {
-  const oeeValue = Number(machine.averageOeePercentage) || 0;
-  const rating = getOeeRating(oeeValue);
-  const totalShot = Number(machine.totalShot) || 0;
-  const totalTarget = Number(machine.totalTarget) || 0;
-  const hasNoProduction = totalShot <= 0 && totalTarget <= 0 && oeeValue <= 0;
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">
-            {meta?.machineCode || machine.machineName || "Machine"}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-slate-500">
-            {[machine.machineName, meta?.tonnage].filter(Boolean).join(" / ") ||
-              "Production machine"}
-          </p>
-        </div>
-        <OeeRatingPill rating={rating} />
-      </div>
-
-      <div className={["mt-5", hasNoProduction ? "opacity-75" : ""].join(" ")}>
-        <OeeSpeedometer value={oeeValue} showTicks />
-      </div>
-
-      <div className="mt-1 text-center">
-        <p className="text-3xl font-bold tracking-tight text-slate-900">
-          {formatOeePercent(oeeValue)}
-        </p>
-        <p className="mt-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-          OEE %
-        </p>
-        {hasNoProduction && (
-          <p className="mt-1 text-xs font-medium text-slate-400">
-            No production
-          </p>
-        )}
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-inset ring-slate-100">
-          <p className="text-xs font-semibold text-slate-400">Shots</p>
-          <p className="mt-1 text-sm font-bold text-slate-900">
-            {formatOeeNumber(totalShot, { maximumFractionDigits: 0 })}
-          </p>
-        </div>
-        <div className="rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-inset ring-slate-100">
-          <p className="text-xs font-semibold text-slate-400">Target</p>
-          <p className="mt-1 text-sm font-bold text-slate-900">
-            {formatOeeNumber(totalTarget, { maximumFractionDigits: 0 })}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HorizontalBarChart = ({
-  emptyLabel,
-  getLabel,
-  getMeta,
-  getValue,
-  rows,
-  valueLabel,
-}) => {
-  const max = Math.max(1, ...rows.map((row) => Number(getValue(row)) || 0));
-
-  if (rows.length === 0) {
-    return <EmptyPanel label={emptyLabel} />;
-  }
-
-  return (
-    <div className="space-y-3">
-      {rows.map((row, index) => {
-        const value = Number(getValue(row)) || 0;
-        const width = Math.max(4, Math.round((value / max) * 100));
-
-        return (
-          <div key={`${getLabel(row)}-${index}`}>
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-900">
-                  {getLabel(row)}
-                </p>
-                {getMeta && (
-                  <p className="truncate text-xs text-slate-500">
-                    {getMeta(row)}
-                  </p>
-                )}
-              </div>
-              <span className="shrink-0 text-xs font-semibold text-slate-500">
-                {valueLabel(row)}
-              </span>
-            </div>
-            <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${width}%` }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const TrendChart = ({ rows }) => {
-  const trend = rows.slice(-30);
-  const width = 760;
-  const height = 260;
-  const padding = 36;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
-  const maxShots = Math.max(1, ...trend.map((row) => Number(row.totalShot) || 0));
-  const points = trend.map((row, index) => {
-    const x =
-      padding +
-      (trend.length <= 1 ? chartWidth / 2 : (index / (trend.length - 1)) * chartWidth);
-    const y =
-      padding +
-      chartHeight -
-      ((Number(row.averageOeePercentage) || 0) / 100) * chartHeight;
-
-    return { x, y, row };
-  });
-  const linePath = points.map((point) => `${point.x},${point.y}`).join(" ");
-  const areaPath =
-    points.length > 0
-      ? `${points[0].x},${height - padding} ${linePath} ${points[points.length - 1].x},${height - padding}`
-      : "";
-
-  if (trend.length === 0) {
-    return <EmptyPanel label="No daily trend data available." />;
-  }
-
-  return (
-    <div className="overflow-hidden rounded-xl bg-slate-50 p-3">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="h-[260px] w-full"
-        role="img"
-        aria-label="Daily OEE trend"
-      >
-        {[0, 25, 50, 75, 100].map((tick) => {
-          const y = padding + chartHeight - (tick / 100) * chartHeight;
-
-          return (
-            <g key={tick}>
-              <line
-                x1={padding}
-                x2={width - padding}
-                y1={y}
-                y2={y}
-                stroke="#e2e8f0"
-                strokeDasharray="4 6"
-              />
-              <text
-                x={padding - 10}
-                y={y + 4}
-                textAnchor="end"
-                className="fill-slate-400 text-[11px] font-semibold"
-              >
-                {tick}%
-              </text>
-            </g>
-          );
-        })}
-
-        {trend.map((row, index) => {
-          const barWidth = Math.max(8, chartWidth / Math.max(1, trend.length) - 8);
-          const x =
-            padding +
-            (trend.length <= 1 ? chartWidth / 2 : (index / (trend.length - 1)) * chartWidth) -
-            barWidth / 2;
-          const barHeight = ((Number(row.totalShot) || 0) / maxShots) * (chartHeight * 0.5);
-          const y = height - padding - barHeight;
-
-          return (
-            <rect
-              key={`${row.productionDate}-${index}`}
-              x={x}
-              y={y}
-              width={barWidth}
-              height={barHeight}
-              rx="5"
-              fill="var(--app-accent-light)"
-            />
-          );
-        })}
-
-        {areaPath && (
-          <polygon points={areaPath} fill="var(--app-accent)" opacity="0.12" />
-        )}
-        <polyline
-          points={linePath}
-          fill="none"
-          stroke="var(--app-accent)"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="4"
-        />
-        {points.map((point, index) => (
-          <g key={`${point.row.productionDate}-${index}`}>
-            <circle
-              cx={point.x}
-              cy={point.y}
-              r="5"
-              fill="white"
-              stroke="var(--app-accent)"
-              strokeWidth="3"
-            />
-            {(index === 0 || index === points.length - 1) && (
-              <text
-                x={point.x}
-                y={height - 8}
-                textAnchor={index === 0 ? "start" : "end"}
-                className="fill-slate-500 text-[11px] font-semibold"
-              >
-                {formatOeeDate(point.row.productionDate)}
-              </text>
-            )}
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-};
-
-const DashboardPanel = ({ children, error, icon: Icon, loading, subtitle, title }) => {
-  if (loading) {
-    return <PanelSkeleton />;
-  }
-
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-          {subtitle && (
-            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
-          )}
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-      <PanelError message={error} />
-      <div className={error ? "mt-4" : ""}>{children}</div>
-    </div>
-  );
-};
-
-const OeeDashboardPage = () => {
-  const dispatch = useDispatch();
-  const dashboard = useSelector((state) => state.oeeDashboard);
-  const [machineLookup, setMachineLookup] = useState([]);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [search, setSearch] = useState("");
-  const [ratingFilter, setRatingFilter] = useState("all");
-
-  const rangeParams = useMemo(
-    () => buildOeeRangeParams(dashboard.filters),
-    [dashboard.filters],
-  );
-
-  const loadDashboard = useCallback(() => {
-    return dispatch(fetchOeeDashboard(rangeParams));
-  }, [dispatch, rangeParams]);
-
-  const loadMachineLookup = useCallback(async () => {
-    try {
-      const response = await oeeMachineService.getMachines({
-        Page: 1,
-        PageSize: 200,
-        SortBy: "displayOrder",
-        SortDirection: "asc",
-      });
-
-      setMachineLookup(asArray(response.data?.items));
-    } catch (error) {
-      toast.error(
-        getOeeActionError(error, "Unable to load machine details."),
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    void Promise.resolve().then(loadDashboard);
-  }, [loadDashboard]);
-
-  useEffect(() => {
-    void Promise.resolve().then(loadMachineLookup);
-  }, [loadMachineLookup]);
-
-  const summary = dashboard.summary.data ?? {};
-  const machineWise = asArray(dashboard.machineWise.data);
-  const mouldWise = asArray(dashboard.mouldWise.data);
-  const topDowntime = asArray(dashboard.topDowntime.data);
-  const dailyTrend = asArray(dashboard.dailyTrend.data);
-  const machineById = useMemo(() => {
-    return new Map(
-      machineLookup.map((machine) => [
-        String(getOeeRecordId(machine, "machine")),
-        machine,
+const n = (value, digits = 0) =>
+  value == null
+    ? "—"
+    : Number(value).toLocaleString("en-IN", { maximumFractionDigits: digits });
+const percent = (value) => (value == null ? "—" : `${n(value, 1)}%`);
+const shortDate = (value) =>
+  value
+    ? new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+      })
+    : "—";
+const rating = (value) =>
+  value == null
+    ? { label: "No eligible target", tone: "neutral" }
+    : value >= 85
+      ? { label: "World class", tone: "green" }
+      : value >= 65
+        ? { label: "Good", tone: "blue" }
+        : value >= 40
+          ? { label: "Needs attention", tone: "amber" }
+          : { label: "Critical", tone: "red" };
+const choices = (rows, key, label, all) => [
+  { value: "", label: all },
+  ...[
+    ...new Map(
+      rows.map((row) => [
+        String(row[key]),
+        { value: String(row[key]), label: row[label] || String(row[key]) },
       ]),
-    );
-  }, [machineLookup]);
-
-  const monitored = machineWise.length;
-  const healthy = machineWise.filter(
-    (machine) => Number(machine.averageOeePercentage) >= 65,
-  ).length;
-  const averageRating = getOeeRating(summary.averageOeePercentage);
-
-  const filteredMachines = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return machineWise.filter((machine) => {
-      const meta = machineById.get(String(machine.machineId));
-      const haystack = [
-        machine.machineName,
-        meta?.machineCode,
-        meta?.machineName,
-        meta?.tonnage,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      const rating = getOeeRating(machine.averageOeePercentage).label;
-
-      return (
-        (!normalizedSearch || haystack.includes(normalizedSearch)) &&
-        (ratingFilter === "all" || rating === ratingFilter)
-      );
-    });
-  }, [machineById, machineWise, ratingFilter, search]);
-
-  const anyLoading = Object.values(dashboard)
-    .filter((value) => value && typeof value === "object" && "loading" in value)
-    .some((panel) => panel.loading);
-
+    ).values(),
+  ].sort((a, b) => a.label.localeCompare(b.label)),
+];
+const exportColumns = [
+  ["productionDate", "Date"],
+  ["machineCode", "Machine code"],
+  ["machineName", "Machine"],
+  ["mouldName", "Mould"],
+  ["machineOnTime", "Scheduled on-time"],
+  ["shotCount", "Shots"],
+  ["calculatedTargetShot", "Saved target shots"],
+  ["calculatedOeePercentage", "Saved OEE %"],
+  ["downtimeReasonName", "Recorded reason"],
+  ["remarks", "Remarks"],
+].map(([key, header]) => ({ key, header }));
+function Panel({ title, subtitle, children, className = "", action }) {
   return (
-    <section className="min-w-0 space-y-5">
+    <section className={`oee-panel ${className}`}>
+      <div className="oee-panel-heading">
+        <div>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+function Empty({ children }) {
+  return (
+    <div className="oee-empty">
+      <Activity size={27} />
+      <p>{children}</p>
+    </div>
+  );
+}
+function Metric({ icon, label, value, detail, tone = "brand" }) {
+  return (
+    <MetricCard
+      icon={icon}
+      label={label}
+      value={value}
+      hint={detail}
+      tone={tone}
+      labelClassName="whitespace-normal text-[11px] leading-5"
+      valueClassName="text-2xl font-semibold"
+      metaClassName="whitespace-normal leading-5"
+    />
+  );
+}
+function ProductionDashboard({ canExport, canCreate }) {
+  const [period, setPeriod] = useState("last30");
+  const [range, setRange] = useState(() => getQuickDateRange("last30"));
+  const [mode, setMode] = useState("calendar");
+  const [limit, setLimit] = useState("30");
+  const [basis, setBasis] = useState("weighted");
+  const [machine, setMachine] = useState("");
+  const [mould, setMould] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const [result, setResult] = useState({
+    key: "",
+    rows: [],
+    loading: true,
+    error: "",
+    updated: "",
+  });
+  const [tab, setTab] = useState("overview");
+  const [reason, setReason] = useState("");
+  const from = mode === "calendar" ? range.fromDate : "";
+  const to = mode === "calendar" ? range.toDate : "";
+  const requestKey = JSON.stringify([from, to, refresh]);
+  const invalidRange = Boolean(
+    mode === "calendar" && (!from || !to || from > to),
+  );
+  useEffect(() => {
+    if (invalidRange) return;
+    const controller = new AbortController();
+    void Promise.resolve().then(async () => {
+      if (controller.signal.aborted) return;
+      setResult({
+        key: requestKey,
+        rows: [],
+        loading: true,
+        error: "",
+        updated: "",
+      });
+      try {
+        const rows = await loadDowntimeEntries(
+          oeeProductionEntryService.getProductionEntries,
+          { FromDate: from, ToDate: to },
+          controller.signal,
+        );
+        if (!controller.signal.aborted)
+          setResult({
+            key: requestKey,
+            rows,
+            loading: false,
+            error: "",
+            updated: new Date().toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          });
+      } catch (error) {
+        if (!controller.signal.aborted)
+          setResult({
+            key: requestKey,
+            rows: [],
+            loading: false,
+            error: getApiErrorMessage(error, "Unable to load production data."),
+            updated: "",
+          });
+      }
+    });
+    return () => controller.abort();
+  }, [from, to, refresh, requestKey, invalidRange]);
+  const current = result.key === requestKey && !invalidRange;
+  const rows = useMemo(
+    () => (current && !result.loading && !result.error ? result.rows : []),
+    [current, result],
+  );
+  const selected = useMemo(
+    () => selectReadings(rows, { machine, mould, mode, limit }),
+    [rows, machine, mould, mode, limit],
+  );
+  const analysis = useMemo(
+    () => buildProductionAnalytics(selected, basis),
+    [selected, basis],
+  );
+  const { summary, machines, moulds, trend, reasons } = analysis;
+  const eligibleMachines = machines
+    .filter((row) => row.value !== null)
+    .sort((a, b) => b.value - a.value);
+  const leading = eligibleMachines[0];
+  const attention = [...eligibleMachines]
+    .reverse()
+    .find((row) => row.value < 65);
+  const actualStart = selected
+    .map((row) => row.productionDate?.slice(0, 10))
+    .filter(Boolean)
+    .sort()[0];
+  const actualEnd = selected
+    .map((row) => row.productionDate?.slice(0, 10))
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+  const loading = !current || result.loading;
+  const badge = rating(summary.value);
+  const choosePeriod = (value) => {
+    setPeriod(value);
+    if (value !== "custom") setRange(getQuickDateRange(value));
+  };
+  const clearScope = () => {
+    setMachine("");
+    setMould("");
+  };
+  const openRecords = (problem = "") => {
+    setReason(problem);
+    setTab("records");
+  };
+  const exportRows = () =>
+    downloadCsv({
+      filename: `cosmos-production-${mode}-${basis}-${actualStart || "empty"}.csv`,
+      columns: [
+        ...exportColumns,
+        {
+          header: "Dashboard calculation",
+          getValue: () =>
+            basis === "mean"
+              ? "Mean of eligible reading percentages"
+              : "Total shots / total target",
+        },
+        {
+          header: "Dashboard scope",
+          getValue: () =>
+            mode === "readings"
+              ? `Latest ${limit} eligible readings per machine`
+              : `${from} to ${to}`,
+        },
+      ],
+      rows: selected,
+    });
+  return (
+    <section className="oee-workspace">
       <PageHeader
-        badge={
+        badge="OEE / Production intelligence"
+        icon={Factory}
+        title="Production Dashboard"
+        description="Track machine performance, production targets and daily submissions."
+        actions={
           <>
-            <Gauge className="h-3.5 w-3.5" />
-            OEE / Dashboard
+            <span className="oee-status" role="status">
+              <span />
+              {loading
+                ? "Loading readings"
+                : result.error
+                  ? "Data unavailable"
+                  : `Updated ${result.updated || "—"}`}
+            </span>
+            <AppButton
+              variant="secondary"
+              onClick={() => setRefresh((value) => value + 1)}
+              disabled={loading && !invalidRange}
+            >
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />{" "}
+              Refresh
+            </AppButton>
           </>
         }
-        title="OEE Dashboard"
-        description="Real-time manufacturing effectiveness across machines, moulds, shots, targets, and downtime."
-        actions={
-          <AppButton
-            variant="secondary"
-            className="h-10"
-            disabled={anyLoading}
-            onClick={loadDashboard}
-          >
-            <RefreshCw className={`h-4 w-4 ${anyLoading ? "animate-spin" : ""}`} />
-            Refresh
-          </AppButton>
-        }
       />
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="grid gap-3 lg:grid-cols-[180px_160px_160px_auto]">
-          <AppSelect
-            value={dashboard.filters.mode}
-            onChange={(value) =>
-              dispatch(setOeeDashboardFilters({ mode: value }))
-            }
-            options={[
-              { value: "lastDays", label: "Last N days" },
-              { value: "custom", label: "Custom range" },
-            ]}
-            aria-label="Dashboard range mode"
-          />
-          {dashboard.filters.mode === "custom" ? (
-            <>
-<AppDateRangeFilter
-            className="w-full sm:col-span-2 sm:min-w-[260px]"
-            fromDate={dashboard.filters.FromDate}
-            toDate={dashboard.filters.ToDate}
-            allowLifetime={false}
-            onChange={({ fromDate, toDate }) => dispatch(setOeeDashboardFilters({ FromDate: fromDate, ToDate: toDate }))}
-          />
-            </>
-          ) : (
-            <>
+      <section className="oee-filters" aria-label="Dashboard filters">
+        <div className="oee-filter-grid">
+          <label>
+            Evaluation window
+            <AppSelect
+              aria-label="Evaluation window"
+              value={mode}
+              onChange={setMode}
+              options={[
+                { value: "calendar", label: "Calendar period" },
+                { value: "readings", label: "Latest readings · Sheet style" },
+              ]}
+            />
+          </label>
+          {mode === "calendar" ? (
+            <label>
+              Period
               <AppSelect
-                value={dashboard.filters.LastDays}
-                onChange={(value) =>
-                  dispatch(setOeeDashboardFilters({ LastDays: Number(value) }))
-                }
-                options={OEE_HORIZON_OPTIONS}
-                aria-label="Last days"
+                aria-label="Production period"
+                value={period}
+                onChange={choosePeriod}
+                options={[
+                  ["today", "Today"],
+                  ["last7", "Last 7 days"],
+                  ["last30", "Last 30 days"],
+                  ["thisMonth", "This month"],
+                  ["lastMonth", "Last month"],
+                  ["yearToDate", "Year to date"],
+                  ["custom", "Custom dates"],
+                ].map(([value, label]) => ({ value, label }))}
               />
-              <div />
-            </>
-          )}
-          <div className="flex items-center justify-end text-xs font-semibold text-slate-500">
-            Evaluation horizon:{" "}
-            <span className="ml-1 text-slate-900">
-              {dashboard.filters.mode === "custom"
-                ? `${dashboard.filters.FromDate || "-"} to ${dashboard.filters.ToDate || "-"}`
-                : `Last ${dashboard.filters.LastDays} days`}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:col-span-2 xl:col-span-2">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                Average Plant OEE
-              </p>
-              <div className="mt-2 flex items-end gap-3">
-                <span className="text-4xl font-bold text-slate-900">
-                  {formatOeePercent(summary.averageOeePercentage)}
-                </span>
-                <OeeRatingPill rating={averageRating} />
-              </div>
-              <p className="mt-3 text-sm text-slate-500">
-                Best:{" "}
-                <span className="font-semibold text-slate-900">
-                  {summary.bestMachine || "-"}
-                </span>{" "}
-                / Worst:{" "}
-                <span className="font-semibold text-slate-900">
-                  {summary.worstMachine || "-"}
-                </span>
-              </p>
-            </div>
-            <Gauge className="h-8 w-8 text-brand" />
-          </div>
-        </div>
-        <OeeStatCard
-          icon={Factory}
-          label="Machines"
-          value={formatOeeNumber(monitored, { maximumFractionDigits: 0 })}
-          meta={`${healthy} stable / ${Math.max(0, monitored - healthy)} watch`}
-          colorClass="bg-brand-light text-brand"
-        />
-        <OeeStatCard
-          icon={Hash}
-          label="Total Shots"
-          value={formatOeeNumber(summary.totalShotCount, {
-            maximumFractionDigits: 0,
-          })}
-          colorClass="bg-sky-50 text-sky-600"
-        />
-        <OeeStatCard
-          icon={Target}
-          label="Total Target"
-          value={formatOeeNumber(summary.totalTargetShot)}
-          colorClass="bg-violet-50 text-violet-600"
-        />
-        <OeeStatCard
-          icon={AlertTriangle}
-          label="Downtime Count"
-          value={formatOeeNumber(summary.totalDowntimeCount, {
-            maximumFractionDigits: 0,
-          })}
-          meta={`${formatOeeNumber(summary.totalProductionDays, { maximumFractionDigits: 0 })} production days`}
-          colorClass="bg-amber-50 text-amber-600"
-        />
-      </div>
-
-      <OeeDowntimeAnalysis />
-
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
-        <div className="flex min-w-max gap-1">
-          {[
-            { id: "overview", label: "Overview" },
-            { id: "analytics", label: "Comparative Analytics" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={[
-                "h-10 rounded-xl px-4 text-sm font-semibold transition-colors",
-                activeTab === tab.id
-                  ? "bg-brand text-white"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {activeTab === "overview" ? (
-        <>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_220px]">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  aria-label="Search machines by name or tonnage"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search machine or tonnage"
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
-                />
-              </div>
-              <AppSelect
-                value={ratingFilter}
-                onChange={setRatingFilter}
-                options={OEE_RATING_FILTER_OPTIONS}
-                aria-label="Rating filter"
-              />
-            </div>
-          </div>
-
-          {dashboard.machineWise.loading ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {Array.from({ length: 4 }, (_, index) => (
-                <PanelSkeleton key={index} />
-              ))}
-            </div>
-          ) : dashboard.machineWise.error ? (
-            <PanelError message={dashboard.machineWise.error} />
-          ) : filteredMachines.length === 0 ? (
-            <EmptyPanel label="No machine OEE data found for this filter." />
+            </label>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {filteredMachines.map((machine) => (
-                <MachineGaugeCard
-                  key={machine.machineId ?? machine.machineName}
-                  machine={machine}
-                  meta={machineById.get(String(machine.machineId))}
-                />
-              ))}
-            </div>
+            <label>
+              Readings per machine
+              <AppSelect
+                aria-label="Readings per machine"
+                value={limit}
+                onChange={setLimit}
+                options={[1, 7, 15, 30, 60, 90].map((value) => ({
+                  value: String(value),
+                  label: `Latest ${value} eligible ${value === 1 ? "reading" : "readings"}`,
+                }))}
+              />
+            </label>
           )}
-
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
-            <DashboardPanel
-              title="Daily Trend"
-              subtitle="OEE line with shot-volume columns."
-              icon={Activity}
-              loading={dashboard.dailyTrend.loading}
-              error={dashboard.dailyTrend.error}
-            >
-              <TrendChart rows={dailyTrend} />
-            </DashboardPanel>
-
-            <DashboardPanel
-              title="Top Downtime Reasons"
-              subtitle="Most frequent production blockers."
-              icon={AlertTriangle}
-              loading={dashboard.topDowntime.loading}
-              error={dashboard.topDowntime.error}
-            >
-              <HorizontalBarChart
-                rows={topDowntime}
-                emptyLabel="No downtime reasons found."
-                getLabel={(row) => row.reasonName || "Unspecified"}
-                getValue={(row) => row.count}
-                valueLabel={(row) =>
-                  `${formatOeeNumber(row.count, { maximumFractionDigits: 0 })} / ${formatOeePercent(row.percentage)}`
+          <label>
+            Machine
+            <AppSelect
+              aria-label="Production machine"
+              value={machine}
+              onChange={setMachine}
+              options={choices(
+                rows,
+                "machineId",
+                "machineName",
+                "All machines with readings",
+              )}
+            />
+          </label>
+          <label>
+            Mould
+            <AppSelect
+              aria-label="Production mould"
+              value={mould}
+              onChange={setMould}
+              options={choices(
+                rows,
+                "mouldId",
+                "mouldName",
+                "All moulds with readings",
+              )}
+            />
+          </label>
+          <label>
+            Calculation
+            <AppSelect
+              aria-label="OEE calculation"
+              value={basis}
+              onChange={setBasis}
+              options={[
+                { value: "weighted", label: "ERP · weighted by target" },
+                { value: "mean", label: "Sheet · average of readings" },
+              ]}
+            />
+          </label>
+        </div>
+        {mode === "calendar" && period === "custom" && (
+          <div className="oee-date-fields">
+            <label>
+              From
+              <AppInput
+                type="date"
+                aria-label="Production from date"
+                value={range.fromDate}
+                onChange={(event) =>
+                  setRange({ ...range, fromDate: event.target.value })
                 }
               />
-            </DashboardPanel>
+            </label>
+            <label>
+              To
+              <AppInput
+                type="date"
+                aria-label="Production to date"
+                value={range.toDate}
+                onChange={(event) =>
+                  setRange({ ...range, toDate: event.target.value })
+                }
+              />
+            </label>
           </div>
-        </>
+        )}
+        <div className="oee-filter-note">
+          <span>
+            <Info size={14} />{" "}
+            {mode === "readings"
+              ? `Latest ${limit} ${limit === "1" ? "reading" : "readings"} with a positive target per machine, across all dates. Machine and mould filters apply before selection.`
+              : "One period and one scope across every chart, card and record."}
+          </span>
+          {(machine || mould) && (
+            <button onClick={clearScope}>Clear machine & mould</button>
+          )}
+        </div>
+      </section>
+      {invalidRange ? (
+        <div className="oee-notice" role="alert">
+          Choose a valid start and end date. The start date must be on or before
+          the end date.
+        </div>
+      ) : loading ? (
+        <div className="oee-loading" role="status">
+          <RefreshCw className="animate-spin" />
+          <h2>Building your production picture</h2>
+          <p>Loading all pages before calculating totals.</p>
+        </div>
+      ) : result.error ? (
+        <div className="oee-notice" role="alert">
+          <h2>Production data could not be loaded</h2>
+          <p>{result.error}</p>
+          <button
+            className="oee-button"
+            onClick={() => setRefresh((value) => value + 1)}
+          >
+            Try again
+          </button>
+        </div>
       ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
-          <DashboardPanel
-            title="Machine-wise Performance"
-            subtitle="Shot output and average OEE by machine."
-            icon={BarChart3}
-            loading={dashboard.machineWise.loading}
-            error={dashboard.machineWise.error}
-          >
-            <HorizontalBarChart
-              rows={machineWise}
-              emptyLabel="No machine-wise data available."
-              getLabel={(row) => row.machineName || "Machine"}
-              getMeta={(row) =>
-                `${formatOeeNumber(row.totalShot, { maximumFractionDigits: 0 })} shots / ${formatOeeNumber(row.totalTarget)} target`
+        <>
+          <div className="oee-scope-line">
+            <span>
+              <strong>
+                {mode === "readings"
+                  ? `Latest ${limit} eligible ${limit === "1" ? "reading" : "readings"} / machine`
+                  : `${shortDate(from)} – ${shortDate(to)}, ${to?.slice(0, 4)}`}
+              </strong>{" "}
+              · {n(summary.count)} readings · {n(machines.length)} reporting
+              machines
+            </span>
+            {canExport && (
+              <button
+                className="oee-button"
+                disabled={!selected.length}
+                onClick={exportRows}
+              >
+                <Download size={14} /> Export {"scope"}
+              </button>
+            )}
+          </div>
+          <div className="oee-metrics">
+            <Metric
+              icon={Activity}
+              label={
+                basis === "mean"
+                  ? "Average reading OEE"
+                  : "Weighted production OEE"
               }
-              getValue={(row) => row.averageOeePercentage}
-              valueLabel={(row) => formatOeePercent(row.averageOeePercentage)}
-            />
-          </DashboardPanel>
-
-          <DashboardPanel
-            title="Mould-wise Performance"
-            subtitle="Target attainment and OEE by mould."
-            icon={Trophy}
-            loading={dashboard.mouldWise.loading}
-            error={dashboard.mouldWise.error}
-          >
-            <HorizontalBarChart
-              rows={mouldWise}
-              emptyLabel="No mould-wise data available."
-              getLabel={(row) => row.mouldName || "Mould"}
-              getMeta={(row) =>
-                `${formatOeeNumber(row.totalShot, { maximumFractionDigits: 0 })} shots / ${formatOeeNumber(row.totalTarget)} target`
+              value={percent(summary.value)}
+              detail={
+                summary.value == null
+                  ? "No positive target in this scope"
+                  : `${badge.label} · ${basis === "mean" ? "Reading average" : "Shots ÷ target"}`
               }
-              getValue={(row) => row.averageOeePercentage}
-              valueLabel={(row) => formatOeePercent(row.averageOeePercentage)}
             />
-          </DashboardPanel>
-        </div>
+            <Metric
+              icon={TrendingUp}
+              label="Total production"
+              tone="sky"
+              value={n(summary.shots)}
+              detail={`${n(summary.count)} saved production readings`}
+            />
+            <Metric
+              icon={Target}
+              label="Target shots"
+              tone="emerald"
+              value={n(summary.target, 1)}
+              detail={
+                summary.target
+                  ? `${percent(summary.weighted)} of total target achieved`
+                  : "Saved targets appear here"
+              }
+            />
+            <Metric
+              icon={ArrowDownRight}
+              label="Net target shortfall"
+              tone="amber"
+              value={n(summary.gap, 1)}
+              detail={
+                summary.shots > summary.target
+                  ? `${n(summary.shots - summary.target, 1)} shots above net target`
+                  : "Total target minus total shots, minimum zero"
+              }
+            />
+          </div>
+          <nav className="oee-tabs" aria-label="Production dashboard views">
+            {[
+              ["overview", "Floor overview"],
+              ["analysis", "Moulds & reasons"],
+              ["records", "Daily submissions & audit"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                aria-current={tab === value ? "page" : undefined}
+                onClick={() => {
+                  setTab(value);
+                  if (value === "records") setReason("");
+                }}
+              >
+                {label}
+                {value === "records" && <span>{n(summary.days)}</span>}
+              </button>
+            ))}
+          </nav>
+          {!selected.length && tab !== "records" ? (
+            <Panel
+              title="Your next production picture starts here"
+              subtitle="No saved readings match this window and scope."
+            >
+              <Empty>
+                Try last month, a wider date range, or clear the machine and
+                mould filters. Missing readings are not treated as zero
+                production.
+              </Empty>
+            </Panel>
+          ) : (
+            <>
+              {tab === "overview" && (
+                <>
+                  <div className="oee-section-heading">
+                    <div>
+                      <span className="oee-eyebrow">THE PRODUCTION FLOOR</span>
+                      <h2>Machine performance</h2>
+                    </div>
+                    <p>Reporting machines · click a card to focus</p>
+                  </div>
+                  <div className="oee-machine-grid">
+                    {[...machines]
+                      .sort((a, b) =>
+                        (a.rows[0]?.machineCode || a.name).localeCompare(
+                          b.rows[0]?.machineCode || b.name,
+                          undefined,
+                          { numeric: true },
+                        ),
+                      )
+                      .map((item) => {
+                        const state = rating(item.value);
+                        const latest = [...item.rows].sort(
+                          (a, b) =>
+                            String(b.productionDate).localeCompare(
+                              String(a.productionDate),
+                            ) || Number(b.id) - Number(a.id),
+                        )[0];
+                        return (
+                          <button
+                            key={item.key}
+                            className="oee-machine-card"
+                            onClick={() =>
+                              setMachine(machine === item.key ? "" : item.key)
+                            }
+                            aria-label={`Focus machine ${item.name}`}
+                            aria-pressed={machine === item.key}
+                          >
+                            <div className="oee-machine-top">
+                              <span className="oee-machine-code">
+                                {latest.machineCode || "MACHINE"}
+                              </span>
+                              <span className={`oee-pill ${state.tone}`}>
+                                {state.label}
+                              </span>
+                            </div>
+                            <h3>{item.name}</h3>
+                            <div className="oee-machine-gauge">
+                              {item.value == null ? (
+                                <div className="oee-neutral-gauge">
+                                  —<small>No positive target</small>
+                                </div>
+                              ) : (
+                                <OeeSpeedometer value={item.value} showTicks />
+                              )}
+                            </div>
+                            <strong className="oee-machine-value">
+                              {percent(item.value)}
+                            </strong>
+                            <p className="oee-machine-caption">
+                              {basis === "mean"
+                                ? "Average reading OEE"
+                                : "Weighted OEE"}
+                            </p>
+                            <div className="oee-machine-numbers">
+                              <span>
+                                Shots<strong>{n(item.shots)}</strong>
+                              </span>
+                              <span>
+                                Target<strong>{n(item.target, 1)}</strong>
+                              </span>
+                              <span>
+                                Readings<strong>{n(item.count)}</strong>
+                              </span>
+                            </div>
+                            <div className="oee-machine-latest">
+                              <span>
+                                Last reported ·{" "}
+                                {shortDate(latest.productionDate)}
+                              </span>
+                              <b title={latest.mouldName}>
+                                {latest.mouldName || "Mould not recorded"}
+                              </b>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                  <div className="oee-chart-grid">
+                    <Panel
+                      title="Production, against plan"
+                      subtitle="Daily saved shots and targets, with OEE on the right axis."
+                    >
+                      <div className="oee-chart">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart
+                            data={trend}
+                            margin={{ top: 10, right: 5, left: 0, bottom: 8 }}
+                            accessibilityLayer
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 5"
+                              vertical={false}
+                              stroke="#e9edf3"
+                            />
+                            <XAxis
+                              dataKey="name"
+                              tickFormatter={shortDate}
+                              tick={{ fontSize: 12 }}
+                              tickLine={false}
+                              axisLine={false}
+                              minTickGap={25}
+                            />
+                            <YAxis
+                              yAxisId="shots"
+                              width={58}
+                              tick={{ fontSize: 12 }}
+                              tickFormatter={(value) => n(value)}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              yAxisId="oee"
+                              orientation="right"
+                              width={48}
+                              tickFormatter={(value) => `${value}%`}
+                              domain={[
+                                0,
+                                (max) =>
+                                  Math.max(100, Math.ceil(max / 10) * 10),
+                              ]}
+                              tick={{ fontSize: 12 }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip
+                              labelFormatter={shortDate}
+                              formatter={(value, name) => [
+                                name === "OEE" ? percent(value) : n(value, 1),
+                                name,
+                              ]}
+                              contentStyle={{
+                                borderRadius: 12,
+                                borderColor: "#e2e8f0",
+                                fontSize: 12,
+                              }}
+                            />
+                            <Legend wrapperStyle={{ fontSize: 11 }} />
+                            <Bar
+                              yAxisId="shots"
+                              dataKey="target"
+                              name="Target shots"
+                              fill="#cbd5e1"
+                              radius={[3, 3, 0, 0]}
+                              maxBarSize={24}
+                            />
+                            <Bar
+                              yAxisId="shots"
+                              dataKey="shots"
+                              name="Actual shots"
+                              fill="var(--app-accent)"
+                              radius={[3, 3, 0, 0]}
+                              maxBarSize={24}
+                            />
+                            <Line
+                              yAxisId="oee"
+                              type="linear"
+                              dataKey="value"
+                              name="OEE"
+                              stroke="#0f9b8e"
+                              strokeWidth={2.5}
+                              dot={trend.length < 15}
+                              connectNulls={false}
+                            />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="oee-chart-foot">
+                        All {n(trend.length)} reported dates shown. Dates
+                        without entries are not assumed to have zero output.
+                      </p>
+                    </Panel>
+                    <Panel
+                      title="What deserves a closer look"
+                      subtitle="Signals from this selected production scope."
+                    >
+                      <div className="oee-insights">
+                        <div>
+                          <span className="oee-insight-icon green">
+                            <ArrowUpRight size={18} />
+                          </span>
+                          <h3>
+                            {leading ? leading.name : "No eligible machine"}
+                          </h3>
+                          <p>
+                            {leading
+                              ? `${percent(leading.value)} · highest OEE in this scope`
+                              : "A positive target is needed to compare OEE."}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="oee-insight-icon amber">
+                            <ArrowDownRight size={18} />
+                          </span>
+                          <h3>
+                            {attention
+                              ? `${attention.name} needs attention`
+                              : "Performance watch"}
+                          </h3>
+                          <p>
+                            {attention
+                              ? `${percent(attention.value)} · below the 65% good-performance band`
+                              : "No reporting machine is below 65%, or no eligible target is available."}
+                          </p>
+                        </div>
+                        <button onClick={() => openRecords("problems")}>
+                          <span>
+                            <strong>
+                              {n(summary.problems)} problem-recorded readings
+                            </strong>
+                            <small>Review reasons and remarks</small>
+                          </span>
+                          <ChevronRight size={17} />
+                        </button>
+                      </div>
+                    </Panel>
+                  </div>
+                </>
+              )}
+              {tab === "analysis" && (
+                <>
+                  <div className="oee-chart-grid">
+                    <Panel
+                      title="Mould performance"
+                      subtitle="Compare target achievement for each mould in this scope."
+                    >
+                      <div
+                        className="oee-chart"
+                        style={{ height: Math.max(260, moulds.length * 43) }}
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={moulds}
+                            layout="vertical"
+                            margin={{ left: 5, right: 20 }}
+                            accessibilityLayer
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 5"
+                              horizontal={false}
+                              stroke="#e9edf3"
+                            />
+                            <XAxis
+                              type="number"
+                              domain={[
+                                0,
+                                (max) =>
+                                  Math.max(100, Math.ceil(max / 10) * 10),
+                              ]}
+                              tickFormatter={(value) => `${value}%`}
+                              tick={{ fontSize: 12 }}
+                            />
+                            <YAxis
+                              type="category"
+                              dataKey="name"
+                              width={120}
+                              tick={{ fontSize: 12 }}
+                              tickLine={false}
+                            />
+                            <Tooltip
+                              formatter={(value) => [percent(value), "OEE"]}
+                            />
+                            <ReferenceLine
+                              x={85}
+                              stroke="#0f9b8e"
+                              strokeDasharray="4 4"
+                            />
+                            <Bar
+                              dataKey="value"
+                              name="OEE"
+                              fill="var(--app-accent)"
+                              radius={[0, 5, 5, 0]}
+                              maxBarSize={18}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="oee-chart-foot">
+                        Dashed line: 85% reference band. Readings without
+                        positive targets have no OEE score.
+                      </p>
+                    </Panel>
+                    <Panel
+                      title="Recorded production blockers"
+                      subtitle="Frequency of saved reasons, not downtime hours."
+                    >
+                      {reasons.length ? (
+                        <div className="oee-reasons">
+                          {reasons.map((item, index) => (
+                            <button
+                              key={item.name}
+                              onClick={() => openRecords(`reason:${item.name}`)}
+                            >
+                              <span className="oee-reason-rank">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <div>
+                                <strong>{item.name}</strong>
+                                <small>
+                                  {n(item.count)} readings · {n(item.days)}{" "}
+                                  distinct days · {percent(item.share)} of
+                                  problem readings
+                                </small>
+                                <span className="oee-track">
+                                  <span style={{ width: `${item.share}%` }} />
+                                </span>
+                              </div>
+                              <ChevronRight size={15} />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <Empty>
+                          No problems recorded in this scope. “NONE” and missing
+                          reasons are excluded; this does not prove zero
+                          downtime.
+                        </Empty>
+                      )}
+                    </Panel>
+                  </div>
+                  <Panel
+                    title="Mould production ledger"
+                    subtitle="The numbers behind the comparison."
+                  >
+                    <div className="oee-table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            {[
+                              "Mould",
+                              "Readings",
+                              "Shots",
+                              "Target",
+                              "OEE",
+                              "Net shortfall",
+                            ].map((label) => (
+                              <th key={label}>{label}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {moulds.map((item) => (
+                            <tr key={item.key}>
+                              <td>
+                                <button
+                                  className="oee-text-button"
+                                  onClick={() => setMould(item.key)}
+                                >
+                                  {item.name}
+                                </button>
+                              </td>
+                              <td>{n(item.count)}</td>
+                              <td>{n(item.shots)}</td>
+                              <td>{n(item.target, 1)}</td>
+                              <td>{percent(item.value)}</td>
+                              <td>{n(item.gap, 1)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </Panel>
+                </>
+              )}
+              {tab === "records" && (
+                <DailySubmissionAudit
+                  key={JSON.stringify([
+                    requestKey,
+                    mode,
+                    machine,
+                    mould,
+                    limit,
+                    reason,
+                  ])}
+                  entries={selected}
+                  from={from}
+                  to={to}
+                  mode={mode}
+                  basis={basis}
+                  canExport={canExport}
+                  canCreate={canCreate}
+                  initialReason={reason}
+                  onClearReason={() => setReason("")}
+                />
+              )}
+            </>
+          )}
+          <details className="oee-method">
+            <summary>
+              <Info size={15} /> Understand these numbers{" "}
+              <ChevronRight size={15} />
+            </summary>
+            <div className="oee-method-grid">
+              <div>
+                <h3>Two clear calculation views</h3>
+                <p>
+                  ERP: total shots ÷ total saved target × 100. Sheet: average of
+                  individual shots ÷ target percentages, using only
+                  positive-target readings. Changing the view recalculates every
+                  OEE chart and card; it does not change saved data.
+                </p>
+                <p>
+                  In this scope: ERP {percent(summary.weighted)} · Sheet{" "}
+                  {percent(summary.mean)}.
+                </p>
+              </div>
+              <div>
+                <h3>Readings, targets and coverage</h3>
+                <p>
+                  Targets come from saved production entries.{" "}
+                  {n(summary.noTarget)} readings have no eligible target. Actual
+                  reported dates:{" "}
+                  {actualStart ? `${actualStart} to ${actualEnd}` : "none"}. A
+                  missing date is not a zero-production day.
+                </p>
+                <p>
+                  Gauges stop at 100; the displayed score retains values above
+                  100%. Shortfall is a net shot difference, not lost sales or
+                  lost production time.
+                </p>
+              </div>
+              <div>
+                <h3>What this data can tell you</h3>
+                <p>
+                  This is shot-target achievement, as in your Sheet. Full
+                  availability × performance × quality OEE needs operating time,
+                  downtime duration and good/rejected output. Reason counts
+                  measure frequency only; compound reason names are kept as
+                  recorded.
+                </p>
+              </div>
+            </div>
+          </details>
+        </>
       )}
     </section>
   );
-};
-
-export default OeeDashboardPage;
+}
+export default function OeeDashboardPage() {
+  const capabilities = useOeeCapabilities({
+    actions: ["view", "create"],
+    label: "OEE Production Entries",
+    pageName: "OEE.ProductionEntries",
+    resource: "oeeProductionEntries",
+    route: "/oee/production-entries",
+  });
+  const reports = useOeeCapabilities({
+    actions: ["export"],
+    label: "OEE Reports",
+    pageName: "OEE.Reports",
+    resource: ["oeeReports", "reports"],
+    route: "/oee/reports",
+  });
+  return capabilities.canView ? (
+    <ProductionDashboard
+      canExport={reports.canExport}
+      canCreate={capabilities.canCreate}
+    />
+  ) : (
+    <>
+      <div className="oee-notice">
+        You have dashboard access. Reading-level analysis requires Production
+        Entries view access.
+      </div>
+      <OeeAggregateDashboard />
+    </>
+  );
+}
