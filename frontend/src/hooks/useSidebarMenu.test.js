@@ -35,6 +35,19 @@ const flattenLabels = (items) => {
 };
 
 describe("buildMenuTree", () => {
+  it("groups Deep Dive aliases without granting unrelated financial or GST pages", () => {
+    const granted = page({ pageId: 901, pageName: "OEE.ProductionEntries", route: "/oee/production-entries" });
+    const tree = buildMenuTree([granted], false);
+    const group = tree.find(item => item.label === "Deep Dive");
+    expect(flattenRoutes(group.children)).toEqual([
+      "/deep-dive-analytics/executive-command-center",
+      "/deep-dive-analytics/oee-telemetry",
+      "/deep-dive-analytics/cross-module-intelligence",
+    ]);
+    expect(new Set(group.children.map(item => item.id)).size).toBe(3);
+    expect(tree.find(item => item.label === "OEE")).toBeDefined();
+    expect(buildMenuTree([], false).some(item => item.label === "Deep Dive")).toBe(false);
+  });
   it("exposes Production Insights only with production entry read access, with a distinct label and id", () => {
     const granted = page({
       pageId: 901,

@@ -7,6 +7,9 @@ import PublicRoute from "./PublicRoute";
 import PermissionGuard from "./PermissionGuard";
 import DefaultRouteRedirect from "./DefaultRouteRedirect";
 import { GST_PAGES } from "../utils/gstCompliance";
+import { DEEP_PAGES } from "../pages/deepDive/deepDiveConfig";
+
+const DeepDivePage = lazy(() => import("../pages/deepDive/DeepDivePage.jsx"));
 
 const GstOverview = lazy(() => import("../pages/gst/GstOverviewPage.jsx"));
 const GstRegistrations = lazy(() => import("../pages/gst/GstRegistrationsPage.jsx"));
@@ -266,6 +269,8 @@ const AppRoutes = () => {
             path="/gst"
             element={<Navigate to="/gst/configuration" replace />}
           />
+          <Route path="/deep-dive-analytics" element={<Navigate to="/deep-dive-analytics/executive-command-center" replace />} />
+          {DEEP_PAGES.map(page => <Route key={page.id} path={page.route} element={<DeepDivePage key={page.id} pageId={page.id} />} />)}
           {GST_PAGES.map(page => <Route key={page.key} path={page.route} element={<PermissionGuard route={page.route} pageName={page.pageName}>{gstScreens[page.key]}</PermissionGuard>} />)}
           <Route
             path="/dashboard"

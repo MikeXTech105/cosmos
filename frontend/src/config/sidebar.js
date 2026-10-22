@@ -1,6 +1,8 @@
 import { GST_PAGES } from "../utils/gstCompliance";
+import { deepDiveModules } from "../pages/deepDive/deepDiveConfig";
 
 export const enabledModules = [
+  ...Object.keys(deepDiveModules),
   "dashboard",
   "users",
   "roles",
@@ -79,6 +81,7 @@ export const enabledModules = [
 ];
 
 export const sidebarCategories = [
+  { id: "deepDive", label: "Deep Dive", icon: "analytics", sortOrder: 81 },
   { id: "gst", label: "GST compliance", icon: "invoice", sortOrder: 57 },
   {
     id: "rbac",
@@ -167,6 +170,7 @@ export const sidebarCategories = [
 ];
 
 export const sidebarModules = {
+  ...deepDiveModules,
   ...Object.fromEntries(GST_PAGES.map((page, index) => [`gst_${page.key}`, {
     id: `gst_${page.key}`, label: page.title, route: page.route,
     permissionPageName: page.pageName, icon: "invoice", categoryId: "gst", sortOrder: index + 1,
