@@ -35,11 +35,53 @@ const flattenLabels = (items) => {
 };
 
 describe("buildMenuTree", () => {
+  it("exposes Production Insights only with production entry read access, with a distinct label and id", () => {
+    const granted = page({
+      pageId: 901,
+      pageName: "OEE.ProductionEntries",
+      displayName: "Production Entries",
+      route: "/oee/production-entries",
+    });
+    const tree = buildMenuTree([granted], false);
+    expect(flattenRoutes(tree)).toContain("/oee/insights");
+    expect(flattenRoutes(tree)).toContain("/oee/production-entries");
+    expect(flattenLabels(tree)).toContain("Production Insights");
+    const children = tree.find((item) => item.label === "OEE").children;
+    expect(new Set(children.map((item) => item.id)).size).toBe(children.length);
+    expect(
+      flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false)),
+    ).not.toContain("/oee/insights");
+  });
+  it("does not expose reading-level insights through dashboard-only access", () => {
+    const tree = buildMenuTree(
+      [
+        page({
+          pageId: 900,
+          pageName: "OEE.Dashboard",
+          displayName: "Dashboard",
+          route: "/oee/dashboard",
+        }),
+      ],
+      false,
+    );
+    expect(flattenRoutes(tree)).toContain("/oee/dashboard");
+    expect(flattenRoutes(tree)).not.toContain("/oee/insights");
+  });
   it("shows exactly the granted pages and nothing else", () => {
     const tree = buildMenuTree(
       [
-        page({ displayName: "Users", pageId: 1, pageName: "Users", route: "/users" }),
-        page({ displayName: "Items", pageId: 2, pageName: "Items", route: "/items" }),
+        page({
+          displayName: "Users",
+          pageId: 1,
+          pageName: "Users",
+          route: "/users",
+        }),
+        page({
+          displayName: "Items",
+          pageId: 2,
+          pageName: "Items",
+          route: "/items",
+        }),
       ],
       false,
     );

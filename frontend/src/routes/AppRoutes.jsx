@@ -113,6 +113,7 @@ const ReportRoutePage = lazy(
   () => import("../pages/reports/ReportRoutePage.jsx"),
 );
 const OeeDashboard = lazy(() => import("../pages/oee/dashboard/index.js"));
+const OeeInsights = lazy(() => import("../pages/oee/insights/ProductionInsightsPage.jsx"));
 const OeeProductionEntries = lazy(
   () => import("../pages/oee/productionEntries/index.js"),
 );
@@ -781,6 +782,14 @@ const AppRoutes = () => {
             element={
               <PermissionGuard route="/oee/dashboard" pageName="OEE.Dashboard">
                 <OeeDashboard />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="/oee/insights"
+            element={
+              <PermissionGuard route="/oee/production-entries" pageName="OEE.ProductionEntries">
+                <OeeInsights />
               </PermissionGuard>
             }
           />
