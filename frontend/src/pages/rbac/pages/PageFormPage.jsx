@@ -37,14 +37,14 @@ const PAGE_FIELDS = [
 const buildPageSchema = (blockedParentIds) => {
   return z
     .object({
-      name: z.string().trim().min(1, "Name is required"),
-      displayName: z.string().trim().min(1, "Display name is required"),
+      name: z.string().trim().min(1, "Name is required").max(100).regex(/^[a-zA-Z0-9._-]+$/, "Use letters, numbers, dots, underscores or hyphens"),
+      displayName: z.string().trim().min(1, "Display name is required").max(150),
       route: z
         .string()
         .trim()
-        .min(1, "Route is required")
+        .min(1, "Route is required").max(300)
         .regex(/^\/[A-Za-z0-9/_-]*$/, "Route must start with / and contain valid URL characters"),
-      icon: z.string().trim().min(1, "Icon is required"),
+      icon: z.string().trim().max(100),
       parentPageId: z.string(),
       sortOrder: z.string().trim().regex(/^\d+$/, "Sort order must be a whole number"),
       isActive: z.boolean(),
@@ -273,7 +273,6 @@ const PageFormPage = () => {
                 <AppSelect
                   id="pageIcon"
                   label="Icon"
-                  required
                   disabled={isView}
                   error={errors.icon?.message}
                   options={PAGE_ICON_OPTIONS}

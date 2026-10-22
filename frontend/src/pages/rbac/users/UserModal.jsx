@@ -16,6 +16,7 @@ import {
 import { memo, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { passwordPolicySchema } from "../../../utils/validationRules";
 
 import AppSelect from "../../../components/common/AppSelect";
 import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
@@ -29,13 +30,13 @@ const userSchema = (mode) =>
   z.object({
     username:
       mode === "create"
-        ? z.string().min(2, "Username is required")
+        ? z.string().trim().min(1, "Username is required").max(100).regex(/^[a-zA-Z0-9._-]+$/, "Use letters, numbers, dots, underscores or hyphens")
         : z.string().optional(),
-    email: z.string().email("Enter a valid email address"),
-    fullName: z.string().min(2, "Full name is required"),
+    email: z.string().trim().email("Enter a valid email address").max(256),
+    fullName: z.string().trim().min(1, "Full name is required").max(200),
     password:
       mode === "create"
-        ? z.string().min(8, "Password must be at least 8 characters")
+        ? passwordPolicySchema
         : z.string().optional(),
     isActive: z.boolean(),
     roleId: z.string().min(1, "Role is required"),
@@ -420,7 +421,7 @@ const UserModal = ({
                           id="password"
                           type={showPassword ? "text" : "password"}
                           className={`${inputClassName} pl-9 pr-10`}
-                          placeholder="Minimum 8 characters"
+                          placeholder="8+ characters, uppercase, lowercase, number and symbol"
                           autoComplete="new-password"
                           {...register("password")}
                         />

@@ -74,6 +74,7 @@ const EmployeeFormModal = ({
     register,
     reset,
     setValue,
+    setError,
   } = useForm({
     resolver: zodResolver(hrEmployeeSchema),
     defaultValues: mapEmployeeToForm(employee),
@@ -137,6 +138,11 @@ const EmployeeFormModal = ({
   ]);
 
   const submitForm = async (values) => {
+    if (isEdit && hasBankDetails(employee?.bankDetails) && !hasBankDetails(values)) {
+      setError("bankName", { type: "manual", message: "Existing bank details cannot be cleared here. Enter bank name, account number and IFSC." });
+      return;
+    }
+
     await onSubmit(
       mapFormToPayload(values, { includeBankDetails: !isEdit }),
       {
@@ -227,7 +233,6 @@ const EmployeeFormModal = ({
                 <AppInput
                   id="lastName"
                   label="Last Name"
-                  required
                   disabled={isView}
                   error={errors.lastName?.message}
                   {...register("lastName")}
@@ -253,7 +258,6 @@ const EmployeeFormModal = ({
                   id="dateOfBirth"
                   label="Date of Birth"
                   type="date"
-                  required
                   disabled={isView}
                   error={errors.dateOfBirth?.message}
                   {...register("dateOfBirth")}
@@ -275,7 +279,6 @@ const EmployeeFormModal = ({
                 <AppInput
                   id="mobile"
                   label="Mobile"
-                  required
                   disabled={isView}
                   error={errors.mobile?.message}
                   {...register("mobile")}
@@ -284,7 +287,6 @@ const EmployeeFormModal = ({
                   id="email"
                   label="Email"
                   type="email"
-                  required
                   disabled={isView}
                   error={errors.email?.message}
                   {...register("email")}
@@ -409,7 +411,7 @@ const EmployeeFormModal = ({
                       label="Status"
                       value={field.value}
                       onChange={field.onChange}
-                      options={HR_EMPLOYEE_STATUS_OPTIONS}
+                      options={isEdit ? HR_EMPLOYEE_STATUS_OPTIONS : HR_EMPLOYEE_STATUS_OPTIONS.filter(option => option.value !== 3)}
                       disabled={isView}
                       error={errors.status?.message}
                     />

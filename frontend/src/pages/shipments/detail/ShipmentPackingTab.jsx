@@ -160,14 +160,14 @@ const PackageBuilderModal = ({
         <AppInput
           disabled={saving}
           error={errors.packageNumber}
-          label="Package number"
+          label="Package number" required
           value={form.packageNumber}
           onChange={(event) => setField("packageNumber", event.target.value)}
         />
         <AppInput
           disabled={saving}
           error={errors.packageType}
-          label="Package type"
+          label="Package type" required
           placeholder="Box, bag, pallet…"
           value={form.packageType}
           onChange={(event) => setField("packageType", event.target.value)}

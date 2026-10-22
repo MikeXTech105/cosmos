@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { positiveIntegerId, optionalDate as calendarDate } from "../../utils/validationRules";
 
 import {
   SUPPLY_CHAIN_DIMENSION_UNITS,
@@ -12,15 +13,6 @@ import {
 const emptyToUndefined = (value) =>
   value === "" || value === null || value === undefined ? undefined : value;
 
-const optionalText = z.preprocess(
-  (value) => {
-    const text = String(value ?? "").trim();
-
-    return text || null;
-  },
-  z.string().nullable(),
-);
-
 const optionalNumber = (label, minimum = 0) =>
   z.preprocess(
     emptyToUndefined,
@@ -30,47 +22,44 @@ const optionalNumber = (label, minimum = 0) =>
 const requiredNumber = (label, minimum = 0) =>
   z.coerce.number().min(minimum, `${label} cannot be below ${minimum}.`);
 
-const requiredIdentifier = z.union([
-  z.string().trim().min(1, "This field is required."),
-  z.number(),
-]);
+const requiredIdentifier = positiveIntegerId();
 
 const optionalIdentifier = z.preprocess(
   emptyToUndefined,
-  z.union([z.string().trim().min(1), z.number()]).optional(),
+  positiveIntegerId().optional(),
 );
 
 export const channelSchema = z.object({
   code: z.string().trim().min(1, "Code is required."),
-  description: optionalText,
+  description: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(1000).nullable()),
   isActive: z.boolean(),
   name: z.string().trim().min(1, "Name is required."),
   sortOrder: requiredNumber("Sort order", 0),
 });
 
 export const warehouseSchema = z.object({
-  addressLine1: optionalText,
-  addressLine2: optionalText,
+  addressLine1: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(250).nullable()),
+  addressLine2: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(250).nullable()),
   channelId: requiredIdentifier,
-  city: optionalText,
+  city: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(100).nullable()),
   isActive: z.boolean(),
-  postalCode: optionalText,
+  postalCode: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(20).nullable()),
   priority: requiredNumber("Priority", 0),
-  region: optionalText,
+  region: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(100).nullable()),
   sortOrder: requiredNumber("Sort order", 0),
-  state: optionalText,
-  warehouseCode: z.string().trim().min(1, "Warehouse code is required."),
-  warehouseName: z.string().trim().min(1, "Warehouse name is required."),
+  state: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(100).nullable()),
+  warehouseCode: z.string().trim().min(1, "Warehouse code is required.").max(50).regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, underscores or hyphens"),
+  warehouseName: z.string().trim().min(1, "Warehouse name is required.").max(150),
 });
 
 export const itemMappingSchema = z
   .object({
     channelId: requiredIdentifier,
-    channelProductName: optionalText,
-    channelSku: z.string().trim().min(1, "Channel SKU is required."),
-    effectiveFrom: optionalText,
-    effectiveTo: optionalText,
-    externalItemId: optionalText,
+    channelProductName: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(300).nullable()),
+    channelSku: z.string().trim().min(1, "Channel SKU is required.").max(150),
+    effectiveFrom: calendarDate,
+    effectiveTo: calendarDate,
+    externalItemId: z.preprocess(value => String(value ?? "").trim() || null, z.string().max(150).nullable()),
     isActive: z.boolean(),
     isPrimary: z.boolean(),
     itemId: requiredIdentifier,
@@ -94,8 +83,8 @@ export const packagingProfileSchema = z
   .object({
     channelId: optionalIdentifier,
     dimensionUnit: z.enum(SUPPLY_CHAIN_DIMENSION_UNITS),
-    effectiveFrom: optionalText,
-    effectiveTo: optionalText,
+    effectiveFrom: calendarDate,
+    effectiveTo: calendarDate,
     grossWeight: optionalNumber("Gross weight", 0),
     height: optionalNumber("Height", 0),
     isActive: z.boolean(),
@@ -103,10 +92,10 @@ export const packagingProfileSchema = z
     itemId: requiredIdentifier,
     length: optionalNumber("Length", 0),
     netWeight: optionalNumber("Net weight", 0),
-    packagingCode: z.string().trim().min(1, "Packaging code is required."),
-    packagingName: z.string().trim().min(1, "Packaging name is required."),
-    unitsPerBox: requiredNumber("Units per box", 0.000001),
-    volumetricDivisor: optionalNumber("Volumetric divisor", 0.000001),
+    packagingCode: z.string().trim().min(1, "Packaging code is required.").max(50).regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, underscores or hyphens"),
+    packagingName: z.string().trim().max(150),
+    unitsPerBox: z.coerce.number().positive("Units per box must be positive"),
+    volumetricDivisor: z.preprocess(emptyToUndefined, z.coerce.number().positive("Volumetric divisor must be positive").optional()),
     weightUnit: z.enum(SUPPLY_CHAIN_WEIGHT_UNITS),
     width: optionalNumber("Width", 0),
   })

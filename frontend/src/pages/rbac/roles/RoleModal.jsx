@@ -11,7 +11,7 @@ const inputClassName =
   "h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500";
 
 const roleSchema = z.object({
-  name: z.string().trim().min(2, "Role name is required"),
+  name: z.string().trim().min(1, "Role name is required").max(100),
   description: z.string().trim().max(500, "Description is too long").optional(),
   isActive: z.boolean(),
 });

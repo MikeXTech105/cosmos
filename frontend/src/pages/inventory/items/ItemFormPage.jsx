@@ -518,7 +518,7 @@ const ItemFormPage = () => {
                     <Sparkles className="h-3 w-3" /> Assign Code
                   </button>
                 </div>
-                <AppInput id="itemCode" aria-label="Item code" error={errors.itemCode?.message} {...register("itemCode")} />
+                <AppInput id="itemCode" required aria-label="Item code" error={errors.itemCode?.message} {...register("itemCode")} />
               </div>
 
               <AppInput id="itemBarcode" label="Barcode" error={errors.barcode?.message} {...register("barcode")} />
@@ -529,7 +529,7 @@ const ItemFormPage = () => {
                 render={({ field }) => (
                   <AppSelect
                     label="Category"
-                    required={itemType === ITEM_TYPE.PRODUCT}
+                    required
                     value={field.value}
                     onChange={(value) => field.onChange(Number(value))}
                     onBlur={field.onBlur}
@@ -545,29 +545,28 @@ const ItemFormPage = () => {
                 )}
               />
 
-              {itemType === ITEM_TYPE.PRODUCT && (
-                <Controller
-                  control={control}
-                  name="unitId"
-                  render={({ field }) => (
-                    <AppSelect
-                      label="Unit"
-                      required
-                      value={field.value}
-                      onChange={(value) => field.onChange(Number(value))}
-                      onBlur={field.onBlur}
-                      options={unitOptions}
-                      emptyMessage={lookups.unitsError ? "Unable to load units. Try refreshing the page." : "No units yet - add one in Units."}
-                      placeholder={lookups.unitsLoading ? "Loading units..." : "Select unit"}
-                      disabled={lookups.unitsLoading}
-                      error={errors.unitId?.message}
-                      creatable={canCreateUnit}
-                      createLabel="Create new unit"
-                      onCreateClick={() => openLookupCreate("units")}
-                    />
-                  )}
-                />
-              )}
+              <Controller
+                control={control}
+                name="unitId"
+                render={({ field }) => (
+                  <AppSelect
+                    label="Unit"
+                    required
+                    value={field.value}
+                    onChange={(value) => field.onChange(Number(value))}
+                    onBlur={field.onBlur}
+                    options={unitOptions}
+                    emptyMessage={lookups.unitsError ? "Unable to load units. Try refreshing the page." : "No units yet - add one in Units."}
+                    placeholder={lookups.unitsLoading ? "Loading units..." : "Select unit"}
+                    disabled={lookups.unitsLoading}
+                    error={errors.unitId?.message}
+                    creatable={canCreateUnit}
+                    createLabel="Create new unit"
+                    onCreateClick={() => openLookupCreate("units")}
+                  />
+                )}
+              />
+
 
               <Controller
                 control={control}

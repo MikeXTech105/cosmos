@@ -66,6 +66,7 @@ const setAllLoading = (state, loading) => {
 
     if (loading) {
       state[key].error = null;
+      state[key].data = key === "summary" ? null : [];
     }
   });
 };

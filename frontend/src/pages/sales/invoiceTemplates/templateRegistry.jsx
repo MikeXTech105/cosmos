@@ -17,8 +17,8 @@ export const DEFAULT_INVOICE_TEMPLATE_ID = INVOICE_TEMPLATE_IDS.CLASSIC;
 export const invoiceTemplates = [
   {
     id: INVOICE_TEMPLATE_IDS.CLASSIC,
-    name: "Classic",
-    description: "Formal bordered GST invoice layout.",
+    name: "WEWEL Classic",
+    description: "WEWEL bordered invoice with bill-to, ship-to, HSN tax summary and signatory.",
     Component: ClassicTemplate,
     thumbnailClass: "border-slate-900 bg-white",
   },

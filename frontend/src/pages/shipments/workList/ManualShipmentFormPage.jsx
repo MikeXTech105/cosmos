@@ -247,7 +247,7 @@ const ManualShipmentFormPage = () => {
           <AppInput disabled={saving} error={errors.stoNumber} label="STO number" value={form.stoNumber} onChange={(event) => setField("stoNumber", event.target.value)} />
           <AppInput disabled={saving} error={errors.marketplaceReference} label="Marketplace reference" value={form.marketplaceReference} onChange={(event) => setField("marketplaceReference", event.target.value)} />
           <AppInput disabled={saving} error={errors.externalShipmentReference} label="External shipment reference" value={form.externalShipmentReference} onChange={(event) => setField("externalShipmentReference", event.target.value)} />
-          <AppInput disabled={saving} error={errors.manualReason} label="Manual reason" value={form.manualReason} onChange={(event) => setField("manualReason", event.target.value)} />
+          <AppInput disabled={saving} error={errors.manualReason} label="Manual reason" required value={form.manualReason} onChange={(event) => setField("manualReason", event.target.value)} />
         </div>
 
         <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">

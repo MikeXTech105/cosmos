@@ -463,7 +463,7 @@ const TrackingEventModal = ({
         <AppInput
           disabled={saving}
           error={errors.source}
-          label="Source"
+          label="Source" required
           value={form.source}
           onChange={(event) => setField("source", event.target.value)}
         />
