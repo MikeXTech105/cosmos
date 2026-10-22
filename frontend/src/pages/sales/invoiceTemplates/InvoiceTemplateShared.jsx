@@ -27,14 +27,14 @@ export const CompanyBlock = ({ align = "left", company = COMPANY_PROFILE }) => {
       <h2 className="mt-1 text-2xl font-bold text-slate-950">
         {company.name}
       </h2>
-      <p className="mt-1 text-sm font-medium text-slate-700">
+      {company.legalName !== company.name && <p className="mt-1 text-sm font-medium text-slate-700">
         {company.legalName}
-      </p>
+      </p>}
       <p className="mt-2 max-w-sm text-xs leading-5 text-slate-500">
         {company.address}
       </p>
       <p className="mt-1 text-xs text-slate-500">
-        {company.phone} | {company.email}
+        {[company.phone, company.email].filter(Boolean).join(" | ")}
       </p>
       <p className="mt-1 text-xs font-semibold text-slate-600">
         {company.gstin}

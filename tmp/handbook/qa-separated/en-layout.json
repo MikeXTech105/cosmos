@@ -1,0 +1,1170 @@
+{
+  "pages": [
+    {
+      "page": 1,
+      "id": "cover",
+      "overflow": -318,
+      "widthOverflow": 0
+    },
+    {
+      "page": 2,
+      "id": "contents-1",
+      "overflow": -196,
+      "widthOverflow": 0
+    },
+    {
+      "page": 3,
+      "id": "contents-2",
+      "overflow": -196,
+      "widthOverflow": 0
+    },
+    {
+      "page": 4,
+      "id": "contents-3",
+      "overflow": -196,
+      "widthOverflow": 0
+    },
+    {
+      "page": 5,
+      "id": "contents-4",
+      "overflow": -196,
+      "widthOverflow": 0
+    },
+    {
+      "page": 6,
+      "id": "contents-5",
+      "overflow": -196,
+      "widthOverflow": 0
+    },
+    {
+      "page": 7,
+      "id": "contents-6",
+      "overflow": -835,
+      "widthOverflow": 0
+    },
+    {
+      "page": 8,
+      "id": "reading-guide",
+      "overflow": -167,
+      "widthOverflow": 0
+    },
+    {
+      "page": 9,
+      "id": "first-day",
+      "overflow": -275,
+      "widthOverflow": 0
+    },
+    {
+      "page": 10,
+      "id": "system-map",
+      "overflow": -185,
+      "widthOverflow": 0
+    },
+    {
+      "page": 11,
+      "id": "lesson-first-session",
+      "overflow": -249,
+      "widthOverflow": 0
+    },
+    {
+      "page": 12,
+      "id": "lesson-navigation",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 13,
+      "id": "lesson-dashboard",
+      "overflow": -208,
+      "widthOverflow": 0
+    },
+    {
+      "page": 14,
+      "id": "lesson-administration",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 15,
+      "id": "lesson-page-registry",
+      "overflow": -349,
+      "widthOverflow": 0
+    },
+    {
+      "page": 16,
+      "id": "lesson-party",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 17,
+      "id": "lesson-items",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 18,
+      "id": "lesson-stock",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 19,
+      "id": "lesson-party-settings",
+      "overflow": -235,
+      "widthOverflow": 0
+    },
+    {
+      "page": 20,
+      "id": "lesson-manufacturing-bom",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 21,
+      "id": "lesson-manufacturing-production",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 22,
+      "id": "lesson-sales",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 23,
+      "id": "lesson-purchase-order",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 24,
+      "id": "lesson-purchase-bill",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 25,
+      "id": "lesson-purchase-return-expense",
+      "overflow": -303,
+      "widthOverflow": 0
+    },
+    {
+      "page": 26,
+      "id": "lesson-supply-foundation",
+      "overflow": -276,
+      "widthOverflow": 0
+    },
+    {
+      "page": 27,
+      "id": "lesson-packaging",
+      "overflow": -259,
+      "widthOverflow": 0
+    },
+    {
+      "page": 28,
+      "id": "lesson-imports",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 29,
+      "id": "lesson-procurement-data",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 30,
+      "id": "lesson-procurement-settings",
+      "overflow": -208,
+      "widthOverflow": 0
+    },
+    {
+      "page": 31,
+      "id": "lesson-procurement-plan",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 32,
+      "id": "lesson-dispatch-policy",
+      "overflow": -279,
+      "widthOverflow": 0
+    },
+    {
+      "page": 33,
+      "id": "lesson-dispatch-run",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 34,
+      "id": "lesson-shipment-create",
+      "overflow": -235,
+      "widthOverflow": 0
+    },
+    {
+      "page": 35,
+      "id": "lesson-shipment-packing",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 36,
+      "id": "lesson-shipment-delivery",
+      "overflow": -259,
+      "widthOverflow": 0
+    },
+    {
+      "page": 37,
+      "id": "lesson-freight-history",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 38,
+      "id": "lesson-hr-masters",
+      "overflow": -235,
+      "widthOverflow": 0
+    },
+    {
+      "page": 39,
+      "id": "lesson-hr-attendance",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 40,
+      "id": "lesson-payroll",
+      "overflow": -249,
+      "widthOverflow": 0
+    },
+    {
+      "page": 41,
+      "id": "lesson-oee",
+      "overflow": -208,
+      "widthOverflow": 0
+    },
+    {
+      "page": 42,
+      "id": "lesson-rojmel",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 43,
+      "id": "lesson-reports",
+      "overflow": -249,
+      "widthOverflow": 0
+    },
+    {
+      "page": 44,
+      "id": "lesson-data-book",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 45,
+      "id": "lesson-audit",
+      "overflow": -252,
+      "widthOverflow": 0
+    },
+    {
+      "page": 46,
+      "id": "lesson-website-content",
+      "overflow": -225,
+      "widthOverflow": 0
+    },
+    {
+      "page": 47,
+      "id": "lesson-warranty",
+      "overflow": -259,
+      "widthOverflow": 0
+    },
+    {
+      "page": 48,
+      "id": "lesson-gst",
+      "overflow": -198,
+      "widthOverflow": 0
+    },
+    {
+      "page": 49,
+      "id": "lesson-preferences",
+      "overflow": -249,
+      "widthOverflow": 0
+    },
+    {
+      "page": 50,
+      "id": "example",
+      "overflow": -269,
+      "widthOverflow": 0
+    },
+    {
+      "page": 51,
+      "id": "daily-close",
+      "overflow": -323,
+      "widthOverflow": 0
+    },
+    {
+      "page": 52,
+      "id": "troubleshooting",
+      "overflow": -221,
+      "widthOverflow": 0
+    },
+    {
+      "page": 53,
+      "id": "lifecycle-map",
+      "overflow": -151,
+      "widthOverflow": 0
+    },
+    {
+      "page": 54,
+      "id": "shipment-lifecycle",
+      "overflow": -268,
+      "widthOverflow": 0
+    },
+    {
+      "page": 55,
+      "id": "planning-formulas",
+      "overflow": -324,
+      "widthOverflow": 0
+    },
+    {
+      "page": 56,
+      "id": "atlas-intro",
+      "overflow": -584,
+      "widthOverflow": 0
+    },
+    {
+      "page": 57,
+      "id": "screen-dashboard",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 58,
+      "id": "screen-users",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 59,
+      "id": "screen-roles",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 60,
+      "id": "screen-rbac-pages",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 61,
+      "id": "screen-rbac-pages-new",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 62,
+      "id": "screen-permissions",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 63,
+      "id": "screen-party",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 64,
+      "id": "screen-party-new",
+      "overflow": -189,
+      "widthOverflow": 0
+    },
+    {
+      "page": 65,
+      "id": "screen-items",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 66,
+      "id": "screen-items-new",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 67,
+      "id": "screen-categories",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 68,
+      "id": "screen-units",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 69,
+      "id": "screen-rojmel-dashboard",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 70,
+      "id": "screen-rojmel-my-wallet",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 71,
+      "id": "screen-rojmel-wallets",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 72,
+      "id": "screen-rojmel-transactions",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 73,
+      "id": "screen-rojmel-transfers",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 74,
+      "id": "screen-rojmel-reports",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 75,
+      "id": "screen-hr-dashboard",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 76,
+      "id": "screen-hr-employees",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 77,
+      "id": "screen-hr-employees-new",
+      "overflow": -250,
+      "widthOverflow": 0
+    },
+    {
+      "page": 78,
+      "id": "screen-hr-departments",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 79,
+      "id": "screen-hr-designations",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 80,
+      "id": "screen-hr-attendance",
+      "overflow": -264,
+      "widthOverflow": 0
+    },
+    {
+      "page": 81,
+      "id": "screen-hr-leaves",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 82,
+      "id": "screen-hr-shifts",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 83,
+      "id": "screen-hr-payroll",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 84,
+      "id": "screen-sales-invoices",
+      "overflow": -284,
+      "widthOverflow": 0
+    },
+    {
+      "page": 85,
+      "id": "screen-sales-invoices-new",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 86,
+      "id": "screen-purchase-bills",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 87,
+      "id": "screen-purchase-bills-new",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 88,
+      "id": "screen-purchase-orders",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 89,
+      "id": "screen-purchase-orders-new",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 90,
+      "id": "screen-purchase-returns",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 91,
+      "id": "screen-purchase-returns-new",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 92,
+      "id": "screen-purchase-supplier-payments",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 93,
+      "id": "screen-purchase-expenses",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 94,
+      "id": "screen-purchase-expense-categories",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 95,
+      "id": "screen-purchase-reports",
+      "overflow": -284,
+      "widthOverflow": 0
+    },
+    {
+      "page": 96,
+      "id": "screen-reports",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 97,
+      "id": "screen-oee-dashboard",
+      "overflow": -284,
+      "widthOverflow": 0
+    },
+    {
+      "page": 98,
+      "id": "screen-oee-production-entries",
+      "overflow": -284,
+      "widthOverflow": 0
+    },
+    {
+      "page": 99,
+      "id": "screen-oee-machines",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 100,
+      "id": "screen-oee-moulds",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 101,
+      "id": "screen-oee-downtime-reasons",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 102,
+      "id": "screen-oee-reports",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 103,
+      "id": "screen-supply-chain-channels",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 104,
+      "id": "screen-supply-chain-warehouses",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 105,
+      "id": "screen-supply-chain-item-mappings",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 106,
+      "id": "screen-supply-chain-packaging-profiles",
+      "overflow": -325,
+      "widthOverflow": 0
+    },
+    {
+      "page": 107,
+      "id": "screen-supply-chain-packaging-profiles-new",
+      "overflow": -264,
+      "widthOverflow": 0
+    },
+    {
+      "page": 108,
+      "id": "screen-supply-chain-imports",
+      "overflow": -284,
+      "widthOverflow": 0
+    },
+    {
+      "page": 109,
+      "id": "screen-procurement",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 110,
+      "id": "screen-procurement-sales-import",
+      "overflow": -264,
+      "widthOverflow": 0
+    },
+    {
+      "page": 111,
+      "id": "screen-procurement-setup",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 112,
+      "id": "screen-procurement-generate-plan",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 113,
+      "id": "screen-procurement-planning-history",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 114,
+      "id": "screen-dispatch-dashboard",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 115,
+      "id": "screen-dispatch-runs",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 116,
+      "id": "screen-dispatch-imports",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 117,
+      "id": "screen-dispatch-settings",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 118,
+      "id": "screen-dispatch-settings-new",
+      "overflow": -230,
+      "widthOverflow": 0
+    },
+    {
+      "page": 119,
+      "id": "screen-dispatch-reports",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 120,
+      "id": "screen-shipments-dashboard",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 121,
+      "id": "screen-shipments-work-list",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 122,
+      "id": "screen-shipments-work-list-new",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 123,
+      "id": "screen-shipments-work-list-new-from-plan",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 124,
+      "id": "screen-shipments-freight",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 125,
+      "id": "screen-shipments-transporters",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 126,
+      "id": "screen-shipments-imports",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 127,
+      "id": "screen-shipments-reports",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 128,
+      "id": "screen-data-book",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 129,
+      "id": "screen-activity-logs",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 130,
+      "id": "screen-website-dashboard",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 131,
+      "id": "screen-website-products",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 132,
+      "id": "screen-website-products-new",
+      "overflow": -230,
+      "widthOverflow": 0
+    },
+    {
+      "page": 133,
+      "id": "screen-website-blog",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 134,
+      "id": "screen-website-blog-new",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 135,
+      "id": "screen-website-announcements",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 136,
+      "id": "screen-website-warranty",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 137,
+      "id": "screen-website-settings",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 138,
+      "id": "screen-settings",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 139,
+      "id": "screen-profile",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 140,
+      "id": "screen-preferences",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 141,
+      "id": "screen-gst-configuration",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 142,
+      "id": "screen-gst-registrations",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 143,
+      "id": "screen-gst-verify-gstin",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 144,
+      "id": "screen-gst-e-invoices",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 145,
+      "id": "screen-gst-eway-bills",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 146,
+      "id": "screen-gst-sessions",
+      "overflow": -332,
+      "widthOverflow": 0
+    },
+    {
+      "page": 147,
+      "id": "screen-gst-api-logs",
+      "overflow": -311,
+      "widthOverflow": 0
+    },
+    {
+      "page": 148,
+      "id": "screen-items-stock-tab",
+      "overflow": -230,
+      "widthOverflow": 0
+    },
+    {
+      "page": 149,
+      "id": "screen-items-manufacturing-tab",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 150,
+      "id": "screen-users-create-dialog",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 151,
+      "id": "screen-roles-create-dialog",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 152,
+      "id": "screen-categories-create-dialog",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 153,
+      "id": "screen-units-create-dialog",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 154,
+      "id": "screen-channel-create-dialog",
+      "overflow": -291,
+      "widthOverflow": 0
+    },
+    {
+      "page": 155,
+      "id": "screen-warehouse-create-dialog",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 156,
+      "id": "screen-wallet-create-dialog",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 157,
+      "id": "reports-directory-1",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 158,
+      "id": "reports-directory-2",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 159,
+      "id": "reports-directory-3",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 160,
+      "id": "reports-directory-4",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 161,
+      "id": "reports-directory-5",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 162,
+      "id": "reports-directory-6",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 163,
+      "id": "reports-directory-7",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 164,
+      "id": "reports-directory-8",
+      "overflow": -330,
+      "widthOverflow": 0
+    },
+    {
+      "page": 165,
+      "id": "reports-directory-9",
+      "overflow": -530,
+      "widthOverflow": 0
+    },
+    {
+      "page": 166,
+      "id": "field-guide-1",
+      "overflow": -366,
+      "widthOverflow": 0
+    },
+    {
+      "page": 167,
+      "id": "field-guide-2",
+      "overflow": -319,
+      "widthOverflow": 0
+    },
+    {
+      "page": 168,
+      "id": "field-guide-3",
+      "overflow": -329,
+      "widthOverflow": 0
+    },
+    {
+      "page": 169,
+      "id": "field-guide-4",
+      "overflow": -305,
+      "widthOverflow": 0
+    },
+    {
+      "page": 170,
+      "id": "field-guide-5",
+      "overflow": -302,
+      "widthOverflow": 0
+    },
+    {
+      "page": 171,
+      "id": "field-guide-6",
+      "overflow": -292,
+      "widthOverflow": 0
+    },
+    {
+      "page": 172,
+      "id": "field-guide-7",
+      "overflow": -275,
+      "widthOverflow": 0
+    },
+    {
+      "page": 173,
+      "id": "field-guide-8",
+      "overflow": -285,
+      "widthOverflow": 0
+    },
+    {
+      "page": 174,
+      "id": "field-guide-9",
+      "overflow": -251,
+      "widthOverflow": 0
+    },
+    {
+      "page": 175,
+      "id": "field-guide-10",
+      "overflow": -254,
+      "widthOverflow": 0
+    },
+    {
+      "page": 176,
+      "id": "field-guide-11",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 177,
+      "id": "field-guide-12",
+      "overflow": -271,
+      "widthOverflow": 0
+    },
+    {
+      "page": 178,
+      "id": "field-guide-13",
+      "overflow": -234,
+      "widthOverflow": 0
+    },
+    {
+      "page": 179,
+      "id": "field-guide-14",
+      "overflow": -214,
+      "widthOverflow": 0
+    },
+    {
+      "page": 180,
+      "id": "field-guide-15",
+      "overflow": -563,
+      "widthOverflow": 0
+    },
+    {
+      "page": 181,
+      "id": "glossary-1",
+      "overflow": -490,
+      "widthOverflow": 0
+    },
+    {
+      "page": 182,
+      "id": "glossary-2",
+      "overflow": -490,
+      "widthOverflow": 0
+    },
+    {
+      "page": 183,
+      "id": "glossary-3",
+      "overflow": -490,
+      "widthOverflow": 0
+    },
+    {
+      "page": 184,
+      "id": "glossary-4",
+      "overflow": -490,
+      "widthOverflow": 0
+    },
+    {
+      "page": 185,
+      "id": "developer-architecture",
+      "overflow": -269,
+      "widthOverflow": 0
+    },
+    {
+      "page": 186,
+      "id": "developer-setup",
+      "overflow": -215,
+      "widthOverflow": 0
+    },
+    {
+      "page": 187,
+      "id": "setup-commands",
+      "overflow": -301,
+      "widthOverflow": 0
+    },
+    {
+      "page": 188,
+      "id": "deployment",
+      "overflow": -269,
+      "widthOverflow": 0
+    },
+    {
+      "page": 189,
+      "id": "limitations",
+      "overflow": -296,
+      "widthOverflow": 0
+    },
+    {
+      "page": 190,
+      "id": "source-directory-1",
+      "overflow": -328,
+      "widthOverflow": 0
+    },
+    {
+      "page": 191,
+      "id": "source-directory-2",
+      "overflow": -328,
+      "widthOverflow": 0
+    },
+    {
+      "page": 192,
+      "id": "source-directory-3",
+      "overflow": -328,
+      "widthOverflow": 0
+    },
+    {
+      "page": 193,
+      "id": "source-directory-4",
+      "overflow": -328,
+      "widthOverflow": 0
+    },
+    {
+      "page": 194,
+      "id": "source-directory-5",
+      "overflow": -685,
+      "widthOverflow": 0
+    }
+  ],
+  "devanagari": 0,
+  "brokenLinks": 0
+}

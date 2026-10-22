@@ -1,3 +1,4 @@
+import GstDocumentLinks from "../../gst/GstDocumentLinks";
 import {
   ArrowLeft,
   Ban,
@@ -345,8 +346,20 @@ const InvoiceDetailPage = () => {
       return;
     }
 
-    window.print();
-  }, [capabilities.canExport]);
+    const previousTitle = document.title;
+    document.title = `WEWEL Invoice ${invoice?.invoiceNumber ?? id}`;
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      window.print();
+    } catch (error) {
+      restoreTitle();
+      throw error;
+    }
+  }, [capabilities.canExport, invoice?.invoiceNumber, id]);
 
   if (invoiceState.detailLoading && !invoice) {
     return (
@@ -408,6 +421,7 @@ const InvoiceDetailPage = () => {
         }
       />
 
+      {invoice && <GstDocumentLinks id={invoice.id} />}
       {invoice && (
         <div className="no-print grid gap-4 xl:grid-cols-[1fr_auto]">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

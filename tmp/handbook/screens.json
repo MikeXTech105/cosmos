@@ -1,0 +1,366 @@
+[
+  {
+    "id": "dashboard",
+    "route": "/dashboard"
+  },
+  {
+    "id": "users",
+    "route": "/users"
+  },
+  {
+    "id": "roles",
+    "route": "/roles"
+  },
+  {
+    "id": "rbac-pages",
+    "route": "/rbac/pages"
+  },
+  {
+    "id": "rbac-pages-new",
+    "route": "/rbac/pages/new"
+  },
+  {
+    "id": "permissions",
+    "route": "/permissions"
+  },
+  {
+    "id": "party",
+    "route": "/party"
+  },
+  {
+    "id": "party-new",
+    "route": "/party/new"
+  },
+  {
+    "id": "items",
+    "route": "/items"
+  },
+  {
+    "id": "items-new",
+    "route": "/items/new"
+  },
+  {
+    "id": "categories",
+    "route": "/categories"
+  },
+  {
+    "id": "units",
+    "route": "/units"
+  },
+  {
+    "id": "rojmel-dashboard",
+    "route": "/rojmel/dashboard"
+  },
+  {
+    "id": "rojmel-my-wallet",
+    "route": "/rojmel/my-wallet"
+  },
+  {
+    "id": "rojmel-wallets",
+    "route": "/rojmel/wallets"
+  },
+  {
+    "id": "rojmel-transactions",
+    "route": "/rojmel/transactions"
+  },
+  {
+    "id": "rojmel-transfers",
+    "route": "/rojmel/transfers"
+  },
+  {
+    "id": "rojmel-reports",
+    "route": "/rojmel/reports"
+  },
+  {
+    "id": "hr-dashboard",
+    "route": "/hr/dashboard"
+  },
+  {
+    "id": "hr-employees",
+    "route": "/hr/employees"
+  },
+  {
+    "id": "hr-employees-new",
+    "route": "/hr/employees/new"
+  },
+  {
+    "id": "hr-departments",
+    "route": "/hr/departments"
+  },
+  {
+    "id": "hr-designations",
+    "route": "/hr/designations"
+  },
+  {
+    "id": "hr-attendance",
+    "route": "/hr/attendance"
+  },
+  {
+    "id": "hr-leaves",
+    "route": "/hr/leaves"
+  },
+  {
+    "id": "hr-shifts",
+    "route": "/hr/shifts"
+  },
+  {
+    "id": "hr-payroll",
+    "route": "/hr/payroll"
+  },
+  {
+    "id": "sales-invoices",
+    "route": "/sales/invoices"
+  },
+  {
+    "id": "sales-invoices-new",
+    "route": "/sales/invoices/new"
+  },
+  {
+    "id": "purchase-bills",
+    "route": "/purchase/bills"
+  },
+  {
+    "id": "purchase-bills-new",
+    "route": "/purchase/bills/new"
+  },
+  {
+    "id": "purchase-orders",
+    "route": "/purchase/orders"
+  },
+  {
+    "id": "purchase-orders-new",
+    "route": "/purchase/orders/new"
+  },
+  {
+    "id": "purchase-returns",
+    "route": "/purchase/returns"
+  },
+  {
+    "id": "purchase-returns-new",
+    "route": "/purchase/returns/new"
+  },
+  {
+    "id": "purchase-supplier-payments",
+    "route": "/purchase/supplier-payments"
+  },
+  {
+    "id": "purchase-expenses",
+    "route": "/purchase/expenses"
+  },
+  {
+    "id": "purchase-expense-categories",
+    "route": "/purchase/expense-categories"
+  },
+  {
+    "id": "purchase-reports",
+    "route": "/purchase/reports"
+  },
+  {
+    "id": "reports",
+    "route": "/reports"
+  },
+  {
+    "id": "oee-dashboard",
+    "route": "/oee/dashboard"
+  },
+  {
+    "id": "oee-production-entries",
+    "route": "/oee/production-entries"
+  },
+  {
+    "id": "oee-machines",
+    "route": "/oee/machines"
+  },
+  {
+    "id": "oee-moulds",
+    "route": "/oee/moulds"
+  },
+  {
+    "id": "oee-downtime-reasons",
+    "route": "/oee/downtime-reasons"
+  },
+  {
+    "id": "oee-reports",
+    "route": "/oee/reports"
+  },
+  {
+    "id": "supply-chain-channels",
+    "route": "/supply-chain/channels"
+  },
+  {
+    "id": "supply-chain-warehouses",
+    "route": "/supply-chain/warehouses"
+  },
+  {
+    "id": "supply-chain-item-mappings",
+    "route": "/supply-chain/item-mappings"
+  },
+  {
+    "id": "supply-chain-packaging-profiles",
+    "route": "/supply-chain/packaging-profiles"
+  },
+  {
+    "id": "supply-chain-packaging-profiles-new",
+    "route": "/supply-chain/packaging-profiles/new"
+  },
+  {
+    "id": "supply-chain-imports",
+    "route": "/supply-chain/imports"
+  },
+  {
+    "id": "procurement",
+    "route": "/procurement"
+  },
+  {
+    "id": "procurement-sales-import",
+    "route": "/procurement/sales-import"
+  },
+  {
+    "id": "procurement-setup",
+    "route": "/procurement/setup"
+  },
+  {
+    "id": "procurement-generate-plan",
+    "route": "/procurement/generate-plan"
+  },
+  {
+    "id": "procurement-planning-history",
+    "route": "/procurement/planning-history"
+  },
+  {
+    "id": "dispatch-dashboard",
+    "route": "/dispatch/dashboard"
+  },
+  {
+    "id": "dispatch-runs",
+    "route": "/dispatch/runs"
+  },
+  {
+    "id": "dispatch-imports",
+    "route": "/dispatch/imports"
+  },
+  {
+    "id": "dispatch-settings",
+    "route": "/dispatch/settings"
+  },
+  {
+    "id": "dispatch-settings-new",
+    "route": "/dispatch/settings/new"
+  },
+  {
+    "id": "dispatch-reports",
+    "route": "/dispatch/reports"
+  },
+  {
+    "id": "shipments-dashboard",
+    "route": "/shipments/dashboard"
+  },
+  {
+    "id": "shipments-work-list",
+    "route": "/shipments/work-list"
+  },
+  {
+    "id": "shipments-work-list-new",
+    "route": "/shipments/work-list/new"
+  },
+  {
+    "id": "shipments-work-list-new-from-plan",
+    "route": "/shipments/work-list/new-from-plan"
+  },
+  {
+    "id": "shipments-freight",
+    "route": "/shipments/freight"
+  },
+  {
+    "id": "shipments-transporters",
+    "route": "/shipments/transporters"
+  },
+  {
+    "id": "shipments-imports",
+    "route": "/shipments/imports"
+  },
+  {
+    "id": "shipments-reports",
+    "route": "/shipments/reports"
+  },
+  {
+    "id": "data-book",
+    "route": "/data-book"
+  },
+  {
+    "id": "activity-logs",
+    "route": "/activity-logs"
+  },
+  {
+    "id": "website-dashboard",
+    "route": "/website/dashboard"
+  },
+  {
+    "id": "website-products",
+    "route": "/website/products"
+  },
+  {
+    "id": "website-products-new",
+    "route": "/website/products/new"
+  },
+  {
+    "id": "website-blog",
+    "route": "/website/blog"
+  },
+  {
+    "id": "website-blog-new",
+    "route": "/website/blog/new"
+  },
+  {
+    "id": "website-announcements",
+    "route": "/website/announcements"
+  },
+  {
+    "id": "website-warranty",
+    "route": "/website/warranty"
+  },
+  {
+    "id": "website-settings",
+    "route": "/website/settings"
+  },
+  {
+    "id": "settings",
+    "route": "/settings"
+  },
+  {
+    "id": "profile",
+    "route": "/profile"
+  },
+  {
+    "id": "preferences",
+    "route": "/preferences"
+  },
+  {
+    "id": "gst-configuration",
+    "route": "/gst/configuration"
+  },
+  {
+    "id": "gst-registrations",
+    "route": "/gst/registrations"
+  },
+  {
+    "id": "gst-verify-gstin",
+    "route": "/gst/verify-gstin"
+  },
+  {
+    "id": "gst-e-invoices",
+    "route": "/gst/e-invoices"
+  },
+  {
+    "id": "gst-eway-bills",
+    "route": "/gst/eway-bills"
+  },
+  {
+    "id": "gst-sessions",
+    "route": "/gst/sessions"
+  },
+  {
+    "id": "gst-api-logs",
+    "route": "/gst/api-logs"
+  }
+]

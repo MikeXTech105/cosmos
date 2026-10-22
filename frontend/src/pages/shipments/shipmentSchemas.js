@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredDate, optionalDate as calendarDate, dateOrder } from "../../utils/validationRules";
 
 import {
   SHIPMENT_APPOINTMENT_STATUS,
@@ -18,22 +19,17 @@ const optionalText = z.preprocess(
   z.string().optional(),
 );
 
-const optionalNumber = z.preprocess(
-  emptyToUndefined,
-  z.coerce.number().optional(),
-);
-
 const requiredId = (label) =>
   z.preprocess(
     emptyToUndefined,
     z.coerce.number({
       error: `${label} is required.`,
-    }).positive(`${label} is required.`),
+    }).int(`${label} must be a whole number.`).positive(`${label} is required.`),
   );
 
 const optionalId = z.preprocess(
   emptyToUndefined,
-  z.coerce.number().positive().optional(),
+  z.coerce.number().int().positive().optional(),
 );
 
 const transporterId = z.preprocess(
@@ -41,15 +37,8 @@ const transporterId = z.preprocess(
   z.string().trim().min(1).optional(),
 );
 
-const date = (label) =>
-  z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, `${label} must use yyyy-MM-dd.`);
-
-const optionalDate = z.preprocess(
-  emptyToUndefined,
-  z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-);
+const date = requiredDate;
+const optionalDate = z.preprocess(emptyToUndefined, calendarDate);
 
 const nonNegative = (label) =>
   z.coerce.number().min(0, `${label} cannot be negative.`);
@@ -59,7 +48,7 @@ const positive = (label) =>
 
 const shipmentItem = z.object({
   itemId: requiredId("Item"),
-  notes: optionalText,
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   packagingProfileId: optionalId,
   plannedQuantity: positive("Planned quantity"),
 });
@@ -68,19 +57,19 @@ export const manualShipmentSchema = z.object({
   channelId: requiredId("Channel"),
   dispatchMode: z.enum(Object.values(SHIPMENT_DISPATCH_MODE)),
   expectedDeliveryDate: optionalDate,
-  externalShipmentReference: optionalText,
+  externalShipmentReference: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(150).optional()),
   invoiceId: optionalId,
-  invoiceNumber: optionalText,
+  invoiceNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   items: z.array(shipmentItem).min(1, "Add at least one shipment item."),
-  manualReason: optionalText,
-  marketplaceReference: optionalText,
-  notes: optionalText,
+  manualReason: z.string().trim().min(1, "Manual reason is required.").max(1000),
+  marketplaceReference: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(150).optional()),
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(2000).optional()),
   priority: z.enum(Object.values(SHIPMENT_PRIORITY)),
   shipmentDate: date("Shipment date"),
-  stoNumber: optionalText,
+  stoNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   transporterPartyId: transporterId,
   warehouseId: requiredId("Warehouse"),
-});
+}).superRefine((values, context) => dateOrder(values, context, "shipmentDate", "expectedDeliveryDate", "Expected delivery cannot be before shipment date"));
 
 export const dispatchShipmentSchema = z.object({
   allocations: z
@@ -94,17 +83,17 @@ export const dispatchShipmentSchema = z.object({
   dispatchPlanningRunId: requiredId("Dispatch planning run"),
   expectedDeliveryDate: optionalDate,
   invoiceId: optionalId,
-  invoiceNumber: optionalText,
-  notes: optionalText,
+  invoiceNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(2000).optional()),
   shipmentDate: date("Shipment date"),
-  stoNumber: optionalText,
+  stoNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   transporterPartyId: transporterId,
   warehouseId: requiredId("Warehouse"),
-});
+}).superRefine((values, context) => dateOrder(values, context, "shipmentDate", "expectedDeliveryDate", "Expected delivery cannot be before shipment date"));
 
 export const shipmentPackageSchema = z.object({
-  barcode: optionalText,
-  dimensionUnit: optionalText,
+  barcode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(200).optional()),
+  dimensionUnit: z.preprocess(value => String(value ?? "").toUpperCase(), z.enum(["CM", "MM"])),
   grossWeight: nonNegative("Gross weight"),
   height: nonNegative("Height"),
   isMixedPackage: z.boolean(),
@@ -121,62 +110,70 @@ export const shipmentPackageSchema = z.object({
     ),
   length: nonNegative("Length"),
   netWeight: nonNegative("Net weight"),
-  notes: optionalText,
-  packageNumber: optionalText,
-  packageType: optionalText,
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+  packageNumber: z.string().trim().min(1, "Package number is required.").max(100),
+  packageType: z.string().trim().min(1, "Package type is required.").max(50),
   packagingProfileId: optionalId,
-  sealNumber: optionalText,
-  trackingLabel: optionalText,
-  volumetricDivisor: optionalNumber,
-  weightUnit: optionalText,
+  sealNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
+  trackingLabel: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(200).optional()),
+  volumetricDivisor: z.preprocess(emptyToUndefined, z.coerce.number().positive("Volumetric divisor must be positive").optional()),
+  weightUnit: z.preprocess(value => String(value ?? "").toUpperCase(), z.enum(["KG", "G"])),
   width: nonNegative("Width"),
-});
+}).superRefine((values, context) => {
+   if (values.netWeight > values.grossWeight) context.addIssue({code:"custom",path:["netWeight"],message:"Net weight cannot exceed gross weight"});
+   const populated = values.items.filter(item => item.quantity > 0);
+   if (!values.isMixedPackage && populated.length > 1) context.addIssue({code:"custom",path:["isMixedPackage"],message:"Multiple items require a mixed package"});
+   if (new Set(populated.map(item => item.shipmentItemId)).size !== populated.length) context.addIssue({code:"custom",path:["items"],message:"An item can appear only once in a package"});
+ });
 
 export const shipmentDocketSchema = z.object({
   dispatchMode: z.enum(Object.values(SHIPMENT_DISPATCH_MODE)),
   docketDate: date("Docket date"),
-  docketNumber: optionalText,
-  driverMobile: optionalText,
-  driverName: optionalText,
+  docketNumber: z.string().trim().min(1, "Docket number is required.").max(100),
+  driverMobile: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(30).optional()),
+  driverName: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(150).optional()),
   estimatedDeliveryDate: optionalDate,
-  pickupReference: optionalText,
-  trackingUrl: optionalText,
+  pickupReference: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
+  trackingUrl: z.preprocess(value => String(value ?? "").trim() || undefined, z.url("Enter an absolute tracking URL").max(1000).optional()),
   transporterPartyId: z.string().trim().min(1, "Transporter is required."),
   vehicleNumber: optionalText,
 });
 
 export const shipmentAppointmentSchema = z.object({
   appointmentDate: date("Appointment date"),
-  appointmentReference: optionalText,
+  appointmentReference: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   appointmentStatus: z.enum(Object.values(SHIPMENT_APPOINTMENT_STATUS)),
-  cancellationReason: optionalText,
-  remarks: optionalText,
+  cancellationReason: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+  remarks: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   timeFrom: optionalText,
   timeTo: optionalText,
-});
+}).superRefine((values, context) => {
+   dateOrder(values, context, "timeFrom", "timeTo", "End time cannot be before start time");
+   if (values.appointmentStatus === "Cancelled" && !values.cancellationReason) context.addIssue({code:"custom",path:["cancellationReason"],message:"Cancellation reason is required"});
+ });
 
 export const shipmentTrackingSchema = z.object({
   eventDateTimeUtc: z.string().min(1, "Event time is required."),
-  eventStatus: optionalText,
+  eventStatus: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   eventType: z.enum(Object.values(SHIPMENT_TRACKING_EVENT_TYPE)),
-  location: optionalText,
-  referenceNumber: optionalText,
-  remarks: optionalText,
-  source: optionalText,
+  location: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(250).optional()),
+  referenceNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
+  remarks: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+  source: z.string().trim().min(1, "Source is required.").max(50),
 });
 
 export const shipmentDeliveryAttemptSchema = z.object({
   attemptDateTimeUtc: z.string().min(1, "Attempt time is required."),
   nextAttemptDate: optionalDate,
   outcome: z.enum(Object.values(SHIPMENT_DELIVERY_ATTEMPT_OUTCOME)),
-  reasonCode: optionalText,
-  remarks: optionalText,
+  reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
+  remarks: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
 });
 
 const receiptItem = z.object({
   damagedQuantity: nonNegative("Damaged quantity"),
-  notes: optionalText,
-  reasonCode: optionalText,
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+  reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   receivedQuantity: nonNegative("Received quantity"),
   rejectedQuantity: nonNegative("Rejected quantity"),
   shipmentItemId: requiredId("Shipment item"),
@@ -185,21 +182,21 @@ const receiptItem = z.object({
 
 export const shipmentReceiptSchema = z.object({
   items: z.array(receiptItem).min(1),
-  marketplaceReceiptReference: optionalText,
-  notes: optionalText,
+  marketplaceReceiptReference: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(150).optional()),
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   proofAttachmentUrl: optionalText,
   receiptDate: date("Receipt date"),
-  receivedByName: optionalText,
+  receivedByName: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(150).optional()),
 });
 
 export const shipmentReturnSchema = z.object({
-  docketNumber: optionalText,
+  docketNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   expectedReturnDate: optionalDate,
   items: z
     .array(
       z.object({
-        notes: optionalText,
-        reasonCode: optionalText,
+        notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+        reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
         returnQuantity: nonNegative("Return quantity"),
         shipmentItemId: requiredId("Shipment item"),
       }),
@@ -208,9 +205,9 @@ export const shipmentReturnSchema = z.object({
       (items) => items.some((item) => item.returnQuantity > 0),
       "Enter a return quantity for at least one item.",
     ),
-  notes: optionalText,
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   returnDate: date("Return date"),
-  returnReason: optionalText,
+  returnReason: z.string().trim().min(1, "Return reason is required.").max(1000),
   transporterPartyId: transporterId,
 });
 
@@ -219,14 +216,14 @@ export const shipmentReturnReceiveSchema = z.object({
     z.object({
       damagedQuantity: nonNegative("Damaged quantity"),
       nonRestockableQuantity: nonNegative("Non-restockable quantity"),
-      notes: optionalText,
-      reasonCode: optionalText,
+      notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
+      reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
       receivedBackQuantity: nonNegative("Received-back quantity"),
       restockableQuantity: nonNegative("Restockable quantity"),
       shipmentReturnItemId: requiredId("Shipment return item"),
     }),
   ),
-  notes: optionalText,
+  notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   receivedBackDate: date("Received-back date"),
 });
 
@@ -236,17 +233,17 @@ export const shipmentFreightSchema = z.object({
   baseFreight: nonNegative("Base freight"),
   chargeType: z.enum(Object.values(SHIPMENT_FREIGHT_CHARGE_TYPE)),
   chargeableWeight: nonNegative("Chargeable weight"),
-  currencyCode: z.string().trim().min(3, "Currency code is required."),
+  currencyCode: z.string().trim().regex(/^[A-Z]{3}$/, "Enter a three-letter uppercase currency code"),
   discountAmount: nonNegative("Discount amount"),
   fuelSurcharge: nonNegative("Fuel surcharge"),
   handlingCharge: nonNegative("Handling charge"),
   loadingCharge: nonNegative("Loading charge"),
   otherCharge: nonNegative("Other charge"),
-  ratePerWeightUnit: optionalNumber,
+  ratePerWeightUnit: z.preprocess(emptyToUndefined, z.coerce.number().min(0, "Rate cannot be negative").optional()),
   returnFreight: nonNegative("Return freight"),
   taxAmount: nonNegative("Tax amount"),
   transporterInvoiceDate: optionalDate,
-  transporterInvoiceNumber: optionalText,
+  transporterInvoiceNumber: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
   transporterPartyId: transporterId,
   unloadingCharge: nonNegative("Unloading charge"),
   volumetricWeight: nonNegative("Volumetric weight"),
@@ -261,7 +258,7 @@ export const shipmentRojmelSchema = z.object({
 });
 
 export const shipmentTransitionSchema = z.object({
-  remarks: optionalText,
+  remarks: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   targetStatus: z.enum(Object.values(SHIPMENT_STATUS)),
 });
 

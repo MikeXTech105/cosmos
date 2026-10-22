@@ -193,7 +193,7 @@ const DocketModal = ({
         <AppInput
           disabled={saving}
           error={errors.docketNumber}
-          label="Docket number"
+          label="Docket number" required
           value={form.docketNumber}
           onChange={(event) => setField("docketNumber", event.target.value)}
         />

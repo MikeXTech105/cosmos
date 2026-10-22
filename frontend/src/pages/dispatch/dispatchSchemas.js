@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { positiveIntegerId, requiredDate, optionalDate as calendarDate } from "../../utils/validationRules";
 
 import {
   DISPATCH_ROUNDING_MODES,
@@ -8,17 +9,10 @@ import { getEffectiveDateRangeError } from "../../utils/supplyChainValidation";
 
 const optional = (value) =>
   value === "" || value === null || value === undefined ? undefined : value;
-const optionalText = z.preprocess(
-  (value) => String(value ?? "").trim() || null,
-  z.string().nullable(),
-);
-const identifier = z.union([
-  z.string().trim().min(1, "This field is required."),
-  z.number(),
-]);
+const identifier = positiveIntegerId();
 const optionalIdentifier = z.preprocess(
   optional,
-  z.union([z.string().trim().min(1), z.number()]).optional(),
+  positiveIntegerId().optional(),
 );
 const positive = (label) =>
   z.coerce.number().positive(`${label} must be positive.`);
@@ -30,8 +24,8 @@ export const dispatchSettingSchema = z
     allocationPriority: nonNegative("Allocation priority"),
     allowLooseQuantity: z.boolean(),
     channelId: optionalIdentifier,
-    effectiveFrom: optionalText,
-    effectiveTo: optionalText,
+    effectiveFrom: calendarDate,
+    effectiveTo: calendarDate,
     isActive: z.boolean(),
     itemId: identifier,
     minimumDispatchQuantity: nonNegative("Minimum dispatch quantity"),
@@ -64,8 +58,8 @@ export const dispatchSettingSchema = z
 
 export const dispatchRunSchema = z.object({
   channelId: identifier,
-  notes: optionalText,
-  planningDate: z.string().min(1, "Planning date is required."),
+  notes: z.string().trim().max(1000).optional(),
+  planningDate: requiredDate("Planning date"),
   salesImportBatchId: identifier,
   warehouseInboundImportBatchId: optionalIdentifier,
   warehouseStockImportBatchId: identifier,

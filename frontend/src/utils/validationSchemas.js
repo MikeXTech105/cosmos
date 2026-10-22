@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordPolicySchema, enumNumber, requiredDate, optionalDate, dateOrder } from "./validationRules";
 import {
   HR_EMPLOYEE_STATUS,
   HR_EMPLOYMENT_TYPE,
@@ -10,22 +11,20 @@ import { normalizeItemClassification } from "./itemClassification";
 import { ITEM_TYPE } from "./itemTypes";
 
 export const loginSchema = z.object({
-  usernameOrEmail: z.string().min(1, "Username or email is required"),
-  password: z.string().min(1, "Password is required"),
+  usernameOrEmail: z.string().trim().min(1, "Username or email is required").max(256),
+  password: z.string().min(1, "Password is required").max(128),
   rememberMe: z.boolean().optional(),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z.string().trim().email("Enter a valid email address").max(256),
 });
 
 export const resetPasswordSchema = z
   .object({
-    email: z.string().email("Enter a valid email address"),
+    email: z.string().trim().email("Enter a valid email address").max(256),
     resetToken: z.string().min(1, "Reset token is required"),
-    newPassword: z
-      .string()
-      .min(8, "New password must be at least 8 characters"),
+    newPassword: passwordPolicySchema,
     confirmPassword: z
       .string()
       .min(8, "Confirm password must be at least 8 characters"),
@@ -38,9 +37,7 @@ export const resetPasswordSchema = z
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(8, "New password must be at least 8 characters"),
+    newPassword: passwordPolicySchema,
     confirmPassword: z
       .string()
       .min(8, "Confirm password must be at least 8 characters"),
@@ -51,7 +48,7 @@ export const changePasswordSchema = z
   });
 
 export const categorySchema = z.object({
-  name: z.string().trim().min(2, "Category name is required"),
+  name: z.string().trim().min(1, "Category name is required").max(100),
   description: z
     .string()
     .trim()
@@ -61,8 +58,8 @@ export const categorySchema = z.object({
 });
 
 export const unitSchema = z.object({
-  name: z.string().trim().min(2, "Unit name is required"),
-  shortName: z.string().trim().min(1, "Short name is required"),
+  name: z.string().trim().min(1, "Unit name is required").max(100),
+  shortName: z.string().trim().min(1, "Short name is required").max(20),
   description: z
     .string()
     .trim()
@@ -96,12 +93,12 @@ export const hrDepartmentSchema = z.object({
     .string()
     .trim()
     .min(1, "Department code is required")
-    .max(50, "Department code is too long"),
+    .max(20, "Department code is too long"),
   departmentName: z
     .string()
     .trim()
-    .min(2, "Department name is required")
-    .max(100, "Department name is too long"),
+    .min(1, "Department name is required")
+    .max(200, "Department name is too long"),
   description: z
     .string()
     .trim()
@@ -115,12 +112,12 @@ export const hrDesignationSchema = z.object({
     .string()
     .trim()
     .min(1, "Designation code is required")
-    .max(50, "Designation code is too long"),
+    .max(20, "Designation code is too long"),
   designationName: z
     .string()
     .trim()
-    .min(2, "Designation name is required")
-    .max(100, "Designation name is too long"),
+    .min(1, "Designation name is required")
+    .max(200, "Designation name is too long"),
   departmentId: z.coerce.number().int().positive("Department is required"),
   description: z
     .string()
@@ -135,20 +132,20 @@ export const hrShiftSchema = z.object({
     .string()
     .trim()
     .min(1, "Shift code is required")
-    .max(50, "Shift code is too long"),
+    .max(20, "Shift code is too long"),
   shiftName: z
     .string()
     .trim()
-    .min(2, "Shift name is required")
-    .max(100, "Shift name is too long"),
+    .min(1, "Shift name is required")
+    .max(200, "Shift name is too long"),
   startTime: z.string().trim().min(1, "Start time is required"),
   endTime: z.string().trim().min(1, "End time is required"),
   graceMinutes: z.coerce
     .number()
     .int("Grace minutes must be a whole number")
-    .min(0, "Grace minutes cannot be negative"),
+    .min(0, "Grace minutes cannot be negative").max(240, "Grace minutes cannot exceed 240"),
   isNightShift: z.boolean(),
-  weeklyHours: nonNegativeNumber("Weekly hours"),
+  weeklyHours: nonNegativeNumber("Weekly hours").max(168, "Weekly hours cannot exceed 168"),
   isActive: z.boolean(),
 });
 
@@ -157,20 +154,19 @@ export const hrEmployeeSchema = z.object({
     .string()
     .trim()
     .min(1, "Employee code is required")
-    .max(50, "Employee code is too long"),
+    .max(30, "Employee code is too long"),
   firstName: z
     .string()
     .trim()
-    .min(2, "First name is required")
+    .min(1, "First name is required")
     .max(100, "First name is too long"),
   lastName: z
     .string()
     .trim()
-    .min(1, "Last name is required")
     .max(100, "Last name is too long"),
-  gender: z.coerce.number().int().min(HR_GENDER.MALE),
-  dateOfBirth: z.string().trim().min(1, "Date of birth is required"),
-  joiningDate: z.string().trim().min(1, "Joining date is required"),
+  gender: enumNumber(HR_GENDER, "Gender"),
+  dateOfBirth: optionalDate,
+  joiningDate: requiredDate("Joining date"),
   mobile: z
     .string()
     .transform(normalizeEmployeeMobile)
@@ -183,38 +179,49 @@ export const hrEmployeeSchema = z.object({
   designationId: z.coerce.number().int().positive("Designation is required"),
   reportingManagerId: optionalPositiveId,
   shiftId: z.coerce.number().int().positive("Shift is required"),
-  employmentType: z.coerce.number().int().min(HR_EMPLOYMENT_TYPE.FULL_TIME),
+  employmentType: enumNumber(HR_EMPLOYMENT_TYPE, "Employment type"),
   status: z.coerce
     .number()
     .int()
     .min(HR_EMPLOYEE_STATUS.ACTIVE)
     .max(HR_EMPLOYEE_STATUS.TERMINATED),
-  profilePhotoUrl: z.string().trim().optional(),
+  profilePhotoUrl: z.string().trim().max(1000).optional(),
   addresses: z
     .array(
       z.object({
-        addressType: z.string().trim().optional(),
-        addressLine1: z.string().trim().optional(),
-        addressLine2: z.string().trim().optional(),
-        city: z.string().trim().optional(),
-        state: z.string().trim().optional(),
-        country: z.string().trim().optional(),
-        pincode: z.string().trim().optional(),
+        addressType: z.string().trim().max(30).optional(),
+        addressLine1: z.string().trim().max(250).optional(),
+        addressLine2: z.string().trim().max(250).optional(),
+        city: z.string().trim().max(100).optional(),
+        state: z.string().trim().max(100).optional(),
+        country: z.string().trim().max(100).optional(),
+        pincode: z.string().trim().max(20).optional(),
       }),
     )
     .optional(),
-  addressType: z.string().trim().optional(),
-  addressLine1: z.string().trim().optional(),
-  addressLine2: z.string().trim().optional(),
-  city: z.string().trim().optional(),
-  state: z.string().trim().optional(),
-  country: z.string().trim().optional(),
-  pincode: z.string().trim().optional(),
-  bankName: z.string().trim().optional(),
-  accountNumber: z.string().trim().optional(),
-  ifscCode: z.string().trim().optional(),
-  branchName: z.string().trim().optional(),
-  upiId: z.string().trim().optional(),
+  addressType: z.string().trim().max(30).optional(),
+  addressLine1: z.string().trim().max(250).optional(),
+  addressLine2: z.string().trim().max(250).optional(),
+  city: z.string().trim().max(100).optional(),
+  state: z.string().trim().max(100).optional(),
+  country: z.string().trim().max(100).optional(),
+  pincode: z.string().trim().max(20).optional(),
+  bankName: z.string().trim().max(150).optional(),
+  accountNumber: z.string().trim().max(50).optional(),
+  ifscCode: z.string().trim().max(20).optional(),
+  branchName: z.string().trim().max(150).optional(),
+  upiId: z.string().trim().max(100).optional(),
+}).superRefine((values, context) => {
+  dateOrder(values, context, "dateOfBirth", "joiningDate", "Joining date must be after date of birth");
+  if (values.dateOfBirth && values.dateOfBirth === values.joiningDate) context.addIssue({code:"custom",path:["dateOfBirth"],message:"Date of birth must be before joining date"});
+  const bankFields = ["bankName", "accountNumber", "ifscCode", "branchName", "upiId"];
+  if (bankFields.some(field => values[field]?.trim())) {
+    for (const field of ["bankName", "accountNumber", "ifscCode"]) if (!values[field]?.trim()) context.addIssue({code:"custom",path:[field],message:"Required when bank details are entered"});
+  }
+  for (const [index, address] of (values.addresses ?? []).entries()) {
+    if (["addressLine1","addressLine2","city","state","pincode"].some(field => address[field]?.trim()) && !address.addressLine1?.trim()) context.addIssue({code:"custom",path:["addresses",index,"addressLine1"],message:"Address line 1 is required when an address is entered"});
+  }
+  if (["addressLine2","city","state","pincode"].some(field => values[field]?.trim()) && !values.addressLine1?.trim()) context.addIssue({code:"custom",path:["addressLine1"],message:"Address line 1 is required when an address is entered"});
 });
 
 export const hrBankDetailsSchema = z.object({
@@ -252,7 +259,7 @@ export const hrAttendanceManualSchema = z.object({
   attendanceDate: z.string().trim().min(1, "Attendance date is required"),
   checkInTime: z.string().trim().optional(),
   checkOutTime: z.string().trim().optional(),
-  attendanceStatus: z.coerce.number().int().min(HR_ATTENDANCE_STATUS.PRESENT),
+  attendanceStatus: enumNumber(HR_ATTENDANCE_STATUS, "Attendance status"),
 });
 
 export const hrAttendanceAdjustmentSchema = z.object({
@@ -269,10 +276,10 @@ export const hrAttendanceDecisionSchema = z.object({
 export const hrLeaveApplySchema = z.object({
   employeeId: z.coerce.number().int().positive("Employee is required"),
   leaveTypeId: z.coerce.number().int().positive("Leave type is required"),
-  startDate: z.string().trim().min(1, "Start date is required"),
-  endDate: z.string().trim().min(1, "End date is required"),
-  reason: z.string().trim().optional(),
-});
+  startDate: requiredDate("Start date"),
+  endDate: requiredDate("End date"),
+  reason: z.string().trim().min(1, "Reason is required").max(500),
+}).superRefine((values, context) => dateOrder(values, context, "startDate", "endDate", "End date cannot be before start date"));
 
 export const hrLeaveActionSchema = z.object({
   leaveApplicationId: z.coerce
@@ -328,9 +335,9 @@ const imageUrlPattern =
 
 export const itemSchema = z
   .object({
-    name: z.string().trim().min(2, "Item name is required"),
-    itemCode: z.string().trim().optional(),
-    barcode: z.string().trim().optional(),
+    name: z.string().trim().min(1, "Item name is required").max(200),
+    itemCode: z.string().trim().min(1, "Item code is required").max(50),
+    barcode: z.string().trim().max(100).optional(),
     categoryId: lookupId,
     unitId: lookupId,
     itemType: itemTypeSchema,
@@ -342,8 +349,8 @@ export const itemSchema = z
       .optional(),
     salesPrice: nonNegativeNumber("Sales price"),
     purchasePrice: nonNegativeNumber("Purchase price"),
-    hsnCode: z.string().trim().optional(),
-    gstRate: nonNegativeNumber("GST rate"),
+    hsnCode: z.string().trim().max(50).optional(),
+    gstRate: nonNegativeNumber("GST rate").max(100, "GST rate cannot exceed 100%"),
     trackInventory: z.boolean(),
     isManufactured: z.boolean(),
     openingStock: nonNegativeNumber("Opening stock"),
@@ -367,14 +374,10 @@ export const itemSchema = z
     isActive: z.boolean(),
   })
   .superRefine((values, context) => {
-    if (values.itemType !== ITEM_TYPE.PRODUCT) {
-      return;
-    }
-
     if (!values.categoryId) {
       context.addIssue({
         code: "custom",
-        message: "Category is required for products",
+        message: "Category is required",
         path: ["categoryId"],
       });
     }
@@ -382,7 +385,7 @@ export const itemSchema = z
     if (!values.unitId) {
       context.addIssue({
         code: "custom",
-        message: "Unit is required for products",
+        message: "Unit is required",
         path: ["unitId"],
       });
     }

@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import GstDocumentLinks from "../../gst/GstDocumentLinks";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { itemService } from "../../../services/inventory/itemService";
@@ -364,6 +365,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
         }
       />
 
+      {record && config.selectorKey === "purchaseBills" && <GstDocumentLinks id={record.id} purchase />}
       {record && (
         <>
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">

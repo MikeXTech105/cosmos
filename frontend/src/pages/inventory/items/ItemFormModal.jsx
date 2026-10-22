@@ -372,7 +372,7 @@ const ItemFormModal = ({
                     </button>
                   </div>
                   <AppInput
-                    id="itemCode"
+                    id="itemCode" required
                     aria-label="Item code"
                     error={errors.itemCode?.message}
                     {...register("itemCode")}
@@ -392,7 +392,7 @@ const ItemFormModal = ({
                   render={({ field }) => (
                     <AppSelect
                       label="Category"
-                      required={itemType === ITEM_TYPE.PRODUCT}
+                      required
                       value={field.value}
                       onChange={(value) => field.onChange(Number(value))}
                       onBlur={field.onBlur}
@@ -412,31 +412,30 @@ const ItemFormModal = ({
                   )}
                 />
 
-                {itemType === ITEM_TYPE.PRODUCT && (
-                  <Controller
-                    control={control}
-                    name="unitId"
-                    render={({ field }) => (
-                      <AppSelect
-                        label="Unit"
-                        required
-                        value={field.value}
-                        onChange={(value) => field.onChange(Number(value))}
-                        onBlur={field.onBlur}
-                        options={unitOptions}
-                        emptyMessage={unitEmptyMessage}
-                        placeholder={
-                          unitLoading ? "Loading units..." : "Select unit"
-                        }
-                        disabled={unitLoading}
-                        error={errors.unitId?.message}
-                        creatable={canCreateUnit}
-                        createLabel="Create new unit"
-                        onCreateClick={onCreateUnit}
-                      />
-                    )}
-                  />
-                )}
+                <Controller
+                  control={control}
+                  name="unitId"
+                  render={({ field }) => (
+                    <AppSelect
+                      label="Unit"
+                      required
+                      value={field.value}
+                      onChange={(value) => field.onChange(Number(value))}
+                      onBlur={field.onBlur}
+                      options={unitOptions}
+                      emptyMessage={unitEmptyMessage}
+                      placeholder={
+                        unitLoading ? "Loading units..." : "Select unit"
+                      }
+                      disabled={unitLoading}
+                      error={errors.unitId?.message}
+                      creatable={canCreateUnit}
+                      createLabel="Create new unit"
+                      onCreateClick={onCreateUnit}
+                    />
+                  )}
+                />
+
 
                 <Controller
                   control={control}

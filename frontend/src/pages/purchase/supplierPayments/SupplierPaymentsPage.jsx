@@ -12,6 +12,7 @@ import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { z } from "zod";
+import { enumNumber, requiredDate } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -69,9 +70,9 @@ const allocationSchema = z.object({
 const paymentSchema = z
   .object({
     supplierId: z.string().uuid("Supplier is required"),
-    paymentDate: z.string().min(1, "Payment date is required"),
+    paymentDate: requiredDate("Payment date"),
     amount: z.coerce.number().positive("Amount must be greater than 0"),
-    paymentMode: z.coerce.number().int().min(0),
+    paymentMode: enumNumber(PAYMENT_MODE, "Payment mode"),
     referenceNo: z.string().optional(),
     notes: z.string().optional(),
     allocations: z.array(allocationSchema).optional(),

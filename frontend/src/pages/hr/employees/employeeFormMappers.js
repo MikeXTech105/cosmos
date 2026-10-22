@@ -138,7 +138,6 @@ const hasFlatAddress = (values) => {
     values.addressLine2,
     values.city,
     values.state,
-    values.country,
     values.pincode,
   ].some((value) => String(value ?? "").trim());
 };
@@ -149,7 +148,6 @@ const hasAddress = (address = {}) => {
     address.addressLine2,
     address.city,
     address.state,
-    address.country,
     address.pincode,
   ].some((value) => String(value ?? "").trim());
 };
@@ -281,7 +279,7 @@ export const mapFormToPayload = (
     firstName: trimValue(values.firstName),
     lastName: trimValue(values.lastName),
     gender: Number(values.gender),
-    dateOfBirth: trimValue(values.dateOfBirth),
+    dateOfBirth: trimValue(values.dateOfBirth) || null,
     joiningDate: trimValue(values.joiningDate),
     mobile: normalizeEmployeeMobile(trimValue(values.mobile)),
     email: trimValue(values.email),
