@@ -512,7 +512,7 @@ const EmployeeFormModal = ({
                         addressLine2: "",
                         city: "",
                         state: "",
-                        country: "India",
+                        country: "",
                         pincode: "",
                       })
                     }

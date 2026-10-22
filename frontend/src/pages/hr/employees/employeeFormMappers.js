@@ -3,6 +3,7 @@ import {
   HR_EMPLOYMENT_TYPE,
   HR_GENDER,
 } from "../../../utils/hrEnums";
+import { normalizeEmployeeMobile } from "../../../utils/validationSchemas";
 
 const BANK_FIELDS = [
   "bankName",
@@ -166,7 +167,7 @@ const mapAddressToForm = (address = {}) => {
     ),
     city: getText(address.city),
     state: getText(address.state),
-    country: getText(address.country) || "India",
+    country: getText(address.country),
     pincode: getText(address.pincode, address.pinCode, address.postalCode),
   };
 };
@@ -280,7 +281,7 @@ export const mapFormToPayload = (
     gender: Number(values.gender),
     dateOfBirth: trimValue(values.dateOfBirth) || null,
     joiningDate: trimValue(values.joiningDate),
-    mobile: trimValue(values.mobile),
+    mobile: normalizeEmployeeMobile(trimValue(values.mobile)),
     email: trimValue(values.email),
     departmentId: Number(values.departmentId),
     designationId: Number(values.designationId),
@@ -291,16 +292,22 @@ export const mapFormToPayload = (
     employmentType: Number(values.employmentType),
     status: Number(values.status),
     profilePhotoUrl: trimValue(values.profilePhotoUrl),
-    addresses:
-      addresses.length > 0
-        ? addresses
-        : hasFlatAddress(values)
-          ? [mapAddressToPayload(values)]
-          : [],
   };
 
-  if (includeBankDetails) {
-    payload.bankDetails = hasBankDetails(values) ? mapFormToBankDetails(values) : null;
+  const payloadAddresses = addresses.length > 0
+    ? addresses
+    : hasFlatAddress(values)
+      ? [mapAddressToPayload(values)]
+      : null;
+
+  // Omitted addresses mean "leave existing addresses unchanged" on PUT. This also
+  // avoids creating an empty address row during employee creation.
+  if (payloadAddresses) {
+    payload.addresses = payloadAddresses;
+  }
+
+  if (includeBankDetails && hasBankDetails(values)) {
+    payload.bankDetails = mapFormToBankDetails(values);
   }
 
   return payload;

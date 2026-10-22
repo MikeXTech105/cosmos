@@ -80,6 +80,14 @@ const optionalPositiveId = z.preprocess((value) => {
   return Number(value);
 }, z.number().int().positive().nullable());
 
+export const normalizeEmployeeMobile = (value) => {
+  if (typeof value !== "string") return value;
+
+  return value
+    .trim()
+    .replace(/[\s()-]/g, "");
+};
+
 export const hrDepartmentSchema = z.object({
   departmentCode: z
     .string()
@@ -161,9 +169,12 @@ export const hrEmployeeSchema = z.object({
   joiningDate: requiredDate("Joining date"),
   mobile: z
     .string()
-    .trim()
-    .max(20, "Mobile number is too long"),
-  email: z.string().trim().max(200).refine(value => !value || z.email().safeParse(value).success, "Enter a valid email address"),
+    .transform(normalizeEmployeeMobile)
+    .refine(
+      (value) => value === "" || /^\+?[0-9]{7,15}$/.test(value),
+      "Enter a valid mobile number with 7 to 15 digits; + is allowed only at the start",
+    ),
+  email: z.string().trim().email("Enter a valid email address"),
   departmentId: z.coerce.number().int().positive("Department is required"),
   designationId: z.coerce.number().int().positive("Designation is required"),
   reportingManagerId: optionalPositiveId,
@@ -214,11 +225,11 @@ export const hrEmployeeSchema = z.object({
 });
 
 export const hrBankDetailsSchema = z.object({
-  bankName: z.string().trim().min(1, "Bank name is required").max(150),
-  accountNumber: z.string().trim().min(1, "Account number is required").max(50),
-  ifscCode: z.string().trim().min(1, "IFSC code is required").max(20),
-  branchName: z.string().trim().max(150).optional(),
-  upiId: z.string().trim().max(100).optional(),
+  bankName: z.string().trim().max(150, "Bank name is too long").optional(),
+  accountNumber: z.string().trim().max(50, "Account number is too long").optional(),
+  ifscCode: z.string().trim().max(20, "IFSC code is too long").optional(),
+  branchName: z.string().trim().max(150, "Branch name is too long").optional(),
+  upiId: z.string().trim().max(100, "UPI ID is too long").optional(),
 });
 
 export const hrDocumentSchema = z.object({

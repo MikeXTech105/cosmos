@@ -83,6 +83,65 @@ public sealed class EmployeeUpdateValidationTests
         Assert.Contains(result.Errors, x => x.PropertyName == nameof(UpdateEmployeeCommand.Status));
     }
 
+    [Theory]
+    [InlineData(" +1 (415) 555-2671 ", "+14155552671")]
+    [InlineData("9000000000", "9000000000")]
+    public async Task Valid_mobile_is_normalized_and_accepted(string input, string expected)
+    {
+        var command = EmployeeInputNormalizer.Normalize(ValidCommand() with { Mobile = input });
+
+        var result = await new UpdateEmployeeValidator(_repository.Object).ValidateAsync(command);
+
+        Assert.True(result.IsValid);
+        Assert.Equal(expected, command.Mobile);
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("123-abc")]
+    [InlineData("+123")]
+    [InlineData("1234567890123456")]
+    public async Task Invalid_mobile_returns_a_field_error(string input)
+    {
+        var command = EmployeeInputNormalizer.Normalize(ValidCommand() with { Mobile = input });
+
+        var result = await new UpdateEmployeeValidator(_repository.Object).ValidateAsync(command);
+
+        Assert.Contains(result.Errors, x => x.PropertyName == nameof(UpdateEmployeeCommand.Mobile));
+    }
+
+    [Fact]
+    public async Task Whitespace_only_optional_mobile_and_optional_address_are_accepted()
+    {
+        var command = EmployeeInputNormalizer.Normalize(ValidCommand() with
+        {
+            Mobile = "   ",
+            Addresses = [new EmployeeAddressRequest(" ", " ", " ", " ", " ", " ", " ")]
+        });
+
+        var result = await new UpdateEmployeeValidator(_repository.Object).ValidateAsync(command);
+
+        Assert.True(result.IsValid);
+        Assert.Null(command.Mobile);
+    }
+
+    [Fact]
+    public async Task Partial_and_empty_bank_details_are_accepted()
+    {
+        var validator = new CreateEmployeeValidator(_repository.Object);
+        var partial = EmployeeInputNormalizer.Normalize(new CreateEmployeeCommand(
+            "EMP-BANK", "Employee", "Example", (int)Gender.Male, new DateOnly(1990, 1, 1),
+            new DateOnly(2020, 1, 1), null, "bank@example.com", 1, 2, null, 3,
+            (int)EmploymentType.Permanent, (int)EmployeeStatus.Active, null, null,
+            new EmployeeBankAccountRequest("Bank", null, null, null, null)));
+
+        var empty = EmployeeInputNormalizer.Normalize(new AddEmployeeBankDetailsCommand(" ", " ", " ", null, null));
+
+        Assert.True((await validator.ValidateAsync(partial)).IsValid);
+        Assert.True((await new AddEmployeeBankDetailsValidator().ValidateAsync(empty)).IsValid);
+        Assert.Null(empty.BankName);
+    }
+
     [Fact]
     public async Task Validator_failure_uses_the_standard_400_field_error_exception()
     {

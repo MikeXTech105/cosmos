@@ -108,7 +108,8 @@ public sealed class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCo
         RuleFor(x => x.LastName).MaximumLength(100);
         RuleFor(x => x.Email).EmailAddress().MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Email))
             .MustAsync((value, ct) => Unique(repository, "Email", value!, excludingId, ct)).When(x => !string.IsNullOrWhiteSpace(x.Email)).WithMessage("Email already exists.");
-        RuleFor(x => x.Mobile).MaximumLength(20)
+        AddMobileRules(RuleFor(x => x.Mobile));
+        RuleFor(x => x.Mobile)
             .MustAsync((value, ct) => Unique(repository, "Mobile", value!, excludingId, ct)).When(x => !string.IsNullOrWhiteSpace(x.Mobile)).WithMessage("Mobile already exists.");
         RuleFor(x => x.DepartmentId).MustAsync((id, ct) => repository.EntityExistsAsync("Department", id, ct)).WithMessage("Department was not found.");
         RuleFor(x => x.DesignationId).MustAsync((id, ct) => repository.EntityExistsAsync("Designation", id, ct)).WithMessage("Designation was not found.");
@@ -124,6 +125,11 @@ public sealed class CreateEmployeeValidator : AbstractValidator<CreateEmployeeCo
 
     private static async Task<bool> Unique(IHrRepository repository, string field, string value, long? excludingId, CancellationToken ct) =>
         !await repository.EmployeeValueExistsAsync(field, value, excludingId, ct);
+
+    internal static void AddMobileRules(IRuleBuilderInitial<CreateEmployeeCommand, string?> rule) =>
+        rule.MaximumLength(16)
+            .Matches(@"^\+?[0-9]{7,15}$").When(x => !string.IsNullOrWhiteSpace(x.Mobile))
+            .WithMessage("Mobile number must contain 7 to 15 digits and may start with +.");
 }
 
 public sealed class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCommand>
@@ -136,7 +142,9 @@ public sealed class UpdateEmployeeValidator : AbstractValidator<UpdateEmployeeCo
         RuleFor(x => x.LastName).MaximumLength(100);
         RuleFor(x => x.Email).EmailAddress().MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Email))
             .MustAsync(async (command, value, context, ct) => string.IsNullOrWhiteSpace(value) || !await repository.EmployeeValueExistsAsync("Email", value, RouteId(context), ct)).WithMessage("Email already exists.");
-        RuleFor(x => x.Mobile).MaximumLength(20)
+        RuleFor(x => x.Mobile).MaximumLength(16)
+            .Matches(@"^\+?[0-9]{7,15}$").When(x => !string.IsNullOrWhiteSpace(x.Mobile))
+            .WithMessage("Mobile number must contain 7 to 15 digits and may start with +.")
             .MustAsync(async (command, value, context, ct) => string.IsNullOrWhiteSpace(value) || !await repository.EmployeeValueExistsAsync("Mobile", value, RouteId(context), ct)).WithMessage("Mobile already exists.");
         RuleFor(x => x.DateOfBirth).LessThan(x => x.JoiningDate).When(x => x.DateOfBirth.HasValue)
             .WithMessage("Date of birth must be before joining date.");
@@ -203,8 +211,8 @@ public sealed class EmployeeAddressRequestValidator : AbstractValidator<Employee
 {
     public EmployeeAddressRequestValidator()
     {
-        RuleFor(x => x.AddressType).NotEmpty().MaximumLength(30);
-        RuleFor(x => x.AddressLine1).NotEmpty().MaximumLength(250);
+        RuleFor(x => x.AddressType).MaximumLength(30);
+        RuleFor(x => x.AddressLine1).MaximumLength(250);
         RuleFor(x => x.AddressLine2).MaximumLength(250);
         RuleFor(x => x.City).MaximumLength(100);
         RuleFor(x => x.State).MaximumLength(100);
@@ -217,9 +225,9 @@ public sealed class EmployeeBankAccountRequestValidator : AbstractValidator<Empl
 {
     public EmployeeBankAccountRequestValidator()
     {
-        RuleFor(x => x.BankName).NotEmpty().MaximumLength(150);
-        RuleFor(x => x.AccountNumber).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.IFSCCode).NotEmpty().MaximumLength(20);
+        RuleFor(x => x.BankName).MaximumLength(150);
+        RuleFor(x => x.AccountNumber).MaximumLength(50);
+        RuleFor(x => x.IFSCCode).MaximumLength(20);
         RuleFor(x => x.BranchName).MaximumLength(150);
         RuleFor(x => x.UPIId).MaximumLength(100);
     }
@@ -239,9 +247,9 @@ public sealed class AddEmployeeBankDetailsValidator : AbstractValidator<AddEmplo
 {
     public AddEmployeeBankDetailsValidator()
     {
-        RuleFor(x => x.BankName).NotEmpty().MaximumLength(150);
-        RuleFor(x => x.AccountNumber).NotEmpty().MaximumLength(50);
-        RuleFor(x => x.IFSCCode).NotEmpty().MaximumLength(20);
+        RuleFor(x => x.BankName).MaximumLength(150);
+        RuleFor(x => x.AccountNumber).MaximumLength(50);
+        RuleFor(x => x.IFSCCode).MaximumLength(20);
     }
 }
 

@@ -2143,8 +2143,8 @@ IF OBJECT_ID(N'dbo.HR_EmployeeAddresses', N'U') IS NULL
 CREATE TABLE dbo.HR_EmployeeAddresses
 (
     Id BIGINT IDENTITY(1,1) CONSTRAINT PK_HR_EmployeeAddresses PRIMARY KEY,
-    EmployeeId BIGINT NOT NULL, AddressType NVARCHAR(30) NOT NULL,
-    AddressLine1 NVARCHAR(250) NOT NULL, AddressLine2 NVARCHAR(250) NULL,
+    EmployeeId BIGINT NOT NULL, AddressType NVARCHAR(30) NULL,
+    AddressLine1 NVARCHAR(250) NULL, AddressLine2 NVARCHAR(250) NULL,
     City NVARCHAR(100) NULL, State NVARCHAR(100) NULL, Country NVARCHAR(100) NULL, Pincode NVARCHAR(20) NULL,
     CreatedOn DATETIME2(3) NOT NULL CONSTRAINT DF_HR_EmployeeAddresses_CreatedOn DEFAULT SYSUTCDATETIME(),
     CreatedBy BIGINT NULL, UpdatedOn DATETIME2(3) NULL, UpdatedBy BIGINT NULL,
@@ -2158,8 +2158,8 @@ IF OBJECT_ID(N'dbo.HR_EmployeeBankAccounts', N'U') IS NULL
 CREATE TABLE dbo.HR_EmployeeBankAccounts
 (
     Id BIGINT IDENTITY(1,1) CONSTRAINT PK_HR_EmployeeBankAccounts PRIMARY KEY,
-    EmployeeId BIGINT NOT NULL, BankName NVARCHAR(150) NOT NULL,
-    AccountNumber NVARCHAR(50) NOT NULL, IFSCCode NVARCHAR(20) NOT NULL,
+    EmployeeId BIGINT NOT NULL, BankName NVARCHAR(150) NULL,
+    AccountNumber NVARCHAR(50) NULL, IFSCCode NVARCHAR(20) NULL,
     BranchName NVARCHAR(150) NULL, UPIId NVARCHAR(100) NULL,
     CreatedOn DATETIME2(3) NOT NULL CONSTRAINT DF_HR_EmployeeBank_CreatedOn DEFAULT SYSUTCDATETIME(),
     CreatedBy BIGINT NULL, UpdatedOn DATETIME2(3) NULL, UpdatedBy BIGINT NULL,
@@ -2613,7 +2613,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_HR_Employee_Create
  @EmployeeCode NVARCHAR(30),@FirstName NVARCHAR(100),@LastName NVARCHAR(100)=NULL,@Gender INT,@DateOfBirth DATE=NULL,@JoiningDate DATE,
- @Mobile NVARCHAR(20)=NULL,@Email NVARCHAR(200)=NULL,@DepartmentId BIGINT,@DesignationId BIGINT,@ReportingManagerId BIGINT=NULL,@ShiftId BIGINT,
+  @Mobile NVARCHAR(16)=NULL,@Email NVARCHAR(200)=NULL,@DepartmentId BIGINT,@DesignationId BIGINT,@ReportingManagerId BIGINT=NULL,@ShiftId BIGINT,
  @EmploymentType INT,@Status INT,@ProfilePhotoUrl NVARCHAR(1000)=NULL,@AddressesJson NVARCHAR(MAX)=NULL,@BankDetailsJson NVARCHAR(MAX)=NULL,@UserId BIGINT=NULL AS
 BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
  BEGIN TRY
@@ -2626,11 +2626,11 @@ BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
   DECLARE @Id BIGINT=SCOPE_IDENTITY();
   IF ISJSON(@AddressesJson)=1
    INSERT dbo.HR_EmployeeAddresses(EmployeeId,AddressType,AddressLine1,AddressLine2,City,State,Country,Pincode,CreatedBy)
-   SELECT @Id,AddressType,AddressLine1,AddressLine2,City,State,Country,Pincode,@UserId FROM OPENJSON(@AddressesJson)
+   SELECT @Id,NULLIF(LTRIM(RTRIM(AddressType)),N''),NULLIF(LTRIM(RTRIM(AddressLine1)),N''),NULLIF(LTRIM(RTRIM(AddressLine2)),N''),NULLIF(LTRIM(RTRIM(City)),N''),NULLIF(LTRIM(RTRIM(State)),N''),NULLIF(LTRIM(RTRIM(Country)),N''),NULLIF(LTRIM(RTRIM(Pincode)),N''),@UserId FROM OPENJSON(@AddressesJson)
    WITH(AddressType NVARCHAR(30) '$.addressType',AddressLine1 NVARCHAR(250) '$.addressLine1',AddressLine2 NVARCHAR(250) '$.addressLine2',City NVARCHAR(100) '$.city',State NVARCHAR(100) '$.state',Country NVARCHAR(100) '$.country',Pincode NVARCHAR(20) '$.pincode');
   IF ISJSON(@BankDetailsJson)=1
    INSERT dbo.HR_EmployeeBankAccounts(EmployeeId,BankName,AccountNumber,IFSCCode,BranchName,UPIId,CreatedBy)
-   SELECT @Id,BankName,AccountNumber,IFSCCode,BranchName,UPIId,@UserId FROM OPENJSON(@BankDetailsJson)
+   SELECT @Id,NULLIF(LTRIM(RTRIM(BankName)),N''),NULLIF(LTRIM(RTRIM(AccountNumber)),N''),NULLIF(LTRIM(RTRIM(IFSCCode)),N''),NULLIF(LTRIM(RTRIM(BranchName)),N''),NULLIF(LTRIM(RTRIM(UPIId)),N''),@UserId FROM OPENJSON(@BankDetailsJson)
    WITH(BankName NVARCHAR(150) '$.bankName',AccountNumber NVARCHAR(50) '$.accountNumber',IFSCCode NVARCHAR(20) '$.ifscCode',BranchName NVARCHAR(150) '$.branchName',UPIId NVARCHAR(100) '$.upiId');
   INSERT dbo.HR_LeaveBalances(EmployeeId,LeaveTypeId,OpeningBalance,UsedBalance,RemainingBalance,CreatedBy)
    SELECT @Id,Id,AnnualQuota,0,AnnualQuota,@UserId FROM dbo.HR_LeaveTypes WHERE IsDeleted=0 AND IsActive=1;
@@ -2641,7 +2641,7 @@ GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_HR_Employee_Update
  @Id BIGINT,@EmployeeCode NVARCHAR(30),@FirstName NVARCHAR(100),@LastName NVARCHAR(100)=NULL,@Gender INT,@DateOfBirth DATE=NULL,@JoiningDate DATE,
- @Mobile NVARCHAR(20)=NULL,@Email NVARCHAR(200)=NULL,@DepartmentId BIGINT,@DesignationId BIGINT,@ReportingManagerId BIGINT=NULL,@ShiftId BIGINT,
+  @Mobile NVARCHAR(16)=NULL,@Email NVARCHAR(200)=NULL,@DepartmentId BIGINT,@DesignationId BIGINT,@ReportingManagerId BIGINT=NULL,@ShiftId BIGINT,
  @EmploymentType INT,@Status INT,@ProfilePhotoUrl NVARCHAR(1000)=NULL,@AddressesJson NVARCHAR(MAX)=NULL,@UserId BIGINT=NULL AS
 BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
  BEGIN TRY
@@ -2659,7 +2659,7 @@ BEGIN SET NOCOUNT ON; SET XACT_ABORT ON;
   BEGIN
    UPDATE dbo.HR_EmployeeAddresses SET IsDeleted=1,DeletedOn=SYSUTCDATETIME(),DeletedBy=@UserId WHERE EmployeeId=@Id AND IsDeleted=0;
    INSERT dbo.HR_EmployeeAddresses(EmployeeId,AddressType,AddressLine1,AddressLine2,City,State,Country,Pincode,CreatedBy)
-   SELECT @Id,AddressType,AddressLine1,AddressLine2,City,State,Country,Pincode,@UserId FROM OPENJSON(@AddressesJson)
+    SELECT @Id,NULLIF(LTRIM(RTRIM(AddressType)),N''),NULLIF(LTRIM(RTRIM(AddressLine1)),N''),NULLIF(LTRIM(RTRIM(AddressLine2)),N''),NULLIF(LTRIM(RTRIM(City)),N''),NULLIF(LTRIM(RTRIM(State)),N''),NULLIF(LTRIM(RTRIM(Country)),N''),NULLIF(LTRIM(RTRIM(Pincode)),N''),@UserId FROM OPENJSON(@AddressesJson)
    WITH(AddressType NVARCHAR(30) '$.addressType',AddressLine1 NVARCHAR(250) '$.addressLine1',AddressLine2 NVARCHAR(250) '$.addressLine2',City NVARCHAR(100) '$.city',State NVARCHAR(100) '$.state',Country NVARCHAR(100) '$.country',Pincode NVARCHAR(20) '$.pincode');
   END
   COMMIT; SELECT 200 StatusCode,N'Employee updated.' Message; EXEC dbo.sp_HR_Employee_GetById @Id;
@@ -2756,10 +2756,10 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_HR_EmployeeBank_Create
- @EmployeeId BIGINT,@BankName NVARCHAR(150),@AccountNumber NVARCHAR(50),@IFSCCode NVARCHAR(20),@BranchName NVARCHAR(150)=NULL,@UPIId NVARCHAR(100)=NULL,@UserId BIGINT=NULL AS
+ @EmployeeId BIGINT,@BankName NVARCHAR(150)=NULL,@AccountNumber NVARCHAR(50)=NULL,@IFSCCode NVARCHAR(20)=NULL,@BranchName NVARCHAR(150)=NULL,@UPIId NVARCHAR(100)=NULL,@UserId BIGINT=NULL AS
 BEGIN SET NOCOUNT ON;
  IF NOT EXISTS(SELECT 1 FROM dbo.HR_Employees WHERE Id=@EmployeeId AND IsDeleted=0) BEGIN SELECT 404 StatusCode,N'Employee was not found.' Message; RETURN; END
- INSERT dbo.HR_EmployeeBankAccounts(EmployeeId,BankName,AccountNumber,IFSCCode,BranchName,UPIId,CreatedBy) VALUES(@EmployeeId,@BankName,@AccountNumber,@IFSCCode,@BranchName,@UPIId,@UserId);
+ INSERT dbo.HR_EmployeeBankAccounts(EmployeeId,BankName,AccountNumber,IFSCCode,BranchName,UPIId,CreatedBy) VALUES(@EmployeeId,NULLIF(LTRIM(RTRIM(@BankName)),N''),NULLIF(LTRIM(RTRIM(@AccountNumber)),N''),NULLIF(LTRIM(RTRIM(@IFSCCode)),N''),NULLIF(LTRIM(RTRIM(@BranchName)),N''),NULLIF(LTRIM(RTRIM(@UPIId)),N''),@UserId);
  DECLARE @Id BIGINT=SCOPE_IDENTITY(); SELECT 201 StatusCode,N'Employee bank details added.' Message;
  SELECT Id,EmployeeId,BankName,AccountNumber,IFSCCode,BranchName,UPIId,CreatedOn FROM dbo.HR_EmployeeBankAccounts WHERE Id=@Id;
 END;

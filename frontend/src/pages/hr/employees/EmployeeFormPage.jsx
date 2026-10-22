@@ -369,7 +369,7 @@ const EmployeeFormPage = () => {
           <Section title="Contact">
             <div className="grid gap-4 md:grid-cols-2">
               <AppInput id="mobile" label="Mobile" error={errors.mobile?.message} {...register("mobile")} />
-              <AppInput id="email" label="Email" type="email" error={errors.email?.message} {...register("email")} />
+              <AppInput id="email" label="Email" type="email" required error={errors.email?.message} {...register("email")} />
             </div>
           </Section>
 
@@ -495,7 +495,7 @@ const EmployeeFormPage = () => {
             <AppButton
               variant="secondary"
               className="h-10 rounded-lg px-3"
-              onClick={() => appendAddress({ addressType: "Secondary", addressLine1: "", addressLine2: "", city: "", state: "", country: "India", pincode: "" })}
+              onClick={() => appendAddress({ addressType: "Secondary", addressLine1: "", addressLine2: "", city: "", state: "", country: "", pincode: "" })}
             >
               <Plus className="h-4 w-4" /> Add Address
             </AppButton>
