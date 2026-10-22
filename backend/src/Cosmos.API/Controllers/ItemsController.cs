@@ -1,4 +1,5 @@
 using Cosmos.API.Security;
+using Cosmos.API.Hosting;
 using Cosmos.Application.Abstractions.Services;
 using Cosmos.Application.Items.Commands;
 using Cosmos.Application.Items.Queries;
@@ -109,8 +110,7 @@ public sealed class ItemsController : ApiControllerBase
             throw new BadHttpRequestException("Only JPG, PNG, WEBP, and GIF images are allowed.", StatusCodes.Status400BadRequest);
         }
 
-        var webRootPath = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
-        var uploadDirectory = Path.Combine(webRootPath, "uploads", "items");
+        var uploadDirectory = Path.Combine(ImageUploadPaths.GetUploadsRoot(_environment), "items");
         Directory.CreateDirectory(uploadDirectory);
 
         var fileName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
@@ -135,8 +135,7 @@ public sealed class ItemsController : ApiControllerBase
             return;
         }
 
-        var webRootPath = _environment.WebRootPath ?? Path.Combine(_environment.ContentRootPath, "wwwroot");
-        var filePath = Path.Combine(webRootPath, "uploads", "items", fileName);
+        var filePath = Path.Combine(ImageUploadPaths.GetUploadsRoot(_environment), "items", fileName);
         if (System.IO.File.Exists(filePath))
         {
             System.IO.File.Delete(filePath);

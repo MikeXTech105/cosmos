@@ -32,7 +32,7 @@ public sealed class ImageUploadSecurityTests
             Assert.Equal(StatusCodes.Status201Created, response.StatusCode);
             var payload = Assert.IsType<Cosmos.Shared.Responses.ApiResponse<ImageUploadDto>>(response.Value);
             Assert.True(payload.Succeeded);
-            Assert.StartsWith("http://api.test/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
+            Assert.StartsWith("/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
         }
         finally
         {
@@ -75,7 +75,7 @@ public sealed class ImageUploadSecurityTests
             Assert.Equal(StatusCodes.Status201Created, response.StatusCode);
             var payload = Assert.IsType<Cosmos.Shared.Responses.ApiResponse<ImageUploadDto>>(response.Value);
             Assert.True(payload.Succeeded);
-            Assert.StartsWith("http://api.test/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
+            Assert.StartsWith("/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
         }
         finally
         {
@@ -102,7 +102,7 @@ public sealed class ImageUploadSecurityTests
             var response = Assert.IsType<ObjectResult>(result);
             Assert.Equal(StatusCodes.Status201Created, response.StatusCode);
             var payload = Assert.IsType<Cosmos.Shared.Responses.ApiResponse<ImageUploadDto>>(response.Value);
-            Assert.StartsWith("https://api.test/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
+            Assert.StartsWith("/uploads/website/", payload.Data!.Url, StringComparison.Ordinal);
         }
         finally
         {
@@ -191,7 +191,7 @@ public sealed class ImageUploadSecurityTests
             var response = Assert.IsType<ObjectResult>(result);
             Assert.Equal(StatusCodes.Status201Created, response.StatusCode);
             var payload = Assert.IsType<Cosmos.Shared.Responses.ApiResponse<ImageUploadDto>>(response.Value);
-            Assert.StartsWith("https://api.test/uploads/items/", payload.Data!.Url, StringComparison.Ordinal);
+            Assert.StartsWith("/uploads/items/", payload.Data!.Url, StringComparison.Ordinal);
         }
         finally
         {

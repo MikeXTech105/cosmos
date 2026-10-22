@@ -14,6 +14,7 @@ using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -252,6 +253,15 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+// The API can run without a conventional wwwroot. Serve CMS uploads explicitly
+// from the same physical directory used by ImageUploadsController in every host.
+var uploadsRoot = ImageUploadPaths.GetUploadsRoot(app.Environment);
+Directory.CreateDirectory(uploadsRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsRoot),
+    RequestPath = "/uploads"
+});
 app.UseSerilogRequestLogging();
 app.UseMiddleware<RequestLoggingMiddleware>();
 

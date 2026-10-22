@@ -63,8 +63,7 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment, IOpt
             throw HttpsRequired();
         }
 
-        var webRootPath = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
-        var rootDirectory = Path.GetFullPath(Path.Combine(webRootPath, "uploads"));
+        var rootDirectory = ImageUploadPaths.GetUploadsRoot(environment);
         var uploadDirectory = Path.GetFullPath(Path.Combine(rootDirectory, uploadFolder));
         if (!uploadDirectory.StartsWith(rootDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
         {
@@ -80,9 +79,10 @@ public sealed class ImageUploadsController(IWebHostEnvironment environment, IOpt
         }
 
         var relativeUrl = $"/uploads/{uploadFolder}/{fileName}";
-        var imageUrl = $"{Request.Scheme}://{Request.Host}{relativeUrl}";
         return FromResponse(
-            ApiResponse<ImageUploadDto>.Success(new ImageUploadDto(imageUrl, fileName, imageType.ContentType, file.Length), "Image uploaded."),
+            // A relative URL is stable behind a reverse proxy and is resolved by the web client
+            // against its configured public API origin instead of a private Kestrel host/port.
+            ApiResponse<ImageUploadDto>.Success(new ImageUploadDto(relativeUrl, fileName, imageType.ContentType, file.Length), "Image uploaded."),
             StatusCodes.Status201Created);
     }
 
