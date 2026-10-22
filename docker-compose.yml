@@ -10,6 +10,10 @@ services:
     ports:
       - "8080:8080"
 
+    # Keeps CMS and item images when the API container is recreated or upgraded.
+    volumes:
+      - cosmos_uploads:/app/wwwroot/uploads
+
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       COSMOS_SYSTEM_OWNER_USERNAME: "systemowner"
@@ -35,3 +39,6 @@ services:
 
     depends_on:
       - cosmos_api
+
+volumes:
+  cosmos_uploads:
