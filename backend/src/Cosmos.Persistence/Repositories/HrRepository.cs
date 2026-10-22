@@ -254,7 +254,7 @@ public sealed class HrRepository : IHrRepository
         parameters.Add("EmploymentType", (int)value.EmploymentType);
         parameters.Add("Status", (int)value.Status);
         parameters.Add("ProfilePhotoUrl", (string?)value.ProfilePhotoUrl);
-        parameters.Add("AddressesJson", JsonSerializer.Serialize(value.Addresses, JsonOptions));
+        parameters.Add("AddressesJson", value.Addresses is null ? null : JsonSerializer.Serialize(value.Addresses, JsonOptions));
         if (!id.HasValue) parameters.Add("BankDetailsJson", bankDetails is null ? null : JsonSerializer.Serialize(bankDetails, JsonOptions));
         parameters.Add("UserId", userId);
         return parameters;
