@@ -22,7 +22,7 @@ public sealed class EWayBillsController : ApiControllerBase
 
     [HttpPost("generate")]
     [RequirePermission(GstPermissions.EWayBill, PermissionAction.Create)]
-    [SwaggerOperation(Summary = "Generate E-Way Bill", Description = "Calls GSTZen E-Way Bill Generate. Provide RequestJson in GSTZen's documented payload shape with supply/document/from/to/transporter/item fields.")]
+    [SwaggerOperation(Summary = "Generate E-Way Bill (safety blocked)", Description = "Returns GST_SERVER_GENERATION_NOT_AVAILABLE. Client payloads are deliberately not submitted to GSTZen until Cosmos creates a validated immutable invoice snapshot and durable idempotent request server-side.")]
     [ProducesResponseType(typeof(ApiResponse<EWayBillResponse>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Generate(GenerateEWayBillRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.GenerateAsync(request, cancellationToken), StatusCodes.Status201Created);

@@ -177,13 +177,13 @@ public sealed class EWayBillService : IEWayBillService
         _detailsValidator = detailsValidator;
     }
 
-    public async Task<ApiResponse<EWayBillResponse>> GenerateAsync(GenerateEWayBillRequest request, CancellationToken cancellationToken)
+    public Task<ApiResponse<EWayBillResponse>> GenerateAsync(GenerateEWayBillRequest request, CancellationToken cancellationToken)
     {
-        await ValidationRunner.ValidateAsync(_generateValidator, request, cancellationToken);
-        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
-        var providerResponse = await _provider.GenerateEWayBillAsync(request, cancellationToken);
-        var saved = await _repository.SaveEWayBillAsync(request, providerResponse, _currentUser.UserId, cancellationToken);
-        return ApiResponse<EWayBillResponse>.Success(saved, "E-Way Bill generated.");
+        // RequestJson is client-controlled. It must never be sent to the provider as a
+        // government-document payload. The future server-side workflow will replace this
+        // endpoint with snapshot-bound request creation and reconciliation.
+        GstGenerationSafety.ThrowUnavailable("E-Way Bill");
+        return Task.FromResult(ApiResponse<EWayBillResponse>.Failure("Unreachable."));
     }
 
     public async Task<ApiResponse<EWayBillResponse>> CancelAsync(CancelEWayBillRequest request, CancellationToken cancellationToken)
@@ -251,13 +251,13 @@ public sealed class EInvoiceService : IEInvoiceService
         _detailsValidator = detailsValidator;
     }
 
-    public async Task<ApiResponse<EInvoiceResponse>> GenerateAsync(GenerateEInvoiceRequest request, CancellationToken cancellationToken)
+    public Task<ApiResponse<EInvoiceResponse>> GenerateAsync(GenerateEInvoiceRequest request, CancellationToken cancellationToken)
     {
-        await ValidationRunner.ValidateAsync(_generateValidator, request, cancellationToken);
-        await EnsureEInvoiceEnabledAsync(request.CompanyGstRegistrationId, cancellationToken);
-        var providerResponse = await _provider.GenerateEInvoiceAsync(request, cancellationToken);
-        var saved = await _repository.SaveEInvoiceAsync(request, providerResponse, _currentUser.UserId, cancellationToken);
-        return ApiResponse<EInvoiceResponse>.Success(saved, "E-Invoice generated.");
+        // RequestJson is client-controlled. It must never be sent to the provider as a
+        // government-document payload. The future server-side workflow will replace this
+        // endpoint with snapshot-bound request creation and reconciliation.
+        GstGenerationSafety.ThrowUnavailable("E-Invoice");
+        return Task.FromResult(ApiResponse<EInvoiceResponse>.Failure("Unreachable."));
     }
 
     public async Task<ApiResponse<EInvoiceResponse>> CancelAsync(CancelEInvoiceRequest request, CancellationToken cancellationToken)
