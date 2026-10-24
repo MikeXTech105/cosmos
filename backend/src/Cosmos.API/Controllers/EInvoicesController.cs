@@ -22,7 +22,7 @@ public sealed class EInvoicesController : ApiControllerBase
 
     [HttpPost("generate")]
     [RequirePermission(GstPermissions.EInvoice, PermissionAction.Create)]
-    [SwaggerOperation(Summary = "Generate E-Invoice", Description = "Calls GSTZen E-Invoice Generate. Provide RequestJson in the official GSTZen/NIC payload shape with Version, TranDtls, DocDtls, SellerDtls, BuyerDtls, ItemList, and ValDtls.")]
+    [SwaggerOperation(Summary = "Generate E-Invoice (safety blocked)", Description = "Returns GST_SERVER_GENERATION_NOT_AVAILABLE. Client payloads are deliberately not submitted to GSTZen until Cosmos creates a validated immutable invoice snapshot and durable idempotent request server-side.")]
     [ProducesResponseType(typeof(ApiResponse<EInvoiceResponse>), StatusCodes.Status201Created)]
     public async Task<IActionResult> Generate(GenerateEInvoiceRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.GenerateAsync(request, cancellationToken), StatusCodes.Status201Created);
