@@ -46,7 +46,11 @@ The direct-SQL policy was reviewed and the Phase 3 branch was pushed at `e0fc301
 
 Certificate-validated direct SQL verification now passed against `srv1791248` / `CosmosERP_Staging`. PR #173's four nullable header fields, FK, filtered issuer index, price-basis constraint, and `Create`/`Update`/`GetById` procedure bodies and signatures are deployed and match source. The two retained non-deleted invoices still have null issuer, place-of-supply, and price-basis capture; no automatic backfill occurred. `EInvoices`, `EWayBills`, compliance snapshots, generation requests, and generation attempts all contain zero records. This confirms the intended capture-only boundary, not statutory readiness.
 
-The lifecycle suite was not run: no isolated `CosmosSalesGstIntegrationTests_*` database exists, and the available `sa`/sysadmin connection is prohibited for automated test setup. Its prerequisites are the base Sales schema/TVP and procedures, GST-registration schema, Phase 3 migration, plus empty synthetic-only storage. Creating that database or its restricted login requires explicit approval, storage confirmation, and a disposable cleanup plan.
+### Approved isolated lifecycle verification — 27 October 2026
+
+Following explicit approval, Codex created only `CosmosSalesGstIntegrationTests_Local`, populated it from the tracked base schema, GST module, and Phase 3 Sales migration, and created a dedicated test login that is denied access to retained staging. No retained invoice, stock, GST, or statutory data was copied or modified. A new `COPY_ONLY`, checksummed, compressed staging backup was independently restored to `CosmosERP_Staging_RestoreVerify_19103a663729477a8c47aec03f97eb3d`; `RESTORE VERIFYONLY` and `DBCC CHECKDB` passed. The restore database is retained pending separate approval for removal.
+
+`SalesInvoiceGstSqlIntegrationTests` passed **1/1** against that disposable database. The suite now explicitly configures the same Dapper temporal handlers as the application host, which fixed a genuine `DateOnly` materialization defect in direct repository execution. It also adds a forced-error confirmation regression: after the stock-movement insert trigger raises an error, the invoice remains draft, no stock movement remains, and item stock remains unchanged. The fixture cleanup check confirmed zero remaining `ITGSTP3` rows or test trigger. This is SQL integration evidence for the synthetic database only; it does not exercise retained staging business data or establish statutory readiness.
 
 ## Remaining gates
 
@@ -54,4 +58,4 @@ The lifecycle suite was not run: no isolated `CosmosSalesGstIntegrationTests_*` 
 - Finance/GST approval of component rules, inclusive/exclusive calculation sequence, discount eligibility and rounding.
 - Approved immutable confirmation snapshot and correction/supersession workflow.
 - Company/branch/registration authorization scope.
-- SQL integration evidence and GSTZen sandbox/provider contract verification.
+- GSTZen sandbox/provider contract verification and statutory issuance approval.

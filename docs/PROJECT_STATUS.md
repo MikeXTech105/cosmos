@@ -16,7 +16,7 @@ The project has implemented broad ERP APIs and a substantial React interface, bu
 | Supply Chain | Shared channels/mappings, Procurement, Dispatch, Shipment operations | Real workbook parity, warehouse/SKU grain and stock reconciliation |
 | Manufacturing | Effective/versioned BOM and production foundations; shared Procurement BOM | Full migration, concurrency, rollback and workflow acceptance |
 | Website/Data Book | Independent website CMS/warranty APIs; public/private Data Book | Public endpoint and attachment integration verification |
-| GST/HSN | GST registrations/verification/session/log assets; HSN/SAC, rate-history and mapping routes/pages; compliance snapshot foundation and HTTP-tested dual-permission persisted-data eligibility endpoint; Phase 3 nullable Sales GST capture source | **Legal E-Invoice/E-Way Bill generation is deliberately blocked pending approved sales snapshot fields/confirmation policy, record-scope model (a release blocker where isolation is required), provider-contract verification, and direct-SQL preflight evidence** |
+| GST/HSN | GST registrations/verification/session/log assets; HSN/SAC, rate-history and mapping routes/pages; compliance snapshot foundation and HTTP-tested dual-permission persisted-data eligibility endpoint; Phase 3 nullable Sales GST capture source; 1/1 isolated Sales GST SQL lifecycle test | **Legal E-Invoice/E-Way Bill generation is deliberately blocked pending approved sales snapshot/confirmation policy, record-scope model (a release blocker where isolation is required), and provider-contract verification** |
 
 ## Decisions and release blockers
 1. **P0 — Security:** Prior QA identifies committed sensitive config; Compose contains literal System Owner password. Rotate and inject secured values. Do not rely on `.gitignore` to undo history.
@@ -25,7 +25,7 @@ The project has implemented broad ERP APIs and a substantial React interface, bu
 4. **P1 — GST compliance:** [Remediation report](COSMOS_GST_EINVOICE_EWAYBILL_MASTER_REMEDIATION_REPORT.md) documents `409 GST_SERVER_GENERATION_NOT_AVAILABLE`, not a finished compliant generation flow.
 5. **P1 — Business assurance:** Reconcile stock, Rojmel transfers, shipment dispatch/returns, purchasing, manufacturing posting and cancellation with concrete test data.
 6. **P2 — Documentation:** Use masters in this portal; retain dated source evidence in [register](DOCUMENT_REGISTER.md) until a safe archival migration.
-7. **P1 — Direct development SQL:** Certificate-validated preflight now confirms Phase 3 capture objects on retained `CosmosERP_Staging`; no write was performed. The current `sa`/sysadmin automation identity, stale visible backup evidence, absent tested restore, and absent isolated Sales GST lifecycle database remain release gates.
+7. **P1 — Direct development SQL:** Certificate-validated preflight confirms Phase 3 capture objects on retained `CosmosERP_Staging`. A fresh checksummed `COPY_ONLY` backup restored and passed `DBCC CHECKDB` in a retained isolated database; separate inspector/migrator/test identities and a schema-only synthetic Sales GST test database now exist. Remaining gates are secret-manager rotation for those identities, formal recovery RPO/RTO and application restore testing, broader financial/stock matrix coverage, and GST policy/provider approval.
 
 ## Roadmap
 **Gate A:** rotate secrets, fix release branch selection and secure transport.
