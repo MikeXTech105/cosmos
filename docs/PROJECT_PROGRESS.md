@@ -1,3 +1,5 @@
+> **Current review (2026-10-26):** This file is a historical implementation ledger, not a verified production status. See [repository audit](COSMOS_REPOSITORY_AUDIT_2026-10-26.md) and [backend progress](../backend/docs/PROJECT_PROGRESS.md). The audit was based on GitHub `main` commit `bfb23e522d76020fe8c2b5c3121db5cca5b53460`; live deployment, tests and SQL were not rerun.
+
 # COSMOS ERP - Project Progress Document
 
 ## Rojmel My Wallet 403 Authorization Fix - 2026-07-21
