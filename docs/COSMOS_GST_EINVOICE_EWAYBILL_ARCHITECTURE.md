@@ -19,7 +19,7 @@ The repository now also supplies a SQL-side reservation procedure, immutable sna
 
 ## 2026-10-26 source audit
 
-This is a source audit, not a staging, SQL Server, GSTZen sandbox, or production certification. `backend/database/migrations/20261024_gst_compliance_snapshot_generation_foundation.sql` has not been applied by this review.
+This original section is a source audit, not a GSTZen sandbox or production certification. It did not apply `backend/database/migrations/20261024_gst_compliance_snapshot_generation_foundation.sql`; the later read-only deployed-object evidence below confirms the core snapshot/request objects are present, not a migration-ledger entry.
 
 | Capability | Status | Evidence and consequence |
 |---|---|---|
@@ -65,9 +65,15 @@ The current persisted invoice contract contains invoice/date/status/customer ref
 
 Until every dependency is approved, persisted, and verified, keep the existing statutory generation block in place.
 
+## Phase 4 design — 27 October 2026
+
+The Phase 4 design is now tracked in [COSMOS_GST_PHASE4_AUTHORITATIVE_CALCULATION_AND_SNAPSHOT_DESIGN.md](COSMOS_GST_PHASE4_AUTHORITATIVE_CALCULATION_AND_SNAPSHOT_DESIGN.md). It proposes a new atomic confirmation-with-snapshot path, not a modification of current Sales confirmation: server-resolved calculation → approved allocation/component rounding → canonical SHA-256 payload → immutable snapshot and stock confirmation in one transaction → snapshot-bound reservation/reconciliation. The present engine and database foundation are inputs to that path; neither makes a draft preview or current aggregate Sales tax legally authoritative.
+
+The design calls for snapshot-line/component and correction lineage tables, explicit company/branch scope, and forward-only migration/preflight/verification scripts. It intentionally does not name a legal formula, provider payload, cancellation action, or statutory trigger until owner approvals are recorded.
+
 ## Direct development SQL evidence boundary — 26 October 2026
 
-The owner-designated development database is retained business data and is not a lifecycle-test target. The Phase 3 branch contains a read-only SQL preflight for identity, permissions, schema, procedure-hash, integrity and backup-history evidence. Its direct execution is pending a securely injected connection; no statutory operation, provider call, snapshot activation, or database mutation was performed in this verification attempt.
+The owner-designated development database is retained business data and is not a lifecycle-test target. The Phase 3 branch contains a read-only SQL preflight for identity, permissions, schema, procedure-hash, integrity and backup-history evidence. On 27 October, certificate-validated read-only inspection reached `srv1791248` / `CosmosERP_Staging`; the core snapshot/request objects and reservation procedure were present, while snapshot, request, and attempt row counts were all zero. This is deployed-object evidence only: it did not create a snapshot, call a provider, activate statutory generation, or prove a complete migration ledger.
 
 ## Phase 2 finalization status
 
