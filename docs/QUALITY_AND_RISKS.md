@@ -14,7 +14,7 @@
 | Product acceptance | Client workbook mapping, user workflows, reports and exports | **Needs signed acceptance** |
 
 ## Source-grounded high-priority risk register
-- **Critical — Secrets:** Earlier QA documented repository credentials; Compose has hardcoded System Owner bootstrap secret. See [repository audit](COSMOS_REPOSITORY_AUDIT_2026-10-26.md) and [historical QA](../qa-reports/COSMOS_FULL_QA_AUDIT_REPORT.md).
+- **Critical — Secrets:** Earlier QA documented repository credentials; Compose has hardcoded System Owner bootstrap secret. See [repository audit](COSMOS_REPOSITORY_AUDIT_2026-10-26.md) and [historical QA](archive/qa-reports/COSMOS_FULL_QA_AUDIT_REPORT.md).
 - **High — Deployment/ref selection:** GitHub workflow triggers `deploy` and pulls `main`.
 - **High — HTTPS and API routing:** Historical 2026-10-09 live QA found HTTP-only access and SPA routes returning HTML instead of API JSON; re-test present deployment.
 - **High — GST compliance:** [E-document remediation](COSMOS_GST_EINVOICE_EWAYBILL_MASTER_REMEDIATION_REPORT.md) states required immutable legal snapshots, approved rules and provider reconciliation are incomplete.
@@ -22,11 +22,11 @@
 - **Medium — Documentation drift:** Dated source ledgers are often mistaken for current status; this portal distinguishes canonical overview from historical evidence.
 
 ## Audit evidence (retained; do not treat as fresh)
-- [Integrated QA audit](../qa-reports/COSMOS_FULL_QA_AUDIT_REPORT.md) — 2026-10-09, includes explicit out-of-scope/public website qualifications.
-- [Full live QA audit](../COSMOS_FULL_QA_AUDIT_REPORT.md) — same date, different coverage/scope; not assumed identical.
+- [Integrated QA audit](archive/qa-reports/COSMOS_FULL_QA_AUDIT_REPORT.md) — 2026-10-09, includes explicit out-of-scope/public website qualifications.
+- [Full live QA audit](archive/COSMOS_FULL_QA_AUDIT_REPORT.md) — same date, different coverage/scope; not assumed identical.
 - [API contract / runtime / UI reports](../qa-reports/) — multiple distinct verification surfaces.
 - [Dispatch parity and policy decisions](../qa-reports/dispatch-excel-fix/) — retain for client business-rule traceability.
-- [Historical technical debt](../backend/TECHNICAL_DEBT.md) — issue inventory, not automatically current.
+- [Historical technical debt](archive/backend/TECHNICAL_DEBT.md) — issue inventory, not automatically current.
 - [Current repo review](COSMOS_REPOSITORY_AUDIT_2026-10-26.md) — source-only; no live test.
 
 ## Closing an issue
