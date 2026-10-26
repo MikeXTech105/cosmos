@@ -435,6 +435,11 @@ const InvoiceDetailPage = () => {
                 </p>
               </div>
               <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Issuing GSTIN</p>
+                <p className="mt-1 truncate text-sm font-semibold text-slate-900">{invoice.companyGstin ?? "Not selected"}</p>
+                {invoice.companyGstLegalName && <p className="truncate text-xs text-slate-500">{[invoice.companyGstLegalName, invoice.companyGstBranchName].filter(Boolean).join(" — ")}</p>}
+              </div>
+              <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Total
                 </p>
