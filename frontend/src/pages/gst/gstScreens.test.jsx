@@ -8,6 +8,7 @@ import GstDocumentLinks from "./GstDocumentLinks";
 import GstDocumentPage from "./GstDocumentPage";
 import GstRegistrationsPage from "./GstRegistrationsPage";
 import GstLogsPage from "./GstLogsPage";
+import GstOverviewPage from "./GstOverviewPage";
 
 const render = (component, pages = [], initial = "/") => {
   const store = configureStore({ reducer: () => ({ auth: { pages, roles: [], user: {} } }) });
@@ -66,5 +67,19 @@ describe("GST screens and document entry points", () => {
     for (const label of ["Operation", "Outcome", "From date / time", "Correlation ID", "Registration ID", "Sort by"]) expect(html).toContain(label);
     expect(html).not.toContain("RequestPayload");
     expect(html).not.toContain("ResponsePayload");
+  });
+  it("surfaces the implemented HSN and GST management pages instead of declaring them unavailable", () => {
+    const pages = [
+      { pageName: "GST.HsnSac", route: "/gst/hsn-sac", canView: true },
+      { pageName: "GST.RateHistory", route: "/gst/rate-history", canView: true },
+      { pageName: "GST.CategoryMapping", route: "/gst/category-mappings", canView: true },
+      { pageName: "GST.ProductMapping", route: "/gst/product-mappings", canView: true },
+    ];
+    const html = render(createElement(GstOverviewPage), pages);
+    expect(html).toContain('href="/gst/hsn-sac"');
+    expect(html).toContain('href="/gst/rate-history"');
+    expect(html).toContain('href="/gst/category-mappings"');
+    expect(html).toContain('href="/gst/product-mappings"');
+    expect(html).not.toContain("Central HSN/SAC management is unavailable");
   });
 });
