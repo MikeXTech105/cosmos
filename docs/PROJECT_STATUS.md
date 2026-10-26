@@ -16,7 +16,7 @@ The project has implemented broad ERP APIs and a substantial React interface, bu
 | Supply Chain | Shared channels/mappings, Procurement, Dispatch, Shipment operations | Real workbook parity, warehouse/SKU grain and stock reconciliation |
 | Manufacturing | Effective/versioned BOM and production foundations; shared Procurement BOM | Full migration, concurrency, rollback and workflow acceptance |
 | Website/Data Book | Independent website CMS/warranty APIs; public/private Data Book | Public endpoint and attachment integration verification |
-| GST/HSN | GSTZen integration assets, HSN/rule foundations, compliance snapshot migration | **Legal E-Invoice/E-Way Bill generation is deliberately blocked pending approved snapshots/provider decisions** |
+| GST/HSN | GST registrations/verification/session/log assets; HSN/SAC, rate-history and mapping routes/pages; compliance snapshot migration | **Legal E-Invoice/E-Way Bill generation is deliberately blocked pending approved snapshots/provider decisions and provider-contract verification** |
 
 ## Decisions and release blockers
 1. **P0 — Security:** Prior QA identifies committed sensitive config; Compose contains literal System Owner password. Rotate and inject secured values. Do not rely on `.gitignore` to undo history.
