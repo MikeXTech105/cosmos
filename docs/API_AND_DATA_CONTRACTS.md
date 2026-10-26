@@ -13,7 +13,7 @@
 3. [Database field/source matrix](../backend/docs/DATABASE_REQUIRED_FIELDS.md) — static SQL reconstruction, **not a live DB declaration**.
 4. [Required field source taxonomy](../backend/docs/REQUIRED_FIELD_SOURCES.md) and [dependency audit](../backend/docs/REQUIRED_FIELD_AUDIT_REPORT.md).
 5. [Per-module required-field evidence](../backend/docs/required-fields/) — retain for human-readable coverage.
-6. [QA API contract matrix](../qa-reports/COSMOS_API_CONTRACT_MATRIX.md) — historical test and mismatch evidence.
+6. [QA API contract matrix](archive/qa-reports/COSMOS_API_CONTRACT_MATRIX.md) — historical test and mismatch evidence.
 
 These large documents are audit artifacts, not mutually interchangeable duplicates. Re-run code/DB extraction after material changes rather than asserting their dated row counts remain current.
 
