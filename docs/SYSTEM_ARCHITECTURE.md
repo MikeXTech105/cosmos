@@ -1,5 +1,5 @@
 # COSMOS — Enterprise System Architecture
-**Scope:** Whole repository · **Reviewed:** 2026-10-26 · **Basis:** [Backend architecture](../backend/SYSTEM_ARCHITECTURE.md), [backend knowledge](../backend/PROJECT_KNOWLEDGE.md), module specifications, Git tree.
+**Scope:** Whole repository · **Reviewed:** 2026-10-26 · **Basis:** [Backend architecture](archive/backend/SYSTEM_ARCHITECTURE.md), [backend knowledge](archive/backend/PROJECT_KNOWLEDGE.md), module specifications, Git tree.
 
 ## System boundaries
 - **ERP application:** React/Vite UI → ASP.NET Core .NET 10 controller APIs → application services and FluentValidation → Dapper persistence → SQL Server stored procedures. See `backend/Cosmos.slnx`, `backend/src/`, `frontend/src/`.
