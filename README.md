@@ -1,5 +1,10 @@
 # COSMOS ERP
 
+## Documentation
+
+Start with the [enterprise documentation portal](docs/README.md). It consolidates architecture, status, modules, API/data contracts, operations, QA and risk, and maintains an [evidence register](docs/DOCUMENT_REGISTER.md) for historical files.
+
+
 Enterprise ERP project using **ASP.NET Core .NET 10**, **Dapper / SQL Server** and a **React/Vite** frontend.
 
 ## Source code
