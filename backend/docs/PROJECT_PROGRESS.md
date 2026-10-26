@@ -29,3 +29,9 @@ Implemented the Website Management backend for WEWEL: standalone Website Product
 Completed the backend-only centralized activity-log module by extending the established `AuditLogs` system. The work adds the Activity Logs page/API/export, audit context/redaction/action normalization, security and Data Book companion events, dashboard recent activity, a rerunnable migration, and deployment verification assets. Technical HTTP request logging remains in Serilog rather than becoming permanent business activity. See `ACTIVITY_LOGS_MODULE.md` and `ACTIVITY_LOGS_IMPLEMENTATION_TRACKER.md`.
 
 Live database and runtime Swagger validation remain pending an approved disposable environment.
+
+## 2026-10-26 — GitHub Repository Audit (source inventory; verification pending)
+
+Reviewed `main` commit `bfb23e522d76020fe8c2b5c3121db5cca5b53460` (merged E-Way Bill PR #161 on 2026-10-24). The tracked repository includes 1,788 files and a substantial React frontend. Verified source/migration presence for Activity Logs, Website Management, Manufacturing, BOM consolidation, HSN/GST foundations and latest GST compliance snapshot migration. Presence is **not** proof of deployment or operational readiness. See `docs/COSMOS_REPOSITORY_AUDIT_2026-10-26.md` for risk-ranked evidence.
+
+Priority issues: tracked production-like credentials and a literal System Owner compose password, Development compose environment, deployment trigger `deploy` pulling `main`, historical HTTP/API-routing QA failures requiring current re-verification, empty `002_Verify_Database_Setup.sql`, and outstanding real SQL/integration testing. GST generation is explicitly blocked with 409 pending compliant immutable invoice snapshots/provider reconciliation; do not portray it as a finished provider workflow. No live build, DB verification, provider call or environment smoke test was performed in this audit.
