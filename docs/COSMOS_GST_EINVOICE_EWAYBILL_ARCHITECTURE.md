@@ -39,3 +39,11 @@ This is a source audit, not a staging, SQL Server, GSTZen sandbox, or production
 4. Wire SQL reservation, attempt recording and provider reconciliation into that workflow, then add list/history and supported artifact retrieval APIs and UI.
 
 The currently published GSTZen E-Way Bill retrieval documentation requires both a token and the selected GSTIN header. The current provider adapter only configures its configurable token header (`GstZenProviderService.ConfigureHeaders`), so its registration-to-provider-header mapping is not verified and must be corrected from the account contract before statutory operations are enabled.
+
+## Phase 2 sales-invoice compliance foundation
+
+Sales invoice creation/edit/confirmation/cancellation remains `SalesInvoicesController` → `SalesService` → `SalesRepository` → `sp_SalesInvoice_*`. Confirmation still calls `sp_SalesInvoice_Confirm` and performs its existing stock behavior; Phase 2 deliberately does **not** join compliance snapshot creation to that transaction because the required tax/compliance policy inputs are unresolved.
+
+The current persisted invoice contract contains invoice/date/status/customer reference and line item/quantity/unit/rate/discount/aggregate-tax/HSN text snapshots. It does **not** persist immutable seller registration/identity/address, buyer legal identity/GSTIN/address, billing-vs-shipping identity, place-of-supply source, document/special-tax treatment, component tax amounts, taxable values, cess, rule-version IDs, allocation/rounding inputs, or transport facts. Those data must be captured from authoritative sources in an approved confirmation workflow; current master records must not be used as a historical substitute.
+
+`GstComplianceEligibilityService` exposes a read-only, persisted-data-only assessment through `GET /api/v1/gst/invoices/{salesInvoiceId}/eligibility`. It reports actionable diagnostics but cannot make an invoice eligible today. This is the capability boundary for later snapshot/confirmation work, not a generation or snapshot-creation endpoint.

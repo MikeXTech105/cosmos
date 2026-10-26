@@ -9,3 +9,9 @@ Not run: SSMS migration/verification, provider sandbox, and end-to-end provider 
 `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter "FullyQualifiedName~Gst" -v:minimal` passed **26/26**. Frontend GST navigation/source-contract and screen tests passed **16/16**; the production frontend build passed. Targeted ESLint over the changed GST files passed. The full frontend suite has four unrelated pre-existing failures in `src/utils/validationRules.test.js` (HR employee optional email/bank/address expectations); no GST test failed. Full-project ESLint did not complete within the bounded local command window, so it is not claimed as passed.
 
 No SQL Server instance, provider sandbox, or production provider was contacted. These results do not verify migrations, provider mappings, statutory issuance, cancellation, vehicle update, extension, or reconciliation against GSTZen.
+
+## Phase 2 sales-invoice foundation evidence
+
+`dotnet build backend/src/Cosmos.API/Cosmos.API.csproj --no-restore -v:minimal` passed with zero errors. `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter "FullyQualifiedName~Gst" -v:minimal` passed **28/28**, including persisted-data-only eligibility assessment and unknown-invoice handling. The active-snapshot uniqueness migration was reviewed statically only; no SQL Server was authorized for applying its preflight/index checks.
+
+The endpoint does not create or validate a compliance snapshot, and sales confirmation was intentionally not changed. Its results must not be treated as authority to generate E-Invoices or E-Way Bills.

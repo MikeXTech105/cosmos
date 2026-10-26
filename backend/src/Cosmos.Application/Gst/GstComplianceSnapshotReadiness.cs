@@ -44,6 +44,8 @@ public static class GstComplianceSnapshotReadinessEvaluator
         issues.Add(new("GST_SNAPSHOT_PLACE_OF_SUPPLY_UNRESOLVED", "The invoice does not persist a place-of-supply determination and source.", false));
         issues.Add(new("GST_SNAPSHOT_TAX_COMPONENTS_UNSNAPSHOTTED", "The invoice persists aggregate tax only, not immutable CGST, SGST, IGST, cess, taxable-value, and approved-rule components.", false));
         issues.Add(new("GST_SNAPSHOT_DISCOUNT_ROUNDING_POLICY_UNRESOLVED", "Invoice-level discount allocation and statutory rounding policy are not persisted with the invoice.", false));
+        issues.Add(new("GST_EWAY_TRANSPORT_POLICY_UNRESOLVED", "The invoice does not contain an approved transport-data contract for a future E-Way Bill workflow.", false));
+        issues.Add(new("GST_PROVIDER_CONTRACT_UNVERIFIED", "Government-document provider mappings and reconciliation are not verified for statutory submission.", false));
 
         return new GstComplianceSnapshotReadiness(invoice.Id, false, issues);
     }
