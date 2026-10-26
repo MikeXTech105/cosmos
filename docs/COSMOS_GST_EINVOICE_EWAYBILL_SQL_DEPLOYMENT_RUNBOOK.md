@@ -11,3 +11,7 @@ The application readiness evaluator is deployable independently of the SQL migra
 After the 20261024 foundation has been applied and its verification has passed, run `backend/database/migrations/20261026_gst_compliance_snapshot_active_uniqueness.sql`, then the matching `_ssms_verification.sql` script read-only. The migration is additive and rerunnable. It first refuses deployment if a Sales Invoice already has more than one non-superseded snapshot, then adds `UX_GstComplianceSnapshots_Invoice_Active`.
 
 It does not create, backfill, validate, or mutate snapshots; it does not alter `SalesInvoices`, `SalesInvoiceItems`, stock movements, or tax values. Resolve any preflight duplicate through an approved, auditable correction process before rerunning. No production or shared-staging execution occurred in this phase.
+
+### User-provided SSMS verification evidence
+
+The user reported running the matching verification script on their SQL Server database. They reported `UX_GstComplianceSnapshots_Invoice_Active` with `is_unique = 1`, `has_filter = 1`, and filter `([Status]<>N'Superseded')`; the duplicate non-superseded snapshot query returned zero rows. This is user-provided evidence for that checked database and time, not an independent Codex execution. It confirms that superseded history remains permitted while a second active snapshot is rejected by the filtered unique index.

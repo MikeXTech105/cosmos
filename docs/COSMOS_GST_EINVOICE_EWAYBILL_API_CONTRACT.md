@@ -20,6 +20,8 @@ Generation must remain a snapshot-only server operation. It may not accept `Requ
 
 ## Sales-invoice eligibility contract
 
-`GET /api/v1/gst/invoices/{salesInvoiceId}/eligibility` is a protected, read-only assessment requiring `GST.EInvoice` view permission. It returns the normal COSMOS envelope around `GstComplianceSnapshotReadiness`: `salesInvoiceId`, `canCreateSnapshot`, and structured issue codes/messages.
+`GET /api/v1/gst/invoices/{salesInvoiceId}/eligibility` is a protected, read-only assessment requiring both `GST.EInvoice` and `Sales.Invoice` **View** permission. Its route constraint rejects non-positive IDs. It returns the normal COSMOS envelope around `GstComplianceSnapshotReadiness`: `salesInvoiceId`, `canCreateSnapshot`, and structured issue codes/messages.
 
 The assessment reads only the persisted invoice header and lines. It intentionally does not hydrate current Party, Item, GST registration, HSN mapping, or GST-rule master data, because doing so would fabricate historical evidence. It neither creates a snapshot nor changes invoice/stock/accounting status. Current expected blockers include seller registration, buyer identity, place of supply, component tax/rule bindings, discount/rounding, transport contract, and provider-contract verification.
+
+The current Sales access model has no company/branch/owner claims or persisted Sales Invoice scope fields. Therefore the endpoint now applies the same global Sales Invoice read gate as `SalesInvoicesController`; it prevents a GST-only viewer from reading invoice diagnostics. Company/branch or record-level isolation cannot be claimed until that model and scoped SQL reads are introduced.
