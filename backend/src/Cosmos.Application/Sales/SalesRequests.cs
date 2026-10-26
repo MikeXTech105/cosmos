@@ -8,6 +8,10 @@ public sealed record CreateSalesInvoiceCommand(
     decimal DiscountAmount,
     string? Notes,
     string? TermsAndConditions,
+    long? CompanyGstRegistrationId = null,
+    string? PlaceOfSupplyStateCode = null,
+    string? PlaceOfSupplySource = null,
+    SalesInvoicePriceBasis? PriceBasis = null,
     AddSalesPaymentCommand? InitialPayment = null);
 
 public sealed record UpdateSalesInvoiceCommand(
@@ -17,7 +21,17 @@ public sealed record UpdateSalesInvoiceCommand(
     IReadOnlyCollection<SalesInvoiceItemRequest> Items,
     decimal DiscountAmount,
     string? Notes,
-    string? TermsAndConditions);
+    string? TermsAndConditions,
+    long? CompanyGstRegistrationId = null,
+    string? PlaceOfSupplyStateCode = null,
+    string? PlaceOfSupplySource = null,
+    SalesInvoicePriceBasis? PriceBasis = null);
+
+/// <summary>
+/// Explicit capture for a future GST calculation policy. Null preserves historical invoices
+/// whose entered price basis cannot be established without reinterpreting their totals.
+/// </summary>
+public enum SalesInvoicePriceBasis { TaxExclusive = 0, TaxInclusive = 1 }
 
 public sealed record SalesInvoiceItemRequest(
     long ItemId,
