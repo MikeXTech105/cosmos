@@ -64,3 +64,7 @@ The current persisted invoice contract contains invoice/date/status/customer ref
 | Provider idempotency/reconciliation | Provider owner + engineering | SQL reservation foundation exists, not wired | Snapshot-bound submission worker/status API; concurrent/unknown-outcome tests |
 
 Until every dependency is approved, persisted, and verified, keep the existing statutory generation block in place.
+
+## Phase 2 finalization status
+
+The eligibility boundary is runtime-tested for authentication, both required page permissions, known/unknown invoices, and invalid routing. It is not a company/branch/record-level access-control solution: the existing Sales schema and JWT/current-user contract contain no such scope. If deployment requires isolation across companies, branches, or invoice ownership, that missing scope model is a release blocker and must be implemented before exposing statutory diagnostics to users outside the globally authorized Sales audience.

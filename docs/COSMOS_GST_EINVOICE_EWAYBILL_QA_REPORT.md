@@ -23,3 +23,9 @@ Eligibility now requires both `GST.EInvoice/View` and `Sales.Invoice/View`, matc
 The user separately reported a successful SSMS verification: the active-snapshot index is unique and filtered by non-superseded status, and the duplicate-active query returned zero rows. This report records that as user-provided evidence only; Codex did not execute SQL against that database.
 
 Finalization commands: the GST-filtered backend suite passed **30/30** and the Sales-filtered backend suite passed **14/14**. The API project built with zero errors. These are unit/source-contract tests, not authenticated HTTP-host tests, disposable-SQL tests, or Swagger-session tests; those environment-level checks remain outstanding.
+
+### Runtime authorization verification
+
+Loopback HTTP integration tests now run the production controller, authentication middleware, `RequirePermissionFilter`, routing constraint, global exception middleware, and response envelope. **6/6** tests passed: unauthenticated `401`; GST-only `403`; Sales-only `403`; both permissions `200` for an existing invoice; unknown invoice `404`; and `0` rejected by route constraint without calling the eligibility service. These tests use a test authentication scheme and mocked permission/data services, not a live JWT issuer or SQL Server.
+
+Docker and a local SQL Server runtime were unavailable on the verification host, so disposable-database migration/repeated-run/duplicate-insert tests were not executed. The supplied SSMS result remains separately attributed evidence.
