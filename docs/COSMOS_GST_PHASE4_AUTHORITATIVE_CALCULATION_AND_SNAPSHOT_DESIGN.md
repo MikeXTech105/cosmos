@@ -67,6 +67,8 @@ Cancellation policy must distinguish: draft cancellation; confirmed but not stat
 
 `CompanyGstRegistrations` has `CompanyId` and `BranchId`; current `SalesInvoices` exposes only a selected registration and customer reference. Selecting an active registration proves neither that the caller can use it nor that the invoice belongs to its company/branch. Phase 4 must define and enforce a single ownership path on invoice creation, draft edit, confirmation, snapshot read, correction, and provider generation. Page permission alone is insufficient where records must be isolated.
 
+The first non-financial Phase 4 increment is specified in [Phase 4 ownership and authorization increment](COSMOS_GST_PHASE4_OWNERSHIP_AUTHORIZATION_INCREMENT.md). It introduces no tax authority or statutory workflow and is contingent on an explicit ownership-source and cross-scope response decision.
+
 ## GSTZen prerequisites
 
 Before any sandbox submission: obtain the account-specific current API/OpenAPI or Postman contract; sandbox base URL and credentials through the secret manager; exact authentication and selected-GSTIN headers; required payload/codes; idempotency/retry semantics; status/retrieval/cancellation endpoints; error taxonomy; rate limits; and masked request/response retention policy. Test successful, validation-failed, timeout/unknown-outcome, duplicate, provider-retrieval, cancellation, and reconciliation flows against disposable snapshot fixtures. Provider responses must be correlated to an immutable snapshot and durable request record, never browser JSON.
