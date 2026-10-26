@@ -8,7 +8,10 @@ const backend = path => readFileSync(new URL(`../../../../backend/${path}`, impo
 
 describe("GST integration source contracts", () => {
   it("matches every navigation grant and route to the existing SQL permission seeds", () => {
-    const sql = backend("database/003_gst_integration_module.sql");
+    const sql = [
+      backend("database/003_gst_integration_module.sql"),
+      backend("database/migrations/20261015_hsn_gst_phase1_foundation.sql"),
+    ].join("\n");
     const modules = getEnabledSidebarModules();
     for (const page of GST_PAGES) {
       expect(sql).toContain(`N'${page.pageName}'`);

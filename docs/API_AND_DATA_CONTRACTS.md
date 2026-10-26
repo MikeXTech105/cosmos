@@ -22,3 +22,9 @@ These large documents are audit artifacts, not mutually interchangeable duplicat
 
 ## Contract acceptance gates
 Use positive/negative validation tests, success/failure envelope tests, 401/403/404/409 behaviour, missing/duplicate input checks, SQL schema/procedure mapping, concurrency tests for stock and financial mutations, and browser API routing/CORS checks. Compare UI service expectations with Swagger and actual network responses.
+
+## GST compliance contract status (2026-10-26)
+
+The GST master-data contract is present: HSN/SAC, effective-dated rate versions, category defaults and item overrides have protected API routes, SQL migrations and React screens. The overview now presents those screens only to users with the relevant page grant. This is source-verified only; it is not proof that a target database has the required migrations or that the routes are deployed.
+
+E-Invoice and E-Way Bill **generation remain intentionally unavailable** (`409` / `GST_SERVER_GENERATION_NOT_AVAILABLE`). The sales contract does not yet persist the immutable seller/buyer identity and address snapshots, place of supply, approved component taxes and totals, correction lineage, or E-Way transport context required to construct a statutory payload. The reservation/attempt SQL foundation is additive but not connected to sales confirmation. Do not replace the block, pass browser JSON to GSTZen, or retry an unknown outcome until the approved snapshot and provider-reconciliation contracts are deployed.
