@@ -32,6 +32,12 @@ The migration is additive, does not backfill invoices, and replaces the unsafe d
 - `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --filter "FullyQualifiedName~Sales|FullyQualifiedName~Gst" --no-restore`: **PASS — 49 passed**.
 - `dotnet build backend/src/Cosmos.API/Cosmos.API.csproj --no-restore`: **PASS — 0 errors**.
 
+## SQL lifecycle integration coverage
+
+`SalesInvoiceGstSqlIntegrationTests` is an opt-in, repository/Dapper/stored-procedure lifecycle suite. It requires `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` and rejects any database whose name does not start with `CosmosSalesGstIntegrationTests_`. It creates only `ITGSTP3_` synthetic fixtures, exercises draft create/update, confirm stock deduction, confirmed-update rejection and cancel stock restoration, then removes those fixtures in `finally`.
+
+It was **not executed** in this environment because the required disposable SQL Server connection string was not configured. The project owner separately reported SSMS evidence that all four nullable Sales context columns, the issuer FK and filtered issuer index exist, invalid issuer references return no rows, and historical invoice IDs 1 and 2 retain null GST context. That is user-provided database evidence, not a Codex-run integration test.
+
 ## Remaining gates
 
 - Approved state-code master / lookup data and statutory place-of-supply determination rules.

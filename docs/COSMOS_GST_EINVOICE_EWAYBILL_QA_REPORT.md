@@ -29,3 +29,9 @@ Finalization commands: the GST-filtered backend suite passed **30/30** and the S
 Loopback HTTP integration tests now run the production controller, authentication middleware, `RequirePermissionFilter`, routing constraint, global exception middleware, and response envelope. **6/6** tests passed: unauthenticated `401`; GST-only `403`; Sales-only `403`; both permissions `200` for an existing invoice; unknown invoice `404`; and `0` rejected by route constraint without calling the eligibility service. These tests use a test authentication scheme and mocked permission/data services, not a live JWT issuer or SQL Server.
 
 Docker and a local SQL Server runtime were unavailable on the verification host, so disposable-database migration/repeated-run/duplicate-insert tests were not executed. The supplied SSMS result remains separately attributed evidence.
+
+## Phase 3 Sales capture verification — 26 October 2026
+
+The Sales issuer-registration migration was reviewed after user-provided SSMS verification: `CompanyGstRegistrationId`, `PlaceOfSupplyStateCode`, `PlaceOfSupplySource`, and `PriceBasis` are nullable; the issuer foreign key and filtered index exist; no invalid issuer reference was reported; and historical invoice IDs 1 and 2 remain null. No historical record was modified by this work.
+
+An opt-in `SalesInvoiceGstSqlIntegrationTests` suite now verifies the actual Dapper repository and `sp_SalesInvoice_Create`, `Update`, `Confirm`, `Cancel`, and `GetById` path against a database named `CosmosSalesGstIntegrationTests_*`. It was not executed because `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` was absent. The GST/Sales-focused local unit suite passed 49 tests before the opt-in test was selected; selecting it without the variable correctly reports the missing prerequisite rather than pretending SQL coverage passed.
