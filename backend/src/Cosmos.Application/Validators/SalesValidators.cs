@@ -22,6 +22,10 @@ public sealed class CreateSalesInvoiceValidator : AbstractValidator<CreateSalesI
         RuleFor(x => x.DiscountAmount).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Notes).MaximumLength(1000);
         RuleFor(x => x.TermsAndConditions).MaximumLength(2000);
+        RuleFor(x => x.PlaceOfSupplyStateCode).Matches("^[0-9]{2}$").When(x => !string.IsNullOrWhiteSpace(x.PlaceOfSupplyStateCode)).WithMessage("Place of supply must be a two-digit normalized GST state code.");
+        RuleFor(x => x.PlaceOfSupplySource).MaximumLength(50);
+        RuleFor(x => x.PlaceOfSupplySource).NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.PlaceOfSupplyStateCode)).WithMessage("Place-of-supply source is required when a state is selected.");
+        RuleFor(x => x.PriceBasis).IsInEnum().When(x => x.PriceBasis.HasValue);
         RuleFor(x => x.InitialPayment!).SetValidator(new AddSalesPaymentValidator()).When(x => x.InitialPayment is not null);
     }
 }
@@ -43,6 +47,10 @@ public sealed class UpdateSalesInvoiceValidator : AbstractValidator<UpdateSalesI
         RuleFor(x => x.DiscountAmount).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Notes).MaximumLength(1000);
         RuleFor(x => x.TermsAndConditions).MaximumLength(2000);
+        RuleFor(x => x.PlaceOfSupplyStateCode).Matches("^[0-9]{2}$").When(x => !string.IsNullOrWhiteSpace(x.PlaceOfSupplyStateCode)).WithMessage("Place of supply must be a two-digit normalized GST state code.");
+        RuleFor(x => x.PlaceOfSupplySource).MaximumLength(50);
+        RuleFor(x => x.PlaceOfSupplySource).NotEmpty().When(x => !string.IsNullOrWhiteSpace(x.PlaceOfSupplyStateCode)).WithMessage("Place-of-supply source is required when a state is selected.");
+        RuleFor(x => x.PriceBasis).IsInEnum().When(x => x.PriceBasis.HasValue);
     }
 }
 

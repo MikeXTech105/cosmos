@@ -38,10 +38,24 @@ public static class GstComplianceSnapshotReadinessEvaluator
             issues.Add(new("GST_SNAPSHOT_HSN_SAC_MISSING", "Every invoice line needs an immutable HSN/SAC code before a government-document snapshot can be created.", false));
         }
 
-        // The current SalesInvoice schema intentionally has no registration or place-of-supply fields.
-        issues.Add(new("GST_SNAPSHOT_SELLER_REGISTRATION_UNRESOLVED", "The invoice does not persist the selected seller GST registration.", false));
+        if (!invoice.CompanyGstRegistrationId.HasValue)
+        {
+            issues.Add(new("GST_SNAPSHOT_SELLER_REGISTRATION_UNRESOLVED", "The invoice does not persist an explicitly selected seller GST registration.", false));
+        }
+
+        if (string.IsNullOrWhiteSpace(invoice.PlaceOfSupplyStateCode) || string.IsNullOrWhiteSpace(invoice.PlaceOfSupplySource))
+        {
+            issues.Add(new("GST_SNAPSHOT_PLACE_OF_SUPPLY_UNRESOLVED", "The invoice does not persist a reviewed place-of-supply state and source.", false));
+        }
+
+        if (!invoice.PriceBasis.HasValue)
+        {
+            issues.Add(new("GST_SNAPSHOT_PRICE_BASIS_UNKNOWN", "The invoice does not persist whether entered prices are GST-inclusive or GST-exclusive.", false));
+        }
+
+        // Selection is not authorization: Sales invoices have no verified company/branch scope model yet.
+        issues.Add(new("GST_SNAPSHOT_SELLER_REGISTRATION_SCOPE_UNVERIFIED", "Seller-registration scope cannot be verified until Sales invoice company/branch access control is implemented.", false));
         issues.Add(new("GST_SNAPSHOT_BUYER_IDENTITY_UNSNAPSHOTTED", "The invoice references a party but does not persist the buyer legal identity, GSTIN, or address snapshot.", false));
-        issues.Add(new("GST_SNAPSHOT_PLACE_OF_SUPPLY_UNRESOLVED", "The invoice does not persist a place-of-supply determination and source.", false));
         issues.Add(new("GST_SNAPSHOT_TAX_COMPONENTS_UNSNAPSHOTTED", "The invoice persists aggregate tax only, not immutable CGST, SGST, IGST, cess, taxable-value, and approved-rule components.", false));
         issues.Add(new("GST_SNAPSHOT_DISCOUNT_ROUNDING_POLICY_UNRESOLVED", "Invoice-level discount allocation and statutory rounding policy are not persisted with the invoice.", false));
         issues.Add(new("GST_EWAY_TRANSPORT_POLICY_UNRESOLVED", "The invoice does not contain an approved transport-data contract for a future E-Way Bill workflow.", false));

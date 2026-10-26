@@ -23,6 +23,20 @@ Do not store System Owner bootstrap passwords, DB connection strings, JWT signin
 
 Read [database setup](../backend/database/DATABASE_SETUP_README.md), [System Owner bootstrap](../backend/docs/SYSTEM_OWNER.md), [staging cleanup](../backend/docs/STAGING_DATABASE_CLEANUP.md) and [GST deployment runbook](COSMOS_GST_EINVOICE_EWAYBILL_SQL_DEPLOYMENT_RUNBOOK.md). The historical `002_Verify_Database_Setup.sql` placeholder must not serve as an operational gate.
 
+### Direct development SQL workflow
+
+`CosmosERP_Staging` on `srv1791248` is the owner-designated retained development/integration database, not a disposable test target. Access must use an environment-injected `COSMOS_DEVELOPMENT_SQL_CONNECTION_STRING` or `ConnectionStrings__CosmosDb`; never restore an old tracked value or log a credential. Start with the read-only [Phase 3 preflight](../backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql), retain its evidence, verify recovery readiness, and obtain approval before any change. Bounded, non-destructive, versioned migrations may then be applied directly and verified afterward.
+
+Never run `SalesInvoiceGstSqlIntegrationTests`, create test invoices, or mutate stock/business data against this retained database. That suite remains limited to an isolated `CosmosSalesGstIntegrationTests_*` database. Production access and statutory GST generation remain out of scope.
+
+### Direct-SQL evidence — 26 October 2026
+
+The certificate-validated development connection reached `srv1791248` / `CosmosERP_Staging` with SQL reporting encrypted transport. The configured login is `sa`, a sysadmin and `db_owner` with `ALTER`, `CONTROL`, backup, and database-creation privileges. It must not remain the automation identity. Provision separate least-privilege accounts: read-only catalog inspection; an approved migration account limited to the intended development database; and an isolated-test account limited to `CosmosSalesGstIntegrationTests_*` databases.
+
+On 27 October 2026 an approved non-overwriting `COPY_ONLY` full backup of retained staging completed with checksum and compression. `RESTORE VERIFYONLY ... WITH CHECKSUM` and `DBCC CHECKDB` passed after restoring it to the retained isolated database `CosmosERP_Staging_RestoreVerify_19103a663729477a8c47aec03f97eb3d`. Do not drop that evidence database without separate approval. This validates a specific backup's physical restore, not end-to-end application recovery or an RPO/RTO commitment.
+
+Separate identities now exist: `cosmos_sql_inspector` (catalog/state plus narrow Sales/GST reads), `cosmos_dev_migrator` (approved development DDL), and `cosmos_gst_test` (denied retained staging and scoped to `CosmosSalesGstIntegrationTests_Local`). Store rotated credentials in an approved secret manager; no credentials are committed. The latter database is schema-only and retained for synthetic lifecycle tests. Its completed 1/1 test run must never be redirected to retained staging or production.
+
 ## Minimum checks
 ```bash
 dotnet restore backend/Cosmos.slnx

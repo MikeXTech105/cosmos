@@ -340,6 +340,10 @@ export const getInvoiceDefaultValues = (invoice) => {
 
   return {
     customerPartyId: invoice?.customerPartyId ?? "",
+    companyGstRegistrationId: invoice?.companyGstRegistrationId ?? null,
+    placeOfSupplyStateCode: invoice?.placeOfSupplyStateCode ?? "",
+    placeOfSupplySource: invoice?.placeOfSupplySource ?? "",
+    priceBasis: invoice?.priceBasis ?? "",
     invoiceNumber: invoice?.invoiceNumber ?? "",
     invoiceDate: toInputDate(invoice?.invoiceDate) || today,
     dueDate: toInputDate(invoice?.dueDate) || addDaysToInputDate(today, 15),
@@ -382,6 +386,10 @@ export const getInvoiceDefaultValues = (invoice) => {
 export const buildInvoicePayload = (values) => {
   const payload = {
     customerPartyId: values.customerPartyId,
+    companyGstRegistrationId: values.companyGstRegistrationId ? Math.trunc(toNumber(values.companyGstRegistrationId)) : null,
+    placeOfSupplyStateCode: values.placeOfSupplyStateCode?.trim() || null,
+    placeOfSupplySource: values.placeOfSupplySource?.trim() || null,
+    priceBasis: values.priceBasis === "" || values.priceBasis === null || values.priceBasis === undefined ? null : Math.trunc(toNumber(values.priceBasis)),
     invoiceDate: values.invoiceDate,
     dueDate: values.dueDate || null,
     items: values.items.map((item) => ({

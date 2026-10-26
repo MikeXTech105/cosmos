@@ -7,6 +7,10 @@ public sealed class SalesInvoice
     public DateOnly InvoiceDate { get; set; }
     public DateOnly? DueDate { get; set; }
     public Guid CustomerPartyId { get; set; }
+    public long? CompanyGstRegistrationId { get; set; }
+    public string? PlaceOfSupplyStateCode { get; set; }
+    public string? PlaceOfSupplySource { get; set; }
+    public int? PriceBasis { get; set; }
     public decimal SubTotal { get; set; }
     public decimal DiscountAmount { get; set; }
     public decimal TaxAmount { get; set; }

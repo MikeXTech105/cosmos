@@ -21,6 +21,14 @@ public class SalesInvoiceDto
     public int PaymentStatus { get; set; }
     public string? Notes { get; set; }
     public string? TermsAndConditions { get; set; }
+    /// <summary>Explicit issuing registration chosen for this invoice; null is retained for historical invoices.</summary>
+    public long? CompanyGstRegistrationId { get; set; }
+    public string? CompanyGstin { get; set; }
+    public string? CompanyGstLegalName { get; set; }
+    public string? CompanyGstBranchName { get; set; }
+    public string? PlaceOfSupplyStateCode { get; set; }
+    public string? PlaceOfSupplySource { get; set; }
+    public int? PriceBasis { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? UpdatedAtUtc { get; set; }
     public int TotalCount { get; set; }

@@ -15,6 +15,7 @@ namespace Cosmos.Application.Services;
 public sealed class SalesService : ISalesService
 {
     private readonly ISalesRepository _repository;
+    private readonly IGstRepository _gstRepository;
     private readonly IAuditRepository _auditRepository;
     private readonly ICurrentUser _currentUser;
     private readonly ISalesCalculationService _calculationService;
@@ -26,6 +27,7 @@ public sealed class SalesService : ISalesService
 
     public SalesService(
         ISalesRepository repository,
+        IGstRepository gstRepository,
         IAuditRepository auditRepository,
         ICurrentUser currentUser,
         ISalesCalculationService calculationService,
@@ -36,6 +38,7 @@ public sealed class SalesService : ISalesService
         IValidator<GetSalesInvoicesQuery> listValidator)
     {
         _repository = repository;
+        _gstRepository = gstRepository;
         _auditRepository = auditRepository;
         _currentUser = currentUser;
         _calculationService = calculationService;
@@ -62,6 +65,7 @@ public sealed class SalesService : ISalesService
     public async Task<ApiResponse<SalesInvoiceDetailDto>> CreateAsync(CreateSalesInvoiceCommand command, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_createValidator, command, cancellationToken);
+        await ValidateRegistrationAsync(command.CompanyGstRegistrationId, cancellationToken);
         _calculationService.CalculateInvoiceTotals(command.Items, command.DiscountAmount, command.InitialPayment?.Amount ?? 0m);
         var created = await _repository.CreateAsync(command, UserId, cancellationToken);
         await AuditAsync(created.Id, "Create", null, created, cancellationToken);
@@ -74,6 +78,7 @@ public sealed class SalesService : ISalesService
         await ValidationRunner.ValidateAsync(_updateValidator, command, cancellationToken);
         _calculationService.CalculateInvoiceTotals(command.Items, command.DiscountAmount, 0m);
         var old = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Sales invoice was not found.");
+        await ValidateRegistrationAsync(command.CompanyGstRegistrationId, cancellationToken);
         var updated = await _repository.UpdateAsync(id, command, UserId, cancellationToken);
         await AuditAsync(id, "Update", old, updated, cancellationToken);
         return ApiResponse<SalesInvoiceDetailDto>.Success(updated, "Sales invoice updated.");
@@ -125,4 +130,20 @@ public sealed class SalesService : ISalesService
                 after is null ? null : AuditSerializer.Serialize(after),
                 AuditUserId),
             cancellationToken);
+
+    private async Task ValidateRegistrationAsync(long? registrationId, CancellationToken cancellationToken)
+    {
+        if (!registrationId.HasValue)
+        {
+            return;
+        }
+
+        var registration = await _gstRepository.GetRegistrationByIdAsync(registrationId.Value, cancellationToken)
+            ?? throw new NotFoundException("Selected GST registration was not found.");
+
+        if (!string.Equals(registration.Status, "Active", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new CosmosException("Selected GST registration is not active.", 409);
+        }
+    }
 }
