@@ -18,40 +18,12 @@ The user reported running the matching verification script on their SQL Server d
 
 Automated disposable-SQL execution was not possible during finalization because Docker/SQL Server is unavailable on the verification host. Static review confirms the migration is rerunnable (`sys.indexes` guard), rejects pre-existing non-superseded duplicates before index creation, does not modify Sales/Inventory/Accounting data, and does not backfill snapshots. Run the clean-schema, ordered-migration, duplicate-active, superseded-history, preservation, and rerun scenarios in an approved disposable SQL Server environment before release.
 
-## Phase 3 Sales GST capture migration
+## Current COSMOS development SQL execution policy (2026-10-26)
 
-After the base Sales and GST-registration schemas, apply `backend/database/migrations/20261026_sales_invoice_issuer_gst_registration.sql`, then run its read-only `20261026_sales_invoice_issuer_gst_registration_verification.sql` script. The migration is additive: it does not backfill historical invoices or touch stock movements, invoice totals, or statutory generation. It uses explicit `CREATE OR ALTER` procedure definitions; it must not be replaced with dynamic procedure-text rewriting.
+The project owner designated `CosmosERP_Staging` on the Hostinger SQL Server as the **development/integration** database. Codex reported successful encrypted authentication and a read-only query against that database. This establishes **read access only**; privileges for applying migration scripts remain to be tested safely. See [operations: Codex direct SQL workflow](OPERATIONS.md#codex-direct-sql-server-development-workflow-adopted-2026-10-26).
 
-For repeatable lifecycle verification, populate an isolated database named `CosmosSalesGstIntegrationTests_<suffix>` with the required schemas/migrations and set `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` only for the test process. Run `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --filter "FullyQualifiedName~SalesInvoiceGstSqlIntegrationTests" --no-restore`. Never point this variable at production or shared staging.
+For subsequent GST work, Codex must directly inspect current SQL objects on this database, write and commit explicit versioned migrations and read-only verification scripts, then apply reviewed, bounded, non-destructive *development* migrations only after target verification and recovery checks. It must record actual execution evidence and keep Git source and deployed SQL synchronized.
 
-## Direct development database workflow — 26 October 2026
+`CosmosERP_Staging` contains retained business data: do **not** run the `SalesInvoiceGstSqlIntegrationTests` suite against it, bypass its disposable-database name guard, or create/confirm/cancel test invoices or stock adjustments without a separately approved isolated plan. The disposable suite still requires a separate `CosmosSalesGstIntegrationTests_*` database and `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING`.
 
-PR #174's guarded workflow was reviewed. It permits read-only inspection and reviewed, additive development migrations only on the owner-designated `CosmosERP_Staging` database on `srv1791248`; it explicitly forbids the disposable Sales GST lifecycle suite, test invoices, stock adjustments, production access, and statutory generation there.
-
-Before any SQL work, inject either `COSMOS_DEVELOPMENT_SQL_CONNECTION_STRING` or `ConnectionStrings__CosmosDb` into the Codex host process. Do not add the value to source control, SSMS scripts, shell history, or command output. Run `backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql` in SSMS. It is read-only and checks the selected database, server identity, effective login/database permissions, Phase 3 fields/constraint/foreign key/index, stored-procedure definition hashes, data integrity indicators, and (if permitted) backup history.
-
-Only after the preflight confirms `CosmosERP_Staging`, the requested privileges, and recoverability should a reviewer approve running the additive `20261026_sales_invoice_issuer_gst_registration.sql` migration. Then execute `20261026_sales_invoice_issuer_gst_registration_verification.sql` and retain its output with the change record. Do not use the preflight or verification scripts as authority to create, confirm, cancel, or otherwise exercise business invoices.
-
-### Actual execution evidence — 26 October 2026
-
-The tracked application configuration was scrubbed of embedded connection, authentication, and provider tokens; `backend/src/Cosmos.API/appsettings.Development.example.json` now contains placeholders only. A supported environment-injected development SQL connection was not present in this Codex session. Consequently, no connection was opened, no server/database/permission/backup evidence was collected, no SQL object comparison against the deployed database occurred, no migration was applied, and no database record was changed. The old credential and non-database secrets must still be rotated/revoked by an authorized administrator because removing them from the working tree does not invalidate already exposed values or Git history.
-
-### Trusted direct-SQL verification — 26 October 2026
-
-After certificate remediation, Codex connected with `Encrypt=True`, `TrustServerCertificate=False`, and server-side `encrypt_option=TRUE`. The target was `srv1791248` / `CosmosERP_Staging`. The corrected Phase 3 preflight completed read-only: all Phase 3 fields, FK, filtered index, and check constraint are present/trusted; the three Sales procedure definitions and parameters match PR #173; invalid issuer references and incoherent capture fields are zero. No migration ledger exists, so this is deployed-object evidence rather than ledger evidence.
-
-No database change was made. Do not interpret the result as recovery approval: the latest visible full-backup record is `2026-08-03T11:52:30`, and no isolated restore was tested. The current login is `sa`/sysadmin; use a separate approved migration identity before any direct SQL write. The disposable lifecycle suite remains blocked until an isolated `CosmosSalesGstIntegrationTests_*` database and dedicated test login are explicitly approved.
-
-### Approved backup and disposable-test execution — 27 October 2026
-
-The owner approved a strictly bounded write scope: a new non-overwriting `COPY_ONLY` full backup of `CosmosERP_Staging` with `CHECKSUM` and compression; one isolated restore-verification database; three new development-only SQL identities; and the synthetic-only `CosmosSalesGstIntegrationTests_Local` database. The staging database, application login, retained invoices, stock, GST snapshots, and statutory-generation records were not modified. The backup completed successfully, `RESTORE VERIFYONLY ... WITH CHECKSUM` passed, and `DBCC CHECKDB` passed after restore to retained `CosmosERP_Staging_RestoreVerify_19103a663729477a8c47aec03f97eb3d`. The restored database is online and must not be dropped without separate approval. This proves this backup restored and passed consistency checks; it is not a tested application recovery exercise or a substitute for a documented RPO/RTO.
-
-`cosmos_sql_inspector`, `cosmos_dev_migrator`, and `cosmos_gst_test` were created without writing credentials to source or command output. The inspector has catalog/state visibility and narrow Sales/GST reads; the migrator has the approved development DDL permissions; the test login is denied `CONNECT` to retained staging and has `db_owner` only in `CosmosSalesGstIntegrationTests_Local`. The test database contains repository schema only: `001_Full_Database_Setup.sql`, `003_gst_integration_module.sql`, and `20261026_sales_invoice_issuer_gst_registration.sql`; no staging business data was copied. Preserve its secret in an approved secret store before future runs—this execution rotated the test password in process only.
-
-Run the suite only with a process-scoped `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` targeting `CosmosSalesGstIntegrationTests_Local`:
-
-```powershell
-dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --no-build --filter "FullyQualifiedName~SalesInvoiceGstSqlIntegrationTests" -v:minimal
-```
-
-On 27 October the suite passed **1/1**. It covered draft creation/retrieval/update, GST registration and place-of-supply capture, price basis, confirmation/stock deduction, confirmed-edit rejection, cancellation/stock restoration, and a forced confirmation error proving transaction rollback. The post-test read-only check found zero `ITGSTP3` invoices, stock movements, registrations, items, parties, or test trigger; the disposable database remains online with `SIMPLE` recovery. Never redirect this suite to `CosmosERP_Staging` or production.
+The presence of GST columns/indexes in user-run SSMS verification is not evidence that the full SQL Sales lifecycle was tested. Tax policy approval, immutable compliance snapshots and GSTZen reconciliation remain outstanding; legal E-Invoice/E-Way Bill generation remains blocked. Rotate the committed SQL credential before granting broader automation privileges.
