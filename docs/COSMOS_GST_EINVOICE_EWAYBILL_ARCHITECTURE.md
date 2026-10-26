@@ -39,3 +39,32 @@ This is a source audit, not a staging, SQL Server, GSTZen sandbox, or production
 4. Wire SQL reservation, attempt recording and provider reconciliation into that workflow, then add list/history and supported artifact retrieval APIs and UI.
 
 The currently published GSTZen E-Way Bill retrieval documentation requires both a token and the selected GSTIN header. The current provider adapter only configures its configurable token header (`GstZenProviderService.ConfigureHeaders`), so its registration-to-provider-header mapping is not verified and must be corrected from the account contract before statutory operations are enabled.
+
+## Phase 2 sales-invoice compliance foundation
+
+Sales invoice creation/edit/confirmation/cancellation remains `SalesInvoicesController` → `SalesService` → `SalesRepository` → `sp_SalesInvoice_*`. Confirmation still calls `sp_SalesInvoice_Confirm` and performs its existing stock behavior; Phase 2 deliberately does **not** join compliance snapshot creation to that transaction because the required tax/compliance policy inputs are unresolved.
+
+The current persisted invoice contract contains invoice/date/status/customer reference and line item/quantity/unit/rate/discount/aggregate-tax/HSN text snapshots. It does **not** persist immutable seller registration/identity/address, buyer legal identity/GSTIN/address, billing-vs-shipping identity, place-of-supply source, document/special-tax treatment, component tax amounts, taxable values, cess, rule-version IDs, allocation/rounding inputs, or transport facts. Those data must be captured from authoritative sources in an approved confirmation workflow; current master records must not be used as a historical substitute.
+
+`GstComplianceEligibilityService` exposes a read-only, persisted-data-only assessment through `GET /api/v1/gst/invoices/{salesInvoiceId}/eligibility`. It reports actionable diagnostics but cannot make an invoice eligible today. This is the capability boundary for later snapshot/confirmation work, not a generation or snapshot-creation endpoint.
+
+## Phase 3 readiness checklist
+
+| Dependency | Owner | Current contract / missing change | Implementation location and verification |
+|---|---|---|---|
+| Seller-registration selection and legal address | Tax/compliance | No Sales Invoice registration/identity snapshot | Approved header fields + confirmation transaction; migration and confirmation rollback test |
+| Buyer identity, billing and shipping snapshots | Tax/compliance | Only mutable `CustomerPartyId` is persisted | Snapshot fields/child records in the approved canonical payload; historical-master-change test |
+| Place of supply and tax treatment | Tax/compliance | No persisted determination/source | Sales contract, validator and calculation input; intra/inter-state boundary tests |
+| Component taxes, taxable values and rule versions | Finance + tax | Aggregate tax and HSN text only | Approved GST engine integration and line snapshot contract; component/rounding reconciliation tests |
+| Discount allocation and rounding | Finance | No approved statutory allocation evidence | Calculation policy and canonical payload; invoice-vs-line reconciliation tests |
+| Confirmation snapshot transaction | Engineering + finance | `sp_SalesInvoice_Confirm` is stock-only | One transaction spanning confirmation, stock and snapshot reservation; rollback/idempotency tests |
+| Corrections and historical invoices | Finance + tax | Snapshot supersession is schema-ready; policy absent | Correction workflow and controlled remediation tool; no-current-master regression tests |
+| E-Way transport contract | Operations + tax | No approved transport fields/rules | Source-document transport model; operation-specific validator tests |
+| GSTZen headers/payloads | Provider owner | Account contract, GSTIN header mapping and payload details unverified | Provider adapter + sandbox fixtures; exact request/timeout reconciliation tests |
+| Provider idempotency/reconciliation | Provider owner + engineering | SQL reservation foundation exists, not wired | Snapshot-bound submission worker/status API; concurrent/unknown-outcome tests |
+
+Until every dependency is approved, persisted, and verified, keep the existing statutory generation block in place.
+
+## Phase 2 finalization status
+
+The eligibility boundary is runtime-tested for authentication, both required page permissions, known/unknown invoices, and invalid routing. It is not a company/branch/record-level access-control solution: the existing Sales schema and JWT/current-user contract contain no such scope. If deployment requires isolation across companies, branches, or invoice ownership, that missing scope model is a release blocker and must be implemented before exposing statutory diagnostics to users outside the globally authorized Sales audience.
