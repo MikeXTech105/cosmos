@@ -66,7 +66,8 @@ WHERE si.CompanyGstRegistrationId IS NOT NULL
 SELECT
     COUNT_BIG(*) AS InvoicesWithIncoherentGstCaptureFields
 FROM dbo.SalesInvoices AS si
-WHERE (si.PlaceOfSupplyStateCode IS NULL) <> (si.PlaceOfSupplySource IS NULL)
+WHERE (si.PlaceOfSupplyStateCode IS NULL AND si.PlaceOfSupplySource IS NOT NULL)
+   OR (si.PlaceOfSupplyStateCode IS NOT NULL AND si.PlaceOfSupplySource IS NULL)
    OR (si.PriceBasis IS NOT NULL AND si.PriceBasis NOT IN (0, 1));
 
 IF HAS_PERMS_BY_NAME(N'msdb', N'DATABASE', N'SELECT') = 1
