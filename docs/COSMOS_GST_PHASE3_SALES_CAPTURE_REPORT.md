@@ -38,6 +38,10 @@ The migration is additive, does not backfill invoices, and replaces the unsafe d
 
 It was **not executed** in this environment because the required disposable SQL Server connection string was not configured. The project owner separately reported SSMS evidence that all four nullable Sales context columns, the issuer FK and filtered issuer index exist, invalid issuer references return no rows, and historical invoice IDs 1 and 2 retain null GST context. That is user-provided database evidence, not a Codex-run integration test.
 
+## Direct development verification attempt — 26 October 2026
+
+The direct-SQL policy was reviewed and the Phase 3 branch was pushed at `e0fc301`. Neither approved injected development connection variable was available to the execution process. No fallback to a formerly tracked connection value was attempted. Therefore no direct connection, server/database identity check, permissions check, backup/recovery check, SQL-definition comparison, migration, or database mutation occurred. The [read-only preflight](../backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql) must be run first when a secure injected connection is available; a non-destructive migration still requires its evidence and explicit approval.
+
 ## Remaining gates
 
 - Approved state-code master / lookup data and statutory place-of-supply determination rules.

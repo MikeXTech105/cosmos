@@ -65,6 +65,10 @@ The current persisted invoice contract contains invoice/date/status/customer ref
 
 Until every dependency is approved, persisted, and verified, keep the existing statutory generation block in place.
 
+## Direct development SQL evidence boundary — 26 October 2026
+
+The owner-designated development database is retained business data and is not a lifecycle-test target. The Phase 3 branch contains a read-only SQL preflight for identity, permissions, schema, procedure-hash, integrity and backup-history evidence. Its direct execution is pending a securely injected connection; no statutory operation, provider call, snapshot activation, or database mutation was performed in this verification attempt.
+
 ## Phase 2 finalization status
 
 The eligibility boundary is runtime-tested for authentication, both required page permissions, known/unknown invoices, and invalid routing. It is not a company/branch/record-level access-control solution: the existing Sales schema and JWT/current-user contract contain no such scope. If deployment requires isolation across companies, branches, or invoice ownership, that missing scope model is a release blocker and must be implemented before exposing statutory diagnostics to users outside the globally authorized Sales audience.

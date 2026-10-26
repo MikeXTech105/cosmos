@@ -23,6 +23,12 @@ Do not store System Owner bootstrap passwords, DB connection strings, JWT signin
 
 Read [database setup](../backend/database/DATABASE_SETUP_README.md), [System Owner bootstrap](../backend/docs/SYSTEM_OWNER.md), [staging cleanup](../backend/docs/STAGING_DATABASE_CLEANUP.md) and [GST deployment runbook](COSMOS_GST_EINVOICE_EWAYBILL_SQL_DEPLOYMENT_RUNBOOK.md). The historical `002_Verify_Database_Setup.sql` placeholder must not serve as an operational gate.
 
+### Direct development SQL workflow
+
+`CosmosERP_Staging` on `srv1791248` is the owner-designated retained development/integration database, not a disposable test target. Access must use an environment-injected `COSMOS_DEVELOPMENT_SQL_CONNECTION_STRING` or `ConnectionStrings__CosmosDb`; never restore an old tracked value or log a credential. Start with the read-only [Phase 3 preflight](../backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql), retain its evidence, verify recovery readiness, and obtain approval before any change. Bounded, non-destructive, versioned migrations may then be applied directly and verified afterward.
+
+Never run `SalesInvoiceGstSqlIntegrationTests`, create test invoices, or mutate stock/business data against this retained database. That suite remains limited to an isolated `CosmosSalesGstIntegrationTests_*` database. Production access and statutory GST generation remain out of scope.
+
 ## Minimum checks
 ```bash
 dotnet restore backend/Cosmos.slnx
