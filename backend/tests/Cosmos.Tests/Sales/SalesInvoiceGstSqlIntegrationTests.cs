@@ -4,7 +4,6 @@ using Cosmos.Persistence.Connection;
 using Cosmos.Persistence.Repositories;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using Xunit.Sdk;
 
 namespace Cosmos.Tests.Sales;
 
@@ -14,12 +13,12 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
     private const string ConnectionStringVariable = "COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING";
     private const string Prefix = "ITGSTP3_";
 
-    [Fact]
+    [RequiresDisposableSalesGstDatabaseFact]
     [Trait("Category", "SqlIntegration")]
     public async Task Draft_context_round_trips_and_confirm_cancel_preserve_it()
     {
         var value = Environment.GetEnvironmentVariable(ConnectionStringVariable);
-        if (string.IsNullOrWhiteSpace(value)) throw SkipException.ForSkip($"Set {ConnectionStringVariable} to run Sales GST SQL integration tests.");
+        Assert.False(string.IsNullOrWhiteSpace(value), $"Set {ConnectionStringVariable} to run Sales GST SQL integration tests.");
         var builder = new SqlConnectionStringBuilder(value);
         Assert.StartsWith("CosmosSalesGstIntegrationTests_", builder.InitialCatalog, StringComparison.OrdinalIgnoreCase);
 
@@ -85,5 +84,29 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
     private sealed class TestConnectionFactory(string connectionString) : ISqlConnectionFactory
     {
         public async Task<IDbConnection> CreateOpenConnectionAsync(CancellationToken cancellationToken) { var connection = new SqlConnection(connectionString); await connection.OpenAsync(cancellationToken); return connection; }
+    }
+
+    private sealed class RequiresDisposableSalesGstDatabaseFactAttribute : FactAttribute
+    {
+        public RequiresDisposableSalesGstDatabaseFactAttribute()
+        {
+            var value = Environment.GetEnvironmentVariable(ConnectionStringVariable);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                Skip = $"Set {ConnectionStringVariable} to run Sales GST SQL integration tests.";
+                return;
+            }
+
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(value);
+                if (!builder.InitialCatalog.StartsWith("CosmosSalesGstIntegrationTests_", StringComparison.OrdinalIgnoreCase))
+                    Skip = "Sales GST SQL integration tests require a CosmosSalesGstIntegrationTests_* disposable database.";
+            }
+            catch (ArgumentException)
+            {
+                Skip = "Sales GST SQL integration tests require a valid disposable-database connection string.";
+            }
+        }
     }
 }
