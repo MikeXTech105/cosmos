@@ -35,3 +35,9 @@ Only after the preflight confirms `CosmosERP_Staging`, the requested privileges,
 ### Actual execution evidence — 26 October 2026
 
 The tracked application configuration was scrubbed of embedded connection, authentication, and provider tokens; `backend/src/Cosmos.API/appsettings.Development.example.json` now contains placeholders only. A supported environment-injected development SQL connection was not present in this Codex session. Consequently, no connection was opened, no server/database/permission/backup evidence was collected, no SQL object comparison against the deployed database occurred, no migration was applied, and no database record was changed. The old credential and non-database secrets must still be rotated/revoked by an authorized administrator because removing them from the working tree does not invalidate already exposed values or Git history.
+
+### Trusted direct-SQL verification — 26 October 2026
+
+After certificate remediation, Codex connected with `Encrypt=True`, `TrustServerCertificate=False`, and server-side `encrypt_option=TRUE`. The target was `srv1791248` / `CosmosERP_Staging`. The corrected Phase 3 preflight completed read-only: all Phase 3 fields, FK, filtered index, and check constraint are present/trusted; the three Sales procedure definitions and parameters match PR #173; invalid issuer references and incoherent capture fields are zero. No migration ledger exists, so this is deployed-object evidence rather than ledger evidence.
+
+No database change was made. Do not interpret the result as recovery approval: the latest visible full-backup record is `2026-08-03T11:52:30`, and no isolated restore was tested. The current login is `sa`/sysadmin; use a separate approved migration identity before any direct SQL write. The disposable lifecycle suite remains blocked until an isolated `CosmosSalesGstIntegrationTests_*` database and dedicated test login are explicitly approved.

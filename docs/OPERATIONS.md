@@ -29,6 +29,12 @@ Read [database setup](../backend/database/DATABASE_SETUP_README.md), [System Own
 
 Never run `SalesInvoiceGstSqlIntegrationTests`, create test invoices, or mutate stock/business data against this retained database. That suite remains limited to an isolated `CosmosSalesGstIntegrationTests_*` database. Production access and statutory GST generation remain out of scope.
 
+### Direct-SQL evidence — 26 October 2026
+
+The certificate-validated development connection reached `srv1791248` / `CosmosERP_Staging` with SQL reporting encrypted transport. The configured login is `sa`, a sysadmin and `db_owner` with `ALTER`, `CONTROL`, backup, and database-creation privileges. It must not remain the automation identity. Provision separate least-privilege accounts: read-only catalog inspection; an approved migration account limited to the intended development database; and an isolated-test account limited to `CosmosSalesGstIntegrationTests_*` databases.
+
+The only visible full-backup record is `2026-08-03T11:52:30`; its existence does not prove restorability or satisfy a current recovery point objective. Do not approve a migration, backup, recovery-model change, or restore until an administrator creates a new non-overwriting backup and proves a restore in an isolated environment.
+
 ## Minimum checks
 ```bash
 dotnet restore backend/Cosmos.slnx

@@ -25,7 +25,7 @@ The project has implemented broad ERP APIs and a substantial React interface, bu
 4. **P1 — GST compliance:** [Remediation report](COSMOS_GST_EINVOICE_EWAYBILL_MASTER_REMEDIATION_REPORT.md) documents `409 GST_SERVER_GENERATION_NOT_AVAILABLE`, not a finished compliant generation flow.
 5. **P1 — Business assurance:** Reconcile stock, Rojmel transfers, shipment dispatch/returns, purchasing, manufacturing posting and cancellation with concrete test data.
 6. **P2 — Documentation:** Use masters in this portal; retain dated source evidence in [register](DOCUMENT_REGISTER.md) until a safe archival migration.
-7. **P1 — Direct development SQL:** `CosmosERP_Staging` is retained integration data. At the 2026-10-26 verification attempt, no approved injected connection was available, so identity/permission/backup/schema checks and any Phase 3 migration remain unrun. Use the guarded preflight before approving a change.
+7. **P1 — Direct development SQL:** Certificate-validated preflight now confirms Phase 3 capture objects on retained `CosmosERP_Staging`; no write was performed. The current `sa`/sysadmin automation identity, stale visible backup evidence, absent tested restore, and absent isolated Sales GST lifecycle database remain release gates.
 
 ## Roadmap
 **Gate A:** rotate secrets, fix release branch selection and secure transport.

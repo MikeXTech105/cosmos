@@ -42,6 +42,12 @@ It was **not executed** in this environment because the required disposable SQL 
 
 The direct-SQL policy was reviewed and the Phase 3 branch was pushed at `e0fc301`. Neither approved injected development connection variable was available to the execution process. No fallback to a formerly tracked connection value was attempted. Therefore no direct connection, server/database identity check, permissions check, backup/recovery check, SQL-definition comparison, migration, or database mutation occurred. The [read-only preflight](../backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql) must be run first when a secure injected connection is available; a non-destructive migration still requires its evidence and explicit approval.
 
+### Final direct verification — 26 October 2026
+
+Certificate-validated direct SQL verification now passed against `srv1791248` / `CosmosERP_Staging`. PR #173's four nullable header fields, FK, filtered issuer index, price-basis constraint, and `Create`/`Update`/`GetById` procedure bodies and signatures are deployed and match source. The two retained non-deleted invoices still have null issuer, place-of-supply, and price-basis capture; no automatic backfill occurred. `EInvoices`, `EWayBills`, compliance snapshots, generation requests, and generation attempts all contain zero records. This confirms the intended capture-only boundary, not statutory readiness.
+
+The lifecycle suite was not run: no isolated `CosmosSalesGstIntegrationTests_*` database exists, and the available `sa`/sysadmin connection is prohibited for automated test setup. Its prerequisites are the base Sales schema/TVP and procedures, GST-registration schema, Phase 3 migration, plus empty synthetic-only storage. Creating that database or its restricted login requires explicit approval, storage confirmation, and a disposable cleanup plan.
+
 ## Remaining gates
 
 - Approved state-code master / lookup data and statutory place-of-supply determination rules.
