@@ -16,18 +16,25 @@ Date: 2026-10-27. Branch: `feature/gst-phase4-company-branch-scope`, based on `o
 
 It changes only `sp_SalesInvoice_Create` and `sp_SalesInvoice_Update` after checking their deployed Phase 3 signatures. The script fails closed if the expected procedure revision is absent. It does not update existing invoices, registrations, stock, totals, or statutory records.
 
-## Actual direct SQL evidence (read-only)
+## Actual direct SQL evidence (read-only staging)
 
 - Connection used the securely injected development connection string; value was not displayed.
 - Server/database: `srv1791248` / `CosmosERP_Staging`.
 - The login has `ALTER` on the database.
 - Current staging has two Sales invoices, no canonical company/branch tables or Sales invoice scope columns, and zero GST registrations.
 - A recent full backup is available. This confirms backup existence only; it is not a restore test performed in this increment.
-- No SQL schema, data, permissions, backups, or configuration were modified during this increment.
+- Staging remains unchanged: it has two invoices, no Phase 4 scope tables, and the Sales V2 table type is present. No retained schema, data, permissions, backups, or configuration were modified.
+
+## Disposable SQL execution evidence
+
+- `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` parsed without disclosure. It targets `CosmosSalesGstIntegrationTests_Local`, uses `cosmos_gst_test`, has `Encrypt=True;TrustServerCertificate=False`, reaches `srv1791248`, and is denied access to `CosmosERP_Staging`.
+- The database was empty of invoices, registrations, parties, and items before work.
+- Its baseline was missing `dbo.SalesInvoiceItemInputV2` and was too old for the full quantity-precision migration. That migration's preflight stopped with no changes. A new, versioned, test-database-only bootstrap creates the V2 Sales TVP and updates only the two Sales procedures; it rejects any database not named `CosmosSalesGstIntegrationTests_*`.
+- The bootstrap and `20261027_30_company_branch_scope.sql` then applied successfully. Verification confirmed the three scope tables, Sales `CompanyId`/`BranchId`, all expected branch/company/user foreign keys, scope indexes, the Sales V2 TVP, and scope parameters on Sales create/update procedures.
 
 ## Verification
 
-Passed locally:
+Passed locally and against the disposable SQL database:
 
 ```powershell
 dotnet restore backend/src/Cosmos.API/Cosmos.API.csproj
@@ -36,13 +43,17 @@ dotnet build backend/src/Cosmos.API/Cosmos.API.csproj --no-restore
 
 The build completed successfully (seven pre-existing dependency/vulnerability warnings).
 
-Not run:
+```powershell
+dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter "FullyQualifiedName~CompanyBranchScopeSqlIntegrationTests|FullyQualifiedName~SalesInvoiceGstSqlIntegrationTests"
+```
 
-- `SalesInvoiceGstSqlIntegrationTests`: `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` is absent from this Codex process. The migration was therefore not applied to retained staging, and no lifecycle test was run there.
-- Cross-company/cross-branch SQL integration cases and frontend administration screens remain pending the disposable connection and the master-management API/UI increment.
+Two SQL integration tests passed. The existing lifecycle test proved draft/update/confirm/cancel, stock deduction/restoration, confirmed-update rejection, and forced confirmation rollback. The new scope test used real SQL assignments and application scope authorization to prove company access, branch isolation, company-level rules, no-assignment denial, legacy-record System Owner-only access, duplicate active-assignment rejection, and branch/company foreign-key rejection. Both tests remove their prefixed fixtures in `finally`; post-run checks found no prefixed rows.
+
+Not run / incomplete:
+
+- HTTP/API response-path tests, Company/Branch/assignment administration APIs, and frontend administration/selectors are not implemented in this increment yet.
+- The scope test does not yet cover direct stored-procedure registration mismatch, draft reassignment, payment/confirm/cancel service interception, revocation races, or frontend behavior.
 
 ## Required next controlled step
 
-The current desktop process has no `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING`. Inspection without reading values confirmed that `%USERPROFILE%\.codex\.env` has the development key but no disposable-test key. Add the dedicated restricted-test-login connection under this exact key, retain `Encrypt=True;TrustServerCertificate=False`, restart the Codex desktop app, and begin a new task so the process inherits it. Do not use the `sa` value or copy the development credential. The database name must be `CosmosSalesGstIntegrationTests_Local`; the test's existing prefix guard will reject every other name.
-
-After the variable is present, apply this migration only to that disposable database, run the Sales/GST lifecycle suite plus added scope cases, review results, then separately approve the guarded staging migration. Do not run lifecycle tests against `CosmosERP_Staging`.
+Before staging deployment, complete the missing master administration/API/UI and expanded SQL/API coverage. The current retained staging migration would add three empty masters/assignment tables, nullable Sales ownership columns, foreign keys, indexes, the scope procedure, and guarded Sales procedure changes. Its two existing invoices stay untouched and unscoped. Apply it only after separate approval; do not run lifecycle tests against `CosmosERP_Staging`.
