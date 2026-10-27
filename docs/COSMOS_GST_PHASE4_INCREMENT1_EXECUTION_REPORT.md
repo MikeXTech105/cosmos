@@ -43,4 +43,6 @@ Not run:
 
 ## Required next controlled step
 
-Inject a certificate-validated connection string for the existing `CosmosSalesGstIntegrationTests_Local` database as `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING`. Apply this migration there, run the Sales/GST lifecycle suite plus added scope cases, review results, then separately approve the guarded staging migration. Do not run lifecycle tests against `CosmosERP_Staging`.
+The current desktop process has no `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING`. Inspection without reading values confirmed that `%USERPROFILE%\.codex\.env` has the development key but no disposable-test key. Add the dedicated restricted-test-login connection under this exact key, retain `Encrypt=True;TrustServerCertificate=False`, restart the Codex desktop app, and begin a new task so the process inherits it. Do not use the `sa` value or copy the development credential. The database name must be `CosmosSalesGstIntegrationTests_Local`; the test's existing prefix guard will reject every other name.
+
+After the variable is present, apply this migration only to that disposable database, run the Sales/GST lifecycle suite plus added scope cases, review results, then separately approve the guarded staging migration. Do not run lifecycle tests against `CosmosERP_Staging`.
