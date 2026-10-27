@@ -55,14 +55,26 @@ public sealed record BomCalculationInput(
     bool? ManualPlanning,
     int? RoundingRule,
     bool? SettingIsActive,
-    decimal ValidInboundQuantity = 0m);
+    decimal ValidInboundQuantity = 0m)
+{
+    public decimal? SourceComponentQuantity { get; init; }
+    public decimal? BomOutputBaseQuantity { get; init; }
+    public decimal? BomWastePercentage { get; init; }
+    public int BomSelectionCount { get; init; } = 1;
+    public bool UnitVerified { get; init; } = true;
+    public decimal ReservedStock { get; init; }
+    public BomCalculationInput() : this(0,0,string.Empty,string.Empty,false,null,0,string.Empty,string.Empty,0,false,0,null,null,null,null,null,null,null,null,null,null,null) { }
+}
 
 public sealed record UnmappedSalesInput(string ChannelCode, string ChannelSku, int OccurrenceCount);
 
 public sealed record ProcurementCalculationData(
     IReadOnlyCollection<ProductSalesInput> ProductSales,
     IReadOnlyCollection<BomCalculationInput> BomComponents,
-    IReadOnlyCollection<UnmappedSalesInput> UnmappedSales);
+    IReadOnlyCollection<UnmappedSalesInput> UnmappedSales)
+{
+    public string? SourceRevision { get; init; }
+}
 
 public sealed record ProcurementCalculationResult(
     PlanningValidationDto Validation,
@@ -78,4 +90,7 @@ public sealed record PlanningRunSaveModel(
     string? Notes,
     string CalculationVersion,
     string InventoryBasis,
-    IReadOnlyCollection<PlanningCalculationLineDto> Lines);
+    IReadOnlyCollection<PlanningCalculationLineDto> Lines)
+{
+    public string? SourceRevision { get; init; }
+}

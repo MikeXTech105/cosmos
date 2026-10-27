@@ -201,7 +201,7 @@ public sealed class SalesRepository : ISalesRepository
         parameters.Add("DiscountAmount", discountAmount);
         parameters.Add("Notes", notes);
         parameters.Add("TermsAndConditions", terms);
-        parameters.Add("Items", ItemTable(items).AsTableValuedParameter("dbo.SalesInvoiceItemInput"));
+        parameters.Add("Items", ItemTable(items).AsTableValuedParameter("dbo.SalesInvoiceItemInputV2"));
         parameters.Add("UserId", userId);
         return parameters;
     }

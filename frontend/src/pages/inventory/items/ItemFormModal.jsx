@@ -552,7 +552,7 @@ const ItemFormModal = ({
                     <ToggleRow
                       checked={field.value}
                       label="Track inventory"
-                      description="Maintain opening, current, reserved, and minimum stock for this product."
+                      description="Opening stock is set during creation. Current and reserved balances follow inventory transactions."
                       onChange={field.onChange}
                     />
                   )}
@@ -564,7 +564,7 @@ const ItemFormModal = ({
                     id="openingStock"
                     name="openingStock"
                     label="Opening Stock"
-                    disabled={!trackInventory}
+                    disabled={isEdit || !trackInventory}
                     error={errors.openingStock?.message}
                   />
                   <ItemNumberInput
@@ -572,7 +572,7 @@ const ItemFormModal = ({
                     id="openingStockValue"
                     name="openingStockValue"
                     label="Opening Stock Value"
-                    disabled={!trackInventory}
+                    disabled={isEdit || !trackInventory}
                     error={errors.openingStockValue?.message}
                   />
                   <ItemNumberInput
@@ -580,7 +580,7 @@ const ItemFormModal = ({
                     id="currentStock"
                     name="currentStock"
                     label="Current Stock"
-                    disabled={!trackInventory}
+                    disabled={true}
                     error={errors.currentStock?.message}
                   />
                   <ItemNumberInput
@@ -588,7 +588,7 @@ const ItemFormModal = ({
                     id="reservedStock"
                     name="reservedStock"
                     label="Reserved Stock"
-                    disabled={!trackInventory}
+                    disabled={true}
                     error={errors.reservedStock?.message}
                   />
                   <ItemNumberInput

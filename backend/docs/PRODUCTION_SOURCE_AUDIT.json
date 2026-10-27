@@ -1,0 +1,3502 @@
+{
+  "verifiedOn": "2026-10-27",
+  "spreadsheetId": "1p5gCaPMU5gI2f_vvnuODt24eVDYDaOvUNW-ZWjCsnew",
+  "notes": [
+    "Read-only source evidence; no source balance is posting authority.",
+    "Header labels are positional; repeated labels are not collapsed.",
+    "Formula families below normalize A1 row references; the audit counts retain the original full-read measurements.",
+    "OBJECT canvases had no readable rendered layout; dependencies are recorded in the handoff."
+  ],
+  "sheets": [
+    {
+      "title": "Form Responses 2",
+      "type": "GRID",
+      "counts": {
+        "title": "Form Responses 2",
+        "inputColumns": 50,
+        "displayColumns": 50,
+        "displayRows": 3,
+        "displayCells": 60,
+        "inputCells": 60,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Timestamp"
+        },
+        {
+          "column": "B",
+          "header": "Production Date"
+        },
+        {
+          "column": "C",
+          "header": "Production Date"
+        },
+        {
+          "column": "D",
+          "header": "BH-20"
+        },
+        {
+          "column": "E",
+          "header": "BH-40"
+        },
+        {
+          "column": "F",
+          "header": "MH-20"
+        },
+        {
+          "column": "G",
+          "header": "GH-20"
+        },
+        {
+          "column": "H",
+          "header": "WH-20"
+        },
+        {
+          "column": "I",
+          "header": "FX-16"
+        },
+        {
+          "column": "J",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "K",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "L",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "M",
+          "header": "BH-25"
+        },
+        {
+          "column": "N",
+          "header": "BH-40"
+        },
+        {
+          "column": "O",
+          "header": "MH-20"
+        },
+        {
+          "column": "P",
+          "header": "GH-20"
+        },
+        {
+          "column": "Q",
+          "header": "WH-20"
+        },
+        {
+          "column": "R",
+          "header": "FX-16"
+        },
+        {
+          "column": "S",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "T",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "U",
+          "header": "BH-20"
+        },
+        {
+          "column": "V",
+          "header": "BH-40"
+        },
+        {
+          "column": "W",
+          "header": "MH-20"
+        },
+        {
+          "column": "X",
+          "header": "GH-20"
+        },
+        {
+          "column": "Y",
+          "header": "WH-20"
+        },
+        {
+          "column": "Z",
+          "header": "FX-16"
+        },
+        {
+          "column": "AA",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "AB",
+          "header": "BH-20"
+        },
+        {
+          "column": "AC",
+          "header": "BH-40"
+        },
+        {
+          "column": "AD",
+          "header": "MH-20"
+        },
+        {
+          "column": "AE",
+          "header": "GH-20"
+        },
+        {
+          "column": "AF",
+          "header": "WH-20"
+        },
+        {
+          "column": "AG",
+          "header": "FX-16"
+        },
+        {
+          "column": "AH",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "AI",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "AJ",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "AK",
+          "header": "BH-25"
+        },
+        {
+          "column": "AL",
+          "header": "BH-40"
+        },
+        {
+          "column": "AM",
+          "header": "MH-20"
+        },
+        {
+          "column": "AN",
+          "header": "GH-20"
+        },
+        {
+          "column": "AO",
+          "header": "WH-20"
+        },
+        {
+          "column": "AP",
+          "header": "FX-16"
+        },
+        {
+          "column": "AQ",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "AR",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "AS",
+          "header": "BH-20"
+        },
+        {
+          "column": "AT",
+          "header": "BH-40"
+        },
+        {
+          "column": "AU",
+          "header": "MH-20"
+        },
+        {
+          "column": "AV",
+          "header": "GH-20"
+        },
+        {
+          "column": "AW",
+          "header": "WH-20"
+        },
+        {
+          "column": "AX",
+          "header": "FX-16"
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "Production Date",
+          "columns": [
+            "B",
+            "C"
+          ]
+        },
+        {
+          "header": "BH-20",
+          "columns": [
+            "D",
+            "U",
+            "AB",
+            "AS"
+          ]
+        },
+        {
+          "header": "BH-40",
+          "columns": [
+            "E",
+            "N",
+            "V",
+            "AC",
+            "AL",
+            "AT"
+          ]
+        },
+        {
+          "header": "MH-20",
+          "columns": [
+            "F",
+            "O",
+            "W",
+            "AD",
+            "AM",
+            "AU"
+          ]
+        },
+        {
+          "header": "GH-20",
+          "columns": [
+            "G",
+            "P",
+            "X",
+            "AE",
+            "AN",
+            "AV"
+          ]
+        },
+        {
+          "header": "WH-20",
+          "columns": [
+            "H",
+            "Q",
+            "Y",
+            "AF",
+            "AO",
+            "AW"
+          ]
+        },
+        {
+          "header": "FX-16",
+          "columns": [
+            "I",
+            "R",
+            "Z",
+            "AG",
+            "AP",
+            "AX"
+          ]
+        },
+        {
+          "header": "HAPPY-20",
+          "columns": [
+            "J",
+            "AA",
+            "AH"
+          ]
+        },
+        {
+          "header": "HAPPY-30",
+          "columns": [
+            "K",
+            "AI"
+          ]
+        },
+        {
+          "header": "HAPPY-40",
+          "columns": [
+            "L",
+            "T",
+            "AJ",
+            "AR"
+          ]
+        },
+        {
+          "header": "BH-25",
+          "columns": [
+            "M",
+            "AK"
+          ]
+        },
+        {
+          "header": "HAPPY-25",
+          "columns": [
+            "S",
+            "AQ"
+          ]
+        }
+      ],
+      "formulaFamilies": []
+    },
+    {
+      "title": "Form Responses 1",
+      "type": "GRID",
+      "counts": {
+        "title": "Form Responses 1",
+        "inputColumns": 98,
+        "displayColumns": 98,
+        "displayRows": 3,
+        "displayCells": 112,
+        "inputCells": 112,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Timestamp"
+        },
+        {
+          "column": "B",
+          "header": "Dispatch Date"
+        },
+        {
+          "column": "C",
+          "header": "BH-20"
+        },
+        {
+          "column": "D",
+          "header": "BH-40"
+        },
+        {
+          "column": "E",
+          "header": "MH-20"
+        },
+        {
+          "column": "F",
+          "header": "Dispatch Date"
+        },
+        {
+          "column": "G",
+          "header": "BH-20"
+        },
+        {
+          "column": "H",
+          "header": "BH-40"
+        },
+        {
+          "column": "I",
+          "header": "MH-20"
+        },
+        {
+          "column": "J",
+          "header": "GH-20"
+        },
+        {
+          "column": "K",
+          "header": "WH-20"
+        },
+        {
+          "column": "L",
+          "header": "Dispatch Date"
+        },
+        {
+          "column": "M",
+          "header": "BH-20"
+        },
+        {
+          "column": "N",
+          "header": "BH-40"
+        },
+        {
+          "column": "O",
+          "header": "Dispatch Date"
+        },
+        {
+          "column": "P",
+          "header": "BH-20"
+        },
+        {
+          "column": "Q",
+          "header": "BH-40"
+        },
+        {
+          "column": "R",
+          "header": "MH-20"
+        },
+        {
+          "column": "S",
+          "header": "GH-20"
+        },
+        {
+          "column": "T",
+          "header": "WH-20"
+        },
+        {
+          "column": "U",
+          "header": "FX-16"
+        },
+        {
+          "column": "V",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "W",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "X",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "Y",
+          "header": "BH-25"
+        },
+        {
+          "column": "Z",
+          "header": "BH-40"
+        },
+        {
+          "column": "AA",
+          "header": "MH-20"
+        },
+        {
+          "column": "AB",
+          "header": "GH-20"
+        },
+        {
+          "column": "AC",
+          "header": "WH-20"
+        },
+        {
+          "column": "AD",
+          "header": "FX-16"
+        },
+        {
+          "column": "AE",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "AF",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "AG",
+          "header": "BH-20"
+        },
+        {
+          "column": "AH",
+          "header": "BH-40"
+        },
+        {
+          "column": "AI",
+          "header": "MH-20"
+        },
+        {
+          "column": "AJ",
+          "header": "GH-20"
+        },
+        {
+          "column": "AK",
+          "header": "WH-20"
+        },
+        {
+          "column": "AL",
+          "header": "FX-16"
+        },
+        {
+          "column": "AM",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "AN",
+          "header": "MH-20"
+        },
+        {
+          "column": "AO",
+          "header": "GH-20"
+        },
+        {
+          "column": "AP",
+          "header": "WH-20"
+        },
+        {
+          "column": "AQ",
+          "header": "FX-16"
+        },
+        {
+          "column": "AR",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "AS",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "AT",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "AU",
+          "header": "BH-25"
+        },
+        {
+          "column": "AV",
+          "header": "BH-40"
+        },
+        {
+          "column": "AW",
+          "header": "MH-20"
+        },
+        {
+          "column": "AX",
+          "header": "GH-20"
+        },
+        {
+          "column": "AY",
+          "header": "WH-20"
+        },
+        {
+          "column": "AZ",
+          "header": "FX-16"
+        },
+        {
+          "column": "BA",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "BB",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "BC",
+          "header": "BH-20"
+        },
+        {
+          "column": "BD",
+          "header": "BH-40"
+        },
+        {
+          "column": "BE",
+          "header": "MH-20"
+        },
+        {
+          "column": "BF",
+          "header": "GH-20"
+        },
+        {
+          "column": "BG",
+          "header": "WH-20"
+        },
+        {
+          "column": "BH",
+          "header": "FX-16"
+        },
+        {
+          "column": "BI",
+          "header": "FX-16"
+        },
+        {
+          "column": "BJ",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "BK",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "BL",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "BM",
+          "header": "BH-25"
+        },
+        {
+          "column": "BN",
+          "header": "BH-40"
+        },
+        {
+          "column": "BO",
+          "header": "MH-20"
+        },
+        {
+          "column": "BP",
+          "header": "GH-20"
+        },
+        {
+          "column": "BQ",
+          "header": "WH-20"
+        },
+        {
+          "column": "BR",
+          "header": "FX-16"
+        },
+        {
+          "column": "BS",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "BT",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "BU",
+          "header": "BH-20"
+        },
+        {
+          "column": "BV",
+          "header": "BH-40"
+        },
+        {
+          "column": "BW",
+          "header": "MH-20"
+        },
+        {
+          "column": "BX",
+          "header": "GH-20"
+        },
+        {
+          "column": "BY",
+          "header": "WH-20"
+        },
+        {
+          "column": "BZ",
+          "header": "FX-16"
+        },
+        {
+          "column": "CA",
+          "header": "GH-20"
+        },
+        {
+          "column": "CB",
+          "header": "WH-20"
+        },
+        {
+          "column": "CC",
+          "header": "FX-16"
+        },
+        {
+          "column": "CD",
+          "header": "HAPPY-20"
+        },
+        {
+          "column": "CE",
+          "header": "HAPPY-30"
+        },
+        {
+          "column": "CF",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "CG",
+          "header": "BH-25"
+        },
+        {
+          "column": "CH",
+          "header": "BH-40"
+        },
+        {
+          "column": "CI",
+          "header": "MH-20"
+        },
+        {
+          "column": "CJ",
+          "header": "GH-20"
+        },
+        {
+          "column": "CK",
+          "header": "WH-20"
+        },
+        {
+          "column": "CL",
+          "header": "FX-16"
+        },
+        {
+          "column": "CM",
+          "header": "HAPPY-25"
+        },
+        {
+          "column": "CN",
+          "header": "HAPPY-40"
+        },
+        {
+          "column": "CO",
+          "header": "BH-20"
+        },
+        {
+          "column": "CP",
+          "header": "BH-40"
+        },
+        {
+          "column": "CQ",
+          "header": "MH-20"
+        },
+        {
+          "column": "CR",
+          "header": "GH-20"
+        },
+        {
+          "column": "CS",
+          "header": "WH-20"
+        },
+        {
+          "column": "CT",
+          "header": "FX-16"
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "Dispatch Date",
+          "columns": [
+            "B",
+            "F",
+            "L",
+            "O"
+          ]
+        },
+        {
+          "header": "BH-20",
+          "columns": [
+            "C",
+            "G",
+            "M",
+            "P",
+            "AG",
+            "BC",
+            "BU",
+            "CO"
+          ]
+        },
+        {
+          "header": "BH-40",
+          "columns": [
+            "D",
+            "H",
+            "N",
+            "Q",
+            "Z",
+            "AH",
+            "AV",
+            "BD",
+            "BN",
+            "BV",
+            "CH",
+            "CP"
+          ]
+        },
+        {
+          "header": "MH-20",
+          "columns": [
+            "E",
+            "I",
+            "R",
+            "AA",
+            "AI",
+            "AN",
+            "AW",
+            "BE",
+            "BO",
+            "BW",
+            "CI",
+            "CQ"
+          ]
+        },
+        {
+          "header": "GH-20",
+          "columns": [
+            "J",
+            "S",
+            "AB",
+            "AJ",
+            "AO",
+            "AX",
+            "BF",
+            "BP",
+            "BX",
+            "CA",
+            "CJ",
+            "CR"
+          ]
+        },
+        {
+          "header": "WH-20",
+          "columns": [
+            "K",
+            "T",
+            "AC",
+            "AK",
+            "AP",
+            "AY",
+            "BG",
+            "BQ",
+            "BY",
+            "CB",
+            "CK",
+            "CS"
+          ]
+        },
+        {
+          "header": "FX-16",
+          "columns": [
+            "U",
+            "AD",
+            "AL",
+            "AQ",
+            "AZ",
+            "BH",
+            "BI",
+            "BR",
+            "BZ",
+            "CC",
+            "CL",
+            "CT"
+          ]
+        },
+        {
+          "header": "HAPPY-20",
+          "columns": [
+            "V",
+            "AM",
+            "AR",
+            "BJ",
+            "CD"
+          ]
+        },
+        {
+          "header": "HAPPY-30",
+          "columns": [
+            "W",
+            "AS",
+            "BK",
+            "CE"
+          ]
+        },
+        {
+          "header": "HAPPY-40",
+          "columns": [
+            "X",
+            "AF",
+            "AT",
+            "BB",
+            "BL",
+            "BT",
+            "CF",
+            "CN"
+          ]
+        },
+        {
+          "header": "BH-25",
+          "columns": [
+            "Y",
+            "AU",
+            "BM",
+            "CG"
+          ]
+        },
+        {
+          "header": "HAPPY-25",
+          "columns": [
+            "AE",
+            "BA",
+            "BS",
+            "CM"
+          ]
+        }
+      ],
+      "formulaFamilies": []
+    },
+    {
+      "title": "DISPATCH DATA",
+      "type": "GRID",
+      "counts": {
+        "title": "DISPATCH DATA",
+        "inputColumns": 25,
+        "displayColumns": 25,
+        "displayRows": 368,
+        "displayCells": 425,
+        "inputCells": 425,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": null
+        },
+        {
+          "column": "B",
+          "header": "AMZ"
+        },
+        {
+          "column": "C",
+          "header": "AMZ"
+        },
+        {
+          "column": "D",
+          "header": "AMZ"
+        },
+        {
+          "column": "E",
+          "header": "AMZ"
+        },
+        {
+          "column": "F",
+          "header": "AMZ"
+        },
+        {
+          "column": "G",
+          "header": "BLI"
+        },
+        {
+          "column": "H",
+          "header": "BLI"
+        },
+        {
+          "column": "I",
+          "header": "BLI"
+        },
+        {
+          "column": "J",
+          "header": "BLI"
+        },
+        {
+          "column": "K",
+          "header": "BLI"
+        },
+        {
+          "column": "L",
+          "header": "AMZ"
+        },
+        {
+          "column": "M",
+          "header": "BLI"
+        },
+        {
+          "column": "N",
+          "header": "AMZ"
+        },
+        {
+          "column": "O",
+          "header": "AMZ"
+        },
+        {
+          "column": "P",
+          "header": "BLI"
+        },
+        {
+          "column": "Q",
+          "header": "BLI"
+        },
+        {
+          "column": "R",
+          "header": "BLI"
+        },
+        {
+          "column": "S",
+          "header": "INS"
+        },
+        {
+          "column": "T",
+          "header": "INS"
+        },
+        {
+          "column": "U",
+          "header": "INS"
+        },
+        {
+          "column": "V",
+          "header": "INS"
+        },
+        {
+          "column": "W",
+          "header": "INS"
+        },
+        {
+          "column": "X",
+          "header": "INS"
+        },
+        {
+          "column": "Y",
+          "header": "INS"
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "AMZ",
+          "columns": [
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "L",
+            "N",
+            "O"
+          ]
+        },
+        {
+          "header": "BLI",
+          "columns": [
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "M",
+            "P",
+            "Q",
+            "R"
+          ]
+        },
+        {
+          "header": "INS",
+          "columns": [
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y"
+          ]
+        }
+      ],
+      "formulaFamilies": []
+    },
+    {
+      "title": "PRODUCTION DATA",
+      "type": "GRID",
+      "counts": {
+        "title": "PRODUCTION DATA",
+        "inputColumns": 25,
+        "displayColumns": 25,
+        "displayRows": 369,
+        "displayCells": 471,
+        "inputCells": 471,
+        "formulaCells": 24,
+        "formulaFamilies": 24
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "ADD TWO CLICKABLE BUTTONS WHICH REDIRECT TO DISPATCH FORM AND PRODUCTION FORM IN THIS CANVAS PAGE"
+        },
+        {
+          "column": "B",
+          "header": "AMZ"
+        },
+        {
+          "column": "C",
+          "header": "AMZ"
+        },
+        {
+          "column": "D",
+          "header": "AMZ"
+        },
+        {
+          "column": "E",
+          "header": "AMZ"
+        },
+        {
+          "column": "F",
+          "header": "AMZ"
+        },
+        {
+          "column": "G",
+          "header": "BLI"
+        },
+        {
+          "column": "H",
+          "header": "BLI"
+        },
+        {
+          "column": "I",
+          "header": "BLI"
+        },
+        {
+          "column": "J",
+          "header": "BLI"
+        },
+        {
+          "column": "K",
+          "header": "BLI"
+        },
+        {
+          "column": "L",
+          "header": "AMZ"
+        },
+        {
+          "column": "M",
+          "header": "BLI"
+        },
+        {
+          "column": "N",
+          "header": "AMZ"
+        },
+        {
+          "column": "O",
+          "header": "AMZ"
+        },
+        {
+          "column": "P",
+          "header": "BLI"
+        },
+        {
+          "column": "Q",
+          "header": "BLI"
+        },
+        {
+          "column": "R",
+          "header": "BLI"
+        },
+        {
+          "column": "S",
+          "header": "INS"
+        },
+        {
+          "column": "T",
+          "header": "INS"
+        },
+        {
+          "column": "U",
+          "header": "INS"
+        },
+        {
+          "column": "V",
+          "header": "INS"
+        },
+        {
+          "column": "W",
+          "header": "INS"
+        },
+        {
+          "column": "X",
+          "header": "INS"
+        },
+        {
+          "column": "Y",
+          "header": "INS"
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "AMZ",
+          "columns": [
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "L",
+            "N",
+            "O"
+          ]
+        },
+        {
+          "header": "BLI",
+          "columns": [
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "M",
+            "P",
+            "Q",
+            "R"
+          ]
+        },
+        {
+          "header": "INS",
+          "columns": [
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X",
+            "Y"
+          ]
+        }
+      ],
+      "formulaFamilies": [
+        {
+          "normalized": "=SUM(B#:B#)",
+          "exampleCell": "B370",
+          "exampleFormula": "=SUM(B3:B368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(C#:C#)",
+          "exampleCell": "C370",
+          "exampleFormula": "=SUM(C3:C368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(D#:D#)",
+          "exampleCell": "D370",
+          "exampleFormula": "=SUM(D3:D368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(E#:E#)",
+          "exampleCell": "E370",
+          "exampleFormula": "=SUM(E3:E368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(F#:F#)",
+          "exampleCell": "F370",
+          "exampleFormula": "=SUM(F3:F368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(G#:G#)",
+          "exampleCell": "G370",
+          "exampleFormula": "=SUM(G3:G368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(H#:H#)",
+          "exampleCell": "H370",
+          "exampleFormula": "=SUM(H3:H368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(I#:I#)",
+          "exampleCell": "I370",
+          "exampleFormula": "=SUM(I3:I368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(J#:J#)",
+          "exampleCell": "J370",
+          "exampleFormula": "=SUM(J3:J368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(K#:K#)",
+          "exampleCell": "K370",
+          "exampleFormula": "=SUM(K3:K368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(L#:L#)",
+          "exampleCell": "L370",
+          "exampleFormula": "=SUM(L3:L368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(M#:M#)",
+          "exampleCell": "M370",
+          "exampleFormula": "=SUM(M3:M368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(N#:N#)",
+          "exampleCell": "N370",
+          "exampleFormula": "=SUM(N3:N368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(O#:O#)",
+          "exampleCell": "O370",
+          "exampleFormula": "=SUM(O3:O368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(P#:P#)",
+          "exampleCell": "P370",
+          "exampleFormula": "=SUM(P3:P368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(Q#:Q#)",
+          "exampleCell": "Q370",
+          "exampleFormula": "=SUM(Q3:Q368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(R#:R#)",
+          "exampleCell": "R370",
+          "exampleFormula": "=SUM(R3:R368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(S#:S#)",
+          "exampleCell": "S370",
+          "exampleFormula": "=SUM(S3:S368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(T#:T#)",
+          "exampleCell": "T370",
+          "exampleFormula": "=SUM(T3:T368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(U#:U#)",
+          "exampleCell": "U370",
+          "exampleFormula": "=SUM(U3:U368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(V#:V#)",
+          "exampleCell": "V370",
+          "exampleFormula": "=SUM(V3:V368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(W#:W#)",
+          "exampleCell": "W370",
+          "exampleFormula": "=SUM(W3:W368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(X#:X#)",
+          "exampleCell": "X370",
+          "exampleFormula": "=SUM(X3:X368)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(Y#:Y#)",
+          "exampleCell": "Y370",
+          "exampleFormula": "=SUM(Y3:Y368)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "title": "CURREENT STOCK",
+      "type": "GRID",
+      "counts": {
+        "title": "CURREENT STOCK",
+        "inputColumns": 28,
+        "displayColumns": 28,
+        "displayRows": 373,
+        "displayCells": 8978,
+        "inputCells": 8959,
+        "formulaCells": 8496,
+        "formulaFamilies": 71
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "TARGET STCOK"
+        },
+        {
+          "column": "B",
+          "header": "39"
+        },
+        {
+          "column": "C",
+          "header": "20"
+        },
+        {
+          "column": "D",
+          "header": "0"
+        },
+        {
+          "column": "E",
+          "header": "0"
+        },
+        {
+          "column": "F",
+          "header": "0"
+        },
+        {
+          "column": "G",
+          "header": "216"
+        },
+        {
+          "column": "H",
+          "header": "150"
+        },
+        {
+          "column": "I",
+          "header": "54"
+        },
+        {
+          "column": "J",
+          "header": "22"
+        },
+        {
+          "column": "K",
+          "header": "27"
+        },
+        {
+          "column": "L",
+          "header": "75"
+        },
+        {
+          "column": "M",
+          "header": "375"
+        },
+        {
+          "column": "N",
+          "header": "119"
+        },
+        {
+          "column": "O",
+          "header": "44"
+        },
+        {
+          "column": "P",
+          "header": "24"
+        },
+        {
+          "column": "Q",
+          "header": "13"
+        },
+        {
+          "column": "R",
+          "header": "18"
+        },
+        {
+          "column": "S",
+          "header": "17"
+        },
+        {
+          "column": "T",
+          "header": "10"
+        },
+        {
+          "column": "U",
+          "header": "5"
+        },
+        {
+          "column": "V",
+          "header": "5"
+        },
+        {
+          "column": "W",
+          "header": "2"
+        },
+        {
+          "column": "X",
+          "header": "0"
+        },
+        {
+          "column": "AA",
+          "header": null
+        },
+        {
+          "column": "AB",
+          "header": null
+        },
+        {
+          "column": "AC",
+          "header": null
+        },
+        {
+          "column": "AD",
+          "header": null
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "0",
+          "columns": [
+            "D",
+            "E",
+            "F",
+            "X"
+          ]
+        },
+        {
+          "header": "5",
+          "columns": [
+            "U",
+            "V"
+          ]
+        }
+      ],
+      "formulaFamilies": [
+        {
+          "normalized": "=ADU!B#",
+          "exampleCell": "B1",
+          "exampleFormula": "=ADU!B9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!C#",
+          "exampleCell": "C1",
+          "exampleFormula": "=ADU!C9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!D#",
+          "exampleCell": "D1",
+          "exampleFormula": "=ADU!D9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!E#",
+          "exampleCell": "E1",
+          "exampleFormula": "=ADU!E9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!F#",
+          "exampleCell": "F1",
+          "exampleFormula": "=ADU!F9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!G#",
+          "exampleCell": "G1",
+          "exampleFormula": "=ADU!G9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!H#",
+          "exampleCell": "H1",
+          "exampleFormula": "=ADU!H9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!I#",
+          "exampleCell": "I1",
+          "exampleFormula": "=ADU!I9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!J#",
+          "exampleCell": "J1",
+          "exampleFormula": "=ADU!J9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!K#",
+          "exampleCell": "K1",
+          "exampleFormula": "=ADU!K9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!L#",
+          "exampleCell": "L1",
+          "exampleFormula": "=ADU!L9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!M#",
+          "exampleCell": "M1",
+          "exampleFormula": "=ADU!M9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!N#",
+          "exampleCell": "N1",
+          "exampleFormula": "=ADU!N9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!O#",
+          "exampleCell": "O1",
+          "exampleFormula": "=ADU!O9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!P#",
+          "exampleCell": "P1",
+          "exampleFormula": "=ADU!P9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!Q#",
+          "exampleCell": "Q1",
+          "exampleFormula": "=ADU!Q9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!R#",
+          "exampleCell": "R1",
+          "exampleFormula": "=ADU!R9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!S#",
+          "exampleCell": "S1",
+          "exampleFormula": "=ADU!S9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!T#",
+          "exampleCell": "T1",
+          "exampleFormula": "=ADU!T9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!U#",
+          "exampleCell": "U1",
+          "exampleFormula": "=ADU!U9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!V#",
+          "exampleCell": "V1",
+          "exampleFormula": "=ADU!V9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!W#",
+          "exampleCell": "W1",
+          "exampleFormula": "=ADU!W9",
+          "count": 3
+        },
+        {
+          "normalized": "=ADU!X#",
+          "exampleCell": "X1",
+          "exampleFormula": "=ADU!X9",
+          "count": 3
+        },
+        {
+          "normalized": "=XLOOKUP(TODAY(), A#:A#, A#:X#, \"\")",
+          "exampleCell": "A3",
+          "exampleFormula": "=XLOOKUP(TODAY(), A8:A373, A8:X373, \"\")",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(B#>0,ROUNDUP(B#/B#*30,0), )",
+          "exampleCell": "B4",
+          "exampleFormula": "=IF(B5>0,ROUNDUP(B3/B5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(C#>0,ROUNDUP(C#/C#*30,0), )",
+          "exampleCell": "C4",
+          "exampleFormula": "=IF(C5>0,ROUNDUP(C3/C5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(D#>0,ROUNDUP(D#/D#*30,0), )",
+          "exampleCell": "D4",
+          "exampleFormula": "=IF(D5>0,ROUNDUP(D3/D5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(E#>0,ROUNDUP(E#/E#*30,0), )",
+          "exampleCell": "E4",
+          "exampleFormula": "=IF(E5>0,ROUNDUP(E3/E5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(F#>0,ROUNDUP(F#/F#*30,0), )",
+          "exampleCell": "F4",
+          "exampleFormula": "=IF(F5>0,ROUNDUP(F3/F5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(G#>0,ROUNDUP(G#/G#*30,0), )",
+          "exampleCell": "G4",
+          "exampleFormula": "=IF(G5>0,ROUNDUP(G3/G5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(H#>0,ROUNDUP(H#/H#*30,0), )",
+          "exampleCell": "H4",
+          "exampleFormula": "=IF(H5>0,ROUNDUP(H3/H5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(I#>0,ROUNDUP(I#/I#*30,0), )",
+          "exampleCell": "I4",
+          "exampleFormula": "=IF(I5>0,ROUNDUP(I3/I5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(J#>0,ROUNDUP(J#/J#*30,0), )",
+          "exampleCell": "J4",
+          "exampleFormula": "=IF(J5>0,ROUNDUP(J3/J5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(K#>0,ROUNDUP(K#/K#*30,0), )",
+          "exampleCell": "K4",
+          "exampleFormula": "=IF(K5>0,ROUNDUP(K3/K5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(L#>0,ROUNDUP(L#/L#*30,0), )",
+          "exampleCell": "L4",
+          "exampleFormula": "=IF(L5>0,ROUNDUP(L3/L5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(M#>0,ROUNDUP(M#/M#*30,0), )",
+          "exampleCell": "M4",
+          "exampleFormula": "=IF(M5>0,ROUNDUP(M3/M5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(N#>0,ROUNDUP(N#/N#*30,0), )",
+          "exampleCell": "N4",
+          "exampleFormula": "=IF(N5>0,ROUNDUP(N3/N5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(O#>0,ROUNDUP(O#/O#*30,0), )",
+          "exampleCell": "O4",
+          "exampleFormula": "=IF(O5>0,ROUNDUP(O3/O5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(P#>0,ROUNDUP(P#/P#*30,0), )",
+          "exampleCell": "P4",
+          "exampleFormula": "=IF(P5>0,ROUNDUP(P3/P5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(Q#>0,ROUNDUP(Q#/Q#*30,0), )",
+          "exampleCell": "Q4",
+          "exampleFormula": "=IF(Q5>0,ROUNDUP(Q3/Q5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(R#>0,ROUNDUP(R#/R#*30,0), )",
+          "exampleCell": "R4",
+          "exampleFormula": "=IF(R5>0,ROUNDUP(R3/R5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(S#>0,ROUNDUP(S#/S#*30,0), )",
+          "exampleCell": "S4",
+          "exampleFormula": "=IF(S5>0,ROUNDUP(S3/S5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(T#>0,ROUNDUP(T#/T#*30,0), )",
+          "exampleCell": "T4",
+          "exampleFormula": "=IF(T5>0,ROUNDUP(T3/T5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(U#>0,ROUNDUP(U#/U#*30,0), )",
+          "exampleCell": "U4",
+          "exampleFormula": "=IF(U5>0,ROUNDUP(U3/U5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(V#>0,ROUNDUP(V#/V#*30,0), )",
+          "exampleCell": "V4",
+          "exampleFormula": "=IF(V5>0,ROUNDUP(V3/V5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(W#>0,ROUNDUP(W#/W#*30,0), )",
+          "exampleCell": "W4",
+          "exampleFormula": "=IF(W5>0,ROUNDUP(W3/W5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(X#>0,ROUNDUP(X#/X#*30,0), )",
+          "exampleCell": "X4",
+          "exampleFormula": "=IF(X5>0,ROUNDUP(X3/X5*30,0), )",
+          "count": 1
+        },
+        {
+          "normalized": "=B#+'PRODUCTION DATA'!B#-'DISPATCH DATA'!B#",
+          "exampleCell": "B9",
+          "exampleFormula": "=B8+'PRODUCTION DATA'!B4-'DISPATCH DATA'!B4",
+          "count": 365
+        },
+        {
+          "normalized": "=C#+'PRODUCTION DATA'!C#-'DISPATCH DATA'!C#",
+          "exampleCell": "C9",
+          "exampleFormula": "=C8+'PRODUCTION DATA'!C4-'DISPATCH DATA'!C4",
+          "count": 365
+        },
+        {
+          "normalized": "=D#+'PRODUCTION DATA'!D#-'DISPATCH DATA'!D#",
+          "exampleCell": "D9",
+          "exampleFormula": "=D8+'PRODUCTION DATA'!D4-'DISPATCH DATA'!D4",
+          "count": 365
+        },
+        {
+          "normalized": "=E#+'PRODUCTION DATA'!E#-'DISPATCH DATA'!E#",
+          "exampleCell": "E9",
+          "exampleFormula": "=E8+'PRODUCTION DATA'!E4-'DISPATCH DATA'!E4",
+          "count": 365
+        },
+        {
+          "normalized": "=F#+'PRODUCTION DATA'!F#-'DISPATCH DATA'!F#",
+          "exampleCell": "F9",
+          "exampleFormula": "=F8+'PRODUCTION DATA'!F4-'DISPATCH DATA'!F4",
+          "count": 365
+        },
+        {
+          "normalized": "=G#+'PRODUCTION DATA'!G#-'DISPATCH DATA'!G#",
+          "exampleCell": "G9",
+          "exampleFormula": "=G8+'PRODUCTION DATA'!G4-'DISPATCH DATA'!G4",
+          "count": 365
+        },
+        {
+          "normalized": "=H#+'PRODUCTION DATA'!H#-'DISPATCH DATA'!H#",
+          "exampleCell": "H9",
+          "exampleFormula": "=H8+'PRODUCTION DATA'!H4-'DISPATCH DATA'!H4",
+          "count": 365
+        },
+        {
+          "normalized": "=I#+'PRODUCTION DATA'!I#-'DISPATCH DATA'!I#",
+          "exampleCell": "I9",
+          "exampleFormula": "=I8+'PRODUCTION DATA'!I4-'DISPATCH DATA'!I4",
+          "count": 365
+        },
+        {
+          "normalized": "=J#+'PRODUCTION DATA'!J#-'DISPATCH DATA'!J#",
+          "exampleCell": "J9",
+          "exampleFormula": "=J8+'PRODUCTION DATA'!J4-'DISPATCH DATA'!J4",
+          "count": 365
+        },
+        {
+          "normalized": "=K#+'PRODUCTION DATA'!K#-'DISPATCH DATA'!K#",
+          "exampleCell": "K9",
+          "exampleFormula": "=K8+'PRODUCTION DATA'!K4-'DISPATCH DATA'!K4",
+          "count": 365
+        },
+        {
+          "normalized": "=L#+'PRODUCTION DATA'!L#-'DISPATCH DATA'!L#",
+          "exampleCell": "L9",
+          "exampleFormula": "=L8+'PRODUCTION DATA'!L4-'DISPATCH DATA'!L4",
+          "count": 365
+        },
+        {
+          "normalized": "=M#+'PRODUCTION DATA'!M#-'DISPATCH DATA'!M#",
+          "exampleCell": "M9",
+          "exampleFormula": "=M8+'PRODUCTION DATA'!M4-'DISPATCH DATA'!M4",
+          "count": 365
+        },
+        {
+          "normalized": "=N#+'PRODUCTION DATA'!N#-'DISPATCH DATA'!N#",
+          "exampleCell": "N9",
+          "exampleFormula": "=N8+'PRODUCTION DATA'!N4-'DISPATCH DATA'!N4",
+          "count": 365
+        },
+        {
+          "normalized": "=O#+'PRODUCTION DATA'!O#-'DISPATCH DATA'!O#",
+          "exampleCell": "O9",
+          "exampleFormula": "=O8+'PRODUCTION DATA'!O4-'DISPATCH DATA'!O4",
+          "count": 365
+        },
+        {
+          "normalized": "=P#+'PRODUCTION DATA'!P#-'DISPATCH DATA'!P#",
+          "exampleCell": "P9",
+          "exampleFormula": "=P8+'PRODUCTION DATA'!P4-'DISPATCH DATA'!P4",
+          "count": 365
+        },
+        {
+          "normalized": "=Q#+'PRODUCTION DATA'!Q#-'DISPATCH DATA'!Q#",
+          "exampleCell": "Q9",
+          "exampleFormula": "=Q8+'PRODUCTION DATA'!Q4-'DISPATCH DATA'!Q4",
+          "count": 365
+        },
+        {
+          "normalized": "=R#+'PRODUCTION DATA'!R#-'DISPATCH DATA'!R#",
+          "exampleCell": "R9",
+          "exampleFormula": "=R8+'PRODUCTION DATA'!R4-'DISPATCH DATA'!R4",
+          "count": 365
+        },
+        {
+          "normalized": "=S#+'PRODUCTION DATA'!S#-'DISPATCH DATA'!S#",
+          "exampleCell": "S9",
+          "exampleFormula": "=S8+'PRODUCTION DATA'!S4-'DISPATCH DATA'!S4",
+          "count": 365
+        },
+        {
+          "normalized": "=T#+'PRODUCTION DATA'!T#-'DISPATCH DATA'!T#",
+          "exampleCell": "T9",
+          "exampleFormula": "=T8+'PRODUCTION DATA'!T4-'DISPATCH DATA'!T4",
+          "count": 365
+        },
+        {
+          "normalized": "=U#+'PRODUCTION DATA'!U#-'DISPATCH DATA'!U#",
+          "exampleCell": "U9",
+          "exampleFormula": "=U8+'PRODUCTION DATA'!U4-'DISPATCH DATA'!U4",
+          "count": 365
+        },
+        {
+          "normalized": "=V#+'PRODUCTION DATA'!V#-'DISPATCH DATA'!V#",
+          "exampleCell": "V9",
+          "exampleFormula": "=V8+'PRODUCTION DATA'!V4-'DISPATCH DATA'!V4",
+          "count": 365
+        },
+        {
+          "normalized": "=W#+'PRODUCTION DATA'!W#-'DISPATCH DATA'!W#",
+          "exampleCell": "W9",
+          "exampleFormula": "=W8+'PRODUCTION DATA'!W4-'DISPATCH DATA'!W4",
+          "count": 365
+        },
+        {
+          "normalized": "=X#+'PRODUCTION DATA'!X#-'DISPATCH DATA'!X#",
+          "exampleCell": "X9",
+          "exampleFormula": "=X8+'PRODUCTION DATA'!X4-'DISPATCH DATA'!X4",
+          "count": 365
+        },
+        {
+          "normalized": "=AC#*AB#",
+          "exampleCell": "AD11",
+          "exampleFormula": "=AC11*AB11",
+          "count": 8
+        }
+      ]
+    },
+    {
+      "title": "ADU",
+      "type": "GRID",
+      "counts": {
+        "title": "ADU",
+        "inputColumns": 24,
+        "displayColumns": 24,
+        "displayRows": 9,
+        "displayCells": 187,
+        "inputCells": 191,
+        "formulaCells": 115,
+        "formulaFamilies": 95
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": null
+        },
+        {
+          "column": "B",
+          "header": "AMZ"
+        },
+        {
+          "column": "C",
+          "header": "AMZ"
+        },
+        {
+          "column": "D",
+          "header": "AMZ"
+        },
+        {
+          "column": "E",
+          "header": "AMZ"
+        },
+        {
+          "column": "F",
+          "header": "AMZ"
+        },
+        {
+          "column": "G",
+          "header": "BLI"
+        },
+        {
+          "column": "H",
+          "header": "BLI"
+        },
+        {
+          "column": "I",
+          "header": "BLI"
+        },
+        {
+          "column": "J",
+          "header": "BLI"
+        },
+        {
+          "column": "K",
+          "header": "BLI"
+        },
+        {
+          "column": "L",
+          "header": "AMZ"
+        },
+        {
+          "column": "M",
+          "header": "BLI"
+        },
+        {
+          "column": "N",
+          "header": "AMZ"
+        },
+        {
+          "column": "O",
+          "header": "AMZ"
+        },
+        {
+          "column": "P",
+          "header": "BLI"
+        },
+        {
+          "column": "Q",
+          "header": "BLI"
+        },
+        {
+          "column": "R",
+          "header": "BLI"
+        },
+        {
+          "column": "S",
+          "header": "INS"
+        },
+        {
+          "column": "T",
+          "header": "INS"
+        },
+        {
+          "column": "U",
+          "header": "INS"
+        },
+        {
+          "column": "V",
+          "header": "INS"
+        },
+        {
+          "column": "W",
+          "header": "INS"
+        },
+        {
+          "column": "X",
+          "header": "INS"
+        }
+      ],
+      "repeatedHeaders": [
+        {
+          "header": "AMZ",
+          "columns": [
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "L",
+            "N",
+            "O"
+          ]
+        },
+        {
+          "header": "BLI",
+          "columns": [
+            "G",
+            "H",
+            "I",
+            "J",
+            "K",
+            "M",
+            "P",
+            "Q",
+            "R"
+          ]
+        },
+        {
+          "header": "INS",
+          "columns": [
+            "S",
+            "T",
+            "U",
+            "V",
+            "W",
+            "X"
+          ]
+        }
+      ],
+      "formulaFamilies": [
+        {
+          "normalized": "='LAST 30 DAYS SALE'!D#",
+          "exampleCell": "B3",
+          "exampleFormula": "='LAST 30 DAYS SALE'!D3",
+          "count": 8
+        },
+        {
+          "normalized": "='LAST 30 DAYS SALE'!C#",
+          "exampleCell": "G3",
+          "exampleFormula": "='LAST 30 DAYS SALE'!C2",
+          "count": 9
+        },
+        {
+          "normalized": "='LAST 30 DAYS SALE'!E#",
+          "exampleCell": "S3",
+          "exampleFormula": "='LAST 30 DAYS SALE'!E2",
+          "count": 6
+        },
+        {
+          "normalized": "=ROUNDUP(B#/B#, 0)",
+          "exampleCell": "B5",
+          "exampleFormula": "=ROUNDUP(B3/B4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(C#/C#, 0)",
+          "exampleCell": "C5",
+          "exampleFormula": "=ROUNDUP(C3/C4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(D#/D#, 0)",
+          "exampleCell": "D5",
+          "exampleFormula": "=ROUNDUP(D3/D4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(E#/E#, 0)",
+          "exampleCell": "E5",
+          "exampleFormula": "=ROUNDUP(E3/E4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(F#/F#, 0)",
+          "exampleCell": "F5",
+          "exampleFormula": "=ROUNDUP(F3/F4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(G#/G#, 0)",
+          "exampleCell": "G5",
+          "exampleFormula": "=ROUNDUP(G3/G4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(H#/H#, 0)",
+          "exampleCell": "H5",
+          "exampleFormula": "=ROUNDUP(H3/H4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(I#/I#, 0)",
+          "exampleCell": "I5",
+          "exampleFormula": "=ROUNDUP(I3/I4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(J#/J#, 0)",
+          "exampleCell": "J5",
+          "exampleFormula": "=ROUNDUP(J3/J4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(K#/K#, 0)",
+          "exampleCell": "K5",
+          "exampleFormula": "=ROUNDUP(K3/K4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(L#/L#, 0)",
+          "exampleCell": "L5",
+          "exampleFormula": "=ROUNDUP(L3/L4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(M#/M#, 0)",
+          "exampleCell": "M5",
+          "exampleFormula": "=ROUNDUP(M3/M4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(N#/N#, 0)",
+          "exampleCell": "N5",
+          "exampleFormula": "=ROUNDUP(N3/N4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(O#/O#, 0)",
+          "exampleCell": "O5",
+          "exampleFormula": "=ROUNDUP(O3/O4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(P#/P#, 0)",
+          "exampleCell": "P5",
+          "exampleFormula": "=ROUNDUP(P3/P4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(Q#/Q#, 0)",
+          "exampleCell": "Q5",
+          "exampleFormula": "=ROUNDUP(Q3/Q4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(R#/R#, 0)",
+          "exampleCell": "R5",
+          "exampleFormula": "=ROUNDUP(R3/R4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(S#/S#, 0)",
+          "exampleCell": "S5",
+          "exampleFormula": "=ROUNDUP(S3/S4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(T#/T#, 0)",
+          "exampleCell": "T5",
+          "exampleFormula": "=ROUNDUP(T3/T4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(U#/U#, 0)",
+          "exampleCell": "U5",
+          "exampleFormula": "=ROUNDUP(U3/U4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(V#/V#, 0)",
+          "exampleCell": "V5",
+          "exampleFormula": "=ROUNDUP(V3/V4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(W#/W#, 0)",
+          "exampleCell": "W5",
+          "exampleFormula": "=ROUNDUP(W3/W4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(X#/X#, 0)",
+          "exampleCell": "X5",
+          "exampleFormula": "=ROUNDUP(X3/X4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(B#/B#/2, 0)",
+          "exampleCell": "B6",
+          "exampleFormula": "=ROUNDUP(B3/B4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(C#/C#/2, 0)",
+          "exampleCell": "C6",
+          "exampleFormula": "=ROUNDUP(C3/C4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(D#/D#/2, 0)",
+          "exampleCell": "D6",
+          "exampleFormula": "=ROUNDUP(D3/D4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(E#/E#/2, 0)",
+          "exampleCell": "E6",
+          "exampleFormula": "=ROUNDUP(E3/E4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(F#/F#/2, 0)",
+          "exampleCell": "F6",
+          "exampleFormula": "=ROUNDUP(F3/F4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(G#/G#/2, 0)",
+          "exampleCell": "G6",
+          "exampleFormula": "=ROUNDUP(G3/G4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(H#/H#/2, 0)",
+          "exampleCell": "H6",
+          "exampleFormula": "=ROUNDUP(H3/H4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(I#/I#/2, 0)",
+          "exampleCell": "I6",
+          "exampleFormula": "=ROUNDUP(I3/I4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(J#/J#/2, 0)",
+          "exampleCell": "J6",
+          "exampleFormula": "=ROUNDUP(J3/J4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(K#/K#/2, 0)",
+          "exampleCell": "K6",
+          "exampleFormula": "=ROUNDUP(K3/K4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(L#/L#/2, 0)",
+          "exampleCell": "L6",
+          "exampleFormula": "=ROUNDUP(L3/L4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(M#/M#/2, 0)",
+          "exampleCell": "M6",
+          "exampleFormula": "=ROUNDUP(M3/M4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(N#/N#/2, 0)",
+          "exampleCell": "N6",
+          "exampleFormula": "=ROUNDUP(N3/N4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(O#/O#/2, 0)",
+          "exampleCell": "O6",
+          "exampleFormula": "=ROUNDUP(O3/O4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(P#/P#/2, 0)",
+          "exampleCell": "P6",
+          "exampleFormula": "=ROUNDUP(P3/P4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(Q#/Q#/2, 0)",
+          "exampleCell": "Q6",
+          "exampleFormula": "=ROUNDUP(Q3/Q4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(R#/R#/2, 0)",
+          "exampleCell": "R6",
+          "exampleFormula": "=ROUNDUP(R3/R4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(S#/S#/2, 0)",
+          "exampleCell": "S6",
+          "exampleFormula": "=ROUNDUP(S3/S4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(T#/T#/2, 0)",
+          "exampleCell": "T6",
+          "exampleFormula": "=ROUNDUP(T3/T4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(U#/U#/2, 0)",
+          "exampleCell": "U6",
+          "exampleFormula": "=ROUNDUP(U3/U4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(V#/V#/2, 0)",
+          "exampleCell": "V6",
+          "exampleFormula": "=ROUNDUP(V3/V4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(W#/W#/2, 0)",
+          "exampleCell": "W6",
+          "exampleFormula": "=ROUNDUP(W3/W4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(X#/X#/2, 0)",
+          "exampleCell": "X6",
+          "exampleFormula": "=ROUNDUP(X3/X4/2, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(B#/B#/4, 0)",
+          "exampleCell": "B7",
+          "exampleFormula": "=ROUNDUP(B3/B4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(C#/C#/4, 0)",
+          "exampleCell": "C7",
+          "exampleFormula": "=ROUNDUP(C3/C4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(D#/D#/4, 0)",
+          "exampleCell": "D7",
+          "exampleFormula": "=ROUNDUP(D3/D4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(E#/E#/4, 0)",
+          "exampleCell": "E7",
+          "exampleFormula": "=ROUNDUP(E3/E4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(F#/F#/4, 0)",
+          "exampleCell": "F7",
+          "exampleFormula": "=ROUNDUP(F3/F4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(G#/G#/4, 0)",
+          "exampleCell": "G7",
+          "exampleFormula": "=ROUNDUP(G3/G4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(H#/H#/4, 0)",
+          "exampleCell": "H7",
+          "exampleFormula": "=ROUNDUP(H3/H4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(I#/I#/4, 0)",
+          "exampleCell": "I7",
+          "exampleFormula": "=ROUNDUP(I3/I4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(J#/J#/4, 0)",
+          "exampleCell": "J7",
+          "exampleFormula": "=ROUNDUP(J3/J4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(K#/K#/4, 0)",
+          "exampleCell": "K7",
+          "exampleFormula": "=ROUNDUP(K3/K4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(L#/L#/4, 0)",
+          "exampleCell": "L7",
+          "exampleFormula": "=ROUNDUP(L3/L4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(M#/M#/4, 0)",
+          "exampleCell": "M7",
+          "exampleFormula": "=ROUNDUP(M3/M4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(N#/N#/4, 0)",
+          "exampleCell": "N7",
+          "exampleFormula": "=ROUNDUP(N3/N4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(O#/O#/4, 0)",
+          "exampleCell": "O7",
+          "exampleFormula": "=ROUNDUP(O3/O4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(P#/P#/4, 0)",
+          "exampleCell": "P7",
+          "exampleFormula": "=ROUNDUP(P3/P4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(Q#/Q#/4, 0)",
+          "exampleCell": "Q7",
+          "exampleFormula": "=ROUNDUP(Q3/Q4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(R#/R#/4, 0)",
+          "exampleCell": "R7",
+          "exampleFormula": "=ROUNDUP(R3/R4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(S#/S#/4, 0)",
+          "exampleCell": "S7",
+          "exampleFormula": "=ROUNDUP(S3/S4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(T#/T#/4, 0)",
+          "exampleCell": "T7",
+          "exampleFormula": "=ROUNDUP(T3/T4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(U#/U#/4, 0)",
+          "exampleCell": "U7",
+          "exampleFormula": "=ROUNDUP(U3/U4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(V#/V#/4, 0)",
+          "exampleCell": "V7",
+          "exampleFormula": "=ROUNDUP(V3/V4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(W#/W#/4, 0)",
+          "exampleCell": "W7",
+          "exampleFormula": "=ROUNDUP(W3/W4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP(X#/X#/4, 0)",
+          "exampleCell": "X7",
+          "exampleFormula": "=ROUNDUP(X3/X4/4, 0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*B#/B#/30,0)",
+          "exampleCell": "B9",
+          "exampleFormula": "=ROUNDUP($A$9*B3/B4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*C#/C#/30,0)",
+          "exampleCell": "C9",
+          "exampleFormula": "=ROUNDUP($A$9*C3/C4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*D#/D#/30,0)",
+          "exampleCell": "D9",
+          "exampleFormula": "=ROUNDUP($A$9*D3/D4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*E#/E#/30,0)",
+          "exampleCell": "E9",
+          "exampleFormula": "=ROUNDUP($A$9*E3/E4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*F#/F#/30,0)",
+          "exampleCell": "F9",
+          "exampleFormula": "=ROUNDUP($A$9*F3/F4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*G#/G#/30,0)",
+          "exampleCell": "G9",
+          "exampleFormula": "=ROUNDUP($A$9*G3/G4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*H#/H#/30,0)",
+          "exampleCell": "H9",
+          "exampleFormula": "=ROUNDUP($A$9*H3/H4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*I#/I#/30,0)",
+          "exampleCell": "I9",
+          "exampleFormula": "=ROUNDUP($A$9*I3/I4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*J#/J#/30,0)",
+          "exampleCell": "J9",
+          "exampleFormula": "=ROUNDUP($A$9*J3/J4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*K#/K#/30,0)",
+          "exampleCell": "K9",
+          "exampleFormula": "=ROUNDUP($A$9*K3/K4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*L#/L#/30,0)",
+          "exampleCell": "L9",
+          "exampleFormula": "=ROUNDUP($A$9*L3/L4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*M#/M#/30,0)",
+          "exampleCell": "M9",
+          "exampleFormula": "=ROUNDUP($A$9*M3/M4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*N#/N#/30,0)",
+          "exampleCell": "N9",
+          "exampleFormula": "=ROUNDUP($A$9*N3/N4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*O#/O#/30,0)",
+          "exampleCell": "O9",
+          "exampleFormula": "=ROUNDUP($A$9*O3/O4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*P#/P#/30,0)",
+          "exampleCell": "P9",
+          "exampleFormula": "=ROUNDUP($A$9*P3/P4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*Q#/Q#/30,0)",
+          "exampleCell": "Q9",
+          "exampleFormula": "=ROUNDUP($A$9*Q3/Q4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*R#/R#/30,0)",
+          "exampleCell": "R9",
+          "exampleFormula": "=ROUNDUP($A$9*R3/R4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*S#/S#/30,0)",
+          "exampleCell": "S9",
+          "exampleFormula": "=ROUNDUP($A$9*S3/S4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*T#/T#/30,0)",
+          "exampleCell": "T9",
+          "exampleFormula": "=ROUNDUP($A$9*T3/T4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*U#/U#/30,0)",
+          "exampleCell": "U9",
+          "exampleFormula": "=ROUNDUP($A$9*U3/U4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*V#/V#/30,0)",
+          "exampleCell": "V9",
+          "exampleFormula": "=ROUNDUP($A$9*V3/V4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*W#/W#/30,0)",
+          "exampleCell": "W9",
+          "exampleFormula": "=ROUNDUP($A$9*W3/W4/30,0)",
+          "count": 1
+        },
+        {
+          "normalized": "=ROUNDUP($A$#*X#/X#/30,0)",
+          "exampleCell": "X9",
+          "exampleFormula": "=ROUNDUP($A$9*X3/X4/30,0)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "title": "FORM_CONFIG",
+      "type": "GRID",
+      "counts": {
+        "title": "FORM_CONFIG",
+        "inputColumns": 9,
+        "displayColumns": 9,
+        "displayRows": 25,
+        "displayCells": 162,
+        "inputCells": 162,
+        "formulaCells": 23,
+        "formulaFamilies": 1
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Platform"
+        },
+        {
+          "column": "B",
+          "header": "SKU Code"
+        },
+        {
+          "column": "C",
+          "header": "Question Label"
+        },
+        {
+          "column": "D",
+          "header": "Input Type"
+        },
+        {
+          "column": "E",
+          "header": "Target Column"
+        },
+        {
+          "column": "F",
+          "header": "Status"
+        },
+        {
+          "column": "H",
+          "header": "Production Form Live Link (Share with Team)"
+        },
+        {
+          "column": "J",
+          "header": "Dispatch Form Live Link (Share with Team)"
+        },
+        {
+          "column": "K",
+          "header": "https://docs.google.com/forms/d/e/1FAIpQLSfMQbp8F27DHGou7gsUT42SrFy2sxpj_YW80Hyn-vMwUIQZhQ/viewform"
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=B#",
+          "exampleCell": "C2",
+          "exampleFormula": "=B2",
+          "count": 23
+        }
+      ]
+    },
+    {
+      "title": "LAST 30 DAYS SALE",
+      "type": "GRID",
+      "counts": {
+        "title": "LAST 30 DAYS SALE",
+        "inputColumns": 1,
+        "displayColumns": 7,
+        "displayRows": 37,
+        "displayCells": 121,
+        "inputCells": 1,
+        "formulaCells": 1,
+        "formulaFamilies": 1
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Column 1"
+        },
+        {
+          "column": "B",
+          "header": "LAST 30 DAYS SALE"
+        },
+        {
+          "column": "C",
+          "header": "BLI"
+        },
+        {
+          "column": "D",
+          "header": "AMZ"
+        },
+        {
+          "column": "E",
+          "header": "INSTAMART"
+        },
+        {
+          "column": "G",
+          "header": null
+        },
+        {
+          "column": "H",
+          "header": null
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1VpNNcCgOlG#j40w5yPlfhdinaqBRhLhZWQ#ggdOc68/edit?gid=796634710#gid=796634710\",\"30 DAYSALE!A#:H\")",
+          "exampleCell": "A1",
+          "exampleFormula": "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1VpNNcCgOlG6j40w5yPlfhdinaqBRhLhZWQ25ggdOc68/edit?gid=796634710#gid=796634710\",\"30 DAYSALE!A1:H\")",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "title": "JUNCTION",
+      "type": "GRID",
+      "counts": {
+        "title": "JUNCTION",
+        "inputColumns": 16,
+        "displayColumns": 16,
+        "displayRows": 12,
+        "displayCells": 104,
+        "inputCells": 104,
+        "formulaCells": 11,
+        "formulaFamilies": 1
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Finished SKU"
+        },
+        {
+          "column": "B",
+          "header": "BOM 1 Description"
+        },
+        {
+          "column": "C",
+          "header": "BOM 1 Qty / Box"
+        },
+        {
+          "column": "D",
+          "header": "BOM 2 Description"
+        },
+        {
+          "column": "E",
+          "header": "BOM 2 Qty / Box"
+        },
+        {
+          "column": "F",
+          "header": "BOM 3 Description"
+        },
+        {
+          "column": "G",
+          "header": "BOM 3 Qty / Box"
+        },
+        {
+          "column": "H",
+          "header": "BOM 4 Description"
+        },
+        {
+          "column": "I",
+          "header": "BOM 4 Qty / Box"
+        },
+        {
+          "column": "J",
+          "header": "BOM 5 Description"
+        },
+        {
+          "column": "K",
+          "header": "BOM 5 Qty / Box"
+        },
+        {
+          "column": "L",
+          "header": "BOM 6 Description"
+        },
+        {
+          "column": "M",
+          "header": "BOM 6 Qty / Box"
+        },
+        {
+          "column": "N",
+          "header": "BOM 7 Description"
+        },
+        {
+          "column": "O",
+          "header": "BOM 7 Qty / Box"
+        },
+        {
+          "column": "P",
+          "header": "Total SKU Production"
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=SUMIF('PRODUCTION DATA'!$B$#:$Y$#, A#, 'PRODUCTION DATA'!$B$#:$Y$#)",
+          "exampleCell": "P2",
+          "exampleFormula": "=SUMIF('PRODUCTION DATA'!$B$2:$Y$2, A2, 'PRODUCTION DATA'!$B$370:$Y$370)",
+          "count": 11
+        }
+      ]
+    },
+    {
+      "title": "RAW_MATERIAL_MASTER",
+      "type": "GRID",
+      "counts": {
+        "title": "RAW_MATERIAL_MASTER",
+        "inputColumns": 7,
+        "displayColumns": 7,
+        "displayRows": 33,
+        "displayCells": 231,
+        "inputCells": 298,
+        "formulaCells": 99,
+        "formulaFamilies": 1
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Item Code"
+        },
+        {
+          "column": "B",
+          "header": "Description"
+        },
+        {
+          "column": "C",
+          "header": "Category"
+        },
+        {
+          "column": "D",
+          "header": "Unit"
+        },
+        {
+          "column": "E",
+          "header": "Lead Time"
+        },
+        {
+          "column": "F",
+          "header": "Safety Factor"
+        },
+        {
+          "column": "G",
+          "header": "EOQ"
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=IF(OR(ISBLANK(B#), B#=\"\"), \"\", CONCATENATE(SWITCH(TRIM(C#), \"GRANUALS\", \"GRN\", \"MASTERBATCH\", \"MB\", \"SPRING\", \"SPR\", \"RIVET\", \"RIV\", \"PACKAGING BOX\", \"BOX\", \"CARTOONS\", \"CTN\", \"TAPE\", \"TAP\", \"STICKER\", \"STK\", UPPER(LEFT(TRIM(C#), 3))), \"-\", UPPER(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(TRIM(B#), \"\\s*\\[.*?\\]\", \"\"), \"(\\(.*?\\))\\s*\\(.*?\\)$\", \"$1\"), \"[^A-Za-z0-9]+\", \"-\"), \"^-|-$\", \"\"))))",
+          "exampleCell": "A2",
+          "exampleFormula": "=IF(OR(ISBLANK(B2), B2=\"\"), \"\", CONCATENATE(SWITCH(TRIM(C2), \"GRANUALS\", \"GRN\", \"MASTERBATCH\", \"MB\", \"SPRING\", \"SPR\", \"RIVET\", \"RIV\", \"PACKAGING BOX\", \"BOX\", \"CARTOONS\", \"CTN\", \"TAPE\", \"TAP\", \"STICKER\", \"STK\", UPPER(LEFT(TRIM(C2), 3))), \"-\", UPPER(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(TRIM(B2), \"\\s*\\[.*?\\]\", \"\"), \"(\\(.*?\\))\\s*\\(.*?\\)$\", \"$1\"), \"[^A-Za-z0-9]+\", \"-\"), \"^-|-$\", \"\"))))",
+          "count": 99
+        }
+      ]
+    },
+    {
+      "title": "PROCUREMENT_INWARD",
+      "type": "GRID",
+      "counts": {
+        "title": "PROCUREMENT_INWARD",
+        "inputColumns": 9,
+        "displayColumns": 9,
+        "displayRows": 2,
+        "displayCells": 17,
+        "inputCells": 17,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": "Inward Date"
+        },
+        {
+          "column": "B",
+          "header": "PO Number"
+        },
+        {
+          "column": "C",
+          "header": "Supplier"
+        },
+        {
+          "column": "D",
+          "header": "Item Code"
+        },
+        {
+          "column": "E",
+          "header": "Item Name"
+        },
+        {
+          "column": "F",
+          "header": "Quantity Inward"
+        },
+        {
+          "column": "G",
+          "header": "Unit"
+        },
+        {
+          "column": "H",
+          "header": "Unit Cost (₹)"
+        },
+        {
+          "column": "I",
+          "header": "Received By"
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "VENDOR_MASTER",
+      "type": "GRID",
+      "counts": {
+        "title": "VENDOR_MASTER",
+        "inputColumns": 3,
+        "displayColumns": 3,
+        "displayRows": 24,
+        "displayCells": 55,
+        "inputCells": 55,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [
+        {
+          "column": "B",
+          "header": "VENDOR MASTER DIRECTORY"
+        },
+        {
+          "column": "C",
+          "header": null
+        },
+        {
+          "column": "D",
+          "header": null
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "Sheet6",
+      "type": "GRID",
+      "counts": {
+        "title": "Sheet6",
+        "inputColumns": 0,
+        "displayColumns": 0,
+        "displayRows": 0,
+        "displayCells": 0,
+        "inputCells": 0,
+        "formulaCells": 0,
+        "formulaFamilies": 0
+      },
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "PO_TRACKER",
+      "type": "GRID",
+      "counts": {
+        "title": "PO_TRACKER",
+        "inputColumns": 15,
+        "displayColumns": 15,
+        "displayRows": 7,
+        "displayCells": 30,
+        "inputCells": 162,
+        "formulaCells": 136,
+        "formulaFamilies": 10
+      },
+      "columns": [
+        {
+          "column": "B",
+          "header": "PURCHASE ORDER FOLLOW-UP & REMINDER TRACKING"
+        },
+        {
+          "column": "C",
+          "header": null
+        },
+        {
+          "column": "D",
+          "header": null
+        },
+        {
+          "column": "E",
+          "header": null
+        },
+        {
+          "column": "F",
+          "header": null
+        },
+        {
+          "column": "G",
+          "header": null
+        },
+        {
+          "column": "H",
+          "header": null
+        },
+        {
+          "column": "I",
+          "header": null
+        },
+        {
+          "column": "J",
+          "header": null
+        },
+        {
+          "column": "K",
+          "header": null
+        },
+        {
+          "column": "L",
+          "header": null
+        },
+        {
+          "column": "M",
+          "header": null
+        },
+        {
+          "column": "N",
+          "header": null
+        },
+        {
+          "column": "O",
+          "header": null
+        },
+        {
+          "column": "P",
+          "header": null
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=COUNTIFS(B#:B#,\"<>\",L#:L#,\"<>Delivered\")",
+          "exampleCell": "B4",
+          "exampleFormula": "=COUNTIFS(B9:B100,\"<>\",L9:L100,\"<>Delivered\")",
+          "count": 1
+        },
+        {
+          "normalized": "=COUNTIF(P#:P#, \"Send Reminder 1\")",
+          "exampleCell": "E4",
+          "exampleFormula": "=COUNTIF(P9:P100, \"Send Reminder 1\")",
+          "count": 1
+        },
+        {
+          "normalized": "=COUNTIF(P#:P#, \"Send Reminder 2\") + COUNTIF(P#:P#, \"Escalate to Vendor\")",
+          "exampleCell": "I4",
+          "exampleFormula": "=COUNTIF(P9:P100, \"Send Reminder 2\") + COUNTIF(P9:P100, \"Escalate to Vendor\")",
+          "count": 1
+        },
+        {
+          "normalized": "=COUNTIF(L#:L#, \"Delivered\")",
+          "exampleCell": "M4",
+          "exampleFormula": "=COUNTIF(L9:L100, \"Delivered\")",
+          "count": 1
+        },
+        {
+          "normalized": "=IF(E#=\"\",\"\",IFERROR(VLOOKUP(E#,RAW_MATERIAL_MASTER!$A$#:$B$#,2,FALSE),\"\"))",
+          "exampleCell": "F9",
+          "exampleFormula": "=IF(E9=\"\",\"\",IFERROR(VLOOKUP(E9,RAW_MATERIAL_MASTER!$A$2:$B$33,2,FALSE),\"\"))",
+          "count": 22
+        },
+        {
+          "normalized": "=IF(E#=\"\",\"\",IFERROR(VALUE(REGEXEXTRACT(VLOOKUP(E#,RAW_MATERIAL_MASTER!$A$#:$E$#,5,FALSE),\"[0-9]+\"))*7,14))",
+          "exampleCell": "G9",
+          "exampleFormula": "=IF(E9=\"\",\"\",IFERROR(VALUE(REGEXEXTRACT(VLOOKUP(E9,RAW_MATERIAL_MASTER!$A$2:$E$33,5,FALSE),\"[0-9]+\"))*7,14))",
+          "count": 22
+        },
+        {
+          "normalized": "=IF(OR(C#=\"\",G#=\"\"),\"\",C#+G#)",
+          "exampleCell": "H9",
+          "exampleFormula": "=IF(OR(C9=\"\",G9=\"\"),\"\",C9+G9)",
+          "count": 22
+        },
+        {
+          "normalized": "=IF(I#=\"\",\"\",MAX(0,I#-N(J#)))",
+          "exampleCell": "K9",
+          "exampleFormula": "=IF(I9=\"\",\"\",MAX(0,I9-N(J9)))",
+          "count": 22
+        },
+        {
+          "normalized": "=IF(I#=\"\",\"\",IF(N(J#)>=I#,\"Delivered\",IF(N(J#)>0,\"Partially Received\",\"Pending\")))",
+          "exampleCell": "L9",
+          "exampleFormula": "=IF(I9=\"\",\"\",IF(N(J9)>=I9,\"Delivered\",IF(N(J9)>0,\"Partially Received\",\"Pending\")))",
+          "count": 22
+        },
+        {
+          "normalized": "=IF(B#=\"\",\"\",IF(L#=\"Delivered\",\"Delivered\",IF(TODAY()<H#,\"On Track (Within Lead Time)\",IF(M#<>\"Done\",\"Send Reminder 1\",IF(O#<>\"Done\",IF(N#=\"\",\"Send Reminder 2\",IF(TODAY()>=N#+3,\"Send Reminder 2\",\"Waiting post-Rem 1\")),\"Escalate to Vendor\")))))",
+          "exampleCell": "P9",
+          "exampleFormula": "=IF(B9=\"\",\"\",IF(L9=\"Delivered\",\"Delivered\",IF(TODAY()<H9,\"On Track (Within Lead Time)\",IF(M9<>\"Done\",\"Send Reminder 1\",IF(O9<>\"Done\",IF(N9=\"\",\"Send Reminder 2\",IF(TODAY()>=N9+3,\"Send Reminder 2\",\"Waiting post-Rem 1\")),\"Escalate to Vendor\")))))",
+          "count": 22
+        }
+      ]
+    },
+    {
+      "title": "RM_CURRENT_STOCK",
+      "type": "GRID",
+      "counts": {
+        "title": "RM_CURRENT_STOCK",
+        "inputColumns": 16,
+        "displayColumns": 16,
+        "displayRows": 37,
+        "displayCells": 548,
+        "inputCells": 548,
+        "formulaCells": 493,
+        "formulaFamilies": 28
+      },
+      "columns": [
+        {
+          "column": "A",
+          "header": null
+        },
+        {
+          "column": "B",
+          "header": null
+        },
+        {
+          "column": "C",
+          "header": null
+        },
+        {
+          "column": "D",
+          "header": null
+        },
+        {
+          "column": "E",
+          "header": null
+        },
+        {
+          "column": "F",
+          "header": null
+        },
+        {
+          "column": "G",
+          "header": null
+        },
+        {
+          "column": "H",
+          "header": null
+        },
+        {
+          "column": "I",
+          "header": null
+        },
+        {
+          "column": "J",
+          "header": null
+        },
+        {
+          "column": "K",
+          "header": null
+        },
+        {
+          "column": "L",
+          "header": null
+        },
+        {
+          "column": "M",
+          "header": null
+        },
+        {
+          "column": "N",
+          "header": null
+        },
+        {
+          "column": "O",
+          "header": null
+        },
+        {
+          "column": "P",
+          "header": null
+        }
+      ],
+      "repeatedHeaders": [],
+      "formulaFamilies": [
+        {
+          "normalized": "=COUNTA(A#:A#)",
+          "exampleCell": "A3",
+          "exampleFormula": "=COUNTA(A7:A38)",
+          "count": 1
+        },
+        {
+          "normalized": "=COUNTIF(P#:P#, \"REORDER REQUIRED\")",
+          "exampleCell": "F3",
+          "exampleFormula": "=COUNTIF(P7:P38, \"REORDER REQUIRED\")",
+          "count": 1
+        },
+        {
+          "normalized": "=TEXT(COUNTIF(P#:P#, \"HEALTHY\")/COUNTA(A#:A#), \"0.0%\") & \" Healthy\"",
+          "exampleCell": "K3",
+          "exampleFormula": "=TEXT(COUNTIF(P7:P38, \"HEALTHY\")/COUNTA(A7:A38), \"0.0%\") & \" Healthy\"",
+          "count": 1
+        },
+        {
+          "normalized": "=RAW_MATERIAL_MASTER!A#",
+          "exampleCell": "A7",
+          "exampleFormula": "=RAW_MATERIAL_MASTER!A2",
+          "count": 32
+        },
+        {
+          "normalized": "=VLOOKUP(A#, RAW_MATERIAL_MASTER!$A$#:$D$#, 2, FALSE)",
+          "exampleCell": "B7",
+          "exampleFormula": "=VLOOKUP(A7, RAW_MATERIAL_MASTER!$A$2:$D$33, 2, FALSE)",
+          "count": 32
+        },
+        {
+          "normalized": "=VLOOKUP(A#, RAW_MATERIAL_MASTER!$A$#:$D$#, 4, FALSE)",
+          "exampleCell": "C7",
+          "exampleFormula": "=VLOOKUP(A7, RAW_MATERIAL_MASTER!$A$2:$D$33, 4, FALSE)",
+          "count": 32
+        },
+        {
+          "normalized": "=SUMIF(PROCUREMENT_INWARD!$D:$D, A#, PROCUREMENT_INWARD!$F:$F) + SUMIFS(PROCUREMENT_INWARD!$F:$F, PROCUREMENT_INWARD!$E:$E, B#, PROCUREMENT_INWARD!$D:$D, \"<>\"&A#) + SUMIFS(PROCUREMENT_INWARD!$F:$F, PROCUREMENT_INWARD!$D:$D, B#, PROCUREMENT_INWARD!$E:$E, \"<>\"&B#)",
+          "exampleCell": "E7",
+          "exampleFormula": "=SUMIF(PROCUREMENT_INWARD!$D:$D, A7, PROCUREMENT_INWARD!$F:$F) + SUMIFS(PROCUREMENT_INWARD!$F:$F, PROCUREMENT_INWARD!$E:$E, B7, PROCUREMENT_INWARD!$D:$D, \"<>\"&A7) + SUMIFS(PROCUREMENT_INWARD!$F:$F, PROCUREMENT_INWARD!$D:$D, B7, PROCUREMENT_INWARD!$E:$E, \"<>\"&B7)",
+          "count": 32
+        },
+        {
+          "normalized": "=ROUND(SUMPRODUCT((JUNCTION!$B$#:$B$#=B#)+(JUNCTION!$B$#:$B$#=A#), N(+JUNCTION!$C$#:$C$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$D$#:$D$#=B#)+(JUNCTION!$D$#:$D$#=A#), N(+JUNCTION!$E$#:$E$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$F$#:$F$#=B#)+(JUNCTION!$F$#:$F$#=A#), N(+JUNCTION!$G$#:$G$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$H$#:$H$#=B#)+(JUNCTION!$H$#:$H$#=A#), N(+JUNCTION!$I$#:$I$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$J$#:$J$#=B#)+(JUNCTION!$J$#:$J$#=A#), N(+JUNCTION!$K$#:$K$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$L$#:$L$#=B#)+(JUNCTION!$L$#:$L$#=A#), N(+JUNCTION!$M$#:$M$#), JUNCTION!$P$#:$P$#) + SUMPRODUCT((JUNCTION!$N$#:$N$#=B#)+(JUNCTION!$N$#:$N$#=A#), N(+JUNCTION!$O$#:$O$#), JUNCTION!$P$#:$P$#), 2)",
+          "exampleCell": "F7",
+          "exampleFormula": "=ROUND(SUMPRODUCT((JUNCTION!$B$2:$B$12=B7)+(JUNCTION!$B$2:$B$12=A7), N(+JUNCTION!$C$2:$C$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$D$2:$D$12=B7)+(JUNCTION!$D$2:$D$12=A7), N(+JUNCTION!$E$2:$E$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$F$2:$F$12=B7)+(JUNCTION!$F$2:$F$12=A7), N(+JUNCTION!$G$2:$G$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$H$2:$H$12=B7)+(JUNCTION!$H$2:$H$12=A7), N(+JUNCTION!$I$2:$I$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$J$2:$J$12=B7)+(JUNCTION!$J$2:$J$12=A7), N(+JUNCTION!$K$2:$K$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$L$2:$L$12=B7)+(JUNCTION!$L$2:$L$12=A7), N(+JUNCTION!$M$2:$M$12), JUNCTION!$P$2:$P$12) + SUMPRODUCT((JUNCTION!$N$2:$N$12=B7)+(JUNCTION!$N$2:$N$12=A7), N(+JUNCTION!$O$2:$O$12), JUNCTION!$P$2:$P$12), 2)",
+          "count": 32
+        },
+        {
+          "normalized": "=D#+E#-F#",
+          "exampleCell": "G7",
+          "exampleFormula": "=D7+E7-F7",
+          "count": 32
+        },
+        {
+          "normalized": "=ROUND(F#, 2)",
+          "exampleCell": "H7",
+          "exampleFormula": "=ROUND(F7, 2)",
+          "count": 32
+        },
+        {
+          "normalized": "=IFERROR(VLOOKUP(A#, RAW_MATERIAL_MASTER!$A$#:$E$#, 5, FALSE), \"\")",
+          "exampleCell": "I7",
+          "exampleFormula": "=IFERROR(VLOOKUP(A7, RAW_MATERIAL_MASTER!$A$2:$E$33, 5, FALSE), \"\")",
+          "count": 32
+        },
+        {
+          "normalized": "=ROUND((H# / 30) * IFERROR(VALUE(REGEXEXTRACT(\"\" & I#, \"[0-9]+\")), 1), 2)",
+          "exampleCell": "J7",
+          "exampleFormula": "=ROUND((H7 / 30) * IFERROR(VALUE(REGEXEXTRACT(\"\" & I7, \"[0-9]+\")), 1), 2)",
+          "count": 32
+        },
+        {
+          "normalized": "=IFERROR(VLOOKUP(A#, RAW_MATERIAL_MASTER!$A$#:$F$#, 6, FALSE), \"\")",
+          "exampleCell": "K7",
+          "exampleFormula": "=IFERROR(VLOOKUP(A7, RAW_MATERIAL_MASTER!$A$2:$F$33, 6, FALSE), \"\")",
+          "count": 32
+        },
+        {
+          "normalized": "=ROUND((H# / 4) * IFERROR(VALUE(REGEXEXTRACT(\"\" & K#, \"[0-9]+\")), 0), 2)",
+          "exampleCell": "L7",
+          "exampleFormula": "=ROUND((H7 / 4) * IFERROR(VALUE(REGEXEXTRACT(\"\" & K7, \"[0-9]+\")), 0), 2)",
+          "count": 32
+        },
+        {
+          "normalized": "=IFERROR(VLOOKUP(A#, RAW_MATERIAL_MASTER!$A$#:$G$#, 7, FALSE), \"\")",
+          "exampleCell": "M7",
+          "exampleFormula": "=IFERROR(VLOOKUP(A7, RAW_MATERIAL_MASTER!$A$2:$G$33, 7, FALSE), \"\")",
+          "count": 32
+        },
+        {
+          "normalized": "=ROUND(J#+L#, 0)",
+          "exampleCell": "N7",
+          "exampleFormula": "=ROUND(J7+L7, 0)",
+          "count": 32
+        },
+        {
+          "normalized": "=IF(G#>=N#, 0, IF((N#-G#)<M#, M#, ROUND(N#-G#, 0)))",
+          "exampleCell": "O7",
+          "exampleFormula": "=IF(G7>=N7, 0, IF((N7-G7)<M7, M7, ROUND(N7-G7, 0)))",
+          "count": 32
+        },
+        {
+          "normalized": "=IF(G#<=N#, \"REORDER REQUIRED\", \"HEALTHY\")",
+          "exampleCell": "P7",
+          "exampleFormula": "=IF(G7<=N7, \"REORDER REQUIRED\", \"HEALTHY\")",
+          "count": 32
+        },
+        {
+          "normalized": "=SUM(D#:D#)",
+          "exampleCell": "D39",
+          "exampleFormula": "=SUM(D7:D38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(E#:E#)",
+          "exampleCell": "E39",
+          "exampleFormula": "=SUM(E7:E38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(F#:F#)",
+          "exampleCell": "F39",
+          "exampleFormula": "=SUM(F7:F38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(G#:G#)",
+          "exampleCell": "G39",
+          "exampleFormula": "=SUM(G7:G38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(H#:H#)",
+          "exampleCell": "H39",
+          "exampleFormula": "=SUM(H7:H38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(J#:J#)",
+          "exampleCell": "J39",
+          "exampleFormula": "=SUM(J7:J38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(L#:L#)",
+          "exampleCell": "L39",
+          "exampleFormula": "=SUM(L7:L38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(M#:M#)",
+          "exampleCell": "M39",
+          "exampleFormula": "=SUM(M7:M38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(N#:N#)",
+          "exampleCell": "N39",
+          "exampleFormula": "=SUM(N7:N38)",
+          "count": 1
+        },
+        {
+          "normalized": "=SUM(O#:O#)",
+          "exampleCell": "O39",
+          "exampleFormula": "=SUM(O7:O38)",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "title": "PRODUCTION PLANNING",
+      "type": "OBJECT",
+      "dependencies": [
+        "PRODUCTION DATA",
+        "ADU"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "PROCUREMENT PLANNING",
+      "type": "OBJECT",
+      "dependencies": [
+        "RM_CURRENT_STOCK"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "PURCHASE TRACKER",
+      "type": "OBJECT",
+      "dependencies": [
+        "PO_TRACKER"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "PURCHASE IN",
+      "type": "OBJECT",
+      "dependencies": [
+        "RAW_MATERIAL_MASTER",
+        "PROCUREMENT_INWARD",
+        "VENDOR_MASTER"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "RAW MATERIAL",
+      "type": "OBJECT",
+      "dependencies": [
+        "RM_CURRENT_STOCK"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "VENDORS",
+      "type": "OBJECT",
+      "dependencies": [
+        "VENDOR_MASTER"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    },
+    {
+      "title": "SCORECARD",
+      "type": "OBJECT",
+      "dependencies": [
+        "DISPATCH DATA",
+        "PRODUCTION DATA"
+      ],
+      "layout": "Unavailable: source canvas rendered blank; dependency evidence only.",
+      "counts": null,
+      "columns": [],
+      "repeatedHeaders": [],
+      "formulaFamilies": []
+    }
+  ]
+}

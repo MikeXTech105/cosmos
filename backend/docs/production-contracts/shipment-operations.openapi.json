@@ -1,0 +1,5135 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Cosmos ERP - Shipment Operations API",
+    "description": "Cosmos ERP API endpoints grouped by functional module.",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/shipment-operations/shipments/{shipmentId}/packing-suggestions": {
+      "get": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "AllowMixedPackages",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "IncludeLoosePackage",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentPackingSuggestionDtoIReadOnlyCollectionApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/packages": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentPackageRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentPackageRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentPackageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/dockets": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentDocketRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentDocketRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentDocketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/appointments": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentAppointmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentAppointmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentAppointmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/tracking-events": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentTrackingEventRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentTrackingEventRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentTrackingEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/delivery-attempts": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentDeliveryAttemptRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentDeliveryAttemptRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsAddShipmentDeliveryAttemptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/receipts": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReceiptRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReceiptRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReceiptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/returns": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReturnRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReturnRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReturnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentReturnDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{shipmentId}/freight-charges": {
+      "post": {
+        "tags": [
+          "ShipmentExecution"
+        ],
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentFreightChargeRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentFreightChargeRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentFreightChargeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/freight-charges/{id}/submit": {
+      "post": {
+        "tags": [
+          "ShipmentFreight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/freight-charges/{id}/approve": {
+      "post": {
+        "tags": [
+          "ShipmentFreight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsApproveShipmentFreightRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsApproveShipmentFreightRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsApproveShipmentFreightRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/freight-charges/{id}/reject": {
+      "post": {
+        "tags": [
+          "ShipmentFreight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsRejectShipmentFreightRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsRejectShipmentFreightRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsRejectShipmentFreightRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/freight-charges/{id}/mark-paid": {
+      "post": {
+        "tags": [
+          "ShipmentFreight"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsMarkShipmentFreightPaidRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsMarkShipmentFreightPaidRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsMarkShipmentFreightPaidRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/freight-charges/{id}/rojmel-expense": {
+      "post": {
+        "tags": [
+          "ShipmentFreight"
+        ],
+        "summary": "Explicitly post approved freight to Rojmel; approval alone never posts an expense",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFreightRojmelExpenseRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFreightRojmelExpenseRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFreightRojmelExpenseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/imports/validate": {
+      "post": {
+        "tags": [
+          "ShipmentHistoricalImports"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsValidateShipmentHistoricalImportRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsValidateShipmentHistoricalImportRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsValidateShipmentHistoricalImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportValidationDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/imports/{id}/commit": {
+      "post": {
+        "tags": [
+          "ShipmentHistoricalImports"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCommitShipmentHistoricalImportRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCommitShipmentHistoricalImportRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCommitShipmentHistoricalImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportBatchDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/imports/{id}/cancel": {
+      "post": {
+        "tags": [
+          "ShipmentHistoricalImports"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentHistoricalImportRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentHistoricalImportRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentHistoricalImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/imports": {
+      "get": {
+        "tags": [
+          "ShipmentHistoricalImports"
+        ],
+        "parameters": [
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportBatchDtoPagedResultApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{id}/packing-verification": {
+      "put": {
+        "tags": [
+          "ShipmentInvoiceOwnership"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentPackingVerificationRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentPackingVerificationRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentPackingVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturingProductionCommandResultApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{id}/invoice-lines": {
+      "get": {
+        "tags": [
+          "ShipmentInvoiceOwnership"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturingPhysicalOwnershipSnapshotApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ShipmentInvoiceOwnership"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentInvoiceLinkRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentInvoiceLinkRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturingShipmentInvoiceLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturingProductionCommandResultApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/reports": {
+      "get": {
+        "tags": [
+          "ShipmentReports"
+        ],
+        "parameters": [
+          {
+            "name": "ChannelId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentReportRowDtoPagedResultApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/reports/dashboard": {
+      "get": {
+        "tags": [
+          "ShipmentReports"
+        ],
+        "parameters": [
+          {
+            "name": "asOfDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDashboardDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/reports/export": {
+      "get": {
+        "tags": [
+          "ShipmentReports"
+        ],
+        "parameters": [
+          {
+            "name": "ChannelId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/returns/{id}/receive": {
+      "post": {
+        "tags": [
+          "ShipmentReturns"
+        ],
+        "summary": "Receive return and restock only the declared restockable quantity",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsReceiveShipmentReturnRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsReceiveShipmentReturnRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsReceiveShipmentReturnRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentReturnDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments": {
+      "get": {
+        "tags": [
+          "Shipments"
+        ],
+        "parameters": [
+          {
+            "name": "Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ChannelId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "WarehouseId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+            }
+          },
+          {
+            "name": "SourceType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentSourceType"
+            }
+          },
+          {
+            "name": "FromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "ToDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentSummaryDtoPagedResultApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{id}": {
+      "get": {
+        "tags": [
+          "Shipments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/manual": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "summary": "Create a manual shipment without changing inventory",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateManualShipmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateManualShipmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateManualShipmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/from-dispatch-planning": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "summary": "Create a shipment from remaining finalized Dispatch Planning allocation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFromDispatchPlanRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFromDispatchPlanRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentFromDispatchPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{id}/transition": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "summary": "Run a centrally validated shipment workflow transition",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsTransitionShipmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsTransitionShipmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsTransitionShipmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/shipments/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsCancelShipmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsShipmentDtoApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/transporters": {
+      "get": {
+        "tags": [
+          "ShipmentTransporters"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentOperationsTransporterPartyDtoIReadOnlyCollectionApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipment-operations/transporters/{partyId}": {
+      "put": {
+        "tags": [
+          "ShipmentTransporters"
+        ],
+        "parameters": [
+          {
+            "name": "partyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSetTransporterRoleRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSetTransporterRoleRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentOperationsSetTransporterRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CosmosDomainShipmentOperationsShipmentAppointmentStatus": {
+        "enum": [
+          "NotRequired",
+          "Pending",
+          "Requested",
+          "Booked",
+          "Rescheduled",
+          "Completed",
+          "Missed",
+          "Cancelled"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentDeliveryAttemptOutcome": {
+        "enum": [
+          "Successful",
+          "Partial",
+          "Failed",
+          "Rescheduled",
+          "Rejected"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentDispatchMode": {
+        "enum": [
+          "Road",
+          "Air",
+          "Rail",
+          "Courier",
+          "HandDelivery",
+          "Other"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentFreightChargeType": {
+        "enum": [
+          "OutboundFreight",
+          "ReturnFreight",
+          "Handling",
+          "Appointment",
+          "Loading",
+          "Unloading",
+          "Other"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentFreightStatus": {
+        "enum": [
+          "Draft",
+          "Submitted",
+          "Approved",
+          "Rejected",
+          "PartiallyPaid",
+          "Paid",
+          "Cancelled"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentPriority": {
+        "enum": [
+          "Low",
+          "Normal",
+          "High",
+          "Urgent"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentReturnStatus": {
+        "enum": [
+          "Draft",
+          "Approved",
+          "InTransit",
+          "Received",
+          "PartiallyReceived",
+          "Cancelled",
+          "Closed"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentSourceType": {
+        "enum": [
+          "Manual",
+          "DispatchPlanning",
+          "HistoricalImport"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentStatus": {
+        "enum": [
+          "Draft",
+          "ReadyForPacking",
+          "PackingInProgress",
+          "Packed",
+          "ReadyForDispatch",
+          "Dispatched",
+          "AppointmentPending",
+          "AppointmentBooked",
+          "InTransit",
+          "DeliveryAttempted",
+          "PartiallyDelivered",
+          "Delivered",
+          "ReturnInProgress",
+          "Returned",
+          "Cancelled",
+          "Closed"
+        ],
+        "type": "string"
+      },
+      "CosmosDomainShipmentOperationsShipmentTrackingEventType": {
+        "enum": [
+          "ShipmentCreated",
+          "ReadyForPacking",
+          "PackingStarted",
+          "Packed",
+          "DocketCreated",
+          "AppointmentRequested",
+          "AppointmentBooked",
+          "AppointmentRescheduled",
+          "Dispatched",
+          "InTransit",
+          "DeliveryAttempted",
+          "PartiallyDelivered",
+          "Delivered",
+          "ReturnInitiated",
+          "Returned",
+          "Cancelled",
+          "Closed"
+        ],
+        "type": "string"
+      },
+      "ManufacturingInvoiceInventoryOwner": {
+        "enum": [
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ManufacturingPhysicalOwnershipLine": {
+        "type": "object",
+        "properties": {
+          "invoiceLineId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unitId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/ManufacturingInvoiceInventoryOwner"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingPhysicalOwnershipSnapshot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingPhysicalOwnershipLine"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingPhysicalOwnershipSnapshotApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ManufacturingPhysicalOwnershipSnapshot"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingProductionCommandResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "completionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingProductionCommandResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ManufacturingProductionCommandResult"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingShipmentInvoiceLineLink": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "invoiceLineId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingShipmentInvoiceLinkRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingShipmentInvoiceLineLink"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingShipmentPackingVerificationLine": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unitId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingShipmentPackingVerificationRequest": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "nullable": true
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingShipmentPackingVerificationLine"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsAddShipmentDeliveryAttemptRequest": {
+        "type": "object",
+        "properties": {
+          "attemptDateTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDeliveryAttemptOutcome"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "nextAttemptDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsAddShipmentTrackingEventRequest": {
+        "type": "object",
+        "properties": {
+          "eventType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentTrackingEventType"
+          },
+          "eventDateTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsApproveShipmentFreightRequest": {
+        "type": "object",
+        "properties": {
+          "approvalNotes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCancelShipmentHistoricalImportRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCancelShipmentRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCommitShipmentHistoricalImportRequest": {
+        "type": "object",
+        "properties": {
+          "allowDuplicate": {
+            "type": "boolean"
+          },
+          "correctionReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateManualShipmentRequest": {
+        "type": "object",
+        "properties": {
+          "channelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentItemRequest"
+            },
+            "nullable": true
+          },
+          "expectedDeliveryDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "stoNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "marketplaceReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalShipmentReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispatchMode": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDispatchMode"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentPriority"
+          },
+          "manualReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentFreightRojmelExpenseRequest": {
+        "type": "object",
+        "properties": {
+          "walletId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "paymentMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentFromDispatchPlanRequest": {
+        "type": "object",
+        "properties": {
+          "dispatchPlanningRunId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsDispatchAllocationShipmentLineRequest"
+            },
+            "nullable": true
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "expectedDeliveryDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "stoNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentItemRequest": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "channelItemMappingId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dispatchPlanningAllocationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentReceiptItemRequest": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "rejectedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "damagedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "shortQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentReceiptRequest": {
+        "type": "object",
+        "properties": {
+          "receiptDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReceiptItemRequest"
+            },
+            "nullable": true
+          },
+          "marketplaceReceiptReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "proofAttachmentUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentReturnItemRequest": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "returnQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsCreateShipmentReturnRequest": {
+        "type": "object",
+        "properties": {
+          "returnDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "returnReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsCreateShipmentReturnItemRequest"
+            },
+            "nullable": true
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedReturnDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsDispatchAllocationShipmentLineRequest": {
+        "type": "object",
+        "properties": {
+          "dispatchPlanningAllocationId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsMarkShipmentFreightPaidRequest": {
+        "type": "object",
+        "properties": {
+          "paidAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentReference": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsReceiveShipmentReturnItemRequest": {
+        "type": "object",
+        "properties": {
+          "shipmentReturnItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receivedBackQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "restockableQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "damagedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "nonRestockableQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsReceiveShipmentReturnRequest": {
+        "type": "object",
+        "properties": {
+          "receivedBackDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsReceiveShipmentReturnItemRequest"
+            },
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsRejectShipmentFreightRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSaveShipmentAppointmentRequest": {
+        "type": "object",
+        "properties": {
+          "appointmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "appointmentStatus": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentAppointmentStatus"
+          },
+          "appointmentReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "timeFrom": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "timeTo": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSaveShipmentDocketRequest": {
+        "type": "object",
+        "properties": {
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "docketDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "dispatchMode": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDispatchMode"
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicleNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "driverName": {
+            "type": "string",
+            "nullable": true
+          },
+          "driverMobile": {
+            "type": "string",
+            "nullable": true
+          },
+          "pickupReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "actualPickupDateUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSaveShipmentFreightChargeRequest": {
+        "type": "object",
+        "properties": {
+          "chargeType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentFreightChargeType"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseFreight": {
+            "type": "number",
+            "format": "double"
+          },
+          "fuelSurcharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "handlingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "loadingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "unloadingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "appointmentCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnFreight": {
+            "type": "number",
+            "format": "double"
+          },
+          "otherCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "taxAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "actualWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "volumetricWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "chargeableWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratePerWeightUnit": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "transporterInvoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "transporterInvoiceDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSaveShipmentPackageItemRequest": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSaveShipmentPackageRequest": {
+        "type": "object",
+        "properties": {
+          "packageNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "packageType": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsSaveShipmentPackageItemRequest"
+            },
+            "nullable": true
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "length": {
+            "type": "number",
+            "format": "double"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          },
+          "height": {
+            "type": "number",
+            "format": "double"
+          },
+          "dimensionUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "grossWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "netWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "weightUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "volumetricDivisor": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "trackingLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "sealNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMixedPackage": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsSetTransporterRoleRequest": {
+        "type": "object",
+        "properties": {
+          "isTransporter": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "appointmentReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "timeFrom": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "timeTo": {
+            "type": "string",
+            "format": "time",
+            "nullable": true
+          },
+          "appointmentStatus": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentAppointmentStatus"
+          },
+          "attemptNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "requestedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "requestedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "bookedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "bookedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "completedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDashboardDto": {
+        "type": "object",
+        "properties": {
+          "draftCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "readyForDispatchCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inTransitCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveryAttemptCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "returnInProgressCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "overdueCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dispatchedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "deliveredQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "openFreightAmount": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDashboardDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentDashboardDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDeliveryAttemptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "attemptNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attemptDateTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDeliveryAttemptOutcome"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "nextAttemptDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDocketDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "transporterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "docketDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "dispatchMode": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDispatchMode"
+          },
+          "trackingUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "vehicleNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "driverName": {
+            "type": "string",
+            "nullable": true
+          },
+          "driverMobile": {
+            "type": "string",
+            "nullable": true
+          },
+          "pickupReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "actualPickupDateUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentSourceType"
+          },
+          "channelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "channelCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "channelName": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispatchPlanningRunId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "expectedDeliveryDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "stoNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "marketplaceReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "externalShipmentReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "transporterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispatchMode": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentDispatchMode"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentPriority"
+          },
+          "manualReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalPlannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalPackedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalDispatchedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalReceivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalReturnedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalPackages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalGrossWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalVolumetricWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalChargeableWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "updatedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "packedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "packedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dispatchedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dispatchedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "deliveredAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "closedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "closedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "cancelledAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelledBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "cancellationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentItemDto"
+            },
+            "nullable": true
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentPackageDto"
+            },
+            "nullable": true
+          },
+          "dockets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentDocketDto"
+            },
+            "nullable": true
+          },
+          "appointments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentAppointmentDto"
+            },
+            "nullable": true
+          },
+          "trackingEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentTrackingEventDto"
+            },
+            "nullable": true
+          },
+          "deliveryAttempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentDeliveryAttemptDto"
+            },
+            "nullable": true
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentReceiptDto"
+            },
+            "nullable": true
+          },
+          "returns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentReturnDto"
+            },
+            "nullable": true
+          },
+          "freightCharges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentFreightChargeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "transporterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "chargeType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentFreightChargeType"
+          },
+          "currencyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseFreight": {
+            "type": "number",
+            "format": "double"
+          },
+          "fuelSurcharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "handlingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "loadingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "unloadingCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "appointmentCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnFreight": {
+            "type": "number",
+            "format": "double"
+          },
+          "otherCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "taxAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalCharge": {
+            "type": "number",
+            "format": "double"
+          },
+          "actualWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "volumetricWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "chargeableWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "ratePerWeightUnit": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "transporterInvoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "transporterInvoiceDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentFreightStatus"
+          },
+          "approvalNotes": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "approvedBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "paidAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paidBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "rojmelTransactionId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentFreightChargeDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentFreightChargeDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportBatchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "originalFileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invalidRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "committedRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "uploadedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "committedAtUtc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportBatchDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportBatchDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportBatchDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportBatchDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportBatchDtoPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportBatchDtoPagedResult"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportRowErrorDto": {
+        "type": "object",
+        "properties": {
+          "rowNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "field": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "originalValue": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportRowRequest": {
+        "type": "object",
+        "properties": {
+          "rowNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sourceShipmentReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "channelCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "channelSku": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "stoNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "transporterPartyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "freightAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportValidationDto": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "validRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invalidRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "duplicateRows": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unmatchedSkuCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rowErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportRowErrorDto"
+            },
+            "nullable": true
+          },
+          "canCommit": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentHistoricalImportValidationDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportValidationDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "channelItemMappingId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "dispatchPlanningAllocationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "packedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "dispatchedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "receivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "rejectedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "damagedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "shortQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "restockableReturnQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "nonRestockableReturnQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "unitsPerBoxSnapshot": {
+            "type": "number",
+            "format": "double"
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "channelSkuSnapshot": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemCodeSnapshot": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemNameSnapshot": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentPackageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "packageNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "packageType": {
+            "type": "string",
+            "nullable": true
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "length": {
+            "type": "number",
+            "format": "double"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          },
+          "height": {
+            "type": "number",
+            "format": "double"
+          },
+          "dimensionUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "grossWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "netWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "weightUnit": {
+            "type": "string",
+            "nullable": true
+          },
+          "volumetricDivisor": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "volumetricWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "chargeableWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "trackingLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true
+          },
+          "sealNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMixedPackage": {
+            "type": "boolean"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentPackageItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentPackageItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentPackageId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentPackingSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "unitsPerBox": {
+            "type": "number",
+            "format": "double"
+          },
+          "suggestedPackageCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "suggestedLooseQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "length": {
+            "type": "number",
+            "format": "double"
+          },
+          "width": {
+            "type": "number",
+            "format": "double"
+          },
+          "height": {
+            "type": "number",
+            "format": "double"
+          },
+          "grossWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "netWeight": {
+            "type": "number",
+            "format": "double"
+          },
+          "volumetricDivisor": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentPackingSuggestionDtoIReadOnlyCollectionApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentPackingSuggestionDto"
+            },
+            "nullable": true
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReceiptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiptNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiptDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "marketplaceReceiptReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "proofAttachmentUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentReceiptItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReceiptItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentReceiptId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "rejectedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "damagedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "shortQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReportRowDto": {
+        "type": "object",
+        "properties": {
+          "shipmentNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "channelCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "plannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "dispatchedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "receivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "freightAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReportRowDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentReportRowDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReportRowDtoPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentReportRowDtoPagedResult"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReturnDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "returnNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "returnDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "returnReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentReturnStatus"
+          },
+          "transporterPartyId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "transporterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "docketNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedReturnDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "receivedBackDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentReturnItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReturnDtoApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentReturnDto"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentReturnItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentReturnId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "returnQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "receivedBackQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "restockableQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "damagedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "nonRestockableQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reasonCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentSourceType"
+          },
+          "channelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "channelCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "warehouseCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseName": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipmentDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentPriority"
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "stoNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "transporterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalPlannedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalPackedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalDispatchedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalReceivedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalReturnedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalPackages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentSummaryDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentSummaryDto"
+            },
+            "nullable": true
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "nullable": true
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentSummaryDtoPagedResultApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ShipmentOperationsShipmentSummaryDtoPagedResult"
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsShipmentTrackingEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shipmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "eventType": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentTrackingEventType"
+          },
+          "eventStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventDateTimeUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "referenceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsTransitionShipmentRequest": {
+        "type": "object",
+        "properties": {
+          "targetStatus": {
+            "$ref": "#/components/schemas/CosmosDomainShipmentOperationsShipmentStatus"
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsTransporterPartyDto": {
+        "type": "object",
+        "properties": {
+          "partyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "partyCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "partyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "mobileNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "isTransporter": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsTransporterPartyDtoIReadOnlyCollectionApiResponse": {
+        "type": "object",
+        "properties": {
+          "succeeded": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsTransporterPartyDto"
+            },
+            "nullable": true
+          },
+          "errors": {
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentOperationsValidateShipmentHistoricalImportRequest": {
+        "type": "object",
+        "properties": {
+          "originalFileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentOperationsShipmentHistoricalImportRowRequest"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "JWT bearer auth. In Swagger UI paste the accessToken only; the Bearer prefix is added automatically.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "ShipmentExecution"
+    },
+    {
+      "name": "ShipmentFreight"
+    },
+    {
+      "name": "ShipmentHistoricalImports"
+    },
+    {
+      "name": "ShipmentInvoiceOwnership"
+    },
+    {
+      "name": "ShipmentReports"
+    },
+    {
+      "name": "ShipmentReturns"
+    },
+    {
+      "name": "Shipments"
+    },
+    {
+      "name": "ShipmentTransporters"
+    }
+  ]
+}

@@ -81,10 +81,12 @@ export const getBomLines = (bom) =>
 export const getSnapshotLines = (production) =>
   production?.materialSnapshots ?? production?.materials ?? production?.components ?? [];
 
-export const calculateRequiredQuantity = (line, producedQuantity = 1) => {
+export const calculateRequiredQuantity = (line, producedQuantity = 1, outputBaseQuantity = 1) => {
+  if (line?.consumptionPerUnit != null) return Number(producedQuantity || 0) * Number(line.consumptionPerUnit);
   const base = Number(line?.quantity ?? line?.baseQuantity ?? line?.quantityPerUnit ?? 0);
   const wastage = Number(line?.wastagePercentage ?? line?.wastagePercent ?? 0);
-  return base * Number(producedQuantity || 0) * (1 + wastage / 100);
+  if (!(Number(outputBaseQuantity) > 0)) return null;
+  return base * Number(producedQuantity || 0) / Number(outputBaseQuantity) * (1 + wastage / 100);
 };
 
 export const buildBomPayload = (form) => ({
@@ -94,6 +96,7 @@ export const buildBomPayload = (form) => ({
   effectiveTo: form.effectiveTo || null,
   notes: String(form.notes ?? "").trim() || null,
   isDefault: Boolean(form.isDefault),
+  ...(form.outputBaseQuantity !== undefined ? { outputBaseQuantity: Number(form.outputBaseQuantity) } : {}),
   components: form.components.map((line, index) => ({
     componentItemId: Number(line.item?.id ?? line.item?.itemId),
     quantity: Number(line.quantity),
@@ -112,6 +115,7 @@ export const buildBomUpdatePayload = (form) => {
     effectiveTo: payload.effectiveTo,
     isDefault: payload.isDefault,
     notes: payload.notes,
+    ...(payload.outputBaseQuantity !== undefined ? { outputBaseQuantity: payload.outputBaseQuantity } : {}),
   };
 };
 

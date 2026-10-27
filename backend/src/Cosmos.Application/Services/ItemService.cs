@@ -49,7 +49,9 @@ public sealed class ItemService : IItemService
     public async Task<ApiResponse<ItemDto>> CreateAsync(CreateItemCommand command, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_createValidator, command, cancellationToken);
-        var created = await _repository.CreateAsync(command, cancellationToken);
+        if (command.ReservedStock != 0 || (command.CurrentStock != 0 && command.CurrentStock != command.OpeningStock))
+            throw new CosmosException("New Item stock must equal its explicit opening; reservations are created by owned transactions.");
+        var created = await _repository.CreateAsync(command with { CurrentStock = command.OpeningStock }, cancellationToken);
         _logger.LogInformation("Created item {ItemId} with code {ItemCode}.", created.Id, created.ItemCode);
         await _auditRepository.AddAsync(new AuditEntryRequest("Items", created.Id.ToString(), "Create", null, AuditSerializer.Serialize(created), null), cancellationToken);
         return ApiResponse<ItemDto>.Success(created, "Item created.");
@@ -59,6 +61,10 @@ public sealed class ItemService : IItemService
     {
         await ValidationRunner.ValidateAsync(_updateValidator, command, context => context.RootContextData["Id"] = id, cancellationToken);
         var old = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Item was not found.");
+        if (command.CurrentStock != old.CurrentStock || command.ReservedStock != old.ReservedStock || command.OpeningStock != old.OpeningStock || command.OpeningStockValue != old.OpeningStockValue)
+            throw new CosmosException("Stock balances cannot be edited through Item details. Use an authorized opening or stock adjustment with a reason.");
+        if ((command.UnitId != old.UnitId || command.TrackInventory != old.TrackInventory) && (old.CurrentStock != 0 || old.ReservedStock != 0))
+            throw new CosmosException("Base unit and inventory tracking cannot change while stock or reservations exist.");
         var updated = await _repository.UpdateAsync(id, command, cancellationToken);
         _logger.LogInformation("Updated item {ItemId} with code {ItemCode}.", updated.Id, updated.ItemCode);
         await _auditRepository.AddAsync(new AuditEntryRequest("Items", id.ToString(), "Update", AuditSerializer.Serialize(old), AuditSerializer.Serialize(updated), null), cancellationToken);

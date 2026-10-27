@@ -33,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IProcurementCalculationService, ProcurementCalculationService>();
         services.AddScoped<IProcurementPlanningService, ProcurementPlanningService>();
         services.AddScoped<IManufacturingService, ManufacturingService>();
+        services.AddScoped<IProductionWorkspaceService, ProductionWorkspaceService>();
+        services.AddScoped<IPhysicalInventoryService, PhysicalInventoryService>();
         services.AddScoped<DispatchCalculationService>();
         services.AddScoped<DispatchAllocationService>();
         services.AddScoped<IDispatchPlanningService, DispatchPlanningService>();
