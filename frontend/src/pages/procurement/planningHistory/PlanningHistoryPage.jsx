@@ -1,3 +1,4 @@
+import { compareDecimal, subtractDecimal } from "../../../utils/productionValues";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -46,7 +47,7 @@ import {
 import {
   formatProcurementDate,
   formatProcurementDateTime,
-  formatProcurementDecimal,
+  formatProcurementQuantity,
   formatProcurementInteger,
   getApiStatus,
   getCollection,
@@ -65,6 +66,7 @@ import {
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
 import useLatestRequest from "../../../hooks/useLatestRequest";
+import { ProcurementPurchasePanel } from "../../manufacturing/integrations/ProcurementPurchasePanel";
 import ProcurementStatCards from "../ProcurementStatCards";
 import ProcurementTable, {
   PROCUREMENT_ROW_ACTION_CLASS,
@@ -259,10 +261,10 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
-  const calculated = toNumberOrNull(line?.calculatedSuggestedQuantity) ?? 0;
+  const calculated = line?.calculatedSuggestedQuantity ?? "0";
   const final = toNumberOrNull(finalQuantity);
-  const differs = final !== null && final !== calculated;
-  const delta = final === null ? null : final - calculated;
+  const differs = final !== null && compareDecimal(finalQuantity, calculated) !== 0;
+  const delta = final === null ? null : subtractDecimal(finalQuantity, calculated);
 
   const submit = async () => {
     const validation = {};
@@ -287,7 +289,7 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
         runId,
         getRecordId(line, ["planningLineId"]),
         {
-          finalQuantity: final,
+          finalQuantity,
           adjustmentReason: differs ? reason.trim() : null,
         },
       );
@@ -335,19 +337,19 @@ const AdjustmentModal = ({ line, onClose, onSaved, runId }) => {
             <div className="rounded-xl border border-slate-200 p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">System suggestion</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
-                {formatProcurementDecimal(calculated)}
+                {formatProcurementQuantity(calculated)}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 p-3">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">To order</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
-                {formatProcurementDecimal(final)}
+                {formatProcurementQuantity(finalQuantity)}
               </p>
             </div>
             <div className={`rounded-xl border p-3 ${differs ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Delta</p>
               <p className={`mt-1 text-lg font-semibold tabular-nums ${delta && delta !== 0 ? "text-amber-800" : "text-slate-900"}`}>
-                {delta === null ? "-" : formatProcurementDecimal(delta)}
+                {delta === null ? "-" : formatProcurementQuantity(delta)}
               </p>
             </div>
           </div>
@@ -487,6 +489,7 @@ const RunDetail = ({
           </div>
         )}
       </ProcurementSectionCard>
+      {finalized && !linesLoading && !linesError && <ProcurementPurchasePanel key={run.id} run={run} lines={lines} onSaved={onLoadLines} />}
       <ProcurementSectionCard title="Snapshot lines" description="Values below are preserved from this plan and are never recalculated in history.">
         <div className="m-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_180px]">
@@ -535,7 +538,7 @@ const RunDetail = ({
             scrollerClassName="max-h-[60vh]"
             rows={5}
           >
-            {lines.map((line, index) => { const suggested = toNumberOrNull(line.calculatedSuggestedQuantity) ?? 0; const final = toNumberOrNull(line.finalQuantity) ?? suggested; const delta = final - suggested; const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementDecimal(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === 0 ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementDecimal(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementDecimal(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
+            {lines.map((line, index) => { const suggested = line.calculatedSuggestedQuantity ?? "0"; const final = line.finalQuantity ?? suggested; const delta = subtractDecimal(final, suggested); const warnings = Array.isArray(line.warnings) ? line.warnings : []; const manual = getProcurementBoolean(line.manualPlanning); return <tr key={getRecordId(line, ["planningLineId"]) ?? index} className="group"><td className="sticky left-0 z-10 border-r bg-white group-hover:bg-slate-50"><p className="font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td><td className="text-right font-medium tabular-nums">{formatProcurementQuantity(suggested)}</td><td className="text-right font-semibold tabular-nums text-slate-900">{formatProcurementQuantity(final)}</td><td className={`text-right font-semibold tabular-nums ${delta === "0" ? "text-slate-500" : "text-amber-700"}`}>{formatProcurementQuantity(delta)}</td><td className={`text-right tabular-nums ${Number(line.shortage) > 0 ? "bg-red-50 font-semibold text-red-700" : ""}`}>{formatProcurementQuantity(line.shortage)}</td><td className="text-right tabular-nums">{formatProcurementQuantity(line.physicalStock)}</td><td className="text-right tabular-nums">{formatProcurementQuantity(line.inboundStock)}</td><td className="text-right font-medium tabular-nums text-slate-900">{formatProcurementQuantity(line.projectedAvailableStock)}</td><td><div className="flex max-w-64 flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber"><AlertTriangle className="h-3 w-3" />{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{final > 0 && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div>{line.adjustmentReason && <p className="mt-1 max-w-52 truncate text-xs text-slate-500" title={line.adjustmentReason}>Reason: {line.adjustmentReason}</p>}</td><td><div className="flex items-center justify-end gap-0.5">{canEdit && !immutable ? <AppTooltip label="Adjust plan line"><button type="button" aria-label="Adjust plan line" className={PROCUREMENT_ROW_ACTION_CLASS} onClick={() => onOpenAdjustment(line)}><Pencil className="h-4 w-4" /></button></AppTooltip> : <span className="text-xs text-slate-400">{immutable ? "Locked" : "Read only"}</span>}</div></td></tr>; })}
           </ProcurementTable>
         )}
         <ProcurementPagination disabled={linesLoading} {...pagination} onPageChange={(value) => onUpdateLineFilters({ page: value })} onPageSizeChange={(value) => onUpdateLineFilters({ page: 1, pageSize: Number(value) })} />
@@ -639,7 +642,7 @@ const PlanningHistoryPage = () => {
   }, [beginRunsRequest, filters, isLatestRunsRequest, page, pageSize]);
 
   const loadLines = useCallback(async () => {
-    if (!run) return;
+    if (!run) return false;
     const requestId = beginLinesRequest();
     setLinesLoading(true);
     setLinesError(null);
@@ -666,11 +669,14 @@ const PlanningHistoryPage = () => {
       );
       if (isLatestLinesRequest(requestId)) {
         setLineData(response.data);
+        return true;
       }
+      return false;
     } catch (loadError) {
       if (isLatestLinesRequest(requestId)) {
         setLinesError(loadError);
       }
+      return false;
     } finally {
       if (isLatestLinesRequest(requestId)) {
         setLinesLoading(false);

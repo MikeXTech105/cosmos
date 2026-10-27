@@ -1,4 +1,5 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireDocumentQuantities } from "../../utils/documentPrecision";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
@@ -34,7 +35,7 @@ export const purchaseBillService = {
   createPurchaseBill: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.PURCHASE_BILLS,
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);
@@ -43,7 +44,7 @@ export const purchaseBillService = {
   updatePurchaseBill: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.PURCHASE_BILL_BY_ID(id),
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);

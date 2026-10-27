@@ -17,6 +17,11 @@ public sealed class ProductionWorkspaceService(IProductionWorkspaceRepository re
     private async Task<ApiResponse<T>> Run<T>(string procedure, object request, CancellationToken ct) =>
         ApiResponse<T>.Success(await repository.ExecuteAsync<T>(procedure, scope.CompanyKey,
             user.UserId ?? throw new UnauthorizedCosmosException(), request, ct));
+    public Task<ApiResponse<CapacityCalendarContextDto>> CalendarContextAsync(long id, DateOnly businessDate, CancellationToken ct)
+    {
+        if (id <= 0 || businessDate == default) throw new CosmosException("Select a saved shift configuration and an explicit business date.");
+        return Run<CapacityCalendarContextDto>("sp_ProductionCapacity_CalendarRead", new { Id = id, BusinessDate = businessDate }, ct);
+    }
     public Task<ApiResponse<PackagingConversionDto>> PackagingConversionAsync(long id,PackagingConversionRequest? r,CancellationToken ct)
     {
         if(r is not null)

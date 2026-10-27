@@ -1,4 +1,5 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireDocumentQuantities } from "../../utils/documentPrecision";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
@@ -71,7 +72,7 @@ export const invoiceService = {
   createInvoice: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.SALES_INVOICES,
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);
@@ -80,7 +81,7 @@ export const invoiceService = {
   updateInvoice: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.SALES_INVOICE_BY_ID(id),
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);
@@ -113,7 +114,7 @@ export const invoiceService = {
   recordPayment: async (id, payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.SALES_INVOICE_PAYMENTS(id),
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);

@@ -28,6 +28,7 @@ import {
 } from "../../../utils/apiError";
 import { ProcurementItemAutocomplete } from "../../procurement/ProcurementShared";
 import { ManufacturingInlineError, ManufacturingStatusPill } from "../../manufacturing/ManufacturingShared";
+import ItemProductionConfiguration from "../../manufacturing/configuration/ItemProductionConfiguration";
 import {
   buildBomUpdatePayload,
   buildBomPayload,
@@ -421,6 +422,7 @@ const ItemManufacturingTab = ({ disabled, enabled, isActive, item, onEnabledChan
     </>}
     {bomOpen && <BomEditor bom={editingBom} item={item} open onClose={() => { setBomOpen(false); setEditingBom(null); }} onSaved={load} />}
     {productionOpen && <ProductionEditor boms={boms} applicableBom={applicableBom} item={item} open production={editingProduction} onClose={() => { setProductionOpen(false); setEditingProduction(null); }} onSaved={load} />}
+    {enabled && itemId && <ItemProductionConfiguration itemId={itemId} disabled={disabled} />}
     {detailRecord && <ProductionDetail production={detailRecord} open onClose={() => setDetailRecord(null)} />}
     <AppModal isOpen={Boolean(postRecord)} isBusy={Boolean(actionId)} onClose={() => setPostRecord(null)} title="Post production"><div className="space-y-4"><p className="text-sm text-slate-600">Post {postRecord?.referenceNumber ?? `PR-${getRecordId(postRecord)}`}? This atomically consumes raw materials and receives {formatQuantity(postRecord?.producedQuantity ?? postRecord?.quantity)} finished units into stock.</p><p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800">Do not repeat this action if the request times out. COSMOS will reload the production first to verify whether posting completed.</p><div className="flex justify-end gap-2"><AppButton variant="secondary" disabled={Boolean(actionId)} onClick={() => setPostRecord(null)}>Keep as draft</AppButton><AppButton isLoading={Boolean(actionId)} loadingText="Posting…" onClick={post}>Post and update stock</AppButton></div></div></AppModal>
     <AppModal isOpen={Boolean(deleteBomRecord)} isBusy={Boolean(actionId)} onClose={() => setDeleteBomRecord(null)} title="Delete BOM"><div className="space-y-4"><p className="text-sm text-slate-600">Delete BOM version {deleteBomRecord?.version ?? deleteBomRecord?.versionNumber}? This action cannot be undone.</p><div className="flex justify-end gap-2"><AppButton variant="secondary" onClick={() => setDeleteBomRecord(null)}>Keep BOM</AppButton><AppButton variant="danger" isLoading={Boolean(actionId)} onClick={removeBom}>Delete BOM</AppButton></div></div></AppModal>

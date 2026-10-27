@@ -851,6 +851,84 @@
       }
     },
     "/api/v1/shipment-operations/shipments/{id}/packing-verification": {
+      "get": {
+        "tags": [
+          "ShipmentInvoiceOwnership"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManufacturingPhysicalOwnershipSnapshotApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "ShipmentInvoiceOwnership"
@@ -2216,6 +2294,33 @@
           },
           "owner": {
             "$ref": "#/components/schemas/ManufacturingInvoiceInventoryOwner"
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "unitsPerBox": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false

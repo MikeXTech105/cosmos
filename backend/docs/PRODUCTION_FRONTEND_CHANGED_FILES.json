@@ -1,0 +1,674 @@
+[
+  {
+    "status": "M",
+    "path": "backend/docs/PRODUCTION_API_CONTRACT.md"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/PRODUCTION_MIGRATION_CUTOVER.md"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/PRODUCTION_WORKSPACE_HANDOFF.md"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/implemented-routes.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/manufacturing.openapi.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/procurement-planning.openapi.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/purchase-expense.openapi.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/sales.openapi.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/docs/production-contracts/shipment-operations.openapi.json"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/PhysicalInventoryOwnershipControllers.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProcurementContinuityControllers.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Abstractions/Services/IPhysicalInventoryService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Abstractions/Services/IProductionWorkspaceService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/PhysicalInventoryService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/ProductionWorkspaceService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/PhysicalInventoryDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProcurementContinuityDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionCapacityDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionImportDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionOperationalReportDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionWorkspaceDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/PurchasePhysicalDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionSqlIntegrationTests.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionSwaggerRuntimeTests.cs"
+  },
+  {
+    "status": "M",
+    "path": "frontend/package-lock.json"
+  },
+  {
+    "status": "M",
+    "path": "frontend/package.json"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/config/sidebar.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/ProcurementCalculationStrip.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/ProcurementShared.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/generatePlan/GeneratePlanPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/planningHistory/PlanningHistoryPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/procurementHelpers.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/procurementHelpers.test.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/settings/ProcurementSettingFormPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/procurement/settings/ProcurementSettingsPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/PurchaseLineItems.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/documents/ConvertOrderModal.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/documents/PurchaseDocumentFormModal.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/purchase/purchaseHelpers.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/reports/columns/manufacturingColumns.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/reports/columns/manufacturingColumns.test.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoiceTemplates/ClassicTemplate.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoiceTemplates/InvoiceTemplateShared.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoiceTemplates/wewelInvoice.test.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoices/InvoiceFormModal.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/sales/invoices/invoiceHelpers.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/routes/AppRoutes.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/procurement/planningService.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/purchase/purchaseBillService.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/purchase/purchaseOrderService.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/purchase/purchaseReturnService.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/reports/manufacturingReportsService.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/reports/manufacturingReportsService.test.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/sales/invoiceService.js"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_29_order_frontend_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_30_purchase_frontend_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_31_physical_ownership_read_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_32_operational_document_links.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_33_capacity_calendar_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_34_procurement_purchase_recovery.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_35_purchase_operator_labels.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_36_capacity_feasibility_duration.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_37_source_scope_integrity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_BROWSER_NETWORK.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_CHANGED_FILES.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_COVERAGE.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_IMPLEMENTATION.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_REVERIFICATION.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_REVERIFICATION_BROWSER.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_FRONTEND_VERIFICATION.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionRuntimeController.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/PhysicalOwnershipReadContractTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionFrontendContractTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "frontend/scripts/production-browser-fixture.mjs"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/hooks/useDocumentBusinessDefaults.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/hooks/useDocumentBusinessDefaults.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/hooks/useProductionRuntime.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/hooks/useProductionText.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/i18n/locales/en/production.json"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/i18n/locales/hi-en/production.json"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/WorkspaceShared.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/ConfigurationShared.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/PackagingConversionPanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationAccess.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationHelpers.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationHelpers.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationHooks.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationMessages.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/configuration/configurationState.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/imports/ImportStaging.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/imports/ImportsPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/imports/productionImportAdapter.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/imports/productionImportAdapter.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/InvoiceOwnershipPanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/PhysicalLookup.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/PhysicalShared.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/ProcurementPurchasePanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/PurchaseOperationsPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalAudit.dom.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalCommand.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalHelpers.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalHelpers.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalHooks.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/integrations/physicalMessages.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderCapacity.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderCommandModal.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderDetailPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderFormAccess.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderFormPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderRecovery.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderShared.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrderViews.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/OrdersPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderHelpers.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderHelpers.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderHooks.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderHooks.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderMessages.en.json"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderMessages.hi-en.json"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderServiceContracts.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderText.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/orders/orderText.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/planning/PlanningPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/planning/productionPlanningHelpers.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/planning/productionPlanningHelpers.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/reports/OperationalReportsPage.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/reports/productionReportingHelpers.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/reports/productionReportingHelpers.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/workspaceCommands.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/workspaceHooks.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/workspaceMessages.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/manufacturing/workspaceViews.test.jsx"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/purchase/documents/purchaseDocumentSchema.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/sales/invoices/invoiceSchema.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/documentLookupService.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/documentQuantityTransport.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/physicalInventoryService.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/physicalInventoryService.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionApi.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionConfigurationService.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionConfigurationService.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionOrderService.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionOrderService.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionWorkspaceService.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/manufacturing/productionWorkspaceService.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/procurement/planningPrecision.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/documentFieldSchemas.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/documentPrecision.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/documentPrecision.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/productionSummary.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/productionSummary.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/productionValues.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/utils/productionValues.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/tests/fixtures/production-positional.csv"
+  }
+]

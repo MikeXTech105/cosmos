@@ -1,3 +1,4 @@
+import { documentLookupService } from "../../../services/documentLookupService";
 import {
   ArrowRight,
   Ban,
@@ -200,7 +201,7 @@ const PurchaseDocumentListPage = ({ config }) => {
             IsActive: true,
           })
         : type === "items"
-          ? itemService.getItems({
+          ? documentLookupService.items({
               PageNumber: 1,
               PageSize: 200,
               IsActive: true,
@@ -286,7 +287,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   const itemOptions = useMemo(
     () =>
       lookups.items.map((item) => ({
-        value: Number(item.id),
+        value: String(item.id),
         label: [item.name, item.itemCode].filter(Boolean).join(" - "),
       })),
     [lookups.items],
@@ -300,7 +301,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   const billOptions = useMemo(
     () =>
       lookups.bills.map((bill) => ({
-        value: Number(bill.id),
+        value: String(bill.id),
         label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
       })),
     [lookups.bills],

@@ -1,16 +1,18 @@
-import axiosInstance from "../../api/axios";
+import productionApi from "../manufacturing/productionApi";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
+import { normalizeProductionSummary } from "../../utils/productionSummary";
 
 const quantityByUnit = (totals, field) => totals.map((total) => (
   `${total[field] == null ? "Unavailable" : total[field]} ${total.unitName ?? `Unit ${total.unitId}`}`
 )).join("; ");
 
 const load = async (kind, params, { signal } = {}) => {
-  const response = unwrapResponse(await axiosInstance.get(`/api/v1/manufacturing/reports/${kind}`, {
+  const response = unwrapResponse(await productionApi.get(`/api/v1/manufacturing/reports/${kind}`, {
     params: normalizeParams(params), signal,
   }));
   const page = response.data;
-  const totals = Array.isArray(page.summary) ? page.summary : [];
+  // Summary is an untyped JSON result: SQL FOR JSON property names retain PascalCase.
+  const totals = Array.isArray(page.summary) ? normalizeProductionSummary(page.summary) : [];
   return {
     ...response,
     data: {

@@ -3286,10 +3286,23 @@
           },
           "pendingQuantity": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "isOverdue": {
             "type": "boolean"
+          },
+          "supplierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3367,6 +3380,34 @@
               "$ref": "#/components/schemas/ManufacturingPurchaseReceiptBalanceLine"
             },
             "nullable": true
+          },
+          "returns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingPurchaseReceiptReturnHistory"
+            },
+            "nullable": true
+          },
+          "billLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingPurchaseReceiptBillLinkContext"
+            },
+            "nullable": true
+          },
+          "promiseHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingPurchasePromiseHistoryDto"
+            },
+            "nullable": true
+          },
+          "orderLines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManufacturingPurchasePhysicalOrderLine"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3390,6 +3431,63 @@
           "correlationId": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingPurchasePhysicalOrderLine": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "itemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unitId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "orderedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingPurchasePromiseHistoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "previousDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "expectedDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAtUtc": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -3466,6 +3564,31 @@
           "businessDate": {
             "type": "string",
             "format": "date"
+          },
+          "receiptId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiptVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceReference": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceUnitCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3484,6 +3607,41 @@
           "quantity": {
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManufacturingPurchaseReceiptBillLinkContext": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiptLineId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "billItemId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "purchaseBillId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "purchaseBillNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "billStatus": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3603,6 +3761,54 @@
         },
         "additionalProperties": false
       },
+      "ManufacturingPurchaseReceiptReturnHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiptId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiptLineId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "businessDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "acceptedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "rejectedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "quarantinedQuantity": {
+            "type": "number",
+            "format": "double"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "purchaseReturnId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "billItemId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "ManufacturingPurchaseReceiptReturnRequest": {
         "type": "object",
         "properties": {
@@ -3680,6 +3886,14 @@
           "quantityWeightedLeadDays": {
             "type": "number",
             "format": "double",
+            "nullable": true
+          },
+          "supplierName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
             "nullable": true
           }
         },

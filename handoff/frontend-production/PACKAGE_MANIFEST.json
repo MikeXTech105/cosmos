@@ -1,0 +1,215 @@
+{
+  "package": "Cosmos frontend implementation prompt and reference handoff",
+  "createdAtUtc": "2026-10-27T10:11:25.4985082Z",
+  "sourceRepositoryCommit": "f6937755cf04349de2f014b40a5cac25b9bcf6de",
+  "sourceRepositoryBranch": "lucifer-dev",
+  "referenceOnly": true,
+  "applicationSourceAndRuntimeStillRequired": true,
+  "credentialsIncluded": false,
+  "promptCharacters": 65569,
+  "embeddedSharedRequirementIds": 68,
+  "sourceTabs": 22,
+  "implementedRouteOperations": 81,
+  "moduleOpenApiFiles": 6,
+  "baselineResultsAreRecordedNotRerunByPackaging": true,
+  "recordedVerification": {
+    "verifiedOn": "2026-10-27",
+    "backend": {
+      "passed": 401,
+      "failed": 0,
+      "skippedSql": 13,
+      "total": 414
+    },
+    "frontend": {
+      "passed": 581,
+      "failedBaseline": 3,
+      "total": 584,
+      "targetedPassed": 12,
+      "build": "passed"
+    },
+    "sql": {
+      "executed": false,
+      "reason": "No disposable SQL runtime/connection available",
+      "guardWithoutConnection": "refused",
+      "guardOutsideTestCatalog": "refused before opening connection"
+    },
+    "sourceTabs": 22,
+    "newBusinessMasters": 2,
+    "childConfigurationFamilies": 3,
+    "implementedRouteOperations": 81,
+    "newMigrationFiles": 30,
+    "fullNewWorkflowUiDelivered": false
+  },
+  "files": [
+    {
+      "path": "PROMPT_2_FRONTEND_IMPLEMENTATION.txt",
+      "bytes": 65647,
+      "sha256": "fd306a9ba88aff23d6909e79e9c06e9e2fe7ca64ef350069bc7a590446560e63"
+    },
+    {
+      "path": "START_HERE.txt",
+      "bytes": 1700,
+      "sha256": "15a0cde5c0f91d51728898113afc509b1106474b0aca103b2f9b21c499c54697"
+    },
+    {
+      "path": "FRONTEND_ACCEPTANCE_CHECKLIST.md",
+      "bytes": 6844,
+      "sha256": "22eb9860241da67278e6a313852ba1e17169f6f6109a711bf4edcc882bbe1e17"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_API_CONTRACT.md",
+      "bytes": 22518,
+      "sha256": "d0aa774f9ab61bc4a354f19d87b97146470e516a39ce217a0440ff38b4245a68"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_WORKSPACE_HANDOFF.md",
+      "bytes": 19890,
+      "sha256": "fb9225be8b13401fd8dedfaac5c542a9a1a4879c8c0bb5df69b15104a412f481"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_COVERAGE_MATRIX.md",
+      "bytes": 24438,
+      "sha256": "8968e5dd57335c0f46574db806f8356210ce569f81d06a747616009f79f76b17"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_SOURCE_AUDIT.json",
+      "bytes": 87102,
+      "sha256": "55fc94fd9d4063673addcd986ebb7cd815303e6285ae8bfb408b87aa7d44c857"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_MIGRATION_CUTOVER.md",
+      "bytes": 17435,
+      "sha256": "0212fcf92015c438077d7bb3a2ad82f4258044116ec3ffcc7b57f7d379a88d86"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_VERIFICATION_RESULTS.json",
+      "bytes": 654,
+      "sha256": "e1d247c76704030f2bdc7f88e8abd1cf82fc0bfdf52aedf0273e8178f6ea3561"
+    },
+    {
+      "path": "backend/docs/PRODUCTION_CHANGED_FILES.json",
+      "bytes": 13610,
+      "sha256": "15d312071cf93d3e2bd8b9dd7f1c1a7cb709093098da39822b816b5ed0186c91"
+    },
+    {
+      "path": "backend/docs/production-contracts/implemented-routes.json",
+      "bytes": 52369,
+      "sha256": "c84b760029af72d70455c4b4fca54f56dd36bd1a81ca9c591c33914eb1297a2d"
+    },
+    {
+      "path": "backend/docs/production-contracts/manufacturing.openapi.json",
+      "bytes": 249324,
+      "sha256": "edab9a125a09438d12c855cf4d8e88f601cb220adb37ba55069f895dec4f83a6"
+    },
+    {
+      "path": "backend/docs/production-contracts/procurement-planning.openapi.json",
+      "bytes": 173566,
+      "sha256": "4e483ddb2a87793fdf3e16149b3b3cc58e2288789b8c3695aef113cbf32d531b"
+    },
+    {
+      "path": "backend/docs/production-contracts/purchase-expense.openapi.json",
+      "bytes": 95291,
+      "sha256": "d2cc6d77ffbd90bc2f35b3072cb815a5ef493d468f3d97a92cd8628ee5412aaa"
+    },
+    {
+      "path": "backend/docs/production-contracts/sales.openapi.json",
+      "bytes": 33698,
+      "sha256": "f7489e789367524fbb8fd196f5a6714af410543b30b7cfac8b21f1d20929b524"
+    },
+    {
+      "path": "backend/docs/production-contracts/shipment-operations.openapi.json",
+      "bytes": 136995,
+      "sha256": "91e2e71948086d2119c340caf8d6bfebfea305e4b2f2c02771cc0a57bc61b8af"
+    },
+    {
+      "path": "backend/docs/production-contracts/supply-chain.openapi.json",
+      "bytes": 121878,
+      "sha256": "429e3a6d2d3719614d042550d774449bfd5f6fa9f0a7b76be5f722159dc94bb2"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ManufacturingDtos.cs",
+      "bytes": 4948,
+      "sha256": "725162597ad5c5796d89d090c5ee129599cdecf6cee23c74abd78c80c202914c"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/MaterialFeasibilityDtos.cs",
+      "bytes": 1100,
+      "sha256": "372fe18a46527fcaf0e42d3655caf2c1f6a55212af1ae26f5399bd4377478846"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/PhysicalInventoryDtos.cs",
+      "bytes": 1162,
+      "sha256": "27916423678b3b30c92c398cd0a79c726a2bd3e22aa6557d3cf9e23a6309345e"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProcurementContinuityDtos.cs",
+      "bytes": 1369,
+      "sha256": "14dd3887574c925507b912ab0da187e4475a09002da40cb509596c59493493f1"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionAmendmentDtos.cs",
+      "bytes": 405,
+      "sha256": "027d53a38e7697373753cf32d12038960d9f029ffaf4de82b332205a5a47f1f1"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionCapacityDtos.cs",
+      "bytes": 1054,
+      "sha256": "c48b6851314f5e0d77e7716092820b17f7aa593fe2895d3fdf5f8219ee160abb"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionDemandDtos.cs",
+      "bytes": 598,
+      "sha256": "7d3550289c4c61e3fe510c8d2384068de302c844f094f9348ab96ed66c25add5"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionImportDtos.cs",
+      "bytes": 1750,
+      "sha256": "7e4ccb6b1157749d51ec292728b5cab8c7cf784c3685a00a983a6b1caee25522"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionOperationalReportDtos.cs",
+      "bytes": 978,
+      "sha256": "9f5d9da9ed18732c9b1223d5c5c9ecb7b1c5d3b90997efeb828dc58deb5d04d8"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionWorkspaceDtos.cs",
+      "bytes": 8179,
+      "sha256": "09ab6d18cf74f58e9be20dd1a54717257b56a692b3f276f052aad2c5497e3365"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/PurchasePhysicalDtos.cs",
+      "bytes": 2260,
+      "sha256": "ed7a6bff71b07cad2c5fac5880bef73c6ed787ebc8124b6e205e6cd2ecb2ac29"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/ProcurementPlanning/ProcurementPlanningDtos.cs",
+      "bytes": 12952,
+      "sha256": "9cb63302494a2777e68de270722f024ce3dd9dd7270452ae5fd9958ab55d6fc9"
+    },
+    {
+      "path": "backend/src/Cosmos.Domain/Manufacturing/ManufacturingEnums.cs",
+      "bytes": 202,
+      "sha256": "58bb5c12ba05573059b243927d3c172a7fed6be56662f82fc5caba264ea4670a"
+    },
+    {
+      "path": "backend/src/Cosmos.Domain/Manufacturing/ProductionOrderStatus.cs",
+      "bytes": 428,
+      "sha256": "2dd6cd6605fc182b70fc2489774b9221942ea1765b3e695c5a88a539db7d2cb7"
+    },
+    {
+      "path": "backend/src/Cosmos.Domain/Security/ManufacturingPermissions.cs",
+      "bytes": 401,
+      "sha256": "ecef3e02dd15ad30ed7aba1ed3a889d901e18f5f88af7a38d211a3fa4f08e878"
+    },
+    {
+      "path": "backend/src/Cosmos.Domain/Security/PermissionAction.cs",
+      "bytes": 147,
+      "sha256": "91fcb4c42ecf23aaf7c9df56151d15cf8a92740b291f962e9d6d9310fbc2a703"
+    },
+    {
+      "path": "frontend/package.json",
+      "bytes": 1202,
+      "sha256": "9f1669ba2f1e7d2fb85aff7e4785eb9f9a63f6dcdc0b9f36d1cd641a72dce500"
+    }
+  ]
+}

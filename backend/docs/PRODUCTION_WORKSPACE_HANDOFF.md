@@ -4,7 +4,7 @@ Reviewed against the requested specification on 27 October 2026, on branch `luci
 
 ## Delivery and verification boundary
 
-This delivery contains the backend contracts, services, repositories, authorization, migrations, staged cutover workflow, operational read models, exports, and integration with the existing Item, BOM, procurement, purchasing, invoice and shipment posting paths. The existing Item BOM editor and manufacturing reports consume the changed contracts. New workflow endpoints are usable through the generated Swagger contracts; a complete new React production-order/configuration/cutover workspace is **not** delivered by this backend implementation. Do not describe the entire F23 user interface as complete.
+This delivery contains the backend contracts, services, repositories, authorization, migrations, staged cutover workflow, operational read models, exports, and integration with the existing Item, BOM, procurement, purchasing, invoice and shipment posting paths. The subsequent frontend implementation now adds the integrated production-order/configuration/planning/cutover workspace and existing purchase/invoice/shipment panels. See [the current frontend implementation and verification handoff](PRODUCTION_FRONTEND_IMPLEMENTATION.md) and [frontend coverage](PRODUCTION_FRONTEND_COVERAGE.md). Authenticated SQL execution remains a separate gate.
 
 The new SQL has parser coverage and guarded executable integration tests, but has **not** been executed against SQL Server on this machine. A SQL Server instance, LocalDB, Docker and an explicitly configured disposable integration catalog were unavailable. SQL procedure binding, migration bootstrap/repeatability, real transaction rollback and concurrency remain unverified until the supplied runner and SQL tests succeed. Compiler, domain, contract and Swagger tests are not substitutes for this gate.
 
@@ -87,7 +87,7 @@ The configured dispatch policy and its separate Excel parity helper are retained
 
 `manufacturingReportsService` now makes one paged authoritative API call per report page. Required, expected, actual consumed, measured material scrap, good output and rejected output remain separate. Missing legacy scrap/reject/unit values remain null or flagged; planned waste is not measured waste. Full-filter summaries group by UnitId; unknown unit quantities are excluded from unit totals. Production/material reports show effective posted work; the scorecard/ledger show signed original and reversal events on their own business dates. Plan-v-actual includes open orders explicitly.
 
-Existing Item forms show current/reserved as read-only and allow opening only at creation. The BOM editor sends output basis and describes component quantities per declared output. Complete new order/configuration/capacity/import React screens are not claimed. The source canvas layout was unavailable, so pixel or interaction parity is not claimed either.
+Existing Item forms show current/reserved as read-only and allow opening only at creation. The BOM editor sends output basis and describes component quantities per declared output. The later frontend delivery adds order/configuration/capacity/import/planning/report screens and existing-workflow integrations, with its actual tests and runtime boundaries recorded in the frontend handoff. The source canvas layout was unavailable, so pixel or interaction parity is not claimed.
 
 Operational NDJSON export uses the same service filters/calculation semantics and 200-row pages. The current operational dataset can change between export pages; take a controlled reporting window for an audit export. Stored planning snapshots themselves are immutable. Stock-as-of returns unavailable when an approved opening, source business dates or unit evidence is missing; it does not quietly relabel or repair old history.
 
@@ -103,7 +103,7 @@ The source exceptions in the coverage document are business evidence that must b
 
 The exact working-tree inventory is [PRODUCTION_CHANGED_FILES.json](PRODUCTION_CHANGED_FILES.json). Changes are grouped as follows:
 
-- Thirty ordered SQL implementation migrations, a read-only reconciliation script and a guarded disposable SQL bootstrap/repeatability runner.
+- Thirty original ordered SQL implementation migrations plus nine frontend context/validation migrations29–37 (39 ordered scripts in total), a read-only reconciliation script and a guarded disposable SQL bootstrap/repeatability runner. The latest frontend audit and actual execution boundary are recorded in [PRODUCTION_FRONTEND_REVERIFICATION.md](PRODUCTION_FRONTEND_REVERIFICATION.md).
 - Typed manufacturing/ownership/purchasing/import/capacity/planning/report contracts and controller endpoints following the existing module Swagger/envelope conventions.
 - Application calculations, validation, company/date scope, services, Dapper repository/DI, JWT claim and SQL session context integration.
 - Existing Item/BOM, TVP quantity, procurement version/snapshot, purchase conversion, invoice/shipment physical ownership and export paths extended.
