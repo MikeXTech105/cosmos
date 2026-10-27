@@ -8,8 +8,8 @@ namespace Cosmos.Application.Services;
 
 public sealed class ProcurementCalculationService : IProcurementCalculationService
 {
-    public const string CalculationVersion = "workbook-compatible-v2-inbound";
-    public const string InventoryBasis = "Items.CurrentStock (global on-hand) + latest valid ProcurementInboundStockSnapshot; reservations are excluded";
+    public const string CalculationVersion = "procurement-v3-normalized30-positive-shortage";
+    public const string InventoryBasis = "Global on-hand + accepted-outstanding Sent/PartiallyConverted PO supply, otherwise latest valid external inbound snapshot; inbound bases are alternatives; reservations are visible but excluded from reorder position";
     private const int QuantityScale = 6;
 
     public ProcurementCalculationResult Calculate(ProcurementCalculationData data, DateOnly fromDate, DateOnly toDate)
@@ -71,7 +71,12 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
 
             foreach (var component in components)
             {
-                if (component.QuantityRequired <= 0)
+                if (component.BomSelectionCount != 1 || !component.UnitVerified)
+                {
+                    messages.Add(Error("AMBIGUOUS_BOM_OR_UNIT", "Exactly one effective canonical BOM and verified component base units are required.", sale.ItemId,sale.ItemCode));
+                    continue;
+                }
+                if (component.QuantityRequired <= 0 && !component.SourceComponentQuantity.HasValue)
                 {
                     messages.Add(Error("INVALID_BOM_QUANTITY", "A BOM component quantity must be greater than zero.", component.ComponentItemId, component.ComponentItemCode));
                     continue;
@@ -83,7 +88,16 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
                     materialRequirements.Add(component.ComponentItemId, accumulator);
                 }
 
-                accumulator.Requirement += sale.Quantity * component.QuantityRequired;
+                if (component.SourceComponentQuantity.HasValue || component.BomOutputBaseQuantity.HasValue)
+                {
+                    if (component.SourceComponentQuantity is null or <= 0 || component.BomOutputBaseQuantity is null or <= 0 || component.BomWastePercentage is null or < 0 or > 100)
+                    {
+                        messages.Add(Error("INVALID_BOM_OUTPUT_BASIS", "Verify the canonical BOM source component, output basis and additive waste.", component.ComponentItemId, component.ComponentItemCode));
+                        continue;
+                    }
+                    accumulator.Requirement += sale.Quantity * component.SourceComponentQuantity.Value * (1 + component.BomWastePercentage.Value / 100) / component.BomOutputBaseQuantity.Value;
+                }
+                else accumulator.Requirement += sale.Quantity * component.QuantityRequired;
             }
         }
 
@@ -128,6 +142,11 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
             }
 
             var manualPlanning = input.ManualPlanning == true;
+            if (input.CurrentStock < 0m)
+            {
+                messages.Add(Warning("NEGATIVE_STOCK_RECONCILIATION", "Negative physical stock requires reconciliation; it is not hidden by a no-demand rule.", input.ComponentItemId, input.ComponentItemCode));
+                lineWarnings.Add("Negative physical stock: reconcile source movements and units before approving purchase.");
+            }
             var automaticEnabled = input.AutomaticCalculationEnabled == true;
             var leadTime = SelectLeadTime(input);
             if (!leadTime.Value.HasValue && !manualPlanning)
@@ -165,32 +184,34 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
             var averageDailyUsage = Q(rawAverageDailyUsage);
             var effectiveLeadTime = leadTime.Value ?? 0m;
             var leadTimeDemand = Q(rawAverageDailyUsage * effectiveLeadTime);
-            var safetyStock = Q(rawMaterialRequirement * input.SafetyFactor.Value);
-            var reorderPoint = Q((rawAverageDailyUsage * effectiveLeadTime) + (rawMaterialRequirement * input.SafetyFactor.Value));
+            var normalized30 = rawMaterialRequirement * 30m / numberOfDays;
+            var rawReorderPoint = rawMaterialRequirement * (effectiveLeadTime + 30m * input.SafetyFactor.Value) / numberOfDays;
+            var safetyStock = Q(normalized30 * input.SafetyFactor.Value);
+            var reorderPoint = Q(rawReorderPoint);
             var physicalStock = Q(input.CurrentStock);
             var inboundStock = Q(input.ValidInboundQuantity);
             var projectedAvailableStock = Q(physicalStock + inboundStock);
-            var shortage = Q(Math.Max(0m, reorderPoint - projectedAvailableStock));
+            var rawShortage = Math.Max(0m, rawReorderPoint - input.CurrentStock - input.ValidInboundQuantity);
+            var shortage = Q(rawShortage);
             var minimumOrderQuantity = Q(input.MinimumOrderQuantity.Value);
             var suggested = 0m;
 
             if (!manualPlanning && automaticEnabled)
             {
-                // The workbook uses a strict greater-than comparison. Therefore stock equal
-                // to the reorder point still applies the MOQ rule.
-                suggested = projectedAvailableStock > reorderPoint ? 0m : Math.Max(shortage, minimumOrderQuantity);
-                if (input.OrderMultiple is > 0m && input.RoundingRule == (int)PlanningRoundingRule.UpToOrderMultiple)
+                // v3: MOQ applies only after a strictly positive, unrounded shortage.
+                suggested = rawShortage <= 0m ? 0m : Math.Max(rawShortage, input.MinimumOrderQuantity.Value);
+                if (suggested > 0m && input.OrderMultiple is > 0m)
                 {
                     suggested = decimal.Ceiling(suggested / input.OrderMultiple.Value) * input.OrderMultiple.Value;
                 }
 
-                suggested = Q(suggested);
+                suggested = suggested > 0m ? Math.Max(0.000001m, Q(suggested)) : 0m;
             }
 
             var explanation =
                 $"Requirement {materialRequirement} / {numberOfDays} days = ADU {averageDailyUsage}; " +
                 $"ADU {averageDailyUsage} x lead time {effectiveLeadTime} = lead-time demand {leadTimeDemand}; " +
-                $"requirement {materialRequirement} x safety factor {input.SafetyFactor.Value} = safety stock {safetyStock}; " +
+                $"normalized 30-day requirement {Q(normalized30)} x safety factor {input.SafetyFactor.Value} = safety stock {safetyStock}; " +
                 $"physical stock {physicalStock} + valid inbound {inboundStock} = projected available {projectedAvailableStock}; " +
                 $"reorder point {reorderPoint} - projected available stock {projectedAvailableStock} = shortage {shortage}; " +
                 $"MOQ/workbook EOQ {minimumOrderQuantity}" +
@@ -225,7 +246,7 @@ public sealed class ProcurementCalculationService : IProcurementCalculationServi
                 lineWarnings,
                 explanation,
                 inboundStock,
-                projectedAvailableStock));
+                projectedAvailableStock) {ReservedStock=Q(input.ReservedStock),AvailableStock=Q(input.CurrentStock-input.ReservedStock),Normalized30Requirement=Q(normalized30)});
         }
 
         if (lines.Count > 0)

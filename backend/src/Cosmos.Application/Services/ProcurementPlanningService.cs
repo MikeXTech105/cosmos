@@ -344,7 +344,7 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
         await ValidationRunner.ValidateAsync(_planningValidator, request, ct);
         var data = await _repository.GetCalculationDataAsync(request.FromDate, request.ToDate, ct);
         var result = _calculator.Calculate(data, request.FromDate, request.ToDate);
-        return new PlanningPreviewDto(request.FromDate, request.ToDate, request.ToDate.DayNumber - request.FromDate.DayNumber + 1, DateTime.UtcNow, result.Validation, result.Lines);
+        return new PlanningPreviewDto(request.FromDate, request.ToDate, request.ToDate.DayNumber - request.FromDate.DayNumber + 1, DateTime.UtcNow, result.Validation, result.Lines) { SourceRevision = data.SourceRevision };
     }
 
     public async Task<ApiResponse<PlanningRunDto>> SavePlanningRunAsync(PlanningRequest request, CancellationToken ct)
@@ -352,7 +352,7 @@ public sealed class ProcurementPlanningService : IProcurementPlanningService
         var preview = await CalculateAsync(request, ct);
         if (!preview.Validation.CanCalculate)
             throw new CosmosException("Planning prerequisites contain blocking errors.", 409, preview.Validation.BlockingErrors.Select(x => $"{x.Code}: {x.Message}"));
-        var model = new PlanningRunSaveModel(request.FromDate, request.ToDate, preview.NumberOfDays, preview.CalculatedAtUtc, TrimToNull(request.Notes), ProcurementCalculationService.CalculationVersion, ProcurementCalculationService.InventoryBasis, preview.Lines);
+        var model = new PlanningRunSaveModel(request.FromDate, request.ToDate, preview.NumberOfDays, preview.CalculatedAtUtc, TrimToNull(request.Notes), ProcurementCalculationService.CalculationVersion, ProcurementCalculationService.InventoryBasis, preview.Lines) { SourceRevision = preview.SourceRevision };
         var saved = await _repository.SavePlanningRunAsync(model, UserId, ct);
         await AuditAsync("ProcurementPlanningRuns", saved.Id, "Calculate", null, saved, ct);
         return ApiResponse<PlanningRunDto>.Success(saved, "Planning run saved as draft.");

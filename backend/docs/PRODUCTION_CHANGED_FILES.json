@@ -1,0 +1,494 @@
+[
+  {
+    "status": "M",
+    "path": "backend/Cosmos.slnx"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Controllers/Reports/ReportExportsV1Controller.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Middleware/JwtClaimsMiddleware.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.API/Program.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/DependencyInjection.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/ProcurementPlanning/ProcurementPlanningModels.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/ItemService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/ManufacturingService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/ProcurementCalculationService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Services/ProcurementPlanningService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/ShipmentOperations/ShipmentPackingSuggestionService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Application/Validators/ItemValidators.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ManufacturingDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Contracts/ProcurementPlanning/ProcurementPlanningDtos.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Domain/Security/ManufacturingPermissions.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Infrastructure/Security/JwtTokenService.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/Connection/SqlConnectionFactory.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/DependencyInjection.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/Repositories/ManufacturingRepository.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/Repositories/ProcurementPlanningRepository.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/Repositories/PurchaseExpenseRepository.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/src/Cosmos.Persistence/Repositories/SalesRepository.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/tests/Cosmos.Tests/Cosmos.Tests.csproj"
+  },
+  {
+    "status": "M",
+    "path": "backend/tests/Cosmos.Tests/DispatchPlanning/DispatchConfiguredPolicySqlIntegrationTests.cs"
+  },
+  {
+    "status": "M",
+    "path": "backend/tests/Cosmos.Tests/ProcurementPlanning/ProcurementCalculationServiceTests.cs"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/inventory/items/ItemFormModal.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/inventory/items/ItemFormPage.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/manufacturing/manufacturingHelpers.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/reports/columns/manufacturingColumns.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/pages/reports/reportRegistry.js"
+  },
+  {
+    "status": "M",
+    "path": "frontend/src/services/reports/manufacturingReportsService.js"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_00_quantity_precision.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_00b_quantity_procedure_contracts.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_01_production_workspace_schema.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_02_production_workspace_commands.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_03_production_orders.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_04_production_completions.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_05_production_reads_imports.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_06_physical_inventory_ownership.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_07_workspace_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_08_production_capacity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_09_material_feasibility.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_10_purchase_physical_receipts.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_11_purchase_posting_continuity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_12_purchase_read_models.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_13_stock_command_locking.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_14_demand_observations.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_15_canonical_bom_output_basis.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_16_import_reconciliation_cutover.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_17_posting_unit_business_dates.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_18_authoritative_operational_reports.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_19_amendments_effectivity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_20_procurement_snapshot_continuity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_21_stock_packing_effectivity_guards.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_22_snapshot_adjustment_read_integrity.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_23_legacy_packing_verification.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_24_receipt_return_financial_credit.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_25_verified_pack_conversion.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_26_finished_inbound_revision.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_27_planning_quantity_context.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/migrations/20261027_28_legacy_period_edit_races.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/database/verification/production_workspace_reconciliation.sql"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_API_CONTRACT.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_CHANGED_FILES.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_COVERAGE_MATRIX.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_MIGRATION_CUTOVER.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_SOURCE_AUDIT.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_VERIFICATION_RESULTS.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/PRODUCTION_WORKSPACE_HANDOFF.md"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/implemented-routes.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/manufacturing.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/procurement-planning.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/purchase-expense.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/sales.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/shipment-operations.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/docs/production-contracts/supply-chain.openapi.json"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/PackagingConversionController.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/PhysicalInventoryOwnershipControllers.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProcurementContinuityControllers.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionBomEffectivityController.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionImportsController.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionOperationalReportsController.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionStockSnapshotsControllers.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceApiControllerBase.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Controllers/Manufacturing/PurchasePhysicalControllers.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.API/Security/ProductionCompanyScope.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IProductionWorkspaceRepository.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Abstractions/Services/IPhysicalInventoryService.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Abstractions/Services/IProductionCompanyScope.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Abstractions/Services/IProductionWorkspaceService.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Manufacturing/MaterialFeasibilityCalculator.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Manufacturing/ProductionCalculations.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Manufacturing/ProductionWorkspaceValidators.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Services/PhysicalInventoryService.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Application/Services/ProductionWorkspaceService.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/MaterialFeasibilityDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/PhysicalInventoryDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProcurementContinuityDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionAmendmentDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionCapacityDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionDemandDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionImportDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionOperationalReportDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionWorkspaceDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Contracts/Manufacturing/PurchasePhysicalDtos.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Domain/Manufacturing/ProductionOrderStatus.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/src/Cosmos.Persistence/Repositories/ProductionWorkspaceRepository.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.SqlVerification/Cosmos.SqlVerification.csproj"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.SqlVerification/Program.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/DispatchPlanning/DispatchSqlFactAttribute.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/MaterialFeasibilityTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionApiContractTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionCalculationsTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionCommandValidationTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionMigrationSyntaxTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionSqlIntegrationTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionSwaggerRuntimeTests.cs"
+  },
+  {
+    "status": "??",
+    "path": "backend/tests/Cosmos.Tests/ProcurementPlanning/ProcurementVersion3Tests.cs"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/pages/reports/columns/manufacturingColumns.test.js"
+  },
+  {
+    "status": "??",
+    "path": "frontend/src/services/reports/manufacturingReportsService.test.js"
+  }
+]

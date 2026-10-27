@@ -3,8 +3,8 @@ using Cosmos.Domain.Manufacturing;
 namespace Cosmos.Contracts.Manufacturing;
 
 public sealed record ManufacturingBomComponentRequest(long ComponentItemId, decimal Quantity, long? UnitId, decimal WastagePercentage = 0, string? Notes = null, int SortOrder = 0);
-public sealed record CreateManufacturingBomRequest(long FinishedItemId, string Version, DateOnly EffectiveFrom, DateOnly? EffectiveTo, string? Notes, bool IsDefault, IReadOnlyCollection<ManufacturingBomComponentRequest> Components);
-public sealed record UpdateManufacturingBomRequest(DateOnly EffectiveFrom, DateOnly? EffectiveTo, string? Notes, bool IsDefault, IReadOnlyCollection<ManufacturingBomComponentRequest> Components);
+public sealed record CreateManufacturingBomRequest(long FinishedItemId, string Version, DateOnly EffectiveFrom, DateOnly? EffectiveTo, string? Notes, bool IsDefault, IReadOnlyCollection<ManufacturingBomComponentRequest> Components, decimal OutputBaseQuantity = 1m);
+public sealed record UpdateManufacturingBomRequest(DateOnly EffectiveFrom, DateOnly? EffectiveTo, string? Notes, bool IsDefault, IReadOnlyCollection<ManufacturingBomComponentRequest> Components, decimal? OutputBaseQuantity = null);
 public sealed record ManufacturingBomQuery(string? Search = null, long? FinishedItemId = null, ManufacturingBomStatus? Status = null, int PageNumber = 1, int PageSize = 50, string SortBy = "CreatedAt", string SortDirection = "DESC");
 public sealed record ManufacturingBomComponentDto(long Id, long ComponentItemId, string ComponentItemCode, string ComponentItemName, decimal Quantity, long UnitId, string UnitName, decimal WastagePercentage, decimal ConsumptionPerUnit, string? Notes, int SortOrder)
 {
@@ -12,10 +12,13 @@ public sealed record ManufacturingBomComponentDto(long Id, long ComponentItemId,
 }
 public sealed record ManufacturingBomDto(long Id, string BomNumber, long FinishedItemId, string FinishedItemCode, string FinishedItemName, string Version, ManufacturingBomStatus Status, DateOnly EffectiveFrom, DateOnly? EffectiveTo, string? Notes, bool IsDefault, bool IsActive, IReadOnlyCollection<ManufacturingBomComponentDto> Components)
 {
+    public decimal OutputBaseQuantity { get; init; } = 1m;
+    public string? ConcurrencyVersion { get; init; }
     public ManufacturingBomDto() : this(0, string.Empty, 0, string.Empty, string.Empty, string.Empty, default, default, null, null, false, false, Array.Empty<ManufacturingBomComponentDto>()) { }
 }
 public sealed record ManufacturingBomListItemDto(long Id, string BomNumber, long FinishedItemId, string FinishedItemCode, string FinishedItemName, string Version, ManufacturingBomStatus Status, DateOnly EffectiveFrom, DateOnly? EffectiveTo, bool IsDefault, bool IsActive, int ComponentCount, int TotalCount)
 {
+    public decimal OutputBaseQuantity { get; init; } = 1m;
     public ManufacturingBomListItemDto() : this(0, string.Empty, 0, string.Empty, string.Empty, string.Empty, default, default, null, false, false, 0, 0) { }
 }
 public sealed record ApplicableManufacturingBomQuery(long FinishedItemId, DateOnly? AsOfDate = null);

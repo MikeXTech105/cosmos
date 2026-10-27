@@ -90,10 +90,10 @@ public sealed class ProcurementCalculationServiceTests
     }
 
     [Fact]
-    public void Calculate_StockEqualToReorderPointAppliesMoqForWorkbookCompatibility()
+    public void Calculate_StockEqualToReorderPointDoesNotApplyMoqInVersion3()
     {
         var line = Assert.Single(Calculate([Sale(1, 10m)], [Bom(1, 101, 2m, stock: 40m, safety: 1m, moq: 10m)]).Lines);
-        Assert.Equal(10m, line.CalculatedSuggestedQuantity);
+        Assert.Equal(0m, line.CalculatedSuggestedQuantity);
     }
 
     [Fact]

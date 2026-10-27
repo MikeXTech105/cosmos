@@ -1,0 +1,28 @@
+{
+  "verifiedOn": "2026-10-27",
+  "backend": {
+    "passed": 401,
+    "failed": 0,
+    "skippedSql": 13,
+    "total": 414
+  },
+  "frontend": {
+    "passed": 581,
+    "failedBaseline": 3,
+    "total": 584,
+    "targetedPassed": 12,
+    "build": "passed"
+  },
+  "sql": {
+    "executed": false,
+    "reason": "No disposable SQL runtime/connection available",
+    "guardWithoutConnection": "refused",
+    "guardOutsideTestCatalog": "refused before opening connection"
+  },
+  "sourceTabs": 22,
+  "newBusinessMasters": 2,
+  "childConfigurationFamilies": 3,
+  "implementedRouteOperations": 81,
+  "newMigrationFiles": 30,
+  "fullNewWorkflowUiDelivered": false
+}
