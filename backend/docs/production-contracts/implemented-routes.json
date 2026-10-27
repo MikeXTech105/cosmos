@@ -1,0 +1,2296 @@
+[
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "List",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/boms",
+    "request": [
+      {
+        "name": "q",
+        "type": "ManufacturingBomQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ManufacturingBomListItemDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Applicable",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/boms/applicable",
+    "request": [
+      {
+        "name": "q",
+        "type": "ApplicableManufacturingBomQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingBomDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingBomDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Create",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/boms",
+    "request": [
+      {
+        "name": "r",
+        "type": "CreateManufacturingBomRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingBomDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Update",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "UpdateManufacturingBomRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingBomDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Delete",
+    "methods": [
+      "DELETE"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Delete"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Activate",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}/activate",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingBomsController",
+    "action": "Deactivate",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}/deactivate",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "List",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/productions",
+    "request": [
+      {
+        "name": "q",
+        "type": "ManufacturingProductionQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ManufacturingProductionListItemDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/productions/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingProductionDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "Create",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/productions",
+    "request": [
+      {
+        "name": "r",
+        "type": "CreateManufacturingProductionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingProductionDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "Update",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/productions/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "UpdateManufacturingProductionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ManufacturingProductionDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "Post",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/productions/{id:long}/post",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ManufacturingProductionsController",
+    "action": "Cancel",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/productions/{id:long}/cancel",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "CancelManufacturingProductionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Productions",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PackagingConversionController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/supply-chain/packaging-profiles/{id:long}/conversion",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PackagingConversionDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "SupplyChain.PackagingProfiles",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "PackagingConversionController",
+    "action": "Save",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/supply-chain/packaging-profiles/{id:long}/conversion",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PackagingConversionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PackagingConversionDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "SupplyChain.PackagingProfiles",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "InvoiceInventoryOwnershipController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/sales/invoices/{id:long}/inventory-ownership",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PhysicalOwnershipSnapshot]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Sales.Invoice",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "InvoiceInventoryOwnershipController",
+    "action": "Ownership",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/sales/invoices/{id:long}/inventory-ownership",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "InvoiceOwnershipRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Sales.Invoice",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ShipmentInvoiceOwnershipController",
+    "action": "VerifyPacking",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/shipment-operations/shipments/{id:long}/packing-verification",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ShipmentPackingVerificationRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ShipmentOperations.Shipments",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ShipmentInvoiceOwnershipController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/shipment-operations/shipments/{id:long}/invoice-lines",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PhysicalOwnershipSnapshot]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ShipmentOperations.Shipments",
+        "action": "View"
+      },
+      {
+        "page": "Sales.Invoice",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ShipmentInvoiceOwnershipController",
+    "action": "Links",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/shipment-operations/shipments/{id:long}/invoice-lines",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ShipmentInvoiceLinkRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ShipmentOperations.Shipments",
+        "action": "Approve"
+      },
+      {
+        "page": "Sales.Invoice",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProcurementContinuityController",
+    "action": "Purchase",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/procurement-planning/plans/runs/{id:long}/purchase-orders",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProcurementPurchaseDraftRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ProcurementPlanning.PlanningHistory",
+        "action": "Approve"
+      },
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ProcurementContinuityController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/procurement-planning/items/{id:long}/supplier-policy",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProcurementSupplierPolicyDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ProcurementPlanning.Settings",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProcurementContinuityController",
+    "action": "Save",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/procurement-planning/items/{id:long}/supplier-policy",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProcurementSupplierPolicyRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProcurementSupplierPolicyDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ProcurementPlanning.Settings",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "PurchaseSupplierPerformanceController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/purchase-orders/supplier-performance",
+    "request": [
+      {
+        "name": "q",
+        "type": "SupplierPerformanceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.SupplierPerformanceLine]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionBomEffectivityController",
+    "action": "End",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/boms/{id:long}/effectivity",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionEffectivityRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Boms",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Preview",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/preview",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportPreview]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Map",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/map",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "r",
+        "type": "ProductionImportMappingRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Validate",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/validate",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "r",
+        "type": "ProductionImportActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Reconcile",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/reconcile",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "r",
+        "type": "ProductionImportActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Approve",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/approve",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "r",
+        "type": "ProductionImportActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionImportsController",
+    "action": "Post",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/{id:guid}/post",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "r",
+        "type": "ProductionImportActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOperationalReportsController",
+    "action": "Read",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/reports/operational/{kind}",
+    "request": [
+      {
+        "name": "kind",
+        "type": "String"
+      },
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionOperationalReportRow]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Reports",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOperationalReportsController",
+    "action": "Export",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/reports/operational/{kind}/export",
+    "request": [
+      {
+        "name": "kind",
+        "type": "String"
+      },
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "System.Void"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Reports",
+        "action": "Export"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionSnapshotsController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/planning/snapshots/{id:guid}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Guid"
+      },
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.FinishedPlanningSnapshotPage]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionStockAdjustmentsController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/items/{id:long}/stock-balance",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.StockBalanceDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Items",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionStockAdjustmentsController",
+    "action": "Adjust",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/items/{id:long}/stock-adjustments",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "StockAdjustmentRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Items",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "EndEffectivity",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/configuration/{kind}/{id:long}/effectivity",
+    "request": [
+      {
+        "name": "kind",
+        "type": "String"
+      },
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionEffectivityRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "Calendar",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/shift-capacity/{id:long}/calendar",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "CapacityCalendarRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "ItemConfiguration",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/items/{id:long}/configuration",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionConfigurationDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "WorkCentreShifts",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/work-centres/{id:long}/shifts",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionConfigurationDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "WorkCentres",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/work-centres",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "CreateWorkCentre",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/work-centres",
+    "request": [
+      {
+        "name": "r",
+        "type": "WorkCentreRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "UpdateWorkCentre",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/work-centres/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "WorkCentreRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "Operations",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/operations",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "CreateOperation",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/operations",
+    "request": [
+      {
+        "name": "r",
+        "type": "OperationRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "UpdateOperation",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/operations/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "OperationRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionMasterDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "Routing",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/items/{itemId:long}/routings",
+    "request": [
+      {
+        "name": "itemId",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ItemRoutingRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "Eligibility",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/items/{itemId:long}/eligibility",
+    "request": [
+      {
+        "name": "itemId",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ItemEligibilityRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "Shift",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/work-centres/{id:long}/shifts",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "WorkCentreShiftRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Amend",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/amend",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderAmendRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Capacity",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/capacity",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "businessDate",
+        "type": "DateOnly"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.CapacityFeasibilityDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Schedule",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/schedule",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "CapacityScheduleRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Context",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/context",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionOrderContextDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "List",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/orders",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionOrderDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionOrderDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Create",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders",
+    "request": [
+      {
+        "name": "r",
+        "type": "ProductionOrderDraftRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionOrderDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Update",
+    "methods": [
+      "PUT"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderDraftRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionOrderDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Release",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/release",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderReleaseRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Complete",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/completions",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionCompletionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Close",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/close",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Cancel",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/{id:long}/cancel",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionOrdersController",
+    "action": "Reverse",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/orders/completions/{completionId:long}/reverse",
+    "request": [
+      {
+        "name": "completionId",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "Demand",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/planning/demand-observations",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionDemandObservationDto]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "ObserveDemand",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/planning/demand-observations",
+    "request": [
+      {
+        "name": "r",
+        "type": "ProductionDemandObservationRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "MaterialFeasibility",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/planning/materials",
+    "request": [
+      {
+        "name": "r",
+        "type": "MaterialFeasibilityRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.MaterialFeasibilityDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "Finished",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/planning/finished",
+    "request": [
+      {
+        "name": "r",
+        "type": "FinishedPlanningRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.FinishedPlanningSnapshot]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "Production",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/reports/production",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionReportRow]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Reports",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "Materials",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/reports/materials",
+    "request": [
+      {
+        "name": "q",
+        "type": "ProductionWorkspaceQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.ProductionReportRow]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Reports",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionPlanningReportsController",
+    "action": "Stage",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/v1/manufacturing/imports/stage",
+    "request": [
+      {
+        "name": "r",
+        "type": "ProductionImportRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 201,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionImportResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Orders",
+        "action": "Create"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "CloseRemainder",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/{id:long}/close-remainder",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Approve",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/{id:long}/approve",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "ProductionOrderActionRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Credit",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/receipts/returns/{id:long}/credit",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PurchaseReceiptCreditRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseReturn",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Followups",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/purchase-orders/follow-ups",
+    "request": [
+      {
+        "name": "q",
+        "type": "PurchaseFollowupQuery"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Common.PagedResult\u00601[Cosmos.Contracts.Manufacturing.PurchaseFollowupLine]]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Order",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/purchase-orders/{id:long}/receipt-context",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PurchasePhysicalContext]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Receipt",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/purchase-orders/receipts/{id:long}",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PurchasePhysicalContext]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Receive",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/{id:long}/receipts",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PurchaseReceiptRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Return",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/receipts/{id:long}/returns",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PurchaseReceiptReturnRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseReturn",
+        "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "PurchasePhysicalController",
+    "action": "Promise",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-orders/{id:long}/promise",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PurchasePromiseRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "Edit"
+      }
+    ]
+  },
+  {
+    "controller": "PurchaseReceiptBillingController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/purchase-bills/{id:long}/receipt-context",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PurchasePhysicalContext]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseBill",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "PurchaseReceiptBillingController",
+    "action": "Link",
+    "methods": [
+      "POST"
+    ],
+    "path": "/api/purchase-bills/{id:long}/receipt-links",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "r",
+        "type": "PurchaseReceiptBillLinkRequest"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProductionCommandResult]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "PurchaseExpense.PurchaseBill",
+        "action": "Approve"
+      }
+    ]
+  }
+]

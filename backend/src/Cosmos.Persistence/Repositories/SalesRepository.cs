@@ -205,7 +205,7 @@ public sealed class SalesRepository : ISalesRepository
         parameters.Add("PlaceOfSupplyStateCode", placeOfSupplyStateCode);
         parameters.Add("PlaceOfSupplySource", placeOfSupplySource);
         parameters.Add("PriceBasis", priceBasis is null ? null : (byte)priceBasis.Value);
-        parameters.Add("Items", ItemTable(items).AsTableValuedParameter("dbo.SalesInvoiceItemInput"));
+        parameters.Add("Items", ItemTable(items).AsTableValuedParameter("dbo.SalesInvoiceItemInputV2"));
         parameters.Add("UserId", userId);
         return parameters;
     }

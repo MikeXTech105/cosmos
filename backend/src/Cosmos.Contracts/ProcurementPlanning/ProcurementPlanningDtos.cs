@@ -330,7 +330,13 @@ public sealed record PlanningCalculationLineDto(
     IReadOnlyCollection<string> Warnings,
     string CalculationExplanation,
     decimal InboundStock = 0m,
-    decimal ProjectedAvailableStock = 0m);
+    decimal ProjectedAvailableStock = 0m)
+{
+    public decimal? ReservedStock { get; init; }
+    public decimal? AvailableStock { get; init; }
+    public decimal? Normalized30Requirement { get; init; }
+    public decimal? BlockedStock { get; init; }
+}
 
 public sealed record PlanningPreviewDto(
     DateOnly FromDate,
@@ -338,7 +344,10 @@ public sealed record PlanningPreviewDto(
     int NumberOfDays,
     DateTime CalculatedAtUtc,
     PlanningValidationDto Validation,
-    IReadOnlyCollection<PlanningCalculationLineDto> Lines);
+    IReadOnlyCollection<PlanningCalculationLineDto> Lines)
+{
+    public string? SourceRevision { get; init; }
+}
 
 public sealed record PlanningRunSummaryDto(
     long Id,
@@ -388,7 +397,14 @@ public sealed record PlanningRunLineDto(
     DateTime? ModifiedAt,
     long? ModifiedBy,
     decimal InboundStock = 0m,
-    decimal ProjectedAvailableStock = 0m);
+    decimal ProjectedAvailableStock = 0m)
+{
+    public decimal? ReservedStock {get;init;}
+    public decimal? AvailableStock {get;init;}
+    public decimal? Normalized30Requirement {get;init;}
+    public decimal? BlockedStock {get;init;}
+    public PlanningRunLineDto() : this(0,0,0,string.Empty,string.Empty,0,string.Empty,string.Empty,0,0,0,string.Empty,0,0,0,0,0,0,0,null,0,false,false,0,0,null,null,string.Empty,null,null,0,0) { }
+}
 
 public sealed record PlanningRunDto(
     long Id,

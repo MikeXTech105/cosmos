@@ -589,15 +589,15 @@ const ItemFormPage = () => {
                   control={control}
                   name="trackInventory"
                   render={({ field }) => (
-                    <ToggleRow checked={field.value} label="Track inventory" description="Maintain opening, current, reserved, and minimum stock for this product." onChange={field.onChange} />
+                    <ToggleRow checked={field.value} label="Track inventory" description="Opening stock is set during creation. Current and reserved balances follow inventory transactions." onChange={field.onChange} />
                   )}
                 />
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <ItemNumberInput control={control} id="openingStock" name="openingStock" label="Opening Stock" disabled={!trackInventory} error={errors.openingStock?.message} />
-                  <ItemNumberInput control={control} id="openingStockValue" name="openingStockValue" label="Opening Stock Value" disabled={!trackInventory} error={errors.openingStockValue?.message} />
-                  <ItemNumberInput control={control} id="currentStock" name="currentStock" label="Current Stock" disabled={!trackInventory} error={errors.currentStock?.message} />
-                  <ItemNumberInput control={control} id="reservedStock" name="reservedStock" label="Reserved Stock" disabled={!trackInventory} error={errors.reservedStock?.message} />
+                  <ItemNumberInput control={control} id="openingStock" name="openingStock" label="Opening Stock" disabled={isEdit || !trackInventory} error={errors.openingStock?.message} />
+                  <ItemNumberInput control={control} id="openingStockValue" name="openingStockValue" label="Opening Stock Value" disabled={isEdit || !trackInventory} error={errors.openingStockValue?.message} />
+                  <ItemNumberInput control={control} id="currentStock" name="currentStock" label="Current Stock" disabled={true} error={errors.currentStock?.message} />
+                  <ItemNumberInput control={control} id="reservedStock" name="reservedStock" label="Reserved Stock" disabled={true} error={errors.reservedStock?.message} />
                   <ItemNumberInput control={control} id="minimumStock" name="minimumStock" label="Minimum Stock" disabled={!trackInventory} error={errors.minimumStock?.message} />
                 </div>
               </div>

@@ -152,7 +152,8 @@ public sealed class ProcurementPlanningRepository : IProcurementPlanningReposito
         var sales = (await multi.ReadAsync<ProductSalesInput>()).AsList();
         var bom = (await multi.ReadAsync<BomCalculationInput>()).AsList();
         var unmapped = (await multi.ReadAsync<UnmappedSalesInput>()).AsList();
-        return new ProcurementCalculationData(sales, bom, unmapped);
+        var revision = await multi.ReadSingleAsync<string>();
+        return new ProcurementCalculationData(sales, bom, unmapped) { SourceRevision = revision };
     }
 
     public Task<PlanningRunDto> SavePlanningRunAsync(PlanningRunSaveModel model, long? userId, CancellationToken ct)
@@ -165,12 +166,12 @@ public sealed class ProcurementPlanningRepository : IProcurementPlanningReposito
             x.OrderMultiple, x.RoundingRule, x.AutomaticCalculationEnabled, x.ManualPlanning,
             x.CalculatedSuggestedQuantity, x.FinalQuantity, x.AdjustmentReason,
             WarningState = x.Warnings.Count == 0 ? null : string.Join("; ", x.Warnings), x.CalculationExplanation,
-            x.InboundStock, x.ProjectedAvailableStock
+            x.InboundStock, x.ProjectedAvailableStock,x.ReservedStock,x.AvailableStock,x.Normalized30Requirement
         });
         return PlanningRunWithStatusAsync("sp_ProcurementPlanning_Run_Save", new
         {
             model.FromDate, model.ToDate, model.NumberOfDays, model.CalculatedAtUtc, model.Notes,
-            model.CalculationVersion, model.InventoryBasis, LinesJson = JsonSerializer.Serialize(lines, JsonOptions), UserId = userId
+            model.CalculationVersion, model.InventoryBasis, model.SourceRevision, LinesJson = JsonSerializer.Serialize(lines, JsonOptions), UserId = userId
         }, ct);
     }
 

@@ -4,7 +4,6 @@ using Cosmos.Application.DispatchPlanning;
 using Cosmos.Application.Services;
 using Dapper;
 using Microsoft.Data.SqlClient;
-using Xunit.Sdk;
 
 namespace Cosmos.Tests.DispatchPlanning;
 
@@ -12,13 +11,13 @@ public sealed class DispatchConfiguredPolicySqlIntegrationTests
 {
     private const string ConnectionStringVariable = "COSMOS_DISPATCH_INTEGRATION_CONNECTION_STRING";
 
-    [Fact]
+    [DispatchSqlFact]
     [Trait("Category", "SqlIntegration")]
     public async Task Configured_policy_calculates_and_persists_against_explicit_test_database()
     {
         var connectionString = Environment.GetEnvironmentVariable(ConnectionStringVariable);
         if (string.IsNullOrWhiteSpace(connectionString))
-            throw SkipException.ForSkip($"Set {ConnectionStringVariable} to run SQL integration tests.");
+            throw new InvalidOperationException($"Explicit {ConnectionStringVariable} is required.");
 
         var builder = new SqlConnectionStringBuilder(connectionString);
         Assert.StartsWith("CosmosDispatchIntegrationTests_", builder.InitialCatalog, StringComparison.OrdinalIgnoreCase);

@@ -1,3 +1,8 @@
+const quantityFormatter = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 6 });
+const measuredPercentFormatter = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 6 });
+const quantityText = (value) => value == null || value === "-" ? "-" : quantityFormatter.format(Number(value));
+const measuredPercentText = (value) => value == null || value === "-" ? "-" : `${measuredPercentFormatter.format(Number(value))}%`;
+
 const productionStatusMap = {
   1: { className: "bg-amber-50 text-amber-700 ring-amber-200", label: "Draft" },
   2: { className: "bg-emerald-50 text-emerald-700 ring-emerald-200", label: "Posted" },
@@ -14,23 +19,24 @@ export const manufacturingHistoryColumns = [
   { format: "date", header: "Date", key: "productionDate", width: "130px" },
   { header: "Reference", key: ["referenceNumber", "referenceNo"], width: "150px" },
   { header: "Finished Item", key: ["finishedItemName", "itemName"], width: "240px" },
-  { align: "right", format: "qty", header: "Planned Qty", key: "plannedQuantity" },
-  { align: "right", format: "qty", header: "Produced Qty", key: ["producedQuantity", "quantity"] },
+  { align: "right", format: "qty", renderText: quantityText, header: "Produced Qty", key: ["producedQuantity", "quantity"] },
+  { align: "right", format: "qty", renderText: quantityText, header: "Rejected Qty", key: "rejectedOutput" },
   { header: "Unit", key: "unitShortName" },
-  { header: "BOM Version", key: ["bomVersion", "version"] },
   { format: "pill", header: "Status", key: ["statusName", "status"], pillMap: productionStatusMap },
-  { header: "Cancellation Reason", key: ["cancellationReason", "cancelReason"], width: "220px" },
+  { header: "Data Quality", key: "dataQualityFlag", width: "220px" },
 ];
 
 export const materialConsumptionColumns = [
   { format: "date", header: "Date", key: "productionDate", width: "130px" },
   { header: "Production", key: "productionReference", width: "150px" },
-  { header: "Finished Item", key: "producedItemName", width: "220px" },
   { header: "Raw Material", key: "componentItemName", width: "220px" },
   { header: "Code", key: "componentItemCode" },
-  { align: "right", format: "qty", header: "Produced Qty", key: "producedQuantity" },
-  { align: "right", format: "qty", header: "Consumed Qty", key: "requiredQuantity" },
+  { align: "right", format: "qty", renderText: quantityText, header: "Required Qty", key: "requiredQuantity" },
+  { align: "right", format: "qty", renderText: quantityText, header: "Expected Qty", key: "expectedConsumption" },
+  { align: "right", format: "qty", renderText: quantityText, header: "Actual Consumed Qty", key: "actualConsumedQuantity" },
+  { align: "right", format: "qty", renderText: quantityText, header: "Measured Scrap", key: "materialWasteQuantity" },
   { header: "Unit", key: "unitName" },
-  { align: "right", format: "percent", header: "Wastage", key: "wastagePercentage" },
+  { align: "right", format: "percent", renderText: measuredPercentText, header: "Measured Waste", key: "wastePercent" },
+  { header: "Data Quality", key: "dataQualityFlag" },
   { format: "pill", header: "Status", key: "status", pillMap: productionStatusMap },
 ];

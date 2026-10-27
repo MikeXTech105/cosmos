@@ -12,6 +12,7 @@
     <Project Path="src/Cosmos.Shared/Cosmos.Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Cosmos.SqlVerification/Cosmos.SqlVerification.csproj" />
     <Project Path="tests/Cosmos.Tests/Cosmos.Tests.csproj" />
   </Folder>
 </Solution>
