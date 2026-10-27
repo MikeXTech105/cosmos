@@ -1,5 +1,6 @@
 using Cosmos.Application.Abstractions.Persistence;
 using Cosmos.Contracts.ShipmentOperations;
+using Cosmos.Shared.Exceptions;
 
 namespace Cosmos.Application.ShipmentOperations;
 
@@ -16,7 +17,9 @@ public sealed class ShipmentPackingSuggestionService : IShipmentPackingSuggestio
         foreach (var item in items.Where(x => x.PlannedQuantity > x.PackedQuantity))
         {
             var quantity = item.PlannedQuantity - item.PackedQuantity;
-            var unitsPerBox = item.UnitsPerBox > 0 ? item.UnitsPerBox : 1m;
+            if (item.UnitsPerBox <= 0)
+                throw new CosmosException($"Verified packaging is required for Item {item.ItemCode}; units per box is missing or invalid.");
+            var unitsPerBox = item.UnitsPerBox;
             var fullPackageCount = (int)decimal.Floor(quantity / unitsPerBox);
             var looseQuantity = quantity - (fullPackageCount * unitsPerBox);
             var packageCount = fullPackageCount + (request.IncludeLoosePackage && looseQuantity > 0 ? 1 : 0);

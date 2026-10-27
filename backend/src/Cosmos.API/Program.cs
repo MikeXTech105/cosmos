@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using Cosmos.API.Audit;
 using Cosmos.API.Hosting;
+using Cosmos.API.Security;
 using Cosmos.API.Middleware;
 using Cosmos.API.WebsiteManagement;
 using Cosmos.Contracts.WebsiteManagement;
@@ -84,6 +85,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Cosmos.Application.Abstractions.Services.IProductionCompanyScope, ProductionCompanyScope>();
 builder.Services.AddScoped<Cosmos.Contracts.Audit.IAuditRequestContext, HttpAuditRequestContext>();
 builder.Services.AddScoped<ICurrentUser>(provider =>
 {

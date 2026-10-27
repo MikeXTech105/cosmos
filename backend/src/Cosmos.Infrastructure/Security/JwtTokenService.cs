@@ -6,6 +6,7 @@ using Cosmos.Application.Abstractions.Security;
 using Cosmos.Domain.Entities;
 using Cosmos.Shared.Options;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Cosmos.Infrastructure.Security;
@@ -13,13 +14,18 @@ namespace Cosmos.Infrastructure.Security;
 public sealed class JwtTokenService : ITokenService
 {
     private readonly JwtOptions _options;
+    private readonly string? _companyKey;
 
-    public JwtTokenService(IOptions<JwtOptions> options) => _options = options.Value;
+    public JwtTokenService(IOptions<JwtOptions> options, IConfiguration? configuration = null)
+    {
+        _options = options.Value;
+        _companyKey = configuration?["Manufacturing:CatalogCompanyKey"];
+    }
 
     public (string Token, DateTime ExpiresOn) CreateAccessToken(User user)
     {
         var expiresOn = DateTime.UtcNow.AddMinutes(_options.AccessTokenMinutes);
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim("UserId", user.Id.ToString()),
             new Claim("Username", user.Username),
@@ -27,6 +33,7 @@ public sealed class JwtTokenService : ITokenService
             new Claim("FullName", user.FullName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N"))
         };
+        if (!string.IsNullOrWhiteSpace(_companyKey)) claims.Add(new Claim("CompanyKey", _companyKey));
 
         var credentials = new SigningCredentials(GetSigningKey(), SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken(

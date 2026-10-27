@@ -13,7 +13,7 @@ namespace Cosmos.API.Controllers.Reports;
 [Authorize]
 [ApiExplorerSettings(GroupName = "reports")]
 [Route("api/v1/reports/export")]
-public sealed class ReportExportsV1Controller(IReportsService reports, IPermissionService permissions, ICurrentUser currentUser) : ApiControllerBase
+public sealed class ReportExportsV1Controller(IReportsService reports, IPermissionService permissions, ICurrentUser currentUser, IProductionWorkspaceService? production = null) : ApiControllerBase
 {
     [HttpPost]
     [Produces("text/csv")]
@@ -35,8 +35,9 @@ public sealed class ReportExportsV1Controller(IReportsService reports, IPermissi
             "purchase-by-supplier" or "purchase-by-item" or "purchase-tax-summary" or "supplier-payables" => "Reports.Purchase",
             "expense-by-category" or "expense-by-party" or "monthly-expenses" => "Reports.Expense",
             "party-ledger" => "Reports.Party",
+            "manufacturing-history" or "manufacturing-consumption" => "Manufacturing.Reports",
             _ => throw new CosmosException("ReportId is not supported for export.", StatusCodes.Status400BadRequest,
-                new[] { "Supported reports: sales-invoices, sales-by-party, sales-by-item, sales-tax-summary, customer-receivables, purchase-by-supplier, purchase-by-item, purchase-tax-summary, supplier-payables, expense-by-category, expense-by-party, monthly-expenses, party-ledger." },
+                new[] { "Supported reports: sales-invoices, sales-by-party, sales-by-item, sales-tax-summary, customer-receivables, purchase-by-supplier, purchase-by-item, purchase-tax-summary, supplier-payables, expense-by-category, expense-by-party, monthly-expenses, party-ledger, manufacturing-history, manufacturing-consumption." },
                 new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.Ordinal)
                 {
                     ["ReportId"] = new[] { "The report id is not supported." }
@@ -50,6 +51,14 @@ public sealed class ReportExportsV1Controller(IReportsService reports, IPermissi
 
         return report switch
         {
+            "manufacturing-history" or "manufacturing-consumption" => await ExportAllPagedRows(
+                page =>
+                {
+                    var query = request.Filters is { } filters && filters.ValueKind == JsonValueKind.Object
+                        ? JsonSerializer.Deserialize<Cosmos.Contracts.Manufacturing.ProductionWorkspaceQuery>(filters.GetRawText(),new JsonSerializerOptions(JsonSerializerDefaults.Web)) ?? new()
+                        : new Cosmos.Contracts.Manufacturing.ProductionWorkspaceQuery();
+                    return (production ?? throw new CosmosException("Manufacturing reporting is unavailable.",503)).ReportAsync(report=="manufacturing-history" ? "production" : "materials",query with {PageNumber=page,PageSize=200},cancellationToken);
+                },report,cancellationToken),
             "sales-invoices" => await ExportAllPagedRows(
                 page =>
                 {
