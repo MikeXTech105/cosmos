@@ -50,6 +50,27 @@ dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter
 
 Two SQL integration tests passed. The existing lifecycle test proved draft/update/confirm/cancel, stock deduction/restoration, confirmed-update rejection, and forced confirmation rollback. The new scope test used real SQL assignments and application scope authorization to prove company access, branch isolation, company-level rules, no-assignment denial, legacy-record System Owner-only access, duplicate active-assignment rejection, and branch/company foreign-key rejection. Both tests remove their prefixed fixtures in `finally`; post-run checks found no prefixed rows.
 
+### Increment 1A.2 — master procedure execution (actual evidence)
+
+`backend/database/migrations/20261027_32_company_branch_master_procedures.sql` was applied directly to the guarded disposable database only: `CosmosSalesGstIntegrationTests_Local`. It was then applied a second time successfully. It creates or updates the following six procedures without modifying retained staging data:
+
+- `sp_Company_GetList(@Search, @ActiveOnly)`
+- `sp_Company_GetById(@Id)`
+- `sp_Company_Save(@Id, @Code, @Name, @IsActive, @UserId)`
+- `sp_Branch_GetList(@CompanyId, @Search, @ActiveOnly)`
+- `sp_Branch_GetById(@Id)`
+- `sp_Branch_Save(@Id, @CompanyId, @Code, @Name, @IsActive, @UserId)`
+
+The procedure migration explicitly persists `ANSI_NULLS` and `QUOTED_IDENTIFIER` before `CREATE OR ALTER`, and each write procedure uses `XACT_ABORT` with an explicit transaction. Rejected duplicate, inactive-company, and branch-reassignment writes roll back before returning a standard conflict status; successful saves return the status result followed by the saved record, which is consumed by `StoredProcedureExecutor.QueryWithStatusAsync`.
+
+The SQL-backed master CRUD test and the existing scope/lifecycle integration tests were run with the injected disposable connection:
+
+```powershell
+dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter "FullyQualifiedName~CompanyBranchMasterSqlIntegrationTests|FullyQualifiedName~CompanyBranchScopeSqlIntegrationTests|FullyQualifiedName~SalesInvoiceGstSqlIntegrationTests"
+```
+
+Result: **3 passed, 0 failed**. The master test covers create, update, list, duplicate-company prevention, duplicate-branch prevention, branch/company reassignment rejection, rejected-write rollback, and cleanup. The post-run SQL check found zero `ITP42%` Company or Branch fixture rows. The API build also passed after the repository was changed to invoke the stored procedures.
+
 Not run / incomplete:
 
 - HTTP/API response-path tests, Company/Branch/assignment administration APIs, and frontend administration/selectors are not implemented in this increment yet.
