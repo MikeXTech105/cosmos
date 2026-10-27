@@ -71,10 +71,20 @@ dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter
 
 Result: **3 passed, 0 failed**. The master test covers create, update, list, duplicate-company prevention, duplicate-branch prevention, branch/company reassignment rejection, rejected-write rollback, and cleanup. The post-run SQL check found zero `ITP42%` Company or Branch fixture rows. The API build also passed after the repository was changed to invoke the stored procedures.
 
+### Increment 1A.3 — Company/Branch master record scope (actual evidence)
+
+`backend/database/migrations/20261027_33_company_branch_master_scope_authorization.sql` was applied twice successfully to `CosmosSalesGstIntegrationTests_Local` only. It replaces the overly broad `IsSystemUser` bypass with the protected System Owner convention: active system user plus active system role membership. It also adds a second, transaction-scoped authorization check to the Company and Branch save procedures. The authenticated server-side actor identifier is supplied by the service; it is not an HTTP request field.
+
+The master service now applies both layers of authorization: controller page/action permissions remain the global gate, while service checks filter Company and Branch lists and return 404 for inaccessible individual records. A company-level scope can administer its company and create branches within it. A branch-only scope may view or edit only its assigned branch, cannot view/administer the company or siblings, and cannot create branches. New Company creation remains System Owner-only.
+
+The write procedures take `UPDLOCK, HOLDLOCK` on the relevant active scope row in their transaction before mutating a Company or Branch. This makes revocation block or win before the mutation commits, rather than trusting a stale token or a prior service-only decision. The residual limitation is that direct SQL callers must remain restricted to the application/migration identities; SQL Server cannot derive an ERP user identity from an arbitrary stored-procedure parameter.
+
+The disposable SQL test was extended to prove delegated company update, post-revocation denial at the procedure boundary, branch-only create denial, and assigned-branch update. The existing System Owner scope test now verifies the protected role convention rather than treating every `IsSystemUser` account as an owner.
+
 Not run / incomplete:
 
-- HTTP/API response-path tests, Company/Branch/assignment administration APIs, and frontend administration/selectors are not implemented in this increment yet.
-- The scope test does not yet cover direct stored-procedure registration mismatch, draft reassignment, payment/confirm/cancel service interception, revocation races, or frontend behavior.
+- Full HTTP-host response-path tests are not yet implemented; the existing controller routes retain their page/action permission attributes and the SQL-backed service/procedure tests cover their record-scope boundary. User-scope assignment administration and frontend administration/selectors remain later Increment 1 work.
+- The scope test does not yet cover direct stored-procedure registration mismatch, draft reassignment, payment/confirm/cancel service interception, cross-session revocation timing, or frontend behavior.
 
 ## Required next controlled step
 

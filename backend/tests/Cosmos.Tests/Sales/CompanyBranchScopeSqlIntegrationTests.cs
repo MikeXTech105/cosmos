@@ -13,6 +13,7 @@ using Moq;
 namespace Cosmos.Tests.Sales;
 
 /// <summary>Real SQL coverage for scope resolution. The database-name guard prevents retained-data use.</summary>
+[Collection("SalesSqlIntegration")]
 public sealed class CompanyBranchScopeSqlIntegrationTests
 {
     private const string Variable = "COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING";
@@ -55,22 +56,30 @@ public sealed class CompanyBranchScopeSqlIntegrationTests
 
     private static async Task<(int CompanyUser, int BranchUser, int UnassignedUser, int SystemOwner, long CompanyA, long CompanyB, long BranchA, long BranchOther, long BranchB)> CreateFixtureAsync(SqlConnection connection)
     {
-        async Task<int> User(string suffix, bool owner = false) => await connection.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(@u,@e,N'not-a-login',@u,1,0,@owner);", new { u = Prefix + suffix, e = Prefix + suffix + "@example.test", owner });
-        var companyUser = await User("company"); var branchUser = await User("branch"); var unassigned = await User("none"); var owner = await User("owner", true);
+        async Task<int> User(string suffix) => await connection.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(@u,@e,N'not-a-login',@u,1,0,0);", new { u = Prefix + suffix, e = Prefix + suffix + "@example.test" });
+        var companyUser = await User("company"); var branchUser = await User("branch"); var unassigned = await User("none");
+        var owner = await connection.QuerySingleOrDefaultAsync<int?>("SELECT TOP (1) Id FROM dbo.Users WHERE IsSystemUser=1 AND IsActive=1 AND IsDeleted=0 ORDER BY Id;");
+        if (owner is null)
+            owner = await connection.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(N'ITP4SCOPE-owner',N'ITP4SCOPE-owner@example.test',N'not-a-login',N'ITP4SCOPE owner',1,0,1);");
+        var ownerRole = await connection.QuerySingleAsync<int>("INSERT dbo.Roles(Name,Description,IsActive,IsSystemRole) OUTPUT INSERTED.Id VALUES(N'ITP4SCOPE-SystemOwner',N'Integration protected owner',1,1);");
+        await connection.ExecuteAsync("INSERT dbo.UserRoles(UserId,RoleId) VALUES(@owner,@ownerRole);", new { owner, ownerRole });
         var a = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITP4A',N'Integration Company A');");
         var b = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITP4B',N'Integration Company B');");
         var a1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@a,N'A1',N'Integration A1');", new { a });
         var a2 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@a,N'A2',N'Integration A2');", new { a });
         var b1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@b,N'B1',N'Integration B1');", new { b });
         await connection.ExecuteAsync("INSERT dbo.UserCompanyBranchScopes(UserId,CompanyId,BranchId) VALUES(@companyUser,@a,NULL),(@branchUser,@a,@a1);", new { companyUser, branchUser, a, a1 });
-        return (companyUser, branchUser, unassigned, owner, a, b, a1, a2, b1);
+        return (companyUser, branchUser, unassigned, owner.Value, a, b, a1, a2, b1);
     }
 
     private static Task CleanupAsync(SqlConnection connection) => connection.ExecuteAsync($"""
         DELETE FROM dbo.UserCompanyBranchScopes WHERE UserId IN (SELECT Id FROM dbo.Users WHERE Username LIKE N'{Prefix}%');
+        DELETE ur FROM dbo.UserRoles ur JOIN dbo.Users u ON u.Id=ur.UserId WHERE u.Username LIKE N'{Prefix}%';
+        DELETE ur FROM dbo.UserRoles ur JOIN dbo.Roles r ON r.Id=ur.RoleId WHERE r.Name=N'ITP4SCOPE-SystemOwner';
         DELETE FROM dbo.Branches WHERE Code IN (N'A1',N'A2',N'B1') AND Name LIKE N'Integration %';
         DELETE FROM dbo.Companies WHERE Code IN (N'ITP4A',N'ITP4B');
         DELETE FROM dbo.Users WHERE Username LIKE N'{Prefix}%';
+        DELETE FROM dbo.Roles WHERE Name=N'ITP4SCOPE-SystemOwner';
         """);
 
     private static string RequiredConnectionString() => Environment.GetEnvironmentVariable(Variable) ?? throw new InvalidOperationException($"Set {Variable}.");

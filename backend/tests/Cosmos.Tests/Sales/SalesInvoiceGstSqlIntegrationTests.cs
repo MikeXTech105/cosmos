@@ -10,6 +10,7 @@ using Microsoft.Data.SqlClient;
 namespace Cosmos.Tests.Sales;
 
 /// <summary>Opt-in only: requires a disposable database populated with the base/GST/Phase 3 migrations.</summary>
+[Collection("SalesSqlIntegration")]
 public sealed class SalesInvoiceGstSqlIntegrationTests
 {
     private const string ConnectionStringVariable = "COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING";
