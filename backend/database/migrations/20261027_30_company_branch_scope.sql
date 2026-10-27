@@ -95,7 +95,12 @@ IF @createDefinition IS NULL OR @updateDefinition IS NULL OR CHARINDEX(N'@Compan
  THROW 51230,N'Expected Phase 3 Sales invoice procedure definitions are not installed; review before applying company/branch scope migration.',1;
 
 /* Exact textual changes preserve all current stock/ownership guards in the deployed bodies. */
-DECLARE @createPosition INT=CHARINDEX(N'CREATE',UPPER(@createDefinition)), @procedurePosition INT=CHARINDEX(N'PROCEDURE',UPPER(@createDefinition),CHARINDEX(N'CREATE',UPPER(@createDefinition)));
+DECLARE @createPosition INT, @procedurePosition INT;
+IF CHARINDEX(N'@CompanyId BIGINT',@createDefinition)=0
+BEGIN
+SET @createPosition=CHARINDEX(N'CREATE',UPPER(@createDefinition));
+IF @createPosition=0 SET @createPosition=CHARINDEX(N'ALTER',UPPER(@createDefinition));
+SET @procedurePosition=CHARINDEX(N'PROCEDURE',UPPER(@createDefinition),@createPosition);
 IF @createPosition=0 OR @procedurePosition=0 THROW 51231,N'Unable to normalize Sales create procedure header.',1;
 SET @createDefinition=STUFF(@createDefinition,@createPosition,@procedurePosition+LEN(N'PROCEDURE')-@createPosition,N'ALTER PROCEDURE');
 SET @createDefinition=REPLACE(@createDefinition,N'@CompanyGstRegistrationId BIGINT=NULL,@PlaceOfSupplyStateCode',N'@CompanyId BIGINT,@BranchId BIGINT=NULL,@CompanyGstRegistrationId BIGINT=NULL,@PlaceOfSupplyStateCode');
@@ -103,12 +108,16 @@ SET @createDefinition=REPLACE(@createDefinition,N'IF @CompanyGstRegistrationId I
 SET @createDefinition=REPLACE(@createDefinition,N'CustomerPartyId,CompanyGstRegistrationId,PlaceOfSupplyStateCode',N'CustomerPartyId,CompanyId,BranchId,CompanyGstRegistrationId,PlaceOfSupplyStateCode');
 SET @createDefinition=REPLACE(@createDefinition,N'@CustomerPartyId,@CompanyGstRegistrationId,@PlaceOfSupplyStateCode',N'@CustomerPartyId,@CompanyId,@BranchId,@CompanyGstRegistrationId,@PlaceOfSupplyStateCode');
 EXEC sp_executesql @createDefinition;
+END;
 
-SET @createPosition=CHARINDEX(N'CREATE',UPPER(@updateDefinition)); SET @procedurePosition=CHARINDEX(N'PROCEDURE',UPPER(@updateDefinition),@createPosition);
+IF CHARINDEX(N'@CompanyId BIGINT',@updateDefinition)=0
+BEGIN
+SET @createPosition=CHARINDEX(N'CREATE',UPPER(@updateDefinition)); IF @createPosition=0 SET @createPosition=CHARINDEX(N'ALTER',UPPER(@updateDefinition)); SET @procedurePosition=CHARINDEX(N'PROCEDURE',UPPER(@updateDefinition),@createPosition);
 IF @createPosition=0 OR @procedurePosition=0 THROW 51232,N'Unable to normalize Sales update procedure header.',1;
 SET @updateDefinition=STUFF(@updateDefinition,@createPosition,@procedurePosition+LEN(N'PROCEDURE')-@createPosition,N'ALTER PROCEDURE');
 SET @updateDefinition=REPLACE(@updateDefinition,N'@CompanyGstRegistrationId BIGINT=NULL,@PlaceOfSupplyStateCode',N'@CompanyId BIGINT,@BranchId BIGINT=NULL,@CompanyGstRegistrationId BIGINT=NULL,@PlaceOfSupplyStateCode');
 SET @updateDefinition=REPLACE(@updateDefinition,N'IF @CompanyGstRegistrationId IS NOT NULL AND NOT EXISTS(SELECT 1 FROM dbo.CompanyGstRegistrations WHERE Id=@CompanyGstRegistrationId AND IsDeleted=0 AND Status=N''Active'') BEGIN SELECT 409 StatusCode,N''Selected GST registration was not found or is inactive.'' Message; RETURN; END',N'IF @CompanyId IS NULL OR NOT EXISTS(SELECT 1 FROM dbo.Companies WHERE Id=@CompanyId AND IsActive=1 AND IsDeleted=0) OR (@BranchId IS NOT NULL AND NOT EXISTS(SELECT 1 FROM dbo.Branches WHERE Id=@BranchId AND CompanyId=@CompanyId AND IsActive=1 AND IsDeleted=0)) BEGIN SELECT 400 StatusCode,N''An active company and matching branch are required.'' Message; RETURN; END IF @CompanyGstRegistrationId IS NOT NULL AND NOT EXISTS(SELECT 1 FROM dbo.CompanyGstRegistrations WHERE Id=@CompanyGstRegistrationId AND CompanyId=@CompanyId AND ((@BranchId IS NULL AND BranchId IS NULL) OR BranchId=@BranchId) AND IsDeleted=0 AND Status=N''Active'') BEGIN SELECT 409 StatusCode,N''Selected GST registration is not active for the invoice company and branch.'' Message; RETURN; END');
 SET @updateDefinition=REPLACE(@updateDefinition,N'CustomerPartyId=@CustomerPartyId,CompanyGstRegistrationId=',N'CustomerPartyId=@CustomerPartyId,CompanyId=@CompanyId,BranchId=@BranchId,CompanyGstRegistrationId=');
 EXEC sp_executesql @updateDefinition;
+END;
 GO

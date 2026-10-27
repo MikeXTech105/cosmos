@@ -31,6 +31,7 @@ It changes only `sp_SalesInvoice_Create` and `sp_SalesInvoice_Update` after chec
 - The database was empty of invoices, registrations, parties, and items before work.
 - Its baseline was missing `dbo.SalesInvoiceItemInputV2` and was too old for the full quantity-precision migration. That migration's preflight stopped with no changes. A new, versioned, test-database-only bootstrap creates the V2 Sales TVP and updates only the two Sales procedures; it rejects any database not named `CosmosSalesGstIntegrationTests_*`.
 - The bootstrap and `20261027_30_company_branch_scope.sql` then applied successfully. Verification confirmed the three scope tables, Sales `CompanyId`/`BranchId`, all expected branch/company/user foreign keys, scope indexes, the Sales V2 TVP, and scope parameters on Sales create/update procedures.
+- A migration rerun initially exposed an idempotency defect in procedure-header/parameter rewriting. The migration now recognizes both `CREATE` and `ALTER` headers and skips already-scoped procedure bodies; a full rerun on the disposable database succeeded.
 
 ## Verification
 
