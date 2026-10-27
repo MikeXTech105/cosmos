@@ -17,18 +17,12 @@ const GstVerification = lazy(() => import("../pages/gst/GstVerificationPage.jsx"
 const GstDocument = lazy(() => import("../pages/gst/GstDocumentPage.jsx"));
 const GstSessions = lazy(() => import("../pages/gst/GstSessionPage.jsx"));
 const GstLogs = lazy(() => import("../pages/gst/GstLogsPage.jsx"));
-const HsnSacMaster = lazy(() => import("../pages/gst/HsnSacMasterPage.jsx"));
 const GstRateHistory = lazy(() => import("../pages/gst/GstRateHistoryPage.jsx"));
-const CategoryHsnMapping = lazy(() => import("../pages/gst/CategoryHsnMappingPage.jsx"));
-const ProductHsnMapping = lazy(() => import("../pages/gst/ProductHsnMappingPage.jsx"));
 const gstScreens = {
   configuration: <GstOverview />,
   registrations: <GstRegistrations />,
   verification: <GstVerification />,
-  hsnSac: <HsnSacMaster />,
   rateHistory: <GstRateHistory />,
-  categoryMappings: <CategoryHsnMapping />,
-  productMappings: <ProductHsnMapping />,
   invoices: <GstDocument key="invoice" kind="invoice" />,
   wayBills: <GstDocument key="wayBill" kind="wayBill" />,
   sessions: <GstSessions />,

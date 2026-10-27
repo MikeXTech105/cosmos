@@ -1460,3 +1460,9 @@ Status: Implemented / Build Verified / Tests Verified (175/175) / SQL and runtim
 - Added `backend/database/migrations/20260806_data_book_module.sql`, `backend/database/verify_data_book_module.sql`, and `backend/database/data_book_smoke_tests.sql`. These assets were created but have not been executed against a SQL Server in this update.
 - Added frontend/module/tracker documentation. Data Book history uses the existing `View` action because the permission model has no History action. Values are not written to normal logs, but remain plaintext in SQL/history JSON pending a shared encryption/key-management capability.
 - `dotnet build backend/Cosmos.slnx --no-restore -m:1` passed and `dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore -m:1` passed 175/175. Existing Microsoft.OpenApi NU1903 and Infrastructure NU1510 package warnings remain.
+
+# HSN/GST consolidation — 2026-10-27
+
+- Item HSN and GST defaults are now sourced only from `Items.HSNCode` and `Items.GSTRate` in the item and new-sales-invoice UI.
+- Separate HSN/SAC master, category mapping, and item override routes/screens are removed from the active application surface.
+- A guarded reconciliation migration and SQL verification script were added. No database environment was modified because the committed configuration has no connection string.
