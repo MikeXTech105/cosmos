@@ -16,6 +16,9 @@ This folder contains the clean SQL Server deployment package for the current Dap
 10. `migrations/20260720_rojmel_wallet_module.sql` - adds the Rojmel wallet ledger schema, permissions, procedures, and company-wallet seed.
 11. `verify_rojmel_my_wallet_403.sql` - read-only verification for the My Wallet permission mapping, User 2's linked wallet, duplicate/orphan checks, and required Rojmel objects.
 12. `migrations/20261007_purchase_order_conversion_validation.sql` - prevents invalid purchase-order conversion payment types from producing a database foreign-key error.
+13. `migrations/20261027_party_list_contract_hotfix.sql` - restores the nine-parameter Party list procedure and its three result sets when an upgraded API encounters SQL Server error 8144.
+14. `migrations/20261027_item_list_contract_hotfix.sql` - restores the ten-parameter Item list procedure when an upgraded API encounters SQL Server error 8144.
+15. `migrations/20261027_hsn_sac_dapper_contract_hotfix.sql` - restores the `TotalCount` result column required by Dapper after HSN/SAC create, update, and get-by-id operations.
 
 ## SSMS Run Order
 
@@ -38,6 +41,12 @@ For an existing server that is at the pre-fix API/database level, stop or drain 
 5. `migrations/20261007_purchase_order_conversion_validation.sql` before deploying the matching API.
 
 The verification script is read-only. It validates the five-parameter `sp_PurchaseBill_GetListSummary` signature, describes and validates the sixteen-column Party list result contract, and reports procedure definition hashes and any EF migration history if such a table exists. Run it as a required deployment gate before the upgraded API receives traffic.
+
+If the API logs SQL Server error 8144 for `sp_Party_GetList`, apply `migrations/20261027_party_list_contract_hotfix.sql` (or the earlier `20260720_backend_api_frontend_fixes.sql` if it has not been applied), then run `verify_runtime_api_contracts.sql`. The focused hotfix modifies only `dbo.sp_Party_GetList` and is safe to rerun.
+
+If the API logs SQL Server error 8144 for `sp_Item_GetList`, apply `migrations/20261027_item_list_contract_hotfix.sql`. The focused hotfix modifies only `dbo.sp_Item_GetList`, restores the optional `@ProcurementClassification` filter, and is safe to rerun.
+
+If a HSN/SAC create, update, or get-by-id request reports that Dapper cannot materialize `HsnSacDto`, apply `migrations/20261027_hsn_sac_dapper_contract_hotfix.sql`. The focused hotfix modifies only `dbo.usp_HsnSac_Get` and is safe to rerun.
 
 ## Rojmel My Wallet 403 Deployment
 

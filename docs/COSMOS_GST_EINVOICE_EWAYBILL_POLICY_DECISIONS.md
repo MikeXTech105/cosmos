@@ -2,27 +2,15 @@
 
 | Decision | Current evidence | Required owner decision | Effect |
 |---|---|---|---|
-| Seller registration selection | Phase 3 persists an optional issuer-registration link, but not legal identity/address or company/branch scope | Tax/compliance owner | blocks snapshot |
-| Place of supply | Phase 3 persists reviewed state/source, but no approved determination policy | Tax/compliance owner | blocks CGST/SGST vs IGST |
-| Pricing, discount and rounding | Price basis is captured but only aggregate current Sales tax is posted | Finance owner | blocks reconciliation |
-| Confirmed invoice edits/corrections | confirmation changes stock only; no snapshot is created | Finance owner | blocks supersession policy |
+| Seller registration selection | `SalesInvoices` has no registration link | Tax/compliance owner | blocks snapshot |
+| Place of supply | absent from sales contract | Tax/compliance owner | blocks CGST/SGST vs IGST |
+| Pricing, discount and rounding | only aggregate tax fields exist | Finance owner | blocks reconciliation |
+| Confirmed invoice edits/corrections | confirmation changes stock only | Finance owner | blocks supersession policy |
 | Special treatments | no verified model | Compliance owner | blocks treatment mapping |
 | GSTZen schema/idempotency/status lookup | adapter contains mapping TODO | Provider owner | blocks submission/recovery |
 | E-Way transportation details | not on sales invoice | Operations owner | blocks E-Way payload |
 
 Safe default: generation remains blocked. Historical invoices require an explicit validation result; they must not be recalculated from current rules.
-
-## Phase 4 authoritative-calculation decision register — 27 October 2026
-
-The implementation-ready proposal is maintained in [Phase 4 authoritative calculation and snapshot design](COSMOS_GST_PHASE4_AUTHORITATIVE_CALCULATION_AND_SNAPSHOT_DESIGN.md). None of its proposed formulas, supported treatments, lifecycle consequences, or provider mappings are approved policy. Phase 2 engine behavior is confirmed technical capability; it is not authority to change Sales totals.
-
-| Decision area | Confirmed technical fact | Approval still required |
-|---|---|---|
-| Jurisdiction | The engine selects intra-state versus inter-state components from seller state and reviewed place of supply | Valid source hierarchy, exceptions, and supported treatments |
-| Price basis/discount/rounding | Draft price basis is captured; an isolated proportional allocator and deterministic engine rounding exist | Legal calculation order, eligibility, scale/mode, cess/other components, and reconciliation adjustment |
-| Confirmation snapshot | Immutable snapshot/request foundations exist but are not wired to confirmation | Required source fields, blocking behavior, correction and supersession policy |
-| Authorization | Registration has company/branch fields; Sales invoice lacks an enforceable ownership scope | Invoice/registration/user company-branch scope and read/generation access rules |
-| GSTZen | Provider adapter is source-blocked and contains mapping TODOs | Account contract, sandbox, headers, payloads, idempotency and reconciliation semantics |
 
 The readiness evaluator documents the missing seller, buyer, place-of-supply, component-tax, rounding, and transport bindings per invoice. The sales-confirmation workflow remains unchanged pending owner approval of whether these should block ordinary confirmation.
 

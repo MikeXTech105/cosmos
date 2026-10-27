@@ -159,7 +159,10 @@ internal sealed class ItemCommandValidator<T> : AbstractValidator<T>
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.OpeningStockValue))).GreaterThanOrEqualTo(0);
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.CurrentStock))).GreaterThanOrEqualTo(0).PrecisionScale(22,6,true);
         RuleFor(x => GetDecimal(x, nameof(CreateItemCommand.ReservedStock))).GreaterThanOrEqualTo(0).PrecisionScale(22,6,true);
-        RuleFor(x => GetString(x, nameof(CreateItemCommand.HSNCode))).MaximumLength(50);
+        RuleFor(x => GetString(x, nameof(CreateItemCommand.HSNCode)))
+            .MaximumLength(50)
+            .Must(code => string.IsNullOrWhiteSpace(code) || code.Trim().All(char.IsLetterOrDigit))
+            .WithMessage("HSN code may contain letters and digits only.");
         RuleFor(x => GetString(x, nameof(CreateItemCommand.Description))).MaximumLength(1000);
         RuleFor(x => GetString(x, nameof(CreateItemCommand.ImageUrl))).MaximumLength(1000);
     }
