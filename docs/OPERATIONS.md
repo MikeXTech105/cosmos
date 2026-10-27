@@ -23,6 +23,20 @@ Do not store System Owner bootstrap passwords, DB connection strings, JWT signin
 
 Read [database setup](../backend/database/DATABASE_SETUP_README.md), [System Owner bootstrap](../backend/docs/SYSTEM_OWNER.md), [staging cleanup](../backend/docs/STAGING_DATABASE_CLEANUP.md) and [GST deployment runbook](COSMOS_GST_EINVOICE_EWAYBILL_SQL_DEPLOYMENT_RUNBOOK.md). The historical `002_Verify_Database_Setup.sql` placeholder must not serve as an operational gate.
 
+### Direct development SQL workflow
+
+`CosmosERP_Staging` on `srv1791248` is the owner-designated retained development/integration database, not a disposable test target. Access must use an environment-injected `COSMOS_DEVELOPMENT_SQL_CONNECTION_STRING` or `ConnectionStrings__CosmosDb`; never restore an old tracked value or log a credential. Start with the read-only [Phase 3 preflight](../backend/database/migrations/20261026_sales_invoice_gst_direct_development_preflight.sql), retain its evidence, verify recovery readiness, and obtain approval before any change. Bounded, non-destructive, versioned migrations may then be applied directly and verified afterward.
+
+Never run `SalesInvoiceGstSqlIntegrationTests`, create test invoices, or mutate stock/business data against this retained database. That suite remains limited to an isolated `CosmosSalesGstIntegrationTests_*` database. Production access and statutory GST generation remain out of scope.
+
+### Direct-SQL evidence — 26 October 2026
+
+The certificate-validated development connection reached `srv1791248` / `CosmosERP_Staging` with SQL reporting encrypted transport. The configured login is `sa`, a sysadmin and `db_owner` with `ALTER`, `CONTROL`, backup, and database-creation privileges. It must not remain the automation identity. Provision separate least-privilege accounts: read-only catalog inspection; an approved migration account limited to the intended development database; and an isolated-test account limited to `CosmosSalesGstIntegrationTests_*` databases.
+
+On 27 October 2026 an approved non-overwriting `COPY_ONLY` full backup of retained staging completed with checksum and compression. `RESTORE VERIFYONLY ... WITH CHECKSUM` and `DBCC CHECKDB` passed after restoring it to the retained isolated database `CosmosERP_Staging_RestoreVerify_19103a663729477a8c47aec03f97eb3d`. Do not drop that evidence database without separate approval. This validates a specific backup's physical restore, not end-to-end application recovery or an RPO/RTO commitment.
+
+Separate identities now exist: `cosmos_sql_inspector` (catalog/state plus narrow Sales/GST reads), `cosmos_dev_migrator` (approved development DDL), and `cosmos_gst_test` (denied retained staging and scoped to `CosmosSalesGstIntegrationTests_Local`). Store rotated credentials in an approved secret manager; no credentials are committed. The latter database is schema-only and retained for synthetic lifecycle tests. Its completed 1/1 test run must never be redirected to retained staging or production.
+
 ## Minimum checks
 ```bash
 dotnet restore backend/Cosmos.slnx
@@ -38,3 +52,21 @@ These are example commands; their successful execution in a real environment is 
 
 ## Observability
 Use correlation IDs to link API errors to Serilog request telemetry; use centralized Activity Logs for business/security actions rather than persisting every HTTP request. Restrict access to both.
+
+## Codex direct SQL Server development workflow (adopted 2026-10-26)
+
+**Environment role:** `CosmosERP_Staging` on Hostinger SQL Server (`srv1791248`) is the project owner's designated **development/integration** database. Do not infer that it is disposable or equivalent to production. It contains retained data. Prior Codex evidence confirms **encrypted authentication and a successful read-only query**; it does **not** prove DDL/DML privileges or authorize unrestricted mutations.
+
+**Default development workflow (for every future Codex prompt touching SQL):**
+1. Read current Git branch, module contracts, existing SQL migrations/procedures, and this runbook. Connect securely with a **secret-injected** connection string, explicitly verify `DB_NAME() = 'CosmosERP_Staging'`, server identity, schema prerequisites and current migration state; never echo secrets.
+2. Use read-only metadata and SELECT queries first. Compare existing schema/procedure definitions to the intended changes. Review impact on dependent Dapper contracts, business data, foreign keys, stock/accounting and other modules.
+3. Create/review a **versioned forward-only SQL migration in Git** and a **read-only verification script**. Use explicit `CREATE OR ALTER PROCEDURE` definitions; never make the deployed staging schema the only record of a change. Design transactional/data-safe changes and rerunnable guards where appropriate.
+4. For ordinary **non-destructive, explicitly scoped development schema changes**, Codex may apply the reviewed migration directly to the designated development database, **after** verifying target DB and privileges, recording pre-change state, checking backup/recovery readiness, and evaluating impact. For a risky or ambiguous operation, request owner approval before execution.
+5. After execution, query affected metadata and sample records, execute safe smoke/regression checks, and record migration identifier, environment, execution result and observed schema state in the relevant canonical module documents/PR. Confirm corresponding application build/tests.
+6. Keep production and any other databases out of scope without separate explicit authorization. Never promote staging credentials, results or apparent access into production authority.
+
+**Protected operations:** No unapproved `DROP`, `TRUNCATE`, mass `DELETE`/`UPDATE`, reset, data backfill, financial/tax rewrite, irreversible or table-rebuilding alteration, credential/security change, bulk seed, or live statutory GSTZen generation. No tests that create/cancel invoices or alter stock/wallet/accounting in the retained staging dataset by default; use a disposable isolated database for destructive/concurrency/lifecycle suites, or an owner-approved strictly bounded transaction/fixture plan with verified cleanup and backup. A database name guard for disposable tests must **never** be bypassed or pointed at `CosmosERP_Staging`.
+
+**Security priority:** Codex reported that a database credential is committed in `backend/src/Cosmos.API/appsettings.json`. Treat this as exposed: rotate the credential, remove it from tracked configuration, inject it securely via environment or secret manager, and restrict the SQL login to required database permissions. Check deployment impact before editing secrets. **Never copy the secret into documentation, tool output, logs, test results or PRs.**
+
+**Evidence levels:** `read-only connected` ≠ `DDL/DML access verified` ≠ `migration executed` ≠ `end-to-end SQL integration passed`. Record each distinctly. Direct staging access does not satisfy a disposable-database test that explicitly refuses `CosmosERP_Staging`.

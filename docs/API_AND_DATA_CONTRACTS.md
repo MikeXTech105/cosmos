@@ -28,3 +28,15 @@ Use positive/negative validation tests, success/failure envelope tests, 401/403/
 The GST master-data contract is present: HSN/SAC, effective-dated rate versions, category defaults and item overrides have protected API routes, SQL migrations and React screens. The overview now presents those screens only to users with the relevant page grant. This is source-verified only; it is not proof that a target database has the required migrations or that the routes are deployed.
 
 E-Invoice and E-Way Bill **generation remain intentionally unavailable** (`409` / `GST_SERVER_GENERATION_NOT_AVAILABLE`). The sales contract does not yet persist the immutable seller/buyer identity and address snapshots, place of supply, approved component taxes and totals, correction lineage, or E-Way transport context required to construct a statutory payload. The reservation/attempt SQL foundation is additive but not connected to sales confirmation. Do not replace the block, pass browser JSON to GSTZen, or retry an unknown outcome until the approved snapshot and provider-reconciliation contracts are deployed.
+
+The read-only `GET /api/v1/gst/invoices/{salesInvoiceId}/eligibility` contract is available to `GST.EInvoice` viewers. It returns structured persisted-data diagnostics and does not select master data, create a snapshot, or alter the Sales Invoice lifecycle. Treat `canCreateSnapshot = false` as an implementation/policy result, not a normal-sales confirmation failure.
+
+## Sales GST capture policy status (2026-10-26)
+
+Sales invoice drafts can capture an explicit active issuing registration, a reviewed two-digit place-of-supply state code plus source, and an explicit tax-inclusive/tax-exclusive price-basis intent. These nullable fields are additive; historical invoices are not backfilled. The existing Sales tax percentage and aggregate total behavior remains authoritative until approved GST calculation, component, discount-allocation, and rounding policies are deployed and tested.
+
+The proportional discount allocator is an isolated engineering proposal only. The current Sales create/update procedures do not invoke it, do not create immutable statutory snapshots, and do not enable E-Invoice or E-Way Bill generation. Registration selection does not prove company/branch record scope; deployments requiring such isolation remain blocked on an enforceable authorization model.
+
+## Phase 4 scope-contract proposal — 27 October 2026
+
+The first Phase 4 increment is documented in [COSMOS_GST_PHASE4_OWNERSHIP_AUTHORIZATION_INCREMENT.md](COSMOS_GST_PHASE4_OWNERSHIP_AUTHORIZATION_INCREMENT.md). It proposes an explicit Sales Invoice company/branch ownership contract, a user-scope assignment relation, and common authorization enforcement for Sales and GST resources. The current API has only global role/page checks, so no endpoint may infer record scope from a GST registration selection. The owner must first approve ownership semantics, legacy-invoice handling, and `404` versus `403` behavior; no request/response contract or schema change is activated by this design.

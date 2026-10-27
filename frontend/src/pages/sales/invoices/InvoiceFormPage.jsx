@@ -22,6 +22,7 @@ import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
 import { hsnGstService } from "../../../services/gst/hsnGstService";
+import { gstService } from "../../../services/gst/gstService";
 import { unitService } from "../../../services/inventory/unitService";
 import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
 import ItemFormModal from "../../inventory/items/ItemFormModal";
@@ -91,6 +92,10 @@ const initialPaymentSchema = z
 const invoiceSchema = z.object({
   // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
   customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
+  companyGstRegistrationId: z.union([z.coerce.number().int().positive(), z.literal(""), z.null()]).optional(),
+  placeOfSupplyStateCode: z.string().trim().regex(/^$|^[0-9]{2}$/, "Use a two-digit GST state code"),
+  placeOfSupplySource: z.string().trim().max(50, "Source is too long"),
+  priceBasis: z.union([z.literal(""), z.coerce.number().int().min(0).max(1)]).optional(),
   invoiceNumber: z.string().optional(),
   invoiceDate: requiredDate("Invoice date"),
   dueDate: optionalDate,
@@ -101,7 +106,10 @@ const invoiceSchema = z.object({
   termsAndConditions: z.string().max(2000, "Terms are too long").optional(),
   initialPayment: initialPaymentSchema.optional(),
   items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
-}).superRefine((values, context) => dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date"));
+}).superRefine((values, context) => {
+  dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date");
+  if (values.placeOfSupplyStateCode && !values.placeOfSupplySource) context.addIssue({ code: z.ZodIssueCode.custom, path: ["placeOfSupplySource"], message: "Explain the reviewed place-of-supply selection." });
+});
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -183,6 +191,7 @@ const InvoiceFormPage = () => {
   const [lookups, setLookups] = useState({
     customers: [], customersError: null, customersLoading: true,
     items: [], itemsError: null, itemsLoading: true,
+    registrations: [], registrationsError: null, registrationsLoading: true,
   });
   const [lookupCreateModal, setLookupCreateModal] = useState({ category: false, customer: false, item: false, unit: false });
   const [itemCreateLookups, setItemCreateLookups] = useState({
@@ -235,9 +244,21 @@ const InvoiceFormPage = () => {
       });
   }, []);
 
+  const loadRegistrations = useCallback(() => {
+    setLookups((current) => ({ ...current, registrationsLoading: true, registrationsError: null }));
+    return gstService.registrations({ PageNumber: 1, PageSize: 200, Status: "Active" })
+      .then((response) => {
+        setLookups((current) => ({ ...current, registrations: getLookupList(response).filter((entry) => entry?.id && String(entry.status ?? "Active").toLowerCase() === "active"), registrationsLoading: false }));
+      })
+      .catch((error) => {
+        const message = getActionError(error, "Unable to load GST registrations.");
+        setLookups((current) => ({ ...current, registrationsLoading: false, registrationsError: message }));
+      });
+  }, []);
+
   const loadLookups = useCallback(() => {
-    return Promise.all([loadLookup("customers"), loadLookup("items")]);
-  }, [loadLookup]);
+    return Promise.all([loadLookup("customers"), loadLookup("items"), loadRegistrations()]);
+  }, [loadLookup, loadRegistrations]);
 
   useEffect(() => {
     void Promise.resolve().then(loadLookups);
@@ -273,6 +294,16 @@ const InvoiceFormPage = () => {
     () => lookups.items.map((item) => ({ value: Number(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
     [lookups.items],
   );
+  const registrationOptions = useMemo(() => lookups.registrations.map((registration) => ({
+    value: Number(registration.id),
+    label: [registration.gstin, registration.legalName, registration.branchName || registration.city].filter(Boolean).join(" — "),
+  })), [lookups.registrations]);
+  const priceBasisOptions = [{ value: 0, label: "Tax Exclusive — entered price excludes GST" }, { value: 1, label: "Tax Inclusive — entered price includes GST" }];
+  const placeSourceOptions = [
+    { value: "CustomerBillingReviewed", label: "Customer billing state reviewed" },
+    { value: "CustomerShippingReviewed", label: "Customer shipping state reviewed" },
+    { value: "OtherConfirmed", label: "Other confirmed basis" },
+  ];
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
 
   const applyItemDetails = async (index, itemId) => {
@@ -657,6 +688,39 @@ const InvoiceFormPage = () => {
           </section>
         </>
       )}
+
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900">Issuing GST registration</h2>
+        <p className="mt-1 text-xs text-slate-500">Select the GSTIN that issues this draft. This choice is never inferred from the default registration.</p>
+        <div className="mt-4 max-w-2xl">
+          <Controller control={control} name="companyGstRegistrationId" render={({ field }) => (
+            <AppSelect
+              label="Seller GST registration"
+              value={field.value ?? ""}
+              onChange={(value) => field.onChange(value ? Number(value) : null)}
+              onBlur={field.onBlur}
+              options={registrationOptions}
+              placeholder={lookups.registrationsLoading ? "Loading GST registrations..." : "Select issuing GSTIN"}
+              disabled={lookups.registrationsLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)}
+              emptyMessage={lookups.registrationsError || "No active GST registrations are available."}
+              error={errors.companyGstRegistrationId?.message}
+            />
+          )} />
+          {isEdit && detailInvoice && Number(detailInvoice.status) !== 1 && <p className="mt-2 text-xs text-slate-500">Confirmed invoices retain their issuing registration. Use an approved correction workflow for changes.</p>}
+          {!lookups.registrationsLoading && registrationOptions.length === 0 && <p className="mt-2 text-xs font-medium text-amber-700">No usable registration is available; this invoice cannot become GST snapshot-ready.</p>}
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900">GST draft context</h2>
+        <p className="mt-1 text-xs text-slate-500">These explicit choices are retained for GST readiness. They do not replace the current Sales tax calculation or authorize statutory generation.</p>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          <Controller control={control} name="priceBasis" render={({ field }) => <AppSelect label="Pricing mode" value={field.value ?? ""} onChange={(value) => field.onChange(value === "" ? null : Number(value))} onBlur={field.onBlur} options={priceBasisOptions} placeholder="Select pricing mode" error={errors.priceBasis?.message} />} />
+          <AppInput label="Place of supply code" maxLength={2} placeholder="e.g. 24" error={errors.placeOfSupplyStateCode?.message} {...register("placeOfSupplyStateCode")} />
+          <Controller control={control} name="placeOfSupplySource" render={({ field }) => <AppSelect label="Reviewed basis" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} options={placeSourceOptions} placeholder="Select reviewed basis" error={errors.placeOfSupplySource?.message} />} />
+        </div>
+        <p className="mt-3 text-xs text-amber-700">A billing or shipping address can inform review, but this form never infers a statutory place of supply or changes GST components automatically.</p>
+      </section>
 
       <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">
         <AppButton variant="secondary" disabled={isSubmitting} onClick={() => navigate(backRoute)}>
