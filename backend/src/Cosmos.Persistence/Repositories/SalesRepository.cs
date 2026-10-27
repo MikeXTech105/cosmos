@@ -176,7 +176,7 @@ public sealed class SalesRepository : ISalesRepository
 
     private static DynamicParameters InvoiceParameters(CreateSalesInvoiceCommand command, long? userId)
     {
-        var parameters = BaseInvoiceParameters(command.CustomerPartyId, command.InvoiceDate, command.DueDate, command.DiscountAmount, command.Notes, command.TermsAndConditions, command.CompanyGstRegistrationId, command.PlaceOfSupplyStateCode, command.PlaceOfSupplySource, command.PriceBasis, command.Items, userId);
+        var parameters = BaseInvoiceParameters(command.CustomerPartyId, command.InvoiceDate, command.DueDate, command.DiscountAmount, command.Notes, command.TermsAndConditions, command.CompanyId, command.BranchId, command.CompanyGstRegistrationId, command.PlaceOfSupplyStateCode, command.PlaceOfSupplySource, command.PriceBasis, command.Items, userId);
         if (command.InitialPayment is not null)
         {
             parameters.Add("InitialPaymentDate", ToDateTime(command.InitialPayment.PaymentDate));
@@ -190,9 +190,9 @@ public sealed class SalesRepository : ISalesRepository
     }
 
     private static DynamicParameters InvoiceParameters(UpdateSalesInvoiceCommand command, long? userId) =>
-        BaseInvoiceParameters(command.CustomerPartyId, command.InvoiceDate, command.DueDate, command.DiscountAmount, command.Notes, command.TermsAndConditions, command.CompanyGstRegistrationId, command.PlaceOfSupplyStateCode, command.PlaceOfSupplySource, command.PriceBasis, command.Items, userId);
+        BaseInvoiceParameters(command.CustomerPartyId, command.InvoiceDate, command.DueDate, command.DiscountAmount, command.Notes, command.TermsAndConditions, command.CompanyId, command.BranchId, command.CompanyGstRegistrationId, command.PlaceOfSupplyStateCode, command.PlaceOfSupplySource, command.PriceBasis, command.Items, userId);
 
-    private static DynamicParameters BaseInvoiceParameters(Guid customerPartyId, DateOnly invoiceDate, DateOnly? dueDate, decimal discountAmount, string? notes, string? terms, long? companyGstRegistrationId, string? placeOfSupplyStateCode, string? placeOfSupplySource, SalesInvoicePriceBasis? priceBasis, IReadOnlyCollection<SalesInvoiceItemRequest> items, long? userId)
+    private static DynamicParameters BaseInvoiceParameters(Guid customerPartyId, DateOnly invoiceDate, DateOnly? dueDate, decimal discountAmount, string? notes, string? terms, long companyId, long? branchId, long? companyGstRegistrationId, string? placeOfSupplyStateCode, string? placeOfSupplySource, SalesInvoicePriceBasis? priceBasis, IReadOnlyCollection<SalesInvoiceItemRequest> items, long? userId)
     {
         var parameters = new DynamicParameters();
         parameters.Add("CustomerPartyId", customerPartyId);
@@ -201,6 +201,8 @@ public sealed class SalesRepository : ISalesRepository
         parameters.Add("DiscountAmount", discountAmount);
         parameters.Add("Notes", notes);
         parameters.Add("TermsAndConditions", terms);
+        parameters.Add("CompanyId", companyId);
+        parameters.Add("BranchId", branchId);
         parameters.Add("CompanyGstRegistrationId", companyGstRegistrationId);
         parameters.Add("PlaceOfSupplyStateCode", placeOfSupplyStateCode);
         parameters.Add("PlaceOfSupplySource", placeOfSupplySource);

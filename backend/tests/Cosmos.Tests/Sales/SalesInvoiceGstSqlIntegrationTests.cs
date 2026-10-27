@@ -36,7 +36,7 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
             var repository = new SalesRepository(new TestConnectionFactory(value));
             var command = new CreateSalesInvoiceCommand(fixture.CustomerId, new DateOnly(2030, 1, 1), null,
                 [new SalesInvoiceItemRequest(fixture.ItemId, 2m, 100m, 0m, 0m, null, 5m)], 0m, "ITGSTP3", null,
-                fixture.RegistrationOne, "24", "CustomerBillingReviewed", SalesInvoicePriceBasis.TaxExclusive, null);
+                fixture.CompanyId, fixture.BranchId, fixture.RegistrationOne, "24", "CustomerBillingReviewed", SalesInvoicePriceBasis.TaxExclusive, null);
             var created = await repository.CreateAsync(command, null, CancellationToken.None);
             Assert.Equal(fixture.RegistrationOne, created.CompanyGstRegistrationId);
             Assert.Equal("24", created.PlaceOfSupplyStateCode);
@@ -47,7 +47,7 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
 
             var updated = await repository.UpdateAsync(created.Id, new UpdateSalesInvoiceCommand(fixture.CustomerId, new DateOnly(2030, 1, 2), null,
                 [new SalesInvoiceItemRequest(fixture.ItemId, 2m, 100m, 0m, 0m, null, 5m)], 0m, "ITGSTP3", null,
-                fixture.RegistrationTwo, "27", "CustomerShippingReviewed", SalesInvoicePriceBasis.TaxInclusive), null, CancellationToken.None);
+                fixture.CompanyId, fixture.BranchId, fixture.RegistrationTwo, "27", "CustomerShippingReviewed", SalesInvoicePriceBasis.TaxInclusive), null, CancellationToken.None);
             Assert.Equal(fixture.RegistrationTwo, updated.CompanyGstRegistrationId);
             Assert.Equal("27", updated.PlaceOfSupplyStateCode);
             Assert.Equal(1, updated.PriceBasis);
@@ -57,7 +57,7 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
             Assert.Equal(fixture.RegistrationTwo, confirmed.CompanyGstRegistrationId);
             Assert.Equal(8m, await connection.QuerySingleAsync<decimal>("SELECT CurrentStock FROM dbo.Items WHERE Id=@id", new { id = fixture.ItemId }));
             await Assert.ThrowsAsync<Cosmos.Shared.Exceptions.CosmosException>(() => repository.UpdateAsync(created.Id, new UpdateSalesInvoiceCommand(fixture.CustomerId, new DateOnly(2030, 1, 2), null,
-                [new SalesInvoiceItemRequest(fixture.ItemId, 2m, 100m, 0m, 0m, null, 5m)], 0m, "ITGSTP3", null, fixture.RegistrationOne, "24", "CustomerBillingReviewed", SalesInvoicePriceBasis.TaxExclusive), null, CancellationToken.None));
+                [new SalesInvoiceItemRequest(fixture.ItemId, 2m, 100m, 0m, 0m, null, 5m)], 0m, "ITGSTP3", null, fixture.CompanyId, fixture.BranchId, fixture.RegistrationOne, "24", "CustomerBillingReviewed", SalesInvoicePriceBasis.TaxExclusive), null, CancellationToken.None));
             var cancelled = await repository.CancelAsync(created.Id, null, CancellationToken.None);
             Assert.Equal(5, cancelled.Status);
             Assert.Equal(fixture.RegistrationTwo, cancelled.CompanyGstRegistrationId);
@@ -88,16 +88,18 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
         }
     }
 
-    private static async Task<(Guid CustomerId, long ItemId, long RegistrationOne, long RegistrationTwo)> CreateFixtureAsync(SqlConnection connection)
+    private static async Task<(Guid CustomerId, long ItemId, long CompanyId, long BranchId, long RegistrationOne, long RegistrationTwo)> CreateFixtureAsync(SqlConnection connection)
     {
         var customer = Guid.NewGuid();
         await connection.ExecuteAsync("INSERT dbo.Parties(Id,PartyCode,PartyName,GSTTreatment,OpeningBalance,OpeningBalanceType,CreditLimit,CreditPeriodDays) VALUES(@id,N'ITGSTP3-CUSTOMER',N'Integration Customer',0,0,0,0,0);", new { id = customer });
         var unit = await connection.QuerySingleAsync<long>("INSERT dbo.Units(Name,ShortName,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Unit',N'IT3',1);");
         var category = await connection.QuerySingleAsync<long>("INSERT dbo.Categories(Name,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Category',1);");
         var item = await connection.QuerySingleAsync<long>("INSERT dbo.Items(Name,ItemCode,CategoryId,UnitId,ItemType,CurrentStock,TrackInventory,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Item',N'ITGSTP3-ITEM',@category,@unit,1,10,1,1);", new { category, unit });
-        var one = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(N'24ITGSTP00001Z0',N'IT GST One',N'24',N'Active');");
-        var two = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(N'27ITGSTP00002Z0',N'IT GST Two',N'27',N'Active');");
-        return (customer, item, one, two);
+        var company = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITGSTP3',N'Integration Company');");
+        var branch = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@company,N'IT3',N'Integration Branch');", new { company });
+        var one = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(CompanyId,BranchId,Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(@company,@branch,N'24ITGSTP00001Z0',N'IT GST One',N'24',N'Active');", new { company, branch });
+        var two = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(CompanyId,BranchId,Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(@company,@branch,N'27ITGSTP00002Z0',N'IT GST Two',N'27',N'Active');", new { company, branch });
+        return (customer, item, company, branch, one, two);
     }
 
     private static Task CleanupAsync(SqlConnection connection) => connection.ExecuteAsync("""
@@ -105,6 +107,7 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
         DELETE si FROM dbo.SalesInvoiceItems si JOIN dbo.SalesInvoices s ON s.Id=si.SalesInvoiceId WHERE s.Notes LIKE N'ITGSTP3%';
         DELETE FROM dbo.SalesInvoices WHERE Notes LIKE N'ITGSTP3%';
         DELETE FROM dbo.CompanyGstRegistrations WHERE Gstin LIKE N'%ITGSTP%';
+        DELETE FROM dbo.Branches WHERE Code=N'IT3' AND Name=N'Integration Branch'; DELETE FROM dbo.Companies WHERE Code=N'ITGSTP3';
         DELETE FROM dbo.Items WHERE ItemCode=N'ITGSTP3-ITEM'; DELETE FROM dbo.Categories WHERE Name=N'ITGSTP3 Category'; DELETE FROM dbo.Units WHERE Name=N'ITGSTP3 Unit'; DELETE FROM dbo.Parties WHERE PartyCode=N'ITGSTP3-CUSTOMER';
         """);
 
