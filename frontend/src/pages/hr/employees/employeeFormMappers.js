@@ -300,14 +300,12 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // Omitted addresses mean "leave existing addresses unchanged" on PUT. This also
-  // avoids creating an empty address row during employee creation.
-  if (payloadAddresses) {
-    payload.addresses = payloadAddresses;
-  }
+  // An empty collection is explicit on create and avoids manufacturing an empty
+  // address row; the API distinguishes it from an omitted update field upstream.
+  payload.addresses = payloadAddresses ?? [];
 
-  if (includeBankDetails && hasBankDetails(values)) {
-    payload.bankDetails = mapFormToBankDetails(values);
+  if (includeBankDetails) {
+    payload.bankDetails = hasBankDetails(values) ? mapFormToBankDetails(values) : null;
   }
 
   return payload;
