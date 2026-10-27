@@ -21,7 +21,6 @@ import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
-import { hsnGstService } from "../../../services/gst/hsnGstService";
 import { gstService } from "../../../services/gst/gstService";
 import { unitService } from "../../../services/inventory/unitService";
 import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
@@ -319,20 +318,14 @@ const InvoiceFormPage = () => {
     applyItem(lookupItem);
 
     try {
-      const [itemResult, classificationResult] = await Promise.allSettled([
-        itemService.getItemById(itemId),
-        hsnGstService.getEffectiveClassification(itemId, new Date().toISOString().slice(0, 10)),
-      ]);
-      const itemResponse = itemResult.status === "fulfilled" ? itemResult.value : null;
-      const classificationResponse = classificationResult.status === "fulfilled" ? classificationResult.value : null;
-      applyItem(getResponseItem(itemResponse) ?? lookupItem);
-      const classification = classificationResponse?.data ?? classificationResponse;
-      setValue(`items.${index}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, classification?.source ?? "", { shouldDirty: true });
+      const itemResponse = await itemService.getItemById(itemId);
+      const item = getResponseItem(itemResponse) ?? lookupItem;
+      applyItem(item);
+      setValue(`items.${index}.hsnSacCode`, item?.hsnCode ?? "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, item?.hsnCode ? "Item master" : "", { shouldDirty: true });
     } catch {
-      applyItem(lookupItem);
       setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Legacy" : "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Item master" : "", { shouldDirty: true });
     }
   };
 
@@ -569,7 +562,7 @@ const InvoiceFormPage = () => {
                         </td>
                         <td className="px-3 py-3 align-top text-xs text-slate-600">
                           <p className="font-semibold text-slate-800">{line.hsnSacCode || "—"}</p>
-                          {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource === "ProductOverride" ? "Product override" : line.hsnSource === "CategoryDefault" ? "Category default" : line.hsnSource}</p>}
+                          {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource}</p>}
                         </td>
                         <td className="px-3 py-3 align-top">
                           <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} required error={errors.items?.[index]?.quantity?.message} />

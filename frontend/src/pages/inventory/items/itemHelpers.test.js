@@ -34,4 +34,11 @@ describe("item manufacturing payload", () => {
     expect(buildItemPayload(itemValues({ trackInventory: false })).isManufactured).toBe(false);
     expect(buildItemPayload(itemValues({ itemType: ITEM_TYPE.SERVICE })).isManufactured).toBe(false);
   });
+
+  it("keeps an HSN code as trimmed text so leading zeroes reach the item API", () => {
+    const payload = buildItemPayload(itemValues({ hsnCode: " 001234 " }));
+
+    expect(payload.hsnCode).toBe("001234");
+    expect(payload.gstRate).toBe(0);
+  });
 });
