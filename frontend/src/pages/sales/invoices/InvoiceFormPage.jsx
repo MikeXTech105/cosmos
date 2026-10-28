@@ -63,6 +63,80 @@ import {
   PAYMENT_MODE_OPTIONS,
   SALES_PAYMENT_MODE,
 } from "./invoiceHelpers";
+import { canApplyItemDetails, getInvoiceItemDefaults } from "./invoiceItemDefaults";
+
+const invoiceLineSchema = z.object({
+  itemId: z.coerce.number().int().positive("Item is required"),
+  itemName: z.string().optional(),
+  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
+  rate: z.coerce.number().min(0, "Rate cannot be negative"),
+  discountPercentage: z.coerce
+    .number()
+    .min(0, "Discount cannot be negative")
+    .max(100, "Discount cannot exceed 100%"),
+  discountAmount: z.coerce
+    .number()
+    .min(0, "Discount amount cannot be negative"),
+  taxRateId: z.union([z.number(), z.string(), z.null()]).optional(),
+  taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
+  hsnSacCode: z.string().optional(),
+  hsnSource: z.string().optional(),
+  itemDetailsStatus: z.enum(["idle", "loading", "ready", "missing", "error", "saved"]).optional(),
+}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" })
+  .superRefine((line, context) => {
+    if (["loading", "missing", "error"].includes(line.itemDetailsStatus ?? "idle")) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["itemId"],
+        message: line.itemDetailsStatus === "error"
+          ? "Item defaults could not be loaded; select the item again before saving."
+          : "Item Master price and GST data must load before saving this line.",
+      });
+    }
+  });
+
+const initialPaymentSchema = z
+  .object({
+    paymentDate: z.string().optional(),
+    amount: z.coerce
+      .number()
+      .min(0, "Payment amount cannot be negative")
+      .optional(),
+    paymentMode: enumNumber(SALES_PAYMENT_MODE, "Payment mode"),
+    referenceNumber: z.string().max(100, "Reference is too long").optional(),
+    notes: z.string().max(500, "Payment notes are too long").optional(),
+  })
+  .superRefine((payment, context) => {
+    if (Number(payment.amount) > 0 && !payment.paymentDate) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Payment date is required",
+        path: ["paymentDate"],
+      });
+    }
+  });
+
+const invoiceSchema = z.object({
+  // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
+  customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
+  companyGstRegistrationId: z.union([z.coerce.number().int().positive(), z.literal(""), z.null()]).optional(),
+  placeOfSupplyStateCode: z.string().trim().regex(/^$|^[0-9]{2}$/, "Use a two-digit GST state code"),
+  placeOfSupplySource: z.string().trim().max(50, "Source is too long"),
+  priceBasis: z.union([z.literal(""), z.coerce.number().int().min(0).max(1)]).optional(),
+  invoiceNumber: z.string().optional(),
+  invoiceDate: requiredDate("Invoice date"),
+  dueDate: optionalDate,
+  discountAmount: z.coerce
+    .number()
+    .min(0, "Invoice discount cannot be negative"),
+  notes: z.string().max(1000, "Notes are too long").optional(),
+  termsAndConditions: z.string().max(2000, "Terms are too long").optional(),
+  initialPayment: initialPaymentSchema.optional(),
+  items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
+}).superRefine((values, context) => {
+  dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date");
+  if (values.placeOfSupplyStateCode && !values.placeOfSupplySource) context.addIssue({ code: z.ZodIssueCode.custom, path: ["placeOfSupplySource"], message: "Explain the reviewed place-of-supply selection." });
+});
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -157,6 +231,7 @@ const InvoiceFormPage = () => {
   const {
     control,
     handleSubmit,
+    getValues,
     register,
     reset,
     setValue,
@@ -170,9 +245,10 @@ const InvoiceFormPage = () => {
     defaultValues: getInvoiceDefaultValues(null),
   });
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
-  const currentFields = useRef(fields);
-  const itemRequests = useRef(new Map());
-  useEffect(() => { currentFields.current = fields; }, [fields]);
+  const itemDetailsCache = useRef(new Map());
+  const itemSelectionVersions = useRef(new Map());
+  const rowIndexes = useRef(new Map());
+  rowIndexes.current = new Map(fields.map((field, index) => [field.id, index]));
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
   const draftValues = useWatch({ control });
   const recovery=useUncertainSave({entity:"sales-invoice",context:id ?? "new",recordId:isEdit?id:null});
@@ -275,43 +351,77 @@ const InvoiceFormPage = () => {
   ];
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
 
-  const applyItemDetails = useCallback(async (index, itemId, classificationOnly = false) => {
-    const rowId = currentFields.current[index]?.id;
-    if (!rowId) return;
-    const onDate = getValues("invoiceDate");
-    const requestToken = Symbol(rowId);
-    itemRequests.current.set(rowId, requestToken);
-    const currentIndex = () => invoiceLookupTarget({ rows: currentFields.current, rowId, itemId, invoiceDate: onDate, getValues, latest: itemRequests.current.get(rowId) === requestToken });
-    const lookupItem = itemsById.get(String(itemId));
-    const applyItem = (item) => {
-      const liveIndex = currentIndex();
-      if (!item || liveIndex < 0 || classificationOnly) return;
+  const applyItemDetails = async (rowId, itemId) => {
+    const index = rowIndexes.current.get(rowId);
+    if (index === undefined) return;
 
-      setValue(`items.${liveIndex}.itemName`, item.name ?? "", { shouldDirty: true });
-      setValue(`items.${liveIndex}.rate`, String(item.salesPrice ?? 0), { shouldDirty: true, shouldValidate: true });
-      setValue(`items.${liveIndex}.taxPercentage`, String(item.gstRate ?? 0), { shouldDirty: true, shouldValidate: true });
+    const version = (itemSelectionVersions.current.get(rowId) ?? 0) + 1;
+    itemSelectionVersions.current.set(rowId, version);
+
+    const setLineValue = (name, value, options = {}) => {
+      const currentIndex = rowIndexes.current.get(rowId);
+      if (currentIndex !== undefined) {
+        setValue(`items.${currentIndex}.${name}`, value, { shouldDirty: true, ...options });
+      }
     };
 
-    applyItem(lookupItem);
+    if (!itemId) {
+      setLineValue("itemName", "");
+      setLineValue("rate", "0", { shouldValidate: true });
+      setLineValue("taxPercentage", "0", { shouldValidate: true });
+      setLineValue("hsnSacCode", "");
+      setLineValue("hsnSource", "");
+      setLineValue("itemDetailsStatus", "idle");
+      return;
+    }
+
+    const lookupItem = itemsById.get(String(itemId));
+    const applyItem = (item, status) => {
+      const defaults = getInvoiceItemDefaults(item);
+      setLineValue("itemName", defaults.itemName);
+      if (defaults.hasSalesPrice) setLineValue("rate", String(defaults.salesPrice), { shouldValidate: true });
+      if (defaults.hasGstRate) setLineValue("taxPercentage", String(defaults.gstRate), { shouldValidate: true });
+      setLineValue("hsnSacCode", defaults.hsnSacCode);
+      setLineValue("hsnSource", defaults.hsnSacCode ? "Item master" : "Not configured in Item Master");
+      setLineValue("itemDetailsStatus", status);
+    };
+
+    // Reset every item-owned value before loading details so a previously
+    // selected item's values can never be submitted for this row.
+    setLineValue("itemName", lookupItem?.name ?? "");
+    setLineValue("rate", "0", { shouldValidate: true });
+    setLineValue("taxPercentage", "0", { shouldValidate: true });
+    setLineValue("hsnSacCode", "");
+    setLineValue("hsnSource", "Loading item defaults…");
+    setLineValue("itemDetailsStatus", "loading");
+
+    if (lookupItem && Object.prototype.hasOwnProperty.call(lookupItem, "salesPrice")) {
+      const listDefaults = getInvoiceItemDefaults(lookupItem);
+      if (listDefaults.hasSalesPrice) setLineValue("rate", String(listDefaults.salesPrice), { shouldValidate: true });
+    }
 
     try {
-      const [itemResult, classificationResult] = await Promise.allSettled([
-        classificationOnly ? Promise.resolve(null) : documentLookupService.item(itemId),
-        onDate ? hsnGstService.getEffectiveClassification(itemId, onDate) : Promise.reject(new Error("Choose the invoice date first.")),
-      ]);
-      const itemResponse = itemResult.status === "fulfilled" ? itemResult.value : null;
-      const classificationResponse = classificationResult.status === "fulfilled" ? classificationResult.value : null;
-      applyItem(getResponseItem(itemResponse) ?? lookupItem);
-      const classification = classificationResponse?.data ?? classificationResponse;
-      const liveIndex = currentIndex();
-      if (liveIndex < 0) return;
-      setValue(`items.${liveIndex}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "");
-      setValue(`items.${liveIndex}.hsnSource`, classification ? [classification.source, classification.effectiveFrom ? `from ${classification.effectiveFrom}` : ""].filter(Boolean).join(" · ") : "Classification unavailable — retry by selecting the item after checking the invoice date and access.");
+      const item = itemDetailsCache.current.has(String(itemId))
+        ? itemDetailsCache.current.get(String(itemId))
+        : getResponseItem(await itemService.getItemById(itemId));
+      itemDetailsCache.current.set(String(itemId), item);
+
+      const currentIndex = rowIndexes.current.get(rowId);
+      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
+      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+
+      const defaults = getInvoiceItemDefaults(item);
+      applyItem(item, defaults.hasSalesPrice && defaults.hasGstRate ? "ready" : "missing");
     } catch {
-      const liveIndex = currentIndex();
-      if (liveIndex < 0) return;
-      setValue(`items.${liveIndex}.hsnSacCode`, "");
-      setValue(`items.${liveIndex}.hsnSource`, "Classification unavailable — check the date and retry the item selection.");
+      const currentIndex = rowIndexes.current.get(rowId);
+      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
+      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+
+      setLineValue("rate", "0", { shouldValidate: true });
+      setLineValue("taxPercentage", "0", { shouldValidate: true });
+      setLineValue("hsnSacCode", "");
+      setLineValue("hsnSource", "Unable to load item defaults");
+      setLineValue("itemDetailsStatus", "error");
     }
   }, [getValues, itemsById, setValue]);
 
@@ -463,7 +573,7 @@ const InvoiceFormPage = () => {
       <PageHeader
         badge="Sales / Invoices"
         title={title}
-        description="Create a draft invoice with live line totals and backend-ready tax fields."
+        description="Select an item to apply its Item Master price and GST defaults; saved invoice lines retain their own values."
         actions={
           <>
             <AppButton variant="secondary" onClick={() => confirmLeave(() => navigate(backRoute,{state:returnState()}))}>
@@ -557,8 +667,9 @@ const InvoiceFormPage = () => {
                               <AppLookup
                                 name={itemField.name} value={itemField.value}
                                 onChange={(value) => {
-                                  itemField.onChange(String(value ?? ""));
-                                  void applyItemDetails(index, value);
+                                  const itemId = value ? Number(value) : "";
+                                  itemField.onChange(itemId);
+                                  void applyItemDetails(field.id, itemId);
                                 }}
                                 onBlur={itemField.onBlur}
                                 initialOptions={itemOptions}
@@ -591,7 +702,10 @@ const InvoiceFormPage = () => {
                           <NumberInput control={control} id={`discount-amount-${index}`} name={`items.${index}.discountAmount`} label="Discount amount" error={errors.items?.[index]?.discountAmount?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`tax-${index}`} name={`items.${index}.taxPercentage`} label="Tax %" error={errors.items?.[index]?.taxPercentage?.message} />
+                          <NumberInput control={control} id={`tax-${index}`} name={`items.${index}.taxPercentage`} error={errors.items?.[index]?.taxPercentage?.message} />
+                          {line.itemDetailsStatus === "loading" && <p className="mt-1 text-[11px] text-slate-500">Loading item GST…</p>}
+                          {line.itemDetailsStatus === "missing" && <p className="mt-1 text-[11px] text-amber-700">Item Master is missing a price or GST rate. GST has not been defaulted.</p>}
+                          {line.itemDetailsStatus === "error" && <p className="mt-1 text-[11px] text-red-700">Item defaults could not be loaded. Choose the item again or retry after resolving the lookup error.</p>}
                         </td>
                         <td data-label="Line total" className="px-3 py-3 text-right align-middle text-sm font-semibold text-slate-900">{formatCurrency(lineTotal)}</td>
                         <td className="px-2 py-3 text-right align-middle">

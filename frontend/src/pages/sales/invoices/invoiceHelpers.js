@@ -327,6 +327,7 @@ export const getDefaultInvoiceLine = () => ({
   itemName: "",
   hsnSacCode: "",
   hsnSource: "",
+  itemDetailsStatus: "idle",
   quantity: "1",
   rate: "0",
   discountPercentage: "0",
@@ -370,6 +371,9 @@ export const getInvoiceDefaultValues = (invoice) => {
             itemName: item.itemNameSnapshot ?? item.itemName ?? "",
             hsnSacCode: item.hsnSacCodeSnapshot ?? item.hsnCode ?? "",
             hsnSource: item.hsnSource ?? "",
+            // Existing invoice lines are snapshots. Do not request item master
+            // defaults merely because a draft was reopened for editing.
+            itemDetailsStatus: "saved",
             quantity: String(item.quantity ?? 1),
             rate: String(item.rate ?? 0),
             discountPercentage: String(item.discountPercentage ?? 0),
