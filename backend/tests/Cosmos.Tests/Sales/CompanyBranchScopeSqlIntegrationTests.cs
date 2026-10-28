@@ -63,11 +63,11 @@ public sealed class CompanyBranchScopeSqlIntegrationTests
             owner = await connection.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(N'ITP4SCOPE-owner',N'ITP4SCOPE-owner@example.test',N'not-a-login',N'ITP4SCOPE owner',1,0,1);");
         var ownerRole = await connection.QuerySingleAsync<int>("INSERT dbo.Roles(Name,Description,IsActive,IsSystemRole) OUTPUT INSERTED.Id VALUES(N'ITP4SCOPE-SystemOwner',N'Integration protected owner',1,1);");
         await connection.ExecuteAsync("INSERT dbo.UserRoles(UserId,RoleId) VALUES(@owner,@ownerRole);", new { owner, ownerRole });
-        var a = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITP4A',N'Integration Company A');");
-        var b = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITP4B',N'Integration Company B');");
-        var a1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@a,N'A1',N'Integration A1');", new { a });
-        var a2 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@a,N'A2',N'Integration A2');", new { a });
-        var b1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@b,N'B1',N'Integration B1');", new { b });
+        var a = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) VALUES(N'ITP4A',N'Integration Company A'); SELECT CONVERT(bigint,SCOPE_IDENTITY());");
+        var b = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) VALUES(N'ITP4B',N'Integration Company B'); SELECT CONVERT(bigint,SCOPE_IDENTITY());");
+        var a1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) VALUES(@a,N'A1',N'Integration A1'); SELECT CONVERT(bigint,SCOPE_IDENTITY());", new { a });
+        var a2 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) VALUES(@a,N'A2',N'Integration A2'); SELECT CONVERT(bigint,SCOPE_IDENTITY());", new { a });
+        var b1 = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) VALUES(@b,N'B1',N'Integration B1'); SELECT CONVERT(bigint,SCOPE_IDENTITY());", new { b });
         await connection.ExecuteAsync("INSERT dbo.UserCompanyBranchScopes(UserId,CompanyId,BranchId) VALUES(@companyUser,@a,NULL),(@branchUser,@a,@a1);", new { companyUser, branchUser, a, a1 });
         return (companyUser, branchUser, unassigned, owner.Value, a, b, a1, a2, b1);
     }

@@ -30,15 +30,18 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
             var ownerId = await CreateSystemOwnerAsync(connection);
             var companyA = await repository.SaveCompanyAsync(null, Prefix + "A", "Integration Company A", true, ownerId, CancellationToken.None);
             var companyB = await repository.SaveCompanyAsync(null, Prefix + "B", "Integration Company B", true, ownerId, CancellationToken.None);
+            Assert.Equal(1, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.AuditLogs WHERE TableName=N'Companies' AND RecordId=CONVERT(NVARCHAR(100),@id) AND ActionType=N'Create';", new { id = companyA.Id }));
 
             var updatedCompany = await repository.SaveCompanyAsync(companyA.Id, companyA.Code, "Integration Company A Updated", true, ownerId, CancellationToken.None);
             Assert.Equal("Integration Company A Updated", updatedCompany.Name);
+            Assert.Equal(1, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.AuditLogs WHERE TableName=N'Companies' AND RecordId=CONVERT(NVARCHAR(100),@id) AND OldValues LIKE N'%Integration Company A%' AND NewValues LIKE N'%Updated%';", new { id = companyA.Id }));
             Assert.Contains(await repository.CompaniesAsync(Prefix, false, CancellationToken.None), item => item.Id == companyA.Id);
             await AssertConflictAsync(() => repository.SaveCompanyAsync(null, companyA.Code, "Duplicate", true, ownerId, CancellationToken.None));
 
             var branch = await repository.SaveBranchAsync(null, companyA.Id, Prefix + "BR", "Integration Branch", true, ownerId, CancellationToken.None);
             var updatedBranch = await repository.SaveBranchAsync(branch.Id, companyA.Id, branch.Code, "Integration Branch Updated", true, ownerId, CancellationToken.None);
             Assert.Equal("Integration Branch Updated", updatedBranch.Name);
+            Assert.Equal(1, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.AuditLogs WHERE TableName=N'Branches' AND RecordId=CONVERT(NVARCHAR(100),@id) AND ActionType=N'Create';", new { id = branch.Id }));
             Assert.Contains(await repository.BranchesAsync(companyA.Id, Prefix, false, CancellationToken.None), item => item.Id == branch.Id);
             await AssertConflictAsync(() => repository.SaveCompanyAsync(companyA.Id, companyA.Code, companyA.Name, false, ownerId, CancellationToken.None));
 
@@ -60,6 +63,18 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
 
             Assert.Equal(1, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.Branches WHERE CompanyId = @companyId AND Code LIKE @prefix;", new { companyId = companyA.Id, prefix = Prefix + "%" }));
             Assert.Equal(0, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.Branches WHERE Code = @code;", new { code = Prefix + "FAIL" }));
+
+            await connection.ExecuteAsync("""
+                CREATE OR ALTER TRIGGER dbo.trg_ITP42_ForceAuditFailure ON dbo.AuditLogs AFTER INSERT AS
+                BEGIN
+                    IF EXISTS(SELECT 1 FROM inserted WHERE EntityDisplayValue IN (N'ITP42-AUDIT-COMPANY',N'ITP42-AUDIT-BRANCH'))
+                        THROW 51342,N'Intentional disposable-test audit failure.',1;
+                END;
+                """);
+            await Assert.ThrowsAsync<SqlException>(() => repository.SaveCompanyAsync(null, Prefix + "-AUDIT-COMPANY", "Audit failure", true, ownerId, CancellationToken.None));
+            await Assert.ThrowsAsync<SqlException>(() => repository.SaveBranchAsync(null, companyA.Id, Prefix + "-AUDIT-BRANCH", "Audit failure", true, ownerId, CancellationToken.None));
+            Assert.Equal(0, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.Companies WHERE Code=@code;", new { code = Prefix + "-AUDIT-COMPANY" }));
+            Assert.Equal(0, await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.Branches WHERE Code=@code;", new { code = Prefix + "-AUDIT-BRANCH" }));
         }
         finally
         {
@@ -80,6 +95,7 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
     }
 
     private static Task CleanupAsync(SqlConnection connection) => connection.ExecuteAsync("""
+        DROP TRIGGER IF EXISTS dbo.trg_ITP42_ForceAuditFailure;
         DELETE FROM dbo.UserCompanyBranchScopes WHERE UserId IN (SELECT Id FROM dbo.Users WHERE Username LIKE N'ITP42%');
         DELETE ur FROM dbo.UserRoles ur JOIN dbo.Users u ON u.Id = ur.UserId WHERE u.Username LIKE N'ITP42%';
         DELETE ur FROM dbo.UserRoles ur JOIN dbo.Roles r ON r.Id = ur.RoleId WHERE r.Name = N'ITP42-SystemOwner';
@@ -87,6 +103,7 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
         DELETE FROM dbo.Companies WHERE Code LIKE N'ITP42%';
         DELETE FROM dbo.Users WHERE Username LIKE N'ITP42%';
         DELETE FROM dbo.Roles WHERE Name = N'ITP42-SystemOwner';
+        DELETE FROM dbo.AuditLogs WHERE EntityDisplayValue LIKE N'ITP42%';
         """);
 
     private static async Task<int> CreateSystemOwnerAsync(SqlConnection connection)

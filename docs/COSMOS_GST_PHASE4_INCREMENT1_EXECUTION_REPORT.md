@@ -85,9 +85,17 @@ The disposable SQL test was extended to prove delegated company update, post-rev
 
 `backend/database/migrations/20261028_34_company_branch_safe_deactivation.sql` was applied and rerun successfully against `CosmosSalesGstIntegrationTests_Local` only. It retains historical references but prevents Company deactivation when active branches, GST registrations, user scopes, or draft Sales invoices exist. It prevents Branch deactivation when active GST registrations, user scopes, or draft Sales invoices exist. It does not cascade, rewrite invoices, reassign users, or modify retained staging data.
 
-Company/Branch FluentValidation now rejects null/empty/whitespace codes and names, SQL length overflow, and non-positive Branch company identifiers before mutation. Duplicate identity, inactive-company, reassignment, authorization, and active-dependency errors remain transactionally enforced by stored procedures. Existing audit writes occur only after a successful mutation and include old/new serialized data and the acting user through the established audit repository; an audit persistence failure is returned to the caller rather than reported as success. Audit and master writes still use separate database connections, so one atomic cross-procedure transaction is not yet available and remains a deployment-hardening limitation.
+Company/Branch FluentValidation now rejects null/empty/whitespace codes and names, SQL length overflow, and non-positive Branch company identifiers before mutation. Duplicate identity, inactive-company, reassignment, authorization, and active-dependency errors remain transactionally enforced by stored procedures.
 
 HTTP-host tests exercise authentication, the real `RequirePermission` filter, controller routing, API envelopes, and correlation-ID middleware: unauthenticated requests return `401`, missing page permission returns `403` without calling the service, and an authorized request returns the normal envelope with its correlation ID. SQL-backed tests retain scope/lifecycle coverage and now include active-branch and active-assignment deactivation blocking.
+
+### Increment 1A.5 — atomic Company/Branch audit writes (actual evidence)
+
+`backend/database/migrations/20261028_35_company_branch_atomic_audit.sql` was applied and rerun successfully on `CosmosSalesGstIntegrationTests_Local` only. It creates transactional `AFTER INSERT, UPDATE` audit triggers for `Companies` and `Branches`. The triggers write through the established `dbo.AuditLogs` table in the same SQL transaction already owned by `sp_Company_Save` or `sp_Branch_Save`; no distributed transaction or compensating delete is used. A trigger/audit failure aborts the enclosing master procedure and its business write.
+
+The triggers write the actor from `CreatedBy`/`UpdatedBy`, the server UTC audit timestamp, action (`Create`, `Update`, `Activate`, `Deactivate`), record ID, old/new JSON, and changed-field metadata. No-op retries do not generate a new update audit row because the trigger compares inserted and deleted values. The application service no longer writes a second post-commit audit record.
+
+Real SQL verification extended the guarded master test: Company and Branch creation produce one audit event; Company updates persist old/new values; forced `dbo.AuditLogs` trigger failures roll back both the Company and Branch write; and fixture cleanup removes all `ITP42%` master and audit rows. The focused master SQL test passed after the forced-failure checks.
 
 Not run / incomplete:
 

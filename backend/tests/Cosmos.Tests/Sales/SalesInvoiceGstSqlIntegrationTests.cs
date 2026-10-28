@@ -96,8 +96,8 @@ public sealed class SalesInvoiceGstSqlIntegrationTests
         var unit = await connection.QuerySingleAsync<long>("INSERT dbo.Units(Name,ShortName,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Unit',N'IT3',1);");
         var category = await connection.QuerySingleAsync<long>("INSERT dbo.Categories(Name,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Category',1);");
         var item = await connection.QuerySingleAsync<long>("INSERT dbo.Items(Name,ItemCode,CategoryId,UnitId,ItemType,CurrentStock,TrackInventory,IsActive) OUTPUT INSERTED.Id VALUES(N'ITGSTP3 Item',N'ITGSTP3-ITEM',@category,@unit,1,10,1,1);", new { category, unit });
-        var company = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) OUTPUT INSERTED.Id VALUES(N'ITGSTP3',N'Integration Company');");
-        var branch = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) OUTPUT INSERTED.Id VALUES(@company,N'IT3',N'Integration Branch');", new { company });
+        var company = await connection.QuerySingleAsync<long>("INSERT dbo.Companies(Code,Name) VALUES(N'ITGSTP3',N'Integration Company'); SELECT CONVERT(bigint,SCOPE_IDENTITY());");
+        var branch = await connection.QuerySingleAsync<long>("INSERT dbo.Branches(CompanyId,Code,Name) VALUES(@company,N'IT3',N'Integration Branch'); SELECT CONVERT(bigint,SCOPE_IDENTITY());", new { company });
         var one = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(CompanyId,BranchId,Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(@company,@branch,N'24ITGSTP00001Z0',N'IT GST One',N'24',N'Active');", new { company, branch });
         var two = await connection.QuerySingleAsync<long>("INSERT dbo.CompanyGstRegistrations(CompanyId,BranchId,Gstin,LegalName,StateCode,Status) OUTPUT INSERTED.Id VALUES(@company,@branch,N'27ITGSTP00002Z0',N'IT GST Two',N'27',N'Active');", new { company, branch });
         return (customer, item, company, branch, one, two);
