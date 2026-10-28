@@ -54,7 +54,61 @@ public sealed class CompanyBranchScopeAssignmentSqlIntegrationTests
         finally { await Cleanup(connection); }
     }
 
+    [RequiresDisposableFact]
+    [Trait("Category","SqlIntegration")]
+    public async Task Concurrent_grant_and_revoke_operations_preserve_one_active_scope_and_atomic_audit()
+    {
+        var value=Required(); await using var connection=new SqlConnection(value); await connection.OpenAsync(); await Cleanup(connection);
+        try
+        {
+            var owner=await Owner(connection);
+            var company=await Id(connection,"INSERT dbo.Companies(Code,Name) VALUES(N'ITP43C',N'ITP43 Concurrent');");
+            var branch=await Id(connection,"INSERT dbo.Branches(CompanyId,Code,Name) VALUES(@company,N'ITP43CB',N'ITP43 Concurrent Branch');",new { company });
+            var companyTarget=await User(connection,"concurrent-company",true);
+            var branchTarget=await User(connection,"concurrent-branch",true);
+            var mixedTarget=await User(connection,"concurrent-mixed",true);
+
+            var companyResults=await Concurrent(
+                () => new CompanyBranchScopeRepository(new Factory(value)).GrantAsync(owner,companyTarget,company,null,CancellationToken.None),
+                () => new CompanyBranchScopeRepository(new Factory(value)).GrantAsync(owner,companyTarget,company,null,CancellationToken.None));
+            Assert.Equal(1,companyResults.Count(result=>result is null));
+            Assert.Single(companyResults.OfType<CosmosException>());
+            Assert.Equal(409,companyResults.OfType<CosmosException>().Single().StatusCode);
+            Assert.Equal(1,await ActiveCount(connection,companyTarget,company,null));
+
+            var branchResults=await Concurrent(
+                () => new CompanyBranchScopeRepository(new Factory(value)).GrantAsync(owner,branchTarget,company,branch,CancellationToken.None),
+                () => new CompanyBranchScopeRepository(new Factory(value)).GrantAsync(owner,branchTarget,company,branch,CancellationToken.None));
+            Assert.Equal(1,branchResults.Count(result=>result is null));
+            Assert.Single(branchResults.OfType<CosmosException>());
+            Assert.Equal(409,branchResults.OfType<CosmosException>().Single().StatusCode);
+            Assert.Equal(1,await ActiveCount(connection,branchTarget,company,branch));
+
+            var repo=new CompanyBranchScopeRepository(new Factory(value));
+            var original=await repo.GrantAsync(owner,mixedTarget,company,null,CancellationToken.None);
+            var grantAndRevoke=await Concurrent(
+                () => new CompanyBranchScopeRepository(new Factory(value)).GrantAsync(owner,mixedTarget,company,null,CancellationToken.None),
+                async () => { await new CompanyBranchScopeRepository(new Factory(value)).RevokeAsync(owner,original.Id,CancellationToken.None); });
+            Assert.Contains(grantAndRevoke,result=>result is null);
+            Assert.True(grantAndRevoke.Where(result=>result is not null).All(result=>result is CosmosException { StatusCode:409 }));
+            Assert.InRange(await ActiveCount(connection,mixedTarget,company,null),0,1);
+
+            var auditCount=await connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.AuditLogs WHERE EntityType=N'UserCompanyBranchScope' AND EntityDisplayValue LIKE @target;",new { target=$"{companyTarget}:%" });
+            Assert.Equal(1,auditCount);
+        }
+        finally { await Cleanup(connection); }
+    }
+
     private static async Task Conflict(Func<Task> action,int status){var e=await Assert.ThrowsAsync<CosmosException>(action);Assert.Equal(status,e.StatusCode);}
+    private static async Task<Exception?[]> Concurrent(Func<Task> first,Func<Task> second)
+    {
+        var ready=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        async Task<Exception?> Run(Func<Task> action){await ready.Task;try{await action();return null;}catch(Exception exception){return exception;}}
+        var attempts=new[]{Task.Run(()=>Run(first)),Task.Run(()=>Run(second))};
+        ready.SetResult();
+        return await Task.WhenAll(attempts);
+    }
+    private static Task<int> ActiveCount(SqlConnection connection,int user,long company,long? branch)=>connection.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.UserCompanyBranchScopes WHERE UserId=@user AND CompanyId=@company AND ((@branch IS NULL AND BranchId IS NULL) OR BranchId=@branch) AND IsActive=1;",new { user,company,branch });
     private static async Task<int> User(SqlConnection c,string suffix,bool active)=>await c.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(@u,@e,N'x',@u,@active,0,0);",new { u=Prefix+suffix,e=Prefix+suffix+"@test",active });
     private static async Task<long> Id(SqlConnection c,string sql,object? p=null)=>await c.QuerySingleAsync<long>(sql+" SELECT CONVERT(bigint,SCOPE_IDENTITY());",p);
     private static async Task<int> Owner(SqlConnection c){var id=await c.QuerySingleOrDefaultAsync<int?>("SELECT TOP 1 Id FROM dbo.Users WHERE IsSystemUser=1 AND IsActive=1 AND IsDeleted=0;");if(id is null) id=await c.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(N'ITP43owner',N'ITP43owner@test',N'x',N'owner',1,0,1);");var role=await c.QuerySingleOrDefaultAsync<int?>("SELECT TOP 1 Id FROM dbo.Roles WHERE IsSystemRole=1;");if(role is null)role=await c.QuerySingleAsync<int>("INSERT dbo.Roles(Name,Description,IsActive,IsSystemRole) OUTPUT INSERTED.Id VALUES(N'ITP43Role',N'x',1,1);");if(await c.QuerySingleAsync<int>("SELECT COUNT(*) FROM dbo.UserRoles WHERE UserId=@id AND RoleId=@role;",new{id,role})==0)await c.ExecuteAsync("INSERT dbo.UserRoles(UserId,RoleId) VALUES(@id,@role);",new{id,role});return id.Value;}
