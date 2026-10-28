@@ -489,6 +489,32 @@
   },
   {
     "controller": "ShipmentInvoiceOwnershipController",
+    "action": "PackingContext",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/shipment-operations/shipments/{id:long}/packing-verification",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.PhysicalOwnershipSnapshot]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ShipmentOperations.Shipments",
+        "action": "View"
+      }
+    ]
+  },
+  {
+    "controller": "ShipmentInvoiceOwnershipController",
     "action": "VerifyPacking",
     "methods": [
       "PUT"
@@ -578,6 +604,36 @@
       {
         "page": "Sales.Invoice",
         "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProcurementContinuityController",
+    "action": "PurchaseSources",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/procurement-planning/plans/runs/{id:long}/purchase-orders",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.ProcurementPurchaseSourceContext]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "ProcurementPlanning.PlanningHistory",
+        "action": "View"
+      },
+      {
+        "page": "PurchaseExpense.PurchaseOrder",
+        "action": "View"
       }
     ]
   },
@@ -968,6 +1024,22 @@
     ]
   },
   {
+    "controller": "ProductionRuntimeController",
+    "action": "Get",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/runtime",
+    "request": [],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.API.Controllers.Manufacturing.ProductionRuntimeDto]"
+      }
+    ],
+    "permissions": []
+  },
+  {
     "controller": "ProductionSnapshotsController",
     "action": "Get",
     "methods": [
@@ -1050,6 +1122,36 @@
       {
         "page": "Items",
         "action": "Approve"
+      }
+    ]
+  },
+  {
+    "controller": "ProductionConfigurationController",
+    "action": "CalendarContext",
+    "methods": [
+      "GET"
+    ],
+    "path": "/api/v1/manufacturing/shift-capacity/{id:long}/calendar",
+    "request": [
+      {
+        "name": "id",
+        "type": "Int64"
+      },
+      {
+        "name": "businessDate",
+        "type": "DateOnly"
+      }
+    ],
+    "responses": [
+      {
+        "status": 200,
+        "type": "Cosmos.Shared.Responses.ApiResponse\u00601[Cosmos.Contracts.Manufacturing.CapacityCalendarContextDto]"
+      }
+    ],
+    "permissions": [
+      {
+        "page": "Manufacturing.Configuration",
+        "action": "View"
       }
     ]
   },

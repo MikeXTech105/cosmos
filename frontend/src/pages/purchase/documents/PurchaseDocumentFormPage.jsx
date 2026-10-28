@@ -1,3 +1,6 @@
+import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
+import { documentLookupService } from "../../../services/documentLookupService";
+import { purchaseDocumentSchema as documentSchema } from "./purchaseDocumentSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -5,8 +8,6 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { z } from "zod";
-import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -25,71 +26,30 @@ import { PartyFormModal } from "../../party";
 import { getPartyDisplayName, getPartyType } from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
 import PurchaseLineItems, { PurchaseNumberInput } from "../PurchaseLineItems";
-import {
-  addDaysToInputDate,
-  buildLinePayload,
-  cleanNullableString,
-  extractItems,
+import {  buildPurchaseDocumentPayload as buildPayload,  extractItems,
   formatCurrency,
   getActionError,
   getDefaultLine,
   getDocumentNumber,
   getDocumentTotals,
   getSuccessMessage,
-  getSupplierName,
-  getTodayInputValue,
-  PAYMENT_TYPE,
+  getSupplierName,  PAYMENT_TYPE,
   PAYMENT_TYPE_OPTIONS,
   toInputDate,
-  toNumber,
 } from "../purchaseHelpers";
 
-const lineSchema = z.object({
-  itemId: z.coerce.number().int().positive("Item is required"),
-  itemName: z.string().optional(),
-  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
-  purchasePrice: z.coerce.number().min(0, "Price cannot be negative"),
-  discountPercentage: z.coerce.number().min(0).max(100),
-  discountAmount: z.coerce.number().min(0),
-  taxPercentage: z.coerce.number().min(0),
-  unitId: z.union([z.number(), z.string(), z.null()]).optional(),
-  purchaseBillItemId: z.union([z.number(), z.string(), z.null()]).optional(),
-});
-
-const documentSchema = (dateField) => z.object({
-  supplierId: z.string().uuid("Supplier is required"),
-  supplierInvoiceNo: z.string().optional(),
-  purchaseBillId: z.union([z.number(), z.string(), z.null()]).optional(),
-  billDate: dateField === "billDate" ? requiredDate("Document date") : optionalDate,
-  dueDate: optionalDate,
-  orderDate: dateField === "orderDate" ? requiredDate("Document date") : optionalDate,
-  expectedDeliveryDate: optionalDate,
-  returnDate: dateField === "returnDate" ? requiredDate("Document date") : optionalDate,
-  paymentType: dateField === "billDate" ? enumNumber(PAYMENT_TYPE, "Payment type") : z.coerce.number().optional(),
-  discountAmount: z.coerce.number().min(0),
-  roundOff: z.coerce.number(),
-  paidAmount: z.coerce.number().min(0),
-  reason: z.string().optional(),
-  termsAndConditions: z.string().optional(),
-  notes: z.string().max(1000, "Notes are too long").optional(),
-  items: z.array(lineSchema).min(1, "Add at least one line item"),
-}).superRefine((values, context) => {
-  if (dateField === "billDate") dateOrder(values, context, "billDate", "dueDate", "Due date cannot be before bill date");
-  if (dateField === "orderDate") dateOrder(values, context, "orderDate", "expectedDeliveryDate", "Expected delivery cannot be before order date");
-});
-
 const getDefaultValues = (record, config) => {
-  const today = getTodayInputValue();
+  const today = "";
 
   return {
     supplierId: record?.supplierId ?? "",
     supplierInvoiceNo: record?.supplierInvoiceNo ?? "",
     purchaseBillId: record?.purchaseBillId ?? "",
     billDate: toInputDate(record?.billDate) || today,
-    dueDate: toInputDate(record?.dueDate) || addDaysToInputDate(today, 15),
+    dueDate: toInputDate(record?.dueDate),
     orderDate: toInputDate(record?.orderDate) || today,
     expectedDeliveryDate:
-      toInputDate(record?.expectedDeliveryDate) || addDaysToInputDate(today, 7),
+      toInputDate(record?.expectedDeliveryDate),
     returnDate: toInputDate(record?.returnDate) || today,
     paymentType: record?.paymentType ?? PAYMENT_TYPE.CASH,
     discountAmount: String(record?.discountAmount ?? 0),
@@ -102,47 +62,6 @@ const getDefaultValues = (record, config) => {
     items: record ? extractItems(record) : [getDefaultLine()],
     activeDate: toInputDate(record?.[config.dateField]) || today,
   };
-};
-
-const buildPayload = (values, config) => {
-  const base = {
-    supplierId: values.supplierId,
-    items: buildLinePayload(values.items),
-    notes: cleanNullableString(values.notes),
-  };
-
-  if (config.supportsBillSelect) {
-    base.purchaseBillId = values.purchaseBillId
-      ? Math.trunc(toNumber(values.purchaseBillId))
-      : null;
-  }
-
-  if (config.supportsReason) {
-    base.reason = cleanNullableString(values.reason);
-  }
-
-  if (config.dateField === "billDate") {
-    base.supplierInvoiceNo = cleanNullableString(values.supplierInvoiceNo);
-    base.billDate = values.billDate;
-    base.dueDate = values.dueDate || null;
-    base.paymentType = Number(values.paymentType);
-    base.discountAmount = toNumber(values.discountAmount);
-    base.roundOff = toNumber(values.roundOff);
-    base.paidAmount = toNumber(values.paidAmount);
-  }
-
-  if (config.dateField === "orderDate") {
-    base.orderDate = values.orderDate;
-    base.expectedDeliveryDate = values.expectedDeliveryDate || null;
-    base.discountAmount = toNumber(values.discountAmount);
-    base.termsAndConditions = cleanNullableString(values.termsAndConditions);
-  }
-
-  if (config.dateField === "returnDate") {
-    base.returnDate = values.returnDate;
-  }
-
-  return base;
 };
 
 const getLookupList = (response) => {
@@ -198,6 +117,8 @@ const PurchaseDocumentFormPage = ({ config }) => {
     register,
     reset,
     setValue,
+    getValues,
+    getFieldState,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(documentSchema(config.dateField)),
@@ -214,7 +135,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
       type === "suppliers"
         ? partyService.getParties({ PageNumber: 1, PageSize: 200, IsActive: true })
         : type === "items"
-          ? itemService.getItems({ PageNumber: 1, PageSize: 200, IsActive: true })
+          ? documentLookupService.items({ PageNumber: 1, PageSize: 200, IsActive: true })
           : purchaseBillService.getPurchaseBills({ PageNumber: 1, PageSize: 200 });
 
     setLookups((current) => ({ ...current, [`${type}Loading`]: true }));
@@ -269,17 +190,19 @@ const PurchaseDocumentFormPage = ({ config }) => {
     }
   }, [config, detailRecord, id, isEdit, reset]);
 
+  const businessContext = useDocumentBusinessDefaults({ enabled: !isEdit, fields: [config.dateField], getValues, getFieldState, setValue });
+
   const supplierOptions = useMemo(
     () => lookups.suppliers.map((supplier) => ({ value: supplier.id, label: getPartyDisplayName(supplier) })),
     [lookups.suppliers],
   );
   const itemOptions = useMemo(
-    () => lookups.items.map((item) => ({ value: Number(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
+    () => lookups.items.map((item) => ({ value: String(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
     [lookups.items],
   );
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
   const billOptions = useMemo(
-    () => lookups.bills.map((bill) => ({ value: Number(bill.id), label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}` })),
+    () => lookups.bills.map((bill) => ({ value: String(bill.id), label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}` })),
     [lookups.bills],
   );
 
@@ -401,6 +324,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(submitForm)} noValidate>
+      {!businessContext.runtime && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter the document date explicitly."}</p>}
       <PageHeader
         title={title}
         actions={
@@ -455,7 +379,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
                     <AppSelect
                       label="Purchase Bill"
                       value={field.value}
-                      onChange={(value) => field.onChange(Number(value))}
+                      onChange={(value) => field.onChange(String(value ?? ""))}
                       onBlur={field.onBlur}
                       options={billOptions}
                       placeholder="Select linked bill"

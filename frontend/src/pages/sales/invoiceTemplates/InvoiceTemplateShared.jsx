@@ -4,6 +4,7 @@ import {
   formatNumber,
 } from "../invoices/invoiceHelpers";
 import { COMPANY_PROFILE } from "./companyProfile";
+import { quantityText } from "../../../utils/productionValues";
 
 export const TemplatePage = ({ children, className = "" }) => {
   return (
@@ -132,7 +133,7 @@ export const ItemsTable = ({
               </p>
             </td>
             <td className="px-2 py-2 text-right align-top text-slate-700">
-              {formatNumber(item.quantity)}
+              {quantityText(item.quantity, { scale: 6 })}
             </td>
             <td className="px-2 py-2 text-right align-top text-slate-700">
               {formatCurrency(item.rate)}

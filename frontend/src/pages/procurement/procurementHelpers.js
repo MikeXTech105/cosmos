@@ -1,4 +1,5 @@
 import { PlanningMessageSeverity } from "../../constants/procurementEnums";
+import { quantityText } from "../../utils/productionValues";
 import {
   getApiErrorList,
   getApiErrorMessage,
@@ -97,8 +98,11 @@ export const formatProcurementDecimal = (
       });
 };
 
-export const formatProcurementQuantity = (value, fallback = EMPTY_VALUE) =>
-  formatProcurementDecimal(value, fallback, { maxFractionDigits: 2 });
+export const formatProcurementQuantity = (value, fallback = EMPTY_VALUE) => {
+  if (value === null || value === undefined || value === "") return fallback;
+  const formatted = quantityText(value, { scale: 6 });
+  return formatted === "Invalid quantity" ? fallback : formatted;
+};
 
 export const formatProcurementInteger = (value, fallback = EMPTY_VALUE) => {
   const number = toNumberOrNull(value);

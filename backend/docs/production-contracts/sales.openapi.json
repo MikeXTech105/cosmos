@@ -626,6 +626,22 @@
             "type": "string",
             "nullable": true
           },
+          "companyGstRegistrationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "placeOfSupplyStateCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplySource": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceBasis": {
+            "$ref": "#/components/schemas/CosmosApplicationSalesSalesInvoicePriceBasis"
+          },
           "initialPayment": {
             "$ref": "#/components/schemas/CosmosApplicationSalesAddSalesPaymentCommand"
           }
@@ -667,6 +683,15 @@
         },
         "additionalProperties": false
       },
+      "CosmosApplicationSalesSalesInvoicePriceBasis": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "description": "Explicit capture for a future GST calculation policy. Null preserves historical invoices\r\nwhose entered price basis cannot be established without reinterpreting their totals.",
+        "format": "int32"
+      },
       "CosmosApplicationSalesUpdateSalesInvoiceCommand": {
         "type": "object",
         "properties": {
@@ -701,6 +726,22 @@
           "termsAndConditions": {
             "type": "string",
             "nullable": true
+          },
+          "companyGstRegistrationId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "placeOfSupplyStateCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplySource": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceBasis": {
+            "$ref": "#/components/schemas/CosmosApplicationSalesSalesInvoicePriceBasis"
           }
         },
         "additionalProperties": false
@@ -775,6 +816,33 @@
           },
           "owner": {
             "$ref": "#/components/schemas/ManufacturingInvoiceInventoryOwner"
+          },
+          "invoiceId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "invoiceNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "itemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitName": {
+            "type": "string",
+            "nullable": true
+          },
+          "packagingProfileId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "unitsPerBox": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -941,6 +1009,37 @@
             "type": "string",
             "nullable": true
           },
+          "companyGstRegistrationId": {
+            "type": "integer",
+            "description": "Explicit issuing registration chosen for this invoice; null is retained for historical invoices.",
+            "format": "int64",
+            "nullable": true
+          },
+          "companyGstin": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyGstLegalName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyGstBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplyStateCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplySource": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceBasis": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "createdAtUtc": {
             "type": "string",
             "format": "date-time"
@@ -1064,6 +1163,37 @@
           },
           "termsAndConditions": {
             "type": "string",
+            "nullable": true
+          },
+          "companyGstRegistrationId": {
+            "type": "integer",
+            "description": "Explicit issuing registration chosen for this invoice; null is retained for historical invoices.",
+            "format": "int64",
+            "nullable": true
+          },
+          "companyGstin": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyGstLegalName": {
+            "type": "string",
+            "nullable": true
+          },
+          "companyGstBranchName": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplyStateCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeOfSupplySource": {
+            "type": "string",
+            "nullable": true
+          },
+          "priceBasis": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "createdAtUtc": {

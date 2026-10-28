@@ -1,0 +1,28 @@
+COSMOS FRONTEND — READY PROMPT + REFERENCE PACKAGE
+
+AA J COSMOS PROJECT MA:
+1. F:\FI\cosmos project select/open rakh.
+2. PROMPT_2_FRONTEND_IMPLEMENTATION.txt nu aakhu content copy-paste kar.
+3. Biji files alag thi attach karvani jarur nathi: prompt ma repository na exact reference paths aapela chhe.
+
+ALAG CHAT / MACHINE / WORKSPACE MA:
+1. E j current Cosmos repository/backend code no access aap.
+2. COSMOS_FRONTEND_HANDOFF.zip attach kar.
+3. Aa prompt paste kar, athva ZIP ma included PROMPT_2_FRONTEND_IMPLEMENTATION.txt ne user request tarike follow karva keh.
+
+ZIP only reference package chhe; aakho application code ke running database nathi.
+Navo frontend agent current actual code/Swagger joi ne kaam kare. Old backend changes fari thi reconstruct karvana nathi.
+
+INCLUDED:
+- Complete frontend implementation prompt with the full mandatory shared business specification appended.
+- Frontend acceptance checklist.
+- Actual API contract, route inventory and six generated OpenAPI documents.
+- Backend handoff, complete coverage matrix, source audit, cutover guide and verification results.
+- Relevant actual DTO/enum source copies for reference.
+- SHA-256 content manifest with source repository commit and packaging evidence.
+
+KNOWN VERIFICATION BOUNDARY:
+Recorded backend401 pass /13 SQL skipped. Frontend581 pass /3 known baseline failures;12 relevant tests and build passed.
+Real SQL/authenticated end-to-end verification remains a gate. The prompt requires honest reporting and does not authorize a live company database change/deployment/external message.
+
+Existing Item/BOM/report fixes must be preserved. Complete new workflow frontend screens are the work requested by this prompt.

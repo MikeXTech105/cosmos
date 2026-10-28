@@ -68,6 +68,7 @@ export const enabledModules = [
   "partyReports",
   "expenseReports",
   "manufacturingReports",
+  "productionOrders", "productionPlanning", "productionConfiguration", "productionImports", "productionOperations", "purchaseOperations",
   "wmDashboard",
   "wmProducts",
   "wmBlogs",
@@ -81,6 +82,7 @@ export const enabledModules = [
 ];
 
 export const sidebarCategories = [
+  { id: "manufacturing", label: "Production", icon: "manufacturing", sortOrder: 54 },
   { id: "deepDive", label: "Deep Dive", icon: "analytics", sortOrder: 81 },
   { id: "gst", label: "GST compliance", icon: "invoice", sortOrder: 57 },
   {
@@ -892,6 +894,12 @@ export const sidebarModules = {
     categoryId: "reports",
     sortOrder: 60,
   },
+  productionOrders: { id: "productionOrders", label: "Production Orders", route: "/manufacturing/orders", permissionPageName: "Manufacturing.Orders", icon: "manufacturing", categoryId: "manufacturing", sortOrder: 10 },
+  productionPlanning: { id: "productionPlanning", label: "Production Planning", route: "/manufacturing/planning", permissionPageName: "Manufacturing.Orders", icon: "clipboard", categoryId: "manufacturing", sortOrder: 20 },
+  productionConfiguration: { id: "productionConfiguration", label: "Work Centres & Operations", route: "/manufacturing/configuration", permissionPageName: "Manufacturing.Configuration", icon: "settings", categoryId: "manufacturing", sortOrder: 30 },
+  productionImports: { id: "productionImports", label: "Import & Reconciliation", route: "/manufacturing/imports", permissionPageName: "Manufacturing.Orders", icon: "upload", categoryId: "manufacturing", sortOrder: 40 },
+  productionOperations: { id: "productionOperations", label: "Production Operations", route: "/reports/manufacturing/operations", permissionPageName: "Manufacturing.Reports", icon: "manufacturing", categoryId: "reports", sortOrder: 61 },
+  purchaseOperations: { id: "purchaseOperations", label: "Purchase Follow-ups", route: "/purchase/operations", permissionPageName: "PurchaseExpense.PurchaseOrder", icon: "order", categoryId: "purchase", sortOrder: 21 },
   products: {
     id: "products",
     label: "Products",

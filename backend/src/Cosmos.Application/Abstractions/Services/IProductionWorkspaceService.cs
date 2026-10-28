@@ -6,6 +6,7 @@ namespace Cosmos.Application.Abstractions.Services;
 
 public interface IProductionWorkspaceService
 {
+    Task<ApiResponse<CapacityCalendarContextDto>> CalendarContextAsync(long id, DateOnly businessDate, CancellationToken ct);
     Task<ApiResponse<PackagingConversionDto>> PackagingConversionAsync(long id,PackagingConversionRequest? r,CancellationToken ct);
     Task<ApiResponse<FinishedPlanningSnapshotPage>> SnapshotAsync(Guid id,ProductionWorkspaceQuery q,CancellationToken ct);
     Task<ApiResponse<StockBalanceDto>> StockAsync(long id,CancellationToken ct);

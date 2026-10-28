@@ -7,10 +7,12 @@ import {
 import { getOrderSummary } from "./home/procurementHomeHelpers";
 
 describe("procurement quantity formatting", () => {
-  it("shows at most two decimal places without trailing zeroes", () => {
-    expect(formatProcurementQuantity(18461.333333)).toBe("18,461.33");
+  it("preserves six-place shortage quantities without trailing zeroes", () => {
+    expect(formatProcurementQuantity(18461.333333)).toBe("18,461.333333");
     expect(formatProcurementQuantity(18.5)).toBe("18.5");
     expect(formatProcurementQuantity(18)).toBe("18");
+    expect(formatProcurementQuantity("0.000001")).toBe("0.000001");
+    expect(formatProcurementQuantity("9999999999999999.999999")).toBe("9,999,999,999,999,999.999999");
   });
 
   it("returns the requested fallback for an empty value", () => {

@@ -18,6 +18,7 @@ import { getSchemaErrors, packagingProfileSchema } from "../supplyChainSchemas";
 import { SupplyChainInlineError } from "../SupplyChainShared";
 import useSupplyChainCapabilities from "../useSupplyChainCapabilities";
 import useSupplyChainChannels from "../useSupplyChainChannels";
+import PackagingConversionPanel from "../../manufacturing/configuration/PackagingConversionPanel";
 
 const getItemId = (item) => item?.id ?? item?.itemId ?? "";
 
@@ -327,6 +328,8 @@ const PackagingProfileFormPage = () => {
           </div>
         </section>
       )}
+
+      {isEdit && record && <PackagingConversionPanel profileId={id} readOnly={readOnly} />}
 
       {!readOnly && (
         <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">

@@ -10,6 +10,14 @@ import { GST_PAGES } from "../utils/gstCompliance";
 import { DEEP_PAGES } from "../pages/deepDive/deepDiveConfig";
 
 const DeepDivePage = lazy(() => import("../pages/deepDive/DeepDivePage.jsx"));
+const ProductionConfiguration = lazy(() => import("../pages/manufacturing/configuration/ConfigurationPage.jsx"));
+const ProductionOrders = lazy(() => import("../pages/manufacturing/orders/OrdersPage.jsx"));
+const ProductionOrderForm = lazy(() => import("../pages/manufacturing/orders/OrderFormPage.jsx"));
+const ProductionOrderDetail = lazy(() => import("../pages/manufacturing/orders/OrderDetailPage.jsx"));
+const ProductionPlanning = lazy(() => import("../pages/manufacturing/planning/PlanningPage.jsx"));
+const ProductionImports = lazy(() => import("../pages/manufacturing/imports/ImportsPage.jsx"));
+const ProductionOperationalReports = lazy(() => import("../pages/manufacturing/reports/OperationalReportsPage.jsx"));
+const PurchaseOperations = lazy(() => import("../pages/manufacturing/integrations/PurchaseOperationsPage.jsx"));
 
 const GstOverview = lazy(() => import("../pages/gst/GstOverviewPage.jsx"));
 const GstRegistrations = lazy(() => import("../pages/gst/GstRegistrationsPage.jsx"));
@@ -271,6 +279,16 @@ const AppRoutes = () => {
             path="/gst"
             element={<Navigate to="/gst/configuration" replace />}
           />
+          <Route path="/manufacturing" element={<Navigate to="/manufacturing/orders" replace />} />
+          <Route path="/manufacturing/configuration" element={<PermissionGuard pageName="Manufacturing.Configuration" route="/manufacturing/configuration"><ProductionConfiguration /></PermissionGuard>} />
+          <Route path="/manufacturing/orders" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrders /></PermissionGuard>} />
+          <Route path="/manufacturing/orders/new" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrderForm /></PermissionGuard>} />
+          <Route path="/manufacturing/orders/:id/edit" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrderForm /></PermissionGuard>} />
+          <Route path="/manufacturing/orders/:id" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrderDetail /></PermissionGuard>} />
+          <Route path="/manufacturing/planning" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionPlanning /></PermissionGuard>} />
+          <Route path="/manufacturing/imports" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionImports /></PermissionGuard>} />
+          <Route path="/reports/manufacturing/operations" element={<PermissionGuard pageName="Manufacturing.Reports" route="/reports/manufacturing"><ProductionOperationalReports /></PermissionGuard>} />
+          <Route path="/purchase/operations" element={<PermissionGuard pageName="PurchaseExpense.PurchaseOrder" route="/purchase/orders"><PurchaseOperations /></PermissionGuard>} />
           <Route path="/deep-dive-analytics" element={<Navigate to="/deep-dive-analytics/executive-command-center" replace />} />
           {DEEP_PAGES.map(page => <Route key={page.id} path={page.route} element={<DeepDivePage key={page.id} pageId={page.id} />} />)}
           {GST_PAGES.map(page => <Route key={page.key} path={page.route} element={<PermissionGuard route={page.route} pageName={page.pageName}>{gstScreens[page.key]}</PermissionGuard>} />)}

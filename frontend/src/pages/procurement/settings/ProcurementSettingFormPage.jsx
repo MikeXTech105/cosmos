@@ -13,6 +13,7 @@ import {
 } from "../../../constants/procurementEnums";
 import { procurementSettingService } from "../../../services/procurement/procurementSettingService";
 import LeadTimeHistoryModal from "./LeadTimeHistoryModal";
+import { SupplierPolicyPanel } from "../../manufacturing/integrations/ProcurementPurchasePanel";
 import {
   ProcurementErrorState,
   ProcurementInlineError,
@@ -281,6 +282,7 @@ const ProcurementSettingFormPage = () => {
           </div>
 
           <LeadTimePanel form={form} setForm={setForm} />
+          <SupplierPolicyPanel itemId={getRecordId(form.item, ["itemId"]) || routeItemId} />
           {(errors.configuredLeadTimeDays || errors.leadTimeOverrideDays) && (
             <p className="text-xs font-medium text-red-600">{errors.configuredLeadTimeDays || errors.leadTimeOverrideDays}</p>
           )}
