@@ -1,5 +1,33 @@
 # Migration, verification and controlled cutover
 
+## Current UI/error audit and one-command SQL gate
+
+On28 October the complete frontend suite passes745/745 across117 files; the whole frontend lint and build pass. Backend422 tests pass and14 SQL tests remain skipped. The previous three employee failures and dispatch lint error were resolved by matching the API's optional-email contract, making create/update empty payload semantics explicit, and scoping warehouse options to the selected channel. Existing employee address/bank replacements are preserved on update.
+
+Run the existing guarded migration/repeatability and production SQL journeys together using:
+
+```powershell
+./backend/scripts/Test-ProductionWorkspace.ps1
+```
+
+The script uses an explicitly provided `COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING` with the runner's `CosmosProductionIntegrationTests_*` guard. If that variable is absent and Microsoft LocalDB is installed, it creates a uniquely named private instance and disposable test catalog, runs the existing bootstrap and real production tests, then stops its instance while retaining databases for inspection. It never reads appsettings or drops a database. Existing test catalogs require deliberate `-ReuseTestCatalog` after inspection.
+
+This Windows session has no SQL runtime or test connection and is not an administrator, so the script exited2 before opening a database. Installing an engine requires the deployment/admin owner's environment setup; Microsoft's [LocalDB installation and private-instance documentation](https://learn.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb?view=sql-server-ver16) describes the supported runtime. The application's approved company key and connection must still be configured as described below; no frontend fallback substitutes for them.
+
+## 28 October: daily grid and Kanban backend handoff
+
+The frontend daily desk uses existing order list/context/release/completion/close/cancel contracts and existing Orders permissions. No new backend business endpoint, master or migration was introduced for the grid or board. Six board columns query statuses1–6 independently with12-row pages; the daily grid uses the existing list paging and quantities remain exact text until numeric JSON serialization. Moving a card opens review; only the server's saved state determines its eventual column.
+
+The current workspace has no actual application SQL connection, manufacturing company key/timezone, local SQL service or explicit disposable integration connection. Configuration must be completed by the backend deployment owner, using real catalog evidence:
+
+1. Set `ConnectionStrings__CosmosDb` privately to the intended application catalog. Do not put secrets in Git or a handoff.
+2. Set `Manufacturing__CatalogCompanyKey` to the approved key already used by that catalog's production records, and `Manufacturing__BusinessTimeZone` to the actual company timezone supported by .NET and SQL. Do not choose a new key merely to hide the scope error. `appsettings.Development.example.json` now lists the fields with deliberately empty values.
+3. Preserve the real closed-period policy. Restart the API as appropriate and sign in again so the JWT CompanyKey, request scope and SQL session context agree. A frontend fallback, arbitrary company selector or bypassing the claim check is not a setup fix.
+4. Verify the existing39 ordered production scripts in a disposable catalog before company cutover. Configure `COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING` privately to an explicitly prepared `CosmosProductionIntegrationTests_*` target, then run the guarded bootstrap/repeatability runner and SQL journeys below. This variable must never point to the client's catalog.
+5. With actual authentication and roles, verify grid partials/rejects/materials, an identical uncertain retry, a failed readback, stale versions, queue stopping, Kanban release/completion/remainder actions, stock conservation and report reconciliation. The synthetic browser fixture cannot establish these results.
+
+Checks on28 October: frontend735 passed /3 existing employee failures /738 total; backend422 passed /14 SQL skipped /436 total; production build passed. The guarded SQL runner refused to open any database because its explicit connection is absent. Logs are `frontend-daily-desk-*.log`; UI-only browser evidence is `PRODUCTION_DAILY_DESK_BROWSER.json`. No live database was changed.
+
 ## Latest frontend integration evidence
 
 The frontend integration and fresh verification add migrations `20261027_29` through `20261027_37`; there are now39 ordered production scripts including the original precision/basis prerequisites. Apply the entire ordered set through the existing guarded disposable-catalog runner before authenticated integration testing. These context/validation additions are required by the current frontend; copying React files alone does not update database procedures.

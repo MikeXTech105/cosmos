@@ -269,7 +269,7 @@ export const mapFormToBankDetails = (values) => ({
 
 export const mapFormToPayload = (
   values,
-  { includeBankDetails = true } = {},
+  { includeBankDetails = true, preserveExistingAddresses = false } = {},
 ) => {
   const addresses = Array.isArray(values.addresses)
     ? values.addresses.filter(hasAddress).map(mapAddressToPayload)
@@ -300,14 +300,18 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // Omitted addresses mean "leave existing addresses unchanged" on PUT. This also
-  // avoids creating an empty address row during employee creation.
+  // Create sends an empty collection. On PUT, omission preserves saved addresses
+  // when this form did not supply an actual address replacement.
   if (payloadAddresses) {
     payload.addresses = payloadAddresses;
+  } else if (!preserveExistingAddresses) {
+    payload.addresses = [];
   }
 
   if (includeBankDetails && hasBankDetails(values)) {
     payload.bankDetails = mapFormToBankDetails(values);
+  } else if (includeBankDetails) {
+    payload.bankDetails = null;
   }
 
   return payload;

@@ -1,29 +1,25 @@
 {
-  "verifiedOn": "2026-10-27",
+  "verifiedOn": "2026-10-28",
   "startingCommit": "f6937755cf04349de2f014b40a5cac25b9bcf6de",
   "branch": "lucifer-dev",
   "scope": "Existing Cosmos frontend implementation plus minimal typed read-contract corrections",
   "frontend": {
     "command": "npm test -- --run",
-    "passed": 716,
-    "failed": 3,
-    "total": 719,
-    "testFiles": 112,
-    "result": "Only the three documented pre-existing employee validation failures remain; no new test failures.",
-    "knownFailures": [
-      "validationRules.test.js: allows an employee without optional identity/contact/bank fields",
-      "validationRules.test.js: requires complete bank details only when supplied",
-      "validationRules.test.js: validates partially populated addresses without requiring an empty address"
-    ],
+    "passed": 745,
+    "failed": 0,
+    "total": 745,
+    "testFiles": 117,
+    "result": "All frontend tests passed. Optional employee email and explicit create/update payload behavior are aligned with the existing API.",
+    "knownFailures": [],
     "build": {
       "command": "npm run build",
       "result": "passed"
     },
     "lint": {
       "command": "npm run lint",
-      "result": "One existing finding in unchanged DispatchImportsPage.jsx:179, react-hooks/set-state-in-effect. Changed production areas pass targeted ESLint. Narrow documented order-form/calendar initialization effect exceptions retain current server context and are not a whole-project rule change.",
+      "result": "Whole-project ESLint passed with zero errors or warnings; no rule was suppressed.",
       "newErrors": 0,
-      "existingErrors": 1
+      "existingErrors": 0
     },
     "focusedBehavior": [
       "Raw exact JSON tokens for DECIMAL(22,6), twelve-place import evidence, six-place imported cost and bigint ID boundaries",
@@ -42,10 +38,10 @@
   },
   "backend": {
     "command": "dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore",
-    "passed": 421,
+    "passed": 422,
     "failed": 0,
     "skipped": 14,
-    "total": 435,
+    "total": 436,
     "sqlSkipped": true,
     "swaggerRegeneration": {
       "result": "passed",
@@ -143,5 +139,71 @@
       "repeatLog": "frontend-order-recovery-repeat.log"
     },
     "capacityDurationFollowup": "Exact integer candidate and typed scheduling predecessor check, with matching frontend second-boundary validation; four installed-read SQL vectors added to an existing guarded test and remain skipped."
+  },
+  "dailyDesk": {
+    "implementedOn": "2026-10-28",
+    "baseCommit": "ee31d1893d0416c0e91abcedd249e1d77d1d13a1",
+    "routes": [
+      "/manufacturing/daily",
+      "/manufacturing/daily?view=board",
+      "/manufacturing/board"
+    ],
+    "features": [
+      "Exact daily quantity grid, bounded paste and keyboard row navigation",
+      "Selected entries reviewed and saved separately in sequence",
+      "Prefilled verified company clock and collapsed advanced review fields",
+      "Explicit blank-only copy from frozen expected consumption",
+      "Six independently paged Kanban status lanes",
+      "Drag/keyboard move opens authoritative review, never a direct status update",
+      "Existing permission, rowversion, command identity and readback recovery",
+      "Human-readable setup gating without fabricated company/stock defaults"
+    ],
+    "frontendLog": "frontend-daily-desk-full-tests.log",
+    "backendLog": "frontend-daily-desk-backend-tests.log",
+    "buildLog": "frontend-daily-desk-build.log",
+    "lintLog": "frontend-daily-desk-lint.log",
+    "browserEvidence": "PRODUCTION_DAILY_DESK_BROWSER.json",
+    "sqlGateLog": "frontend-daily-desk-sql-gate.log",
+    "actualSqlExecuted": false,
+    "applicationConnectionConfigured": false,
+    "companyScopeConfigured": false,
+    "businessTimeZoneConfigured": false,
+    "newPostingApiOrMigration": false,
+    "backendOwnerInstructions": "PRODUCTION_MIGRATION_CUTOVER.md",
+    "preExistingWorkingChangesPreserved": [
+      "frontend/src/pages/manufacturing/orders/OrdersPage.jsx",
+      "frontend/src/pages/manufacturing/orders/OrderViews.test.jsx",
+      "frontend/src/pages/manufacturing/orders/orderMessages.en.json",
+      "frontend/src/pages/manufacturing/orders/orderMessages.hi-en.json"
+    ]
+  },
+  "themeAndErrorAudit": {
+    "date": "2026-10-28",
+    "startingCommit": "ee31d18",
+    "frontendLog": "frontend-theme-audit-tests.log",
+    "backendLog": "frontend-theme-audit-backend.log",
+    "buildLog": "frontend-theme-audit-build.log",
+    "lintLog": "frontend-theme-audit-lint.log",
+    "sqlGateLog": "frontend-theme-audit-sql-gate.log",
+    "browserProof": "PRODUCTION_UI_THEME_AUDIT.json",
+    "resolvedBaselineFailures": [
+      "validationRules.test.js: allows an employee without optional identity/contact/bank fields",
+      "validationRules.test.js: requires complete bank details only when supplied",
+      "validationRules.test.js: validates partially populated addresses without requiring an empty address"
+    ],
+    "resolvedAreas": [
+      "Direct discoverable Kanban route/sidebar",
+      "Existing theme brand tokens and keyboard tab panel",
+      "Late context read cancellation and scoped selection/queue",
+      "Verified runtime masking during refresh",
+      "Optional employee email and create/update omission semantics",
+      "Dispatch channel warehouse selection and stale lookup masking"
+    ],
+    "sqlLauncher": "backend/scripts/Test-ProductionWorkspace.ps1",
+    "actualSqlExecuted": false,
+    "sqlRuntimeInstalled": false,
+    "administratorSession": false,
+    "applicationConnectionConfigured": false,
+    "disposableConnectionConfigured": false
   }
 }

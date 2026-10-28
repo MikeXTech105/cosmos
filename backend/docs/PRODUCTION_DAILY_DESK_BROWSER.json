@@ -1,0 +1,713 @@
+{
+  "fixtureOnly": true,
+  "realSql": false,
+  "viewportReset": true,
+  "mobileGrid": {
+    "width": 390,
+    "height": 844,
+    "documentWidth": 390,
+    "tableContainerWidth": 354,
+    "tableWidth": 1002
+  },
+  "mobileBoard": {
+    "width": 390,
+    "height": 844,
+    "documentWidth": 390,
+    "boardScrollWidth": 2000
+  },
+  "checks": [
+    "Daily entry quantity/time prefill and explicit actual material review",
+    "Synthetic completion saved and remaining quantity refreshed from100 to89",
+    "Kanban reflects the returned InProgress status after accepted10/rejected1",
+    "Keyboard Move opened release approval and Back returned without a release write",
+    "Advanced time/resources are collapsed for daily review"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders/201/context",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/manufacturing/orders/201/completions",
+      "query": {},
+      "raw": "{\"version\":\"0x0000000000000001\",\"businessDate\":\"2026-10-28\",\"occurredAt\":\"2026-10-28T11:31:00+05:30\",\"goodOutput\":10,\"rejectedOutput\":1,\"machineId\":21,\"mouldId\":31,\"shiftId\":41,\"materials\":[{\"itemId\":102,\"unitId\":2,\"consumedQuantity\":5.5275,\"scrapQuantity\":0,\"returnedQuantity\":0}],\"varianceReason\":null,\"sourceReference\":null,\"idempotencyKey\":\"d24a87d7-9bd3-4751-b7cd-39826b8246fa\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders/201/context",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "1",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "2",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "3",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "4",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "5",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "6",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "1",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "2",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "3",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "4",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "5",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "6",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders/202/context",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/boms/301",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "1",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "2",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "3",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "4",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "5",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "6",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "1",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "2",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "3",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "4",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "5",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "6",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "1",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "2",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "3",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "4",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "5",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "status": "6",
+        "pageNumber": "1",
+        "pageSize": "12"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders/201/context",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/102",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/runtime",
+      "query": {},
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/manufacturing/orders",
+      "query": {
+        "pageNumber": "1",
+        "pageSize": "20"
+      },
+      "raw": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/items/101",
+      "query": {},
+      "raw": ""
+    }
+  ],
+  "temporaryTabClosed": true,
+  "fixtureStopped": true
+}
