@@ -7,7 +7,6 @@ import GstRegistrationLookup from "../../gst/GstRegistrationLookup";
 import FormErrorSummary from "../../../components/commerce/FormErrorSummary";
 import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
 import { documentLookupService } from "../../../services/documentLookupService";
-import { invoiceSchema } from "./invoiceSchema";
 import { invoiceLookupTarget } from "./invoiceLookupGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
@@ -21,12 +20,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import AppLookup from "../../../components/common/AppLookup";
 import { lookupPage } from "../../../utils/lookupPage";
+import { dateOrder, enumNumber, optionalDate, requiredDate } from "../../../utils/validationRules";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
@@ -352,7 +353,7 @@ const InvoiceFormPage = () => {
   ];
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
 
-  const applyItemDetails = async (rowId, itemId) => {
+  const applyItemDetails = useCallback(async (rowId, itemId) => {
     const index = rowIndexes.current.get(rowId);
     if (index === undefined) return;
 
@@ -422,17 +423,17 @@ const InvoiceFormPage = () => {
       setLineValue("hsnSource", "Unable to load item defaults");
       setLineValue("itemDetailsStatus", "error");
     }
-  }, [getValues, itemsById, setValue]);
+  }, [itemsById, setValue]);
 
   const previousInvoiceDate = useRef(invoiceDate);
   useEffect(() => {
     if (previousInvoiceDate.current === invoiceDate) return;
     previousInvoiceDate.current = invoiceDate;
-    currentFields.current.forEach((_, index) => {
+    fields.forEach((field, index) => {
       const itemId = getValues(`items.${index}.itemId`);
-      if (itemId) void applyItemDetails(index, itemId, true);
+      if (itemId) void applyItemDetails(field.id, itemId);
     });
-  }, [applyItemDetails, getValues, invoiceDate]);
+  }, [applyItemDetails, fields, getValues, invoiceDate]);
 
   const loadItemCreateLookups = useCallback(async () => {
     setItemCreateLookups((current) => ({ ...current, categoriesLoading: true, unitsLoading: true }));
@@ -484,8 +485,9 @@ const InvoiceFormPage = () => {
         const created = getResponseItem(response);
         if (created?.id) {
           setLookups(current => ({ ...current, items: [...current.items.filter(row => String(row.id) !== String(created.id)), created] }));
-          const rowIndex = currentFields.current.findIndex(row => row.id === inlineTarget.current?.rowId);
-          if (rowIndex >= 0) { setValue(`items.${rowIndex}.itemId`, String(created.id), { shouldDirty: true, shouldValidate: true }); void applyItemDetails(rowIndex, created.id); }
+          const rowId = inlineTarget.current?.rowId;
+          const rowIndex = rowIndexes.current.get(rowId);
+          if (rowIndex !== undefined) { setValue(`items.${rowIndex}.itemId`, String(created.id), { shouldDirty: true, shouldValidate: true }); void applyItemDetails(rowId, created.id); }
         }
         toast.success("Item created successfully");
       } else if (type === "category") {
