@@ -231,7 +231,6 @@ const InvoiceFormPage = () => {
   const {
     control,
     handleSubmit,
-    getValues,
     register,
     reset,
     setValue,
@@ -248,7 +247,9 @@ const InvoiceFormPage = () => {
   const itemDetailsCache = useRef(new Map());
   const itemSelectionVersions = useRef(new Map());
   const rowIndexes = useRef(new Map());
-  rowIndexes.current = new Map(fields.map((field, index) => [field.id, index]));
+  useEffect(() => {
+    rowIndexes.current = new Map(fields.map((field, index) => [field.id, index]));
+  }, [fields]);
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
   const draftValues = useWatch({ control });
   const recovery=useUncertainSave({entity:"sales-invoice",context:id ?? "new",recordId:isEdit?id:null});
@@ -355,8 +356,8 @@ const InvoiceFormPage = () => {
     const index = rowIndexes.current.get(rowId);
     if (index === undefined) return;
 
-    const version = (itemSelectionVersions.current.get(rowId) ?? 0) + 1;
-    itemSelectionVersions.current.set(rowId, version);
+    const version = (itemSelectionVersions.current.get(rowId)?.version ?? 0) + 1;
+    itemSelectionVersions.current.set(rowId, { itemId, version });
 
     const setLineValue = (name, value, options = {}) => {
       const currentIndex = rowIndexes.current.get(rowId);
@@ -406,16 +407,14 @@ const InvoiceFormPage = () => {
         : getResponseItem(await itemService.getItemById(itemId));
       itemDetailsCache.current.set(String(itemId), item);
 
-      const currentIndex = rowIndexes.current.get(rowId);
-      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
-      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+      const selection = itemSelectionVersions.current.get(rowId);
+      if (!canApplyItemDetails({ currentItemId: selection?.itemId, requestItemId: itemId, currentVersion: selection?.version, requestVersion: version })) return;
 
       const defaults = getInvoiceItemDefaults(item);
       applyItem(item, defaults.hasSalesPrice && defaults.hasGstRate ? "ready" : "missing");
     } catch {
-      const currentIndex = rowIndexes.current.get(rowId);
-      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
-      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+      const selection = itemSelectionVersions.current.get(rowId);
+      if (!canApplyItemDetails({ currentItemId: selection?.itemId, requestItemId: itemId, currentVersion: selection?.version, requestVersion: version })) return;
 
       setLineValue("rate", "0", { shouldValidate: true });
       setLineValue("taxPercentage", "0", { shouldValidate: true });
