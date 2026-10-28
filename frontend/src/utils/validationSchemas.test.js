@@ -22,11 +22,14 @@ describe("Employee validation", () => {
     expect(hrEmployeeSchema.safeParse({ ...validEmployee, mobile }).success).toBe(false);
   });
 
-  it("accepts empty and partial bank details and omits empty optional collections", () => {
+  it("accepts optional bank details and preserves omitted address/bank replacements on update", () => {
     expect(hrBankDetailsSchema.safeParse({}).success).toBe(true);
     expect(hrBankDetailsSchema.safeParse({ bankName: "Bank" }).success).toBe(true);
-    const payload = mapFormToPayload(validEmployee);
+    const payload = mapFormToPayload(validEmployee, { includeBankDetails: false, preserveExistingAddresses: true });
     expect(payload).not.toHaveProperty("addresses");
     expect(payload).not.toHaveProperty("bankDetails");
+    const created = mapFormToPayload(validEmployee);
+    expect(created.addresses).toEqual([]);
+    expect(created.bankDetails).toBeNull();
   });
 });

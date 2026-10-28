@@ -1,0 +1,23 @@
+const copy = {
+  "Production Kanban": "Production Kanban", "See work by stage. Move a card to review the next action.": "Kaam stage ke hisaab se dekhein. Agla action review karne ke liye card move karein.", "Production views": "Production views", "Jump to column": "Column par jaayein", "Search": "Khojein",
+  "Daily production": "Roz ka production", "Daily entry": "Daily entry", "Kanban board": "Kanban board", "Order register": "Order register",
+  "Record today's work without opening each order. Review actual materials before saving.": "Har order khole bina aaj ka kaam bharein. Save se pehle actual material review karein.",
+  "Entry date": "Entry ki date", "Actual time": "Actual time", "Use current time": "Abhi ka time", "Find an order": "Order khojein", "Order number or reference": "Order number ya reference", "Show orders": "Orders dikhayein",
+  "All orders": "Sabhi orders", "To approve": "Approval baaki", "Ready to start": "Shuru karne ke liye ready", "In progress": "Kaam chal raha hai", "Production complete": "Production poora", "Closed": "Band", "Cancelled": "Cancel",
+  "Accepted today": "Aaj accepted", "Rejected today": "Aaj rejected", "Remaining": "Baaki", "Item / order": "Item / order", "Unit": "Unit", "Due": "Due", "Action": "Action", "Status": "Status",
+  "Review entry": "Entry review karein", "Approve release": "Release approve karein", "Record production": "Production bharein", "Review order": "Order dekhein", "Open order": "Order kholein", "Refresh": "Refresh", "Clear row": "Row saaf karein",
+  "Review selected": "Selected entries review karein", "Select for review": "Review ke liye select karein", "entries to review": "entries review karni hain", "Nothing has been posted yet.": "Abhi koi posting nahi hui hai.",
+  "Ready for daily entry": "Daily entry ready hai", "Company setup needs attention": "Company setup poora karna hai", "Read-only access": "Sirf dekhne ki permission",
+  "You can view work. Production approval permission is required to save entries.": "Aap kaam dekh sakte hain. Save ke liye production approval permission chahiye.",
+  "Loading orders…": "Orders load ho rahe hain…", "No matching orders": "Matching orders nahi mile", "Try another status or search. Create an order if work has not been planned yet.": "Dusra status ya search try karein. Planning nahi hui ho to order banayein.",
+  "New order": "Naya order", "Production planning": "Production planning", "Stock & reports": "Stock aur reports", "Dispatch": "Dispatch", "More tools": "Aur tools", "Configuration": "Configuration", "Import & reconcile": "Import aur reconcile",
+  "This is a live work view, not a stock adjustment sheet. Accepted/rejected values are reviewed before any posting.": "Yeh actual kaam ki entry hai. Accepted/rejected values posting se pehle review hoti hain.",
+  "Tip: paste accepted/rejected columns from a sheet. Enter moves down; Tab moves across.": "Tip: Sheet se accepted/rejected columns paste karein. Enter se neeche aur Tab se aage jaayein.",
+  "Review materials and save each entry": "Material review karke har entry save karein", "Each entry saves separately. If a result is unknown, review it before continuing.": "Har entry alag save hoti hai. Result unknown ho to aage badhne se pehle review karein.",
+  "Move order": "Order move karein", "Move": "Move", "Load more": "Aur load karein", "No orders in this column": "Is column mein orders nahi hain", "shown of": "dikh rahe hain /", "orders": "orders",
+  "Drag a card or choose Move to open the required review. Columns change only after a successful server read.": "Card drag karein ya Move chunein. Review khulega; saved result read hone par hi column badlega.",
+  "Orders could not be loaded": "Orders load nahi ho sake", "Retry": "Dobara try karein", "Review the setup message, then retry. A failed read does not mean there are no orders.": "Setup message dekhein aur retry karein. Failed read ka matlab zero orders nahi hai.",
+  "An entry is still being reviewed. Finish or recover it before opening another.": "Ek entry abhi review ho rahi hai. Pehle use finish ya recover karein.",
+  "Entry saved. The remaining quantity has been refreshed.": "Entry save ho gayi. Baaki quantity refresh ho gayi.", "Selected entries have been reviewed.": "Selected entries ka review poora ho gaya.",
+};
+export const deskText = key => globalThis.localStorage?.getItem("cosmos.language") === "hi-en" ? copy[key] ?? key : key;

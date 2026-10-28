@@ -161,11 +161,12 @@ const emptyManualEntry = () => ({
   sourceReference: "",
 });
 
-const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
+export const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
   const navigate = useNavigate();
   const [entry, setEntry] = useState(emptyManualEntry);
-  const [warehouses, setWarehouses] = useState([]);
-  const [warehouseError, setWarehouseError] = useState("");
+  const [warehouseState, setWarehouseState] = useState({ channelId: "", items: [], error: "" });
+  const warehouses = String(warehouseState.channelId) === String(entry.channelId) ? warehouseState.items : [];
+  const warehouseError = String(warehouseState.channelId) === String(entry.channelId) ? warehouseState.error : "";
   const [error, setError] = useState("");
   const [validation, setValidation] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -176,8 +177,6 @@ const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
 
   useEffect(() => {
     if (!entry.channelId) {
-      setWarehouses([]);
-      setWarehouseError("");
       return undefined;
     }
 
@@ -185,19 +184,17 @@ const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
     void supplyChainWarehouseService.dropdown({ channelId: entry.channelId })
       .then((response) => {
         if (!active) return;
-        setWarehouses(Array.isArray(response.data) ? response.data : response.data?.items ?? []);
-        setWarehouseError("");
+        setWarehouseState({ channelId: entry.channelId, items: Array.isArray(response.data) ? response.data : response.data?.items ?? [], error: "" });
       })
       .catch((requestError) => {
         if (!active) return;
-        setWarehouses([]);
-        setWarehouseError(getDispatchError(requestError, "Unable to resolve channel warehouses."));
+        setWarehouseState({ channelId: entry.channelId, items: [], error: getDispatchError(requestError, "Unable to resolve channel warehouses.") });
       });
     return () => { active = false; };
   }, [entry.channelId]);
 
   const update = (field, value) => {
-    setEntry((current) => ({ ...current, [field]: value }));
+    setEntry((current) => ({ ...current, [field]: value, ...(field === "channelId" ? { warehouseId: "" } : {}) }));
     setError("");
     setValidation(null);
     setDuplicateConflict(false);

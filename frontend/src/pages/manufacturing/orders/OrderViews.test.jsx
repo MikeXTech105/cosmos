@@ -42,6 +42,21 @@ describe("production order views and access", () => {
     expect(html).toContain("42");
     expect(html).toContain("—");
   });
+  it("never labels a failed read as no orders or presents cached quantities as current", () => {
+    state.resource.error = "Manufacturing catalog company scope is not configured.";
+    state.resource.data = { items: [order], totalCount: 1, pageNumber: 1, pageSize: 50, summary: [{ unitId: 2, plannedQuantity: "10" }] };
+    const failed = render(<OrdersPage />);
+    expect(failed).toContain("Orders could not be loaded");
+    expect(failed).not.toContain("No production orders");
+    expect(failed).not.toContain("PRO-00000007");
+    expect(failed).not.toContain("Filtered totals by base unit");
+    expect(failed).not.toContain("Previous");
+    state.resource.error = "";
+    const recovered = render(<OrdersPage />);
+    expect(recovered).toContain("PRO-00000007");
+    expect(recovered).toContain("Filtered totals by base unit");
+    expect(recovered).not.toContain("Orders could not be loaded");
+  });
   it("hides create and all approved lifecycle commands from a view-only user", () => {
     state.access = { canView: true, canCreate: false, canUpdate: false, canApprove: false };
     state.resource.data = { order, materials: [], completions: [], reservations: [] };

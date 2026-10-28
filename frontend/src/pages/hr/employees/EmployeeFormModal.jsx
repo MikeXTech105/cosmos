@@ -144,7 +144,7 @@ const EmployeeFormModal = ({
     }
 
     await onSubmit(
-      mapFormToPayload(values, { includeBankDetails: !isEdit }),
+      mapFormToPayload(values, { includeBankDetails: !isEdit, preserveExistingAddresses: isEdit }),
       {
         bankDetails: mapFormToBankDetails(values),
         shouldSaveBankDetails:

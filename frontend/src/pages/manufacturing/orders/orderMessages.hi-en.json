@@ -233,6 +233,18 @@
   "The order changed while this command was open. Reload and review before entering a new command.": "Command khula tha tab order badal gaya. Naya command bharne se pehle dobara load karke review karein.",
   "Manufacturing Orders Approve permission is required for this command.": "Is command ke liye Manufacturing Orders Approve permission chahiye.",
   "No common effective HR shift is configured for every work centre at the planned start date. Maintain Work Centre capacity before saving.": "Planned start date par har work centre ke liye ek common effective HR shift configured nahi hai. Save se pehle Work Centre capacity configure karein.",
+  "Your daily quantities and company time are filled in. Review the actual materials below before saving.": "Daily quantities aur company time bhar gaye hain. Save se pehle neeche actual materials review karein.",
+  "Actual consumption matches expected": "Actual consumption expected jaisa hai",
+  "Accepted output increases finished stock. Actual consumption plus scrap reduces material stock.": "Accepted output se finished stock badhta hai. Actual consumption aur scrap se material stock kam hota hai.",
+  "Time, resources & reference": "Time, resources aur reference",
+  "Review production entry": "Production entry review karein",
+  "Save production": "Production save karein",
+  "Material / unit": "Material / unit",
+  "Expected": "Expected",
+  "Explain extra material usage when actual consumption plus scrap exceeds expected.": "Actual consumption aur scrap expected se zyada ho to wajah batayein.",
+  "Use only when measured consumption matches the preview. Existing actual entries are preserved; scrap and returns remain separate.": "Measured consumption preview jaisa ho tabhi use karein. Bhari hui actual entries nahi badlengi; scrap aur returns alag rahenge.",
+  "Orders could not be loaded": "Orders load nahi ho sake",
+  "Resolve the error above, then retry. Existing orders and quantities are unavailable until the read succeeds.": "Upar ki error resolve karke retry karein. Read successful hone tak existing orders aur quantities available nahi hain.",
   "No orders on this page": "Is page par orders nahi hain",
   "Matching orders still exist. Return to a previous page or apply the filters again.": "Matching orders abhi maujood hain. Pichhle page par jaayein ya filters dobara apply karein."
 }
