@@ -7,24 +7,26 @@ import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
 const SORT_FIELDS = ["billDate", "dueDate", "supplierName", "grandTotal"];
 
 export const purchaseBillService = {
-  getPurchaseBills: async (params) => {
+  getPurchaseBills: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILLS, {
+      signal,
       params: sanitizePurchaseListParams(params, SORT_FIELDS),
     });
 
     return unwrapResponse(response);
   },
 
-  getPurchaseBillById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILL_BY_ID(id));
+  getPurchaseBillById: async (id, { signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILL_BY_ID(id), { signal });
 
     return unwrapResponse(response);
   },
 
-  getPurchaseBillsBySupplier: async (supplierId, params) => {
+  getPurchaseBillsBySupplier: async (supplierId, params, { signal } = {}) => {
     const response = await axiosInstance.get(
       ENDPOINTS.PURCHASE_BILL_BY_SUPPLIER(supplierId),
       {
+        signal,
         params: sanitizePurchaseListParams(params, SORT_FIELDS),
       },
     );

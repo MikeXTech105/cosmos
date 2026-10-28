@@ -117,6 +117,16 @@ public sealed class SaveShipmentPackageRequestValidator : AbstractValidator<Save
     }
 }
 
+public sealed class RemoveShipmentPackageRequestValidator : AbstractValidator<RemoveShipmentPackageRequest>
+{
+    public RemoveShipmentPackageRequestValidator()
+    {
+        RuleFor(x => x.Version).NotEmpty().Matches("^0x[0-9a-fA-F]{16}$");
+        RuleFor(x => x.CommandKey).NotEmpty();
+        RuleFor(x => x.Reason).NotEmpty().MaximumLength(700);
+    }
+}
+
 public sealed class SaveShipmentPackageItemRequestValidator : AbstractValidator<SaveShipmentPackageItemRequest>
 {
     public SaveShipmentPackageItemRequestValidator()

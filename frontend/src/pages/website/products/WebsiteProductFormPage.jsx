@@ -16,6 +16,9 @@ import { EMPTY_PRODUCT_FORM, PRODUCT_TEXT_LIMITS, hasIncompleteProductMedia, res
 import { PUBLISH_STATUS_BODY_OPTIONS, getPublishStatusName, getPublishTransitionWarning } from "../websiteStatus";
 import useWebsiteCapabilities from "../useWebsiteCapabilities";
 import { GuardedButton, WebsiteConflictPanel, WebsiteConfirmModal, WebsiteErrorState, WebsitePageIntro, WebsiteTextarea, WebsiteToggle } from "../WebsiteShared";
+import { WebsiteProductPreview } from "../WebsiteContentPreview";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import { withoutDirtyPrompt } from "../../../utils/dirtyWork";
 
 const Section = ({ children, description, title }) => (
   <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -40,6 +43,7 @@ const WebsiteProductFormPage = () => {
     : `You need ${isEdit ? "edit" : "create"} permission for website products.`;
   const detail = useSelector((state) => state.website.productDetail);
   const [form, setForm] = useState(EMPTY_PRODUCT_FORM);
+  const [savedFingerprint, setSavedFingerprint] = useState(() => JSON.stringify(EMPTY_PRODUCT_FORM));
   const [uploading, setUploading] = useState(false);
   const savedMedia = useRef(null);
   const formRef = useRef(null);
@@ -49,6 +53,7 @@ const WebsiteProductFormPage = () => {
   const [conflict, setConflict] = useState(null);
   const [loadedStatus, setLoadedStatus] = useState("Draft");
   const [loadAttempt, setLoadAttempt] = useState(0);
+  useUnsavedChanges({ when: JSON.stringify(form) !== savedFingerprint || saving || uploading });
 
   useEffect(() => {
     if (!isEdit) return undefined;
@@ -56,7 +61,7 @@ const WebsiteProductFormPage = () => {
     request.unwrap().then((response) => {
       const record = restoreSavedProductMedia(response.data, savedMedia.current);
       setMediaIncomplete(hasIncompleteProductMedia(record));
-      setForm(toProductForm(record));
+      const next = toProductForm(record); setForm(next); setSavedFingerprint(JSON.stringify(next));
       setLoadedStatus(getPublishStatusName(response.data?.publishStatus));
     }).catch((error) => {
       if (error?.name !== "AbortError") toast.error(getApiErrorMessage(error, "Unable to load this website product."));
@@ -83,7 +88,7 @@ const WebsiteProductFormPage = () => {
 
   const applySaved = useCallback((record) => {
     if (!record) return;
-    setForm(toProductForm(record));
+    const next = toProductForm(record); setForm(next); setSavedFingerprint(JSON.stringify(next));
     setMediaIncomplete(hasIncompleteProductMedia(record));
     setLoadedStatus(getPublishStatusName(record.publishStatus));
     setConflict(null);
@@ -104,7 +109,7 @@ const WebsiteProductFormPage = () => {
       applySaved({ ...response.data, media: response.data?.media ?? overridePayload.media });
       dispatch(fetchWebsiteProducts({ pageNumber: 1, pageSize: 25 }));
       toast.success(isEdit ? "Website product saved" : "Website product created");
-      if (!isEdit && response.data?.id) navigate(`/website/products/${response.data.id}/edit`, { replace: true });
+      if (!isEdit && response.data?.id) withoutDirtyPrompt(() => navigate(`/website/products/${response.data.id}/edit`, { replace: true }));
     } catch (error) {
       if (isConflictError(error) && isEdit) {
         try {
@@ -166,6 +171,7 @@ const WebsiteProductFormPage = () => {
         actions={<><AppButton variant="secondary" onClick={() => navigate("/website/products")}><ArrowLeft className="h-4 w-4" /> Back</AppButton><GuardedButton type="submit" isLoading={saving || detail.loading} disabledReason={uploading ? "Wait for the image upload to finish." : saveDisabledReason}><Save className="h-4 w-4" /> Save product</GuardedButton></>}
       />
       <WebsitePageIntro>These values appear publicly. Confirm with the client before publishing.</WebsitePageIntro>
+      <details className="rounded-xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer font-semibold">Review public product preview</summary><div className="mt-4"><WebsiteProductPreview product={form} /></div></details>
       {mediaIncomplete && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">The API returned only this product’s primary image, without its full gallery or alt text. Saving could remove existing images, so editing is paused until the API returns the complete image collection.</div>}
       {conflict ? <WebsiteConflictPanel current={conflict.current} mine={conflict.mine} resolving={saving} onUseSaved={() => applySaved(conflict.current)} onKeepMine={() => save({ ...conflict.mine, rowVersion: conflict.current.rowVersion })} /> : null}
 

@@ -26,6 +26,7 @@ export const getErrorMessage = (error, fallback) => {
 };
 
 const getEmptyValue = (field) => {
+  if (field.name === "partyType") return "Both";
   if (field.type === "boolean") {
     return field.name === "isActive";
   }

@@ -64,7 +64,7 @@ describe("GST screens and document entry points", () => {
   });
   it("provides supported log filters and never renders raw request/response controls", () => {
     const html = render(createElement(GstLogsPage));
-    for (const label of ["Operation", "Outcome", "From date / time", "Correlation ID", "Registration ID", "Sort by"]) expect(html).toContain(label);
+    for (const label of ["Operation", "Outcome", "From date / time", "Correlation ID", "GST registration", "Sort by"]) expect(html).toContain(label);
     expect(html).not.toContain("RequestPayload");
     expect(html).not.toContain("ResponsePayload");
   });

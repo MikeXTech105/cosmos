@@ -11,6 +11,8 @@ import { fetchWebsiteSettings } from "../../../store/slices/website/websiteSlice
 import { getApiErrorMessage } from "../../../utils/apiError";
 import useWebsiteCapabilities from "../useWebsiteCapabilities";
 import { WebsiteErrorState, WebsitePageIntro, WebsiteToggle } from "../WebsiteShared";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import { getWebsiteSettingMetadata, validateWebsiteSettingValue } from "./websiteSettingMetadata";
 
 const keyFor = (item) => item.settingKey;
 const fingerprint = (item) => JSON.stringify([item.value ?? "", Boolean(item.isPublic)]);
@@ -24,6 +26,7 @@ const WebsiteSettingsPage = () => {
   const [rows, setRows] = useState([]);
   const [baseline, setBaseline] = useState({});
   const [saving, setSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     const request = dispatch(fetchWebsiteSettings());
@@ -38,13 +41,15 @@ const WebsiteSettingsPage = () => {
   }, [dispatch]);
 
   const dirtyKeys = rows.filter((item) => baseline[keyFor(item)] !== fingerprint(item)).map(keyFor);
+  const { confirmLeave } = useUnsavedChanges({ when: dirtyKeys.length > 0, message: "Website settings have unsaved changes. Discard them and refresh?" });
   const groups = useMemo(() => Object.entries(rows.reduce((result, item) => {
-    const prefix = String(item.settingKey || "General").includes(".") ? String(item.settingKey).split(".")[0] : "General";
+    const prefix = getWebsiteSettingMetadata(item.settingKey).group;
     (result[prefix] ||= []).push(item);
     return result;
   }, {})), [rows]);
   const update = (settingKey, patch) => setRows((current) => current.map((item) => item.settingKey === settingKey ? { ...item, ...patch } : item));
   const refresh = () => {
+    if (saving || !confirmLeave(() => {})) return;
     const request = dispatch(fetchWebsiteSettings());
     request.unwrap().then((response) => {
       const items = Array.isArray(response.data) ? response.data : response.data?.items || [];
@@ -54,9 +59,14 @@ const WebsiteSettingsPage = () => {
     return request;
   };
   const save = async () => {
+    const errors = Object.fromEntries(rows.map((item) => [item.settingKey, validateWebsiteSettingValue(item.settingKey, item.value)]).filter(([, message]) => message));
+    setValidationErrors(errors);
+    if (Object.keys(errors).length) return;
+    const visibilityChanges = rows.filter((item) => { const saved = JSON.parse(baseline[item.settingKey] || "null"); return saved && saved[1] !== Boolean(item.isPublic); });
+    if (visibilityChanges.length && !window.confirm(`Review website visibility changes:\n${visibilityChanges.map((item) => `${getWebsiteSettingMetadata(item.settingKey).label}: ${item.isPublic ? "public" : "private"}`).join("\n")}\nSave these changes?`)) return;
     setSaving(true);
     try {
-      await websiteSettingsService.update(rows.map(({ settingKey, value, isPublic }) => ({ settingKey, value, isPublic })));
+      await websiteSettingsService.update(rows.filter((item) => dirtyKeys.includes(item.settingKey)).map(({ settingKey, value, isPublic }) => ({ settingKey, value, isPublic })));
       toast.success("Website settings saved");
       const response = await dispatch(fetchWebsiteSettings()).unwrap();
       const items = Array.isArray(response.data) ? response.data : response.data?.items || [];
@@ -80,8 +90,8 @@ const WebsiteSettingsPage = () => {
         <h2 className="text-base font-semibold capitalize text-slate-900">{group}</h2>
         <div className="mt-4 divide-y divide-slate-100">
           {items.map((item) => <div key={item.settingKey} className="grid gap-4 py-4 lg:grid-cols-[minmax(220px,.65fr)_minmax(300px,1fr)_minmax(280px,.8fr)] lg:items-start">
-            <div><p className="font-mono text-xs font-semibold text-slate-700">{item.settingKey}</p>{dirtyKeys.includes(item.settingKey) ? <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Unsaved</span> : null}</div>
-            <AppInput aria-label={`Value for ${item.settingKey}`} disabled={!capabilities.canEdit} value={item.value} onChange={(event) => update(item.settingKey, { value: event.target.value })} />
+            <div><p className="text-sm font-semibold text-slate-700">{getWebsiteSettingMetadata(item.settingKey).label}</p><details className="mt-1 text-xs text-slate-400"><summary>Support details</summary>{item.settingKey}</details>{dirtyKeys.includes(item.settingKey) ? <span className="mt-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Unsaved</span> : null}</div>
+            {getWebsiteSettingMetadata(item.settingKey).type === "boolean" ? <label className="text-sm"><select className="h-10 rounded-lg border border-slate-200 px-3" aria-label={getWebsiteSettingMetadata(item.settingKey).label} disabled={!capabilities.canEdit || saving} value={String(item.value).toLowerCase()} onChange={(event) => update(item.settingKey, { value: event.target.value })}><option value="">Choose Yes or No</option><option value="true">Yes</option><option value="false">No</option></select>{validationErrors[item.settingKey] && <span role="alert" className="block text-xs text-red-700">{validationErrors[item.settingKey]}</span>}</label> : <AppInput label={getWebsiteSettingMetadata(item.settingKey).label} type={getWebsiteSettingMetadata(item.settingKey).type} helperText={getWebsiteSettingMetadata(item.settingKey).example} error={validationErrors[item.settingKey]} disabled={!capabilities.canEdit || saving} value={item.value} onChange={(event) => update(item.settingKey, { value: event.target.value })} />}
             <div><WebsiteToggle disabled={!capabilities.canEdit} label="Public value" helperText={item.isPublic ? "Readable by anyone on the public website." : "Kept private from public website responses."} checked={item.isPublic} onChange={(value) => update(item.settingKey, { isPublic: value })} />{item.isPublic ? <p className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-amber-700"><Globe2 className="mt-0.5 h-3.5 w-3.5 shrink-0" /> This value will be readable by anyone on the public website.</p> : null}</div>
           </div>)}
         </div>

@@ -62,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IGstSessionService, GstSessionService>();
         services.AddScoped<IGstApiLogService, GstApiLogService>();
         services.AddScoped<IGstComplianceEligibilityService, GstComplianceEligibilityService>();
+        services.AddScoped<IGstComplianceSnapshotService, GstComplianceSnapshotService>();
         services.AddScoped<IHsnGstService, HsnGstService>();
         services.AddScoped<IGstCalculationEngine, GstCalculationEngine>();
         return services;

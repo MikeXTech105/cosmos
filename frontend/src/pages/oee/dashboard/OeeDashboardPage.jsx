@@ -914,6 +914,8 @@ function ProductionDashboard({ canExport, canCreate }) {
                     reason,
                   ])}
                   entries={selected}
+                  machineId={machine}
+                  mouldId={mould}
                   from={from}
                   to={to}
                   mode={mode}

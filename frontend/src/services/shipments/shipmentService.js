@@ -1,9 +1,13 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireShipmentPayload } from "./shipmentWire";
 import { ENDPOINTS } from "../../api/endpoints";
 import { sanitizeShipmentListParams } from "../../utils/shipmentQuery";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const shipmentService = {
+  dispatchAllocations: async (runId, { signal } = {}) => unwrapResponse(await axiosInstance.get(
+    `${ENDPOINTS.SO_SHIPMENTS}/dispatch-planning/${encodeURIComponent(runId)}/allocations`, { signal },
+  )),
   list: async (params = {}, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.SO_SHIPMENTS, {
       params: normalizeParams(sanitizeShipmentListParams(params)),
@@ -25,7 +29,7 @@ export const shipmentService = {
   createManual: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.SO_SHIPMENTS_MANUAL,
-      payload,
+      wireShipmentPayload(payload),
     );
 
     return unwrapResponse(response);
@@ -34,7 +38,7 @@ export const shipmentService = {
   createFromDispatchPlan: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.SO_SHIPMENTS_FROM_DISPATCH,
-      payload,
+      wireShipmentPayload(payload),
     );
 
     return unwrapResponse(response);

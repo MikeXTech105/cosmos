@@ -110,7 +110,7 @@ const WebsiteWarrantyPage = () => {
       <WebsitePagination disabled={warranty.loading} pageNumber={warranty.pageNumber} pageSize={warranty.pageSize} totalCount={warranty.totalCount} totalPages={warranty.totalPages} onPageChange={(value) => setFilter("pageNumber", value)} onPageSizeChange={(value) => setFilter("pageSize", value)} />
 
       <AppModal isOpen={summaryOpen} title="Warranty summary report" onClose={() => setSummaryOpen(false)}>
-        <p className="text-sm leading-6 text-slate-500">The backend provides a summary report only; no CSV export endpoint exists.</p>
+        <p className="text-sm leading-6 text-slate-500">Review the warranty summary here. Download is available for the supported reports.</p>
         <WebsiteErrorState error={warranty.summaryError} onRetry={() => dispatch(fetchWebsiteWarrantySummary())} />
         {warranty.summaryLoading ? <div className="mt-4 h-40 animate-pulse rounded-xl bg-slate-100" /> : <div className="mt-4 grid gap-3 sm:grid-cols-2">{Object.entries(warranty.summary || {}).filter(([, value]) => ["string", "number", "boolean"].includes(typeof value)).map(([key, value]) => <div key={key} className="rounded-xl border border-slate-200 p-4"><p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{key.replace(/([A-Z])/g, " $1")}</p><p className="mt-1 text-xl font-semibold tabular-nums text-slate-900">{String(value)}</p></div>)}</div>}
       </AppModal>

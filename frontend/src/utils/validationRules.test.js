@@ -105,7 +105,8 @@ describe("frontend API validation alignment", () => {
     expect(manualShipmentSchema.safeParse({ channelId: 1, warehouseId: 1, dispatchMode: "Road", priority: "Normal", shipmentDate: "2026-10-14", expectedDeliveryDate: "2026-10-13", manualReason: "", items: [{ itemId: 1, plannedQuantity: 1 }] }).success).toBe(false);
   });
   it("preserves service units in payloads and enforces code and GST limits", () => {
-    expect(buildItemPayload({ name: "Service", itemType: 2, categoryId: 1, unitId: 2 }).unitId).toBe(2);
+    expect(buildItemPayload({ name: "Service", itemType: 2, categoryId: 1, unitId: 2 }).unitId).toBe("2");
+    expect(buildItemPayload({ name: "Service", itemType: 2, categoryId: "9007199254740993", unitId: "9007199254740995" }).unitId).toBe("9007199254740995");
     const form = { ...getItemDefaultValues(null), name: "Service", itemCode: "S1", itemType: 2, categoryId: 1, unitId: 2 };
     expect(itemSchema.safeParse(form).success).toBe(true);
     expect(itemSchema.safeParse({ ...form, itemCode: "" }).success).toBe(false);

@@ -9,14 +9,13 @@ export const RojmelTransactionType = {
   Expense: 2,
   TransferIn: 3,
   TransferOut: 4,
-  Adjustment: 5,
-  OpeningBalance: 6,
-  // CONFIRM: Swagger exposes value 7 without a label; "Other" is provisional.
-  Other: 7,
+  OpeningBalance: 5,
+  AdjustmentIn: 6,
+  AdjustmentOut: 7,
 };
 
 export const RojmelTransactionStatus = {
-  Active: 1,
+  Posted: 1,
   Cancelled: 2,
 };
 
@@ -24,10 +23,8 @@ export const RojmelWalletType = {
   Company: 1,
   User: 2,
   External: 3,
-  // CONFIRM: Swagger exposes value 4 without a label; "Bank" is provisional.
-  Bank: 4,
-  // CONFIRM: Swagger exposes value 5 without a label; "Cash" is provisional.
-  Cash: 5,
+  PettyCash: 4,
+  BankCash: 5,
 };
 
 export const ROJMEL_TRANSACTION_TYPE_LABELS = {
@@ -35,13 +32,13 @@ export const ROJMEL_TRANSACTION_TYPE_LABELS = {
   [RojmelTransactionType.Expense]: "Expense",
   [RojmelTransactionType.TransferIn]: "Transfer In",
   [RojmelTransactionType.TransferOut]: "Transfer Out",
-  [RojmelTransactionType.Adjustment]: "Adjustment",
   [RojmelTransactionType.OpeningBalance]: "Opening Balance",
-  [RojmelTransactionType.Other]: "Other",
+  [RojmelTransactionType.AdjustmentIn]: "Adjustment In",
+  [RojmelTransactionType.AdjustmentOut]: "Adjustment Out",
 };
 
 export const ROJMEL_TRANSACTION_STATUS_LABELS = {
-  [RojmelTransactionStatus.Active]: "Active",
+  [RojmelTransactionStatus.Posted]: "Posted",
   [RojmelTransactionStatus.Cancelled]: "Cancelled",
 };
 
@@ -49,8 +46,8 @@ export const ROJMEL_WALLET_TYPE_LABELS = {
   [RojmelWalletType.Company]: "Company",
   [RojmelWalletType.User]: "User",
   [RojmelWalletType.External]: "External",
-  [RojmelWalletType.Bank]: "Bank",
-  [RojmelWalletType.Cash]: "Cash",
+  [RojmelWalletType.PettyCash]: "Petty Cash",
+  [RojmelWalletType.BankCash]: "Bank Cash",
 };
 
 export const ROJMEL_CATEGORY_TYPE_LABELS = {
@@ -82,7 +79,7 @@ export const getTransactionTypeTone = (value) => {
   ) {
     return "transfer";
   }
-  if (numericValue === RojmelTransactionType.Adjustment) return "adjustment";
+  if ([RojmelTransactionType.AdjustmentIn, RojmelTransactionType.AdjustmentOut].includes(numericValue)) return "adjustment";
 
   return "neutral";
 };

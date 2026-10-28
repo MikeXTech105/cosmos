@@ -162,7 +162,8 @@ public sealed class DispatchPlanningReportsController(IDispatchPlanningService s
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> ExportRecommendations([FromQuery] DispatchRecommendationReportQuery query, CancellationToken ct)
     {
-        var result = await service.GetRecommendationReportAsync(query with { PageNumber = 1, PageSize = 500 }, ct);
-        return CsvExport.Create(result.Data?.Items ?? Array.Empty<DispatchRecommendationReportRowDto>(), $"dispatch-recommendations-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
+        var rows = await CompleteReportExport.ReadAsync<DispatchRecommendationReportRowDto>((page, token) =>
+            service.GetRecommendationReportAsync(query with { PageNumber = page, PageSize = CompleteReportExport.PageSize }, token), ct);
+        return CsvExport.Create(rows, $"dispatch-recommendations-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
     }
 }

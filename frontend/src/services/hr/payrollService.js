@@ -1,12 +1,13 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
+import { hrCommandIds } from "./hrServiceUtils";
 
 export const hrPayrollService = {
   processPayroll: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_PAYROLL_PROCESS,
-      payload,
+      hrCommandIds({ ...payload, rateSelections: (payload.rateSelections || []).map((selection) => hrCommandIds(selection)) }),
     );
 
     return unwrapResponse(response);
@@ -15,7 +16,7 @@ export const hrPayrollService = {
   approvePayroll: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_PAYROLL_APPROVE,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);

@@ -45,6 +45,7 @@ const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const ChangePassword = lazy(() => import("../pages/auth/ChangePassword"));
 const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
+const Today = lazy(() => import("../pages/today/TodayPage.jsx"));
 const Pages = lazy(() => import("../pages/rbac/pages/index.js"));
 const PageForm = lazy(() => import("../pages/rbac/pages/PageFormPage.jsx"));
 const Permissions = lazy(() => import("../pages/rbac/permissions/index.js"));
@@ -280,6 +281,7 @@ const AppRoutes = () => {
             path="/gst"
             element={<Navigate to="/gst/configuration" replace />}
           />
+          <Route path="/today" element={<Today />} />
           <Route path="/manufacturing" element={<Navigate to="/manufacturing/daily" replace />} />
           <Route path="/manufacturing/daily" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionDesk /></PermissionGuard>} />
           <Route path="/manufacturing/board" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionDesk /></PermissionGuard>} />

@@ -9,6 +9,7 @@ import {
 const normalizeFieldName = (value) =>
   String(value ?? "")
     .trim()
+    .replace(/\[(\d+)\]/g, ".$1")
     .replace(/^[^.]+\./, (prefix) =>
       ["model.", "payload.", "request."].includes(prefix.toLowerCase())
         ? ""

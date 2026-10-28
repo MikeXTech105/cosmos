@@ -44,7 +44,7 @@ export const RojmelTransactionTypeBadge = ({ value }) => {
 };
 
 export const RojmelStatusPill = ({ value }) => {
-  const isActive = Number(value) === RojmelTransactionStatus.Active;
+  const isActive = Number(value) === RojmelTransactionStatus.Posted;
 
   return (
     <span

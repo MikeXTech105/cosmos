@@ -1,0 +1,61 @@
+{
+  "createdAt": "2026-10-28T12:52:43.662Z",
+  "status": "Prepared and SQL Server parser checked; NOT EXECUTED against SQL Server in this session",
+  "dependencies": [
+    "backend/database/001_Full_Database_Setup.sql",
+    "backend/database/003_gst_integration_module.sql",
+    "Earlier ordered applicable migrations, including 20261027 production workspace foundations"
+  ],
+  "execution": "backend/scripts/Test-CompleteImplementation.ps1",
+  "rollback": "No destructive down migration supplied. Retained history requires approved application rollback/schema compatibility and backup-restore rehearsal.",
+  "files": [
+    {
+      "path": "backend/database/migrations/20261028_01_draft_packing_recovery.sql",
+      "sha256": "f650a01dfcf15785e013790f16835c8c81c536d8ad4239e3ad4df9eaa6c9d47c",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_02_hr_operator_setup.sql",
+      "sha256": "3b0eced9e0cb8f5b0c0e7ed584797ea380d8f81a1630ec9efbe02558e9c8c8b0",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_02_oee_day_acknowledgements.sql",
+      "sha256": "cd88f8cf59538e28bc7af13ad2b619a063b6b7c9b0e9e5580b5cfef9c033ffd6",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_03_production_order_labels.sql",
+      "sha256": "f12df73dcad17f6e2733e426ad9a5886db4848002b279b1f99c6de24c4043fd3",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_04_packaging_readiness.sql",
+      "sha256": "d698e5b26166ef86b582a01f63e0eb5e57325a5152e874b3d665dc2deb48efbd",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+      "sha256": "9d08db5dbe49530210078d8de6aae4d16b28237db969848e25d7182eebde3236",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql",
+      "sha256": "e6933d958150eddcb008524536189113abdba56a91b9c33a3824c200dc1efcbb",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    },
+    {
+      "path": "backend/database/migrations/20261028_07_production_master_lookup.sql",
+      "sha256": "0d98a7cc1f426ad37561337da70bc5a25f477402d0017798c4518cc60df005f1",
+      "runtimeStatus": "Not executed; user will run guarded scripts",
+      "parserEvidence": "output/implementation-verification/backend-complete-unit/complete-unit.trx"
+    }
+  ]
+}

@@ -81,8 +81,8 @@ describe("operational report paging, nulls and export", () => {
     expect(screen.getByText("0.000001")).toBeTruthy(); expect(screen.getAllByText("—").length).toBeGreaterThan(0);
     expect(screen.getByText("On hand: 1,000")).toBeTruthy(); expect(screen.getByText("On hand: 20")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Next" }).disabled).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: "Export all matching rows" }));
-    await waitFor(() => expect(mocks.exportReport).toHaveBeenCalledWith("stock-as-of", { asOfDate: "2026-10-27", fromDate: "", toDate: "", itemId: "", channelId: "", search: "" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export CSV" }));
+    await waitFor(() => expect(mocks.exportReport).toHaveBeenCalledWith("stock-as-of", { asOfDate: "2026-10-27", fromDate: "", toDate: "", itemId: "", channelId: "", search: "" }, "csv"));
     expect(click).toHaveBeenCalledOnce(); create.mockRestore(); click.mockRestore();
   });
 });

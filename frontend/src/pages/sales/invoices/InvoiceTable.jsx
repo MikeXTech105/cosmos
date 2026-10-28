@@ -28,6 +28,7 @@ const columns = [
 const InvoiceTable = ({
   actions,
   error,
+  highlightId,
   invoices,
   isLoading,
   onCreate,
@@ -105,6 +106,8 @@ const InvoiceTable = ({
               : invoices.map((invoice, index) => (
                   <tr
                     key={invoice.id}
+                    data-record-id={String(invoice.id)}
+                    data-saved-highlight={String(highlightId ?? "") === String(invoice.id) || undefined}
                     tabIndex={0}
                     onClick={() => onSelect(invoice)}
                     onKeyDown={(event) => {
@@ -113,7 +116,7 @@ const InvoiceTable = ({
                         onSelect(invoice);
                       }
                     }}
-                    className="cursor-pointer transition-colors hover:bg-slate-50"
+                    className={`cursor-pointer transition-colors hover:bg-slate-50 ${String(highlightId ?? "") === String(invoice.id) ? "bg-emerald-50 ring-2 ring-inset ring-emerald-400" : ""}`}
                   >
                     <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(pageNumber - 1) * pageSize + index + 1}

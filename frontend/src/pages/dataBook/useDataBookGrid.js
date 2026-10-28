@@ -276,7 +276,12 @@ const useDataBookGrid = ({
       createDataBookGridRow(entry, category),
     );
 
-    replaceRows(initialRows);
+    const preservePending = (serverRows) => {
+      const pending = rowsRef.current.filter((row) => (isDataBookGridRowDirty(row) || row.conflict || row.status === "saving") && String(row.category ?? "") === category);
+      const pendingKeys = new Set(pending.map((row) => row.key));
+      return [...serverRows.filter((row) => !pendingKeys.has(row.key)), ...pending];
+    };
+    replaceRows(preservePending(initialRows));
     setSummary(null);
 
     if (scopedEntries.length === 0) {
@@ -320,7 +325,7 @@ const useDataBookGrid = ({
       Array.from({ length: Math.min(3, scopedEntries.length) }, worker),
     ).then(() => {
       if (hydrationRef.current !== requestId) return;
-      replaceRows(hydrated.filter(Boolean));
+      replaceRows(preservePending(hydrated.filter(Boolean)));
       setHydrating(false);
     });
 
@@ -631,6 +636,10 @@ const useDataBookGrid = ({
   );
 
   return {
+    restoreDraft: (draftRows) => replaceRows((current) => {
+      const pendingIds = new Set(draftRows.filter((row) => row.id !== undefined).map((row) => String(row.id)));
+      return [...current.filter((row) => !isDataBookGridRowBlank(row) && !pendingIds.has(String(row.id))), ...draftRows.map((row) => ({ ...row, status: "dirty", error: "", conflict: null }))];
+    }),
     applyPaste,
     clearRow,
     deleteRow,

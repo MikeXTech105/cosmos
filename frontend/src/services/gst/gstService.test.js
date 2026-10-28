@@ -8,9 +8,35 @@ const result = data => ({ data: { succeeded: true, data, correlationId: "qa-refe
 
 describe("GST service through shared Axios", () => {
   beforeEach(() => { vi.resetAllMocks(); for (const method of Object.values(api)) method.mockResolvedValue(result({})); });
+  it("sends only the selected exact registration and OTP fields through session endpoints", async () => {
+    await gstService.generateOtp({ companyGstRegistrationId: "9007199254740993", gstPortalUsername: "  portal-user  ", token: "drop", gstin: "untrusted-drop" });
+    expect(api.post.mock.calls[0][0]).toBe("/api/v1/gst/sessions/generate-otp");
+    expect(String(api.post.mock.calls[0][1].companyGstRegistrationId)).toBe("9007199254740993");
+    expect(api.post.mock.calls[0][1].gstPortalUsername).toBe("portal-user");
+    expect(api.post.mock.calls[0][1]).not.toHaveProperty("gstin");
+    await gstService.authenticateOtp({ companyGstRegistrationId: "7", otp: " 123456 ", requestJson: "drop" });
+    expect(api.post.mock.calls[1][0]).toBe("/api/v1/gst/sessions/authenticate-otp");
+    expect(api.post.mock.calls[1][1].otp).toBe("123456");
+    expect(api.post.mock.calls[1][1]).not.toHaveProperty("requestJson");
+  });
   it("allowlists server log filters and preserves false while capping page size", async () => {
     await gstService.logs({ PageNumber: 2, PageSize: 500, IsSuccess: false, ApiType: "E-Invoice Generate", Search: "trace", accessToken: "secret", CorrelationId: "unsupported-filter" });
     expect(api.get).toHaveBeenCalledWith(E.GST_API_LOGS, expect.objectContaining({ timeout: 90000, params: { PageNumber: 2, PageSize: 200, IsSuccess: false, ApiType: "E-Invoice Generate", Search: "trace" } }));
+  });
+  it("preserves extension command identity and only sends reviewed transport fields", async () => {
+    await gstService.extendWayBill({ companyGstRegistrationId: "9007199254740993", eWayBillNumber: "123456789012", idempotencyKey: "review-key", version: "0x0000000000000001", fromPlace: "Surat", fromState: 24, fromPincode: "395001", remainingDistance: "80", extensionReasonCode: "1", extensionRemark: "Reviewed delay", transportMode: "1", vehicleNumber: "GJ01AB1234", gstin: "drop", requestJson: "drop", validUpTo: "2099-01-01", accessToken: "drop" });
+    const [path, payload] = api.post.mock.calls[0];
+    expect(path).toBe("/api/v1/gst/eway-bills/extend");
+    expect(String(payload.companyGstRegistrationId)).toBe("9007199254740993");
+    expect(payload).toMatchObject({ idempotencyKey: "review-key", version: "0x0000000000000001", remainingDistance: "80" });
+    for (const key of ["gstin", "requestJson", "validUpTo", "accessToken"]) expect(payload).not.toHaveProperty(key);
+    await gstService.reconcileWayBillExtension("review/key");
+    expect(api.post).toHaveBeenLastCalledWith("/api/v1/gst/eway-bills/extensions/review%2Fkey/reconcile", undefined, expect.objectContaining({ timeout: 90000 }));
+  });
+  it("prepares only a source-versioned policy proposal and supports command readback",async()=>{
+    await gstService.prepareSnapshot("9007199254740993",{requestKey:"command",sourceVersion:"0x0000000000000001",sourceFingerprint:"A".repeat(64),currentMasterDetailsReviewed:true,roundingCandidate:"Undecided",headerDiscountCandidate:"Undecided",companyKey:"forged",document:{grandTotal:1},status:"Validated"});
+    const [path,payload]=api.post.mock.calls[0];expect(path).toBe("/api/v1/gst/invoices/9007199254740993/snapshots/prepare");expect(payload).not.toHaveProperty("companyKey");expect(payload).not.toHaveProperty("document");expect(payload).not.toHaveProperty("status");
+    await gstService.preparedSnapshot("7","command/key");expect(api.get).toHaveBeenLastCalledWith("/api/v1/gst/invoices/7/snapshots/preparations/command%2Fkey",expect.any(Object));
   });
   it("uses only registration list query fields and forwards cancellation signal", async () => {
     const controller = new AbortController();
@@ -55,7 +81,7 @@ describe("GST service through shared Axios", () => {
   });
   it("saves registrations, default changes, verification, deletion and session lookup through their real endpoints", async () => {
     await gstService.saveRegistration(7, { gstin: "27ABCDE1234F1Z5", status: "Active" });
-    expect(api.put).toHaveBeenCalledWith(E.GST_REGISTRATION(7), expect.objectContaining({ gstin: "27ABCDE1234F1Z5", status: "Active" }));
+    expect(api.put).toHaveBeenCalledWith(E.GST_REGISTRATION(7), expect.objectContaining({ gstin: "27ABCDE1234F1Z5", status: "Active" }), expect.any(Object));
     await gstService.defaultRegistration(7, 2);
     expect(api.post).toHaveBeenCalledWith(E.GST_REGISTRATION_DEFAULT(7), { companyId: 2 }, { timeout: 90000 });
     await gstService.verifyRegistration(7);

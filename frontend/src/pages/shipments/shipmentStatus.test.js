@@ -42,6 +42,13 @@ describe("shipment status lifecycle", () => {
 });
 
 describe("getShipmentActions", () => {
+  it("reopens undispatched packed work through reviewed repack but protects dispatched stock and approved freight", () => {
+    const packed = getShipmentActions({ status: SHIPMENT_STATUS.Packed }, fullCapabilities);
+    expect(packed.pack.enabled).toBe(false); expect(packed.pack.canRepack).toBe(true);
+    expect(getShipmentActions({ status: SHIPMENT_STATUS.Dispatched, dispatchedAtUtc: "2026-10-28T10:00:00Z" }, fullCapabilities).pack.canRepack).toBe(false);
+    const approved = getShipmentActions({ status: SHIPMENT_STATUS.Packed, freightCharges: [{ status: "Approved" }] }, fullCapabilities);
+    expect(approved.pack.canRepack).toBe(false); expect(approved.pack.repackReason).toContain("Accounts");
+  });
   it.each([
     ["pack", "canManagePacking"],
     ["docket", "canManageDockets"],

@@ -215,13 +215,13 @@ const EmptyState = ({ errorMessage, hasError, onCreate, onRetry }) => {
   );
 };
 
-const MobilePartyCard = ({ actions, party, serialNumber }) => {
+const MobilePartyCard = ({ actions, party, serialNumber,highlighted }) => {
   const location = [getPartyCity(party), getPartyState(party)]
     .filter(Boolean)
     .join(", ");
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <article data-record-id={party.id} data-saved-highlight={highlighted||undefined} className={`overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${highlighted?"ring-2 ring-emerald-400":""}`}>
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
@@ -308,6 +308,7 @@ const PartyTable = ({
   embedded = false,
   errorMessage,
   hasError,
+  highlightId,
   isLoading,
   onCreate,
   onRetry,
@@ -347,6 +348,7 @@ const PartyTable = ({
             ))
           : parties.map((party, index) => (
               <MobilePartyCard
+                highlighted={String(party.id)===String(highlightId)}
                 key={party.id}
                 actions={actions}
                 party={party}
@@ -406,7 +408,9 @@ const PartyTable = ({
                 parties.map((party, index) => (
                   <tr
                     key={party.id}
-                    className="group transition-colors hover:bg-brand-light/25 focus-within:bg-brand-light/25"
+                    data-record-id={party.id}
+                    data-saved-highlight={String(party.id)===String(highlightId)||undefined}
+                    className={`group transition-colors hover:bg-brand-light/25 focus-within:bg-brand-light/25 ${String(party.id)===String(highlightId)?"bg-emerald-50 ring-2 ring-inset ring-emerald-400":""}`}
                   >
                     <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(currentPage - 1) * pageSize + index + 1}

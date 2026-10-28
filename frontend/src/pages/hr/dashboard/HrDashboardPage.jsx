@@ -7,6 +7,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -26,6 +27,7 @@ import {
   getHrRecordId,
 } from "../hrHelpers";
 import { HrStatCard } from "../HrShared";
+import useHrCapabilities from "../useHrCapabilities";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -91,6 +93,9 @@ const MiniBarChart = ({ items }) => {
 };
 
 const HrDashboardPage = () => {
+  const leaveAccess = useHrCapabilities({ actions: ["view", "approve"], pageName: "HR.Leave", route: "/hr/leaves", resource: "leaves" });
+  const attendanceAccess = useHrCapabilities({ actions: ["view"], pageName: "HR.Attendance", route: "/hr/attendance", resource: "attendance" });
+  const departmentAccess = useHrCapabilities({ actions: ["view"], pageName: "HR.Department", route: "/hr/departments", resource: "departments" });
   const [state, setState] = useState({
     attendance: [],
     departments: [],
@@ -99,6 +104,9 @@ const HrDashboardPage = () => {
     leaves: [],
     loading: false,
     pendingLeaves: [],
+    available: {},
+    complete: {},
+    employeeTotal: null,
   });
 
   const loadDashboard = useCallback(async () => {
@@ -107,43 +115,26 @@ const HrDashboardPage = () => {
     try {
       const current = today();
       const weekStart = addDays(new Date(), -6).toISOString().slice(0, 10);
-      const [employees, departments, attendance, leaves, pendingLeaves] =
-        await Promise.all([
-          hrEmployeeService.getEmployees({
-            PageNumber: 1,
-            PageSize: 200,
-          }),
-          hrDepartmentService.getDepartments({
-            PageNumber: 1,
-            PageSize: 200,
-          }),
-          hrAttendanceService.getAttendance({
-            FromDate: weekStart,
-            PageNumber: 1,
-            PageSize: 200,
-            ToDate: current,
-          }),
-          hrLeaveService.getLeaves({
-            FromDate: current,
-            PageNumber: 1,
-            PageSize: 200,
-            ToDate: current,
-          }),
-          hrLeaveService.getPendingApprovals({
-            PageNumber: 1,
-            PageSize: 10,
-          }),
-        ]);
-
-      setState({
-        attendance: extractItems(attendance),
-        departments: extractItems(departments),
-        employees: extractItems(employees),
-        error: "",
-        leaves: extractItems(leaves),
-        loading: false,
-        pendingLeaves: extractItems(pendingLeaves),
+      const sources = [
+        { key: "employees", allowed: true, request: () => hrEmployeeService.getEmployees({ PageNumber: 1, PageSize: 200 }) },
+        { key: "departments", allowed: departmentAccess.canView, request: () => hrDepartmentService.getDepartments({ PageNumber: 1, PageSize: 200 }) },
+        { key: "attendance", allowed: attendanceAccess.canView, request: () => hrAttendanceService.getAttendance({ FromDate: weekStart, ToDate: current, PageNumber: 1, PageSize: 200 }) },
+        { key: "leaves", allowed: leaveAccess.canView, request: () => hrLeaveService.getLeaves({ FromDate: current, ToDate: current, PageNumber: 1, PageSize: 200 }) },
+        { key: "pendingLeaves", allowed: leaveAccess.canApprove, request: () => hrLeaveService.getPendingApprovals({ PageNumber: 1, PageSize: 10 }) },
+      ];
+      const results = await Promise.allSettled(sources.map((source) => source.allowed ? source.request() : Promise.resolve(null)));
+      const next = { available: {}, complete: {}, employeeTotal: null, loading: false, error: "" };
+      results.forEach((result, index) => {
+        const source = sources[index];
+        const response = result.status === "fulfilled" ? result.value : null;
+        next[source.key] = response ? extractItems(response) : [];
+        next.available[source.key] = Boolean(response);
+        const total = Number(response?.data?.totalCount ?? response?.meta?.totalCount ?? next[source.key].length);
+        next.complete[source.key] = total <= next[source.key].length;
+        if (source.key === "employees" && response) next.employeeTotal = total;
+        if (result.status === "rejected") next.error += `${source.key}: ${getHrActionError(result.reason, "Source unavailable")} `;
       });
+      setState(next);
     } catch (error) {
       setState((current) => ({
         ...current,
@@ -151,7 +142,7 @@ const HrDashboardPage = () => {
         loading: false,
       }));
     }
-  }, []);
+  }, [attendanceAccess.canView, departmentAccess.canView, leaveAccess.canApprove, leaveAccess.canView]);
 
   useEffect(() => {
     void Promise.resolve().then(loadDashboard);
@@ -179,12 +170,12 @@ const HrDashboardPage = () => {
     }).length;
 
     return {
-      onLeaveToday,
+      onLeaveToday: state.available.leaves && state.complete.leaves ? onLeaveToday : "—",
       payrollMtd: "Unavailable",
-      presentToday,
-      totalEmployees: state.employees.length,
+      presentToday: state.available.attendance && state.complete.attendance ? presentToday : "—",
+      totalEmployees: state.employeeTotal ?? "—",
     };
-  }, [state.attendance, state.employees.length, state.leaves]);
+  }, [state.attendance, state.available, state.complete, state.employeeTotal, state.leaves]);
 
   const trend = useMemo(() => {
     return Array.from({ length: 7 }, (_, index) => {
@@ -298,7 +289,8 @@ const HrDashboardPage = () => {
             <BarChart3 className="h-5 w-5 text-slate-400" />
           </div>
           <div className="mt-5">
-            <MiniBarChart items={trend} />
+            {state.available.attendance && state.complete.attendance ? <MiniBarChart items={trend} /> : <p className="text-sm text-slate-500">Full attendance totals are unavailable for this view. Open attendance for the selected period.</p>}
+            {attendanceAccess.canView && <Link className="mt-3 inline-block text-sm font-semibold text-brand underline" to={`/hr/attendance?date=${today()}`}>Open daily attendance and department report</Link>}
           </div>
         </div>
 
@@ -310,7 +302,7 @@ const HrDashboardPage = () => {
             Leave requests awaiting manager action.
           </p>
           <div className="mt-4 space-y-3">
-            {state.pendingLeaves.length === 0 ? (
+            {!state.available.pendingLeaves ? <p className="text-sm text-slate-500">Pending approvals are unavailable for your current access or could not be loaded.</p> : state.pendingLeaves.length === 0 ? (
               <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">
                 No pending approvals loaded.
               </p>
@@ -326,10 +318,12 @@ const HrDashboardPage = () => {
                   <p className="text-xs text-slate-500">
                     {formatHrDate(leave.startDate)} - {formatHrDate(leave.endDate)}
                   </p>
+                  {leaveAccess.canView && <Link className="mt-2 inline-block text-sm font-semibold text-brand underline" to={`/hr/leaves?employeeId=${encodeURIComponent(leave.employeeId)}&status=1`}>Review this employee's leave requests</Link>}
                 </div>
               ))
             )}
           </div>
+          {leaveAccess.canView && <Link className="mt-3 inline-block text-sm font-semibold text-brand underline" to="/hr/leaves?status=1">Open all pending leave requests</Link>}
         </div>
       </div>
 
@@ -337,6 +331,7 @@ const HrDashboardPage = () => {
         <h2 className="text-sm font-semibold text-slate-900">
           Department Headcount
         </h2>
+        {!state.complete.employees && <p className="mt-2 text-xs text-amber-700">Department figures below cover the loaded employee preview. Use the employee list for the full matching staff.</p>}
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {departmentHeadcount.length === 0 ? (
             <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-500">

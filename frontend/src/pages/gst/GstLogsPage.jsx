@@ -2,9 +2,10 @@ import { useCallback, useState } from "react";
 import AppButton from "../../components/common/AppButton";
 import AppInput from "../../components/common/AppInput";
 import AppSelect from "../../components/common/AppSelect";
+import GstRegistrationLookup from "./GstRegistrationLookup";
 import DataTableShell from "../../components/common/DataTableShell";
 import { gstService } from "../../services/gst/gstService";
-import { GST_LOG_SORTS, gstLogFilters, gstLogTimestamp, safeLogSummary } from "../../utils/gstCompliance";
+import { GST_LOG_SORTS, GST_OPERATION_OPTIONS, gstLogFilters, gstLogTimestamp, safeLogSummary } from "../../utils/gstCompliance";
 import { GstError, GstFrame, GstPager } from "./GstShared";
 import { useGstQuery } from "./useGst";
 
@@ -26,8 +27,8 @@ export default function GstLogsPage() {
       } catch (error) { setValidation(error.message); }
     }}>
       <AppInput label="Search" helperText="Operation, endpoint or error text" value={draft.Search} onChange={event => set("Search", event.target.value)} />
-      <AppInput label="Operation" placeholder="Exact API type" value={draft.ApiType} onChange={event => set("ApiType", event.target.value)} />
-      <AppInput label="Registration ID" type="number" min="1" step="1" value={draft.CompanyGstRegistrationId} onChange={event => set("CompanyGstRegistrationId", event.target.value)} />
+      <AppSelect label="Operation" value={draft.ApiType} onChange={value => set("ApiType", value)} options={[{value:"",label:"All operations"},...GST_OPERATION_OPTIONS]} />
+      <GstRegistrationLookup label="GST registration" value={draft.CompanyGstRegistrationId} onChange={value => set("CompanyGstRegistrationId", value)} />
       <AppSelect label="Outcome" value={draft.IsSuccess} onChange={value => set("IsSuccess", value)} options={[{ value: "", label: "All outcomes" }, { value: "true", label: "Success" }, { value: "false", label: "Failure" }]} />
       <AppInput label="From date / time" helperText="Your local time" type="datetime-local" value={draft.FromDate} onChange={event => set("FromDate", event.target.value)} />
       <AppInput label="To date / time" helperText="Your local time" type="datetime-local" min={draft.FromDate || undefined} value={draft.ToDate} onChange={event => set("ToDate", event.target.value)} />

@@ -57,7 +57,7 @@ const DesignationFormModal = ({
       await onSubmit({
         designationCode: values.designationCode.trim(),
         designationName: values.designationName.trim(),
-        departmentId: Number(values.departmentId),
+        departmentId: values.departmentId,
         description: values.description?.trim() ?? "",
         isActive: values.isActive,
       });

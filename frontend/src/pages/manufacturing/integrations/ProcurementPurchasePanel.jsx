@@ -42,12 +42,12 @@ export function ProcurementPurchasePanel({ run, lines, onSaved }) {
   </PhysicalSection>;
 }
 
-export function SupplierPolicyPanel({ itemId }) {
+export function SupplierPolicyPanel({ itemId, onSaved }) {
   const t = useProductionText(physicalMessages);
   const permission = useCapabilities({ actions: ["view", "update"], pageName: "ProcurementPlanning.Settings", resource: "ProcurementPlanning.Settings" });
   const context = usePhysicalContext(api.supplierPolicy, itemId, permission.canView);
   const [form, setForm] = useState({});
-  const command = usePhysicalCommand(async () => { await reloadPhysical(context.reload); setForm({}); return true; });
+  const command = usePhysicalCommand(async () => { await reloadPhysical(context.reload); const current = (await api.supplierPolicy(itemId)).data; await onSaved?.(current); setForm({}); return true; });
   const value = (key, fallback) => form[key] ?? fallback ?? "";
   const save = async () => {
     if (!permission.canUpdate || !context.data) return;

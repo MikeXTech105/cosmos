@@ -44,6 +44,14 @@ describe("buildMenuTree", () => {
     const board = production.children.find(item => item.route === "/manufacturing/board");
     expect(board.label).toBe("Kanban Board");
     expect(board.id).toBe("productionKanban");
+    expect(production.children.map((item) => [item.id, item.label, item.route])).toEqual([
+      ["productionDaily", "Daily Production", "/manufacturing/daily"],
+      ["productionKanban", "Kanban Board", "/manufacturing/board"],
+      ["productionOrders", "Production Orders", "/manufacturing/orders"],
+      ["productionPlanning", "Production Planning", "/manufacturing/planning"],
+      ["productionImports", "Import & Reconciliation", "/manufacturing/imports"],
+    ]);
+    expect(new Set(production.children.map((item) => item.id)).size).toBe(5);
     expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/daily");
     expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/board");
   });

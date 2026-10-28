@@ -1,4 +1,4 @@
-import { serializeId } from "../inventoryHelpers";
+import { optionalDocumentIdText } from "../../../utils/documentPrecision";
 import {
   ITEM_CLASSIFICATION_OPTIONS,
   normalizeItemClassification,
@@ -34,11 +34,11 @@ export const getItemDefaultValues = (item) => ({
   categoryId:
     item?.categoryId === null || item?.categoryId === undefined
       ? ""
-      : Number(item.categoryId),
+      : String(item.categoryId),
   unitId:
     item?.unitId === null || item?.unitId === undefined
       ? ""
-      : Number(item.unitId),
+      : String(item.unitId),
   itemType: normalizeItemType(item?.itemType),
   procurementClassification:
     normalizeItemClassification(item?.procurementClassification) ?? "",
@@ -83,26 +83,26 @@ export const buildItemPayload = (values) => {
     name: values.name.trim(),
     itemCode: cleanString(values.itemCode),
     barcode: cleanString(values.barcode, { noneAsNull: true }),
-    categoryId: serializeId(values.categoryId) ?? 0,
-    unitId: serializeId(values.unitId) ?? 0,
+    categoryId: optionalDocumentIdText(values.categoryId),
+    unitId: optionalDocumentIdText(values.unitId),
     itemType,
     procurementClassification: normalizeItemClassification(
       values.procurementClassification,
     ),
-    salesPrice: toNumber(values.salesPrice),
-    purchasePrice: toNumber(values.purchasePrice),
+    salesPrice: String(values.salesPrice ?? "0"),
+    purchasePrice: String(values.purchasePrice ?? "0"),
     hsnCode: cleanString(values.hsnCode),
     gstRate: toNumber(values.gstRate),
     trackInventory: tracksStock,
     isManufactured:
       tracksStock && Boolean(values.isActive) && Boolean(values.isManufactured),
-    openingStock: tracksStock ? toNumber(values.openingStock) : 0,
+    openingStock: tracksStock ? String(values.openingStock ?? "0") : "0",
     openingStockValue: tracksStock
-      ? toNumber(values.openingStockValue)
-      : 0,
-    currentStock: tracksStock ? toNumber(values.currentStock) : 0,
-    reservedStock: tracksStock ? toNumber(values.reservedStock) : 0,
-    minimumStock: tracksStock ? toNumber(values.minimumStock) : 0,
+      ? String(values.openingStockValue ?? "0")
+      : "0",
+    currentStock: tracksStock ? String(values.currentStock ?? "0") : "0",
+    reservedStock: tracksStock ? String(values.reservedStock ?? "0") : "0",
+    minimumStock: tracksStock ? String(values.minimumStock ?? "0") : "0",
     description: cleanString(values.description),
     imageFile: values.imageFile ?? null,
     imageUrl: cleanString(values.imageUrl),

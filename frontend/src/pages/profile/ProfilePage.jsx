@@ -167,7 +167,7 @@ const ProfilePage = () => {
       {readOnlyFallback && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Your saved account details are shown read-only. Profile editing will be
-          available when the backend self-profile endpoint is enabled.
+          available after your administrator enables account profile updates.
         </p>
       )}
 

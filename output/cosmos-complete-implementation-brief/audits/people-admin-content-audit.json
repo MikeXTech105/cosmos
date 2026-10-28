@@ -1,0 +1,448 @@
+{
+  "audit": "People, administration, content and personal workspaces UX source review",
+  "workspace": "F:/FI/cosmos",
+  "revision": "da46203",
+  "date": "2026-10-28",
+  "method": "Read-only inspection of routes, page components, nested dialogs, helpers, store use, API services, owned backend controller actions and HR setup SQL/domain definitions. Report artifact only; no application edits, database calls, server startup or runtime UI verification.",
+  "backend_cross_check": [
+    {
+      "area": "HR salary and leave setup foundation",
+      "status": "Database/domain foundation exists, but no matching maintenance API or frontend setup surface was found",
+      "details": "LeaveType has AnnualQuota and IsPaidLeave. SQL defines salary structures, earning/deduction components, structure-component amounts and effective employee salary assignments. The HR controller actions, HrRequests and IHrService contain no CRUD/assignment commands for those setup records. Do not describe these as a ready hidden API. Payroll processing depends on those records and excludes employees with no matching salary setup.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.Domain/HR/HrEntities.cs","line":120},{"path":"F:/FI/cosmos/backend/src/Cosmos.Domain/HR/HrEntities.cs","line":149},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2299},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2314},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2977},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/PayrollController.cs","line":18},{"path":"F:/FI/cosmos/backend/src/Cosmos.Application/Abstractions/Services/IHrService.cs","line":8}]
+    },
+    {
+      "area": "HR shift and attendance setup",
+      "status": "Shift policy fields are exposed; generic rule/calendar maintenance API was not found",
+      "details": "Shift start/end/grace/night/weekly hours are API-backed and present in the form. Holiday/WeekOff are attendance statuses; no holiday-calendar, configurable attendance rule or leave-entitlement maintenance controller action was found. Attendance adjustment request/decision APIs exist but no list/search endpoint for an adjustments approval inbox was found in AttendanceController.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.Application/HR/HrRequests.cs","line":11},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/ShiftsController.cs","line":18},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/AttendanceController.cs","line":28},{"path":"F:/FI/cosmos/frontend/src/pages/hr/shifts/ShiftFormModal.jsx","line":158}]
+    },
+    {
+      "area": "HR attendance report actions",
+      "status": "Monthly report is integrated in a nested employee dialog; department report remains API/service-only in the inspected frontend",
+      "details": "EmployeeAttendanceModal calls getMonthlyReport. DepartmentReport controller action, frontend service and Redux thunk exist, but no page/component caller or dispatch for the department-report thunk was found.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/AttendanceController.cs","line":34},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/AttendanceController.cs","line":36},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/EmployeeAttendanceModal.jsx","line":108},{"path":"F:/FI/cosmos/frontend/src/services/hr/attendanceService.js","line":87},{"path":"F:/FI/cosmos/frontend/src/store/slices/hr/attendanceSlice.js","line":51}]
+    },
+    {
+      "area": "Employee nested records and lifecycle",
+      "status": "Exposed backend actions are represented in nested frontend surfaces",
+      "details": "Reporting-manager/dropdown helpers, employee details/create/update/delete, resign/rejoin, documents list/add/delete and bank details list/add all have corresponding page/form/profile/service usage. These are not missing merely because there is no separate sidebar link.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/EmployeesController.cs","line":27},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/EmployeesController.cs","line":49},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/EmployeesController.cs","line":65},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeProfilePanel.jsx","line":41}]
+    },
+    {
+      "area": "RBAC and account management",
+      "status": "Core master and child mapping endpoints have frontend surfaces",
+      "details": "Users CRUD/export/activate/deactivate/role assignment, Roles CRUD/export, Pages CRUD with parent hierarchy and role permission get/save are represented. Self-profile get/update exists in AuthController despite the frontend compatibility fallback copy. Account profile and HR employee profile are distinct resources.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/UsersController.cs","line":79},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PermissionsController.cs","line":21},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PagesController.cs","line":31},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/AuthController.cs","line":37}]
+    },
+    {
+      "area": "Website masters, content children and warranty workflow",
+      "status": "Controller-supported admin content/workflow actions are represented",
+      "details": "Products CRUD with embedded benefits/media; posts CRUD; categories list/create/update/delete in the Categories tab; announcements CRUD; settings get/update; dashboard overview; warranty list/detail/history/attachment download, assign/start review/request information/approve/reject/resolve/complete, notes/customer messages and summary all have frontend service and screen/action counterparts. Media upload is a supporting capability, not a master. No additional standalone website master was identified in these controllers.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/WebsiteManagement/WebsiteManagementControllers.cs","line":26},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/WebsiteManagement/WebsiteManagementControllers.cs","line":50},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/WebsiteManagement/WebsiteManagementControllers.cs","line":85},{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx","line":40}]
+    }
+  ],
+  "coverage": [
+    {
+      "area": "HR dashboard",
+      "routes": ["/hr/dashboard"],
+      "classification": "Operational overview, not a master",
+      "screens_and_children": ["Headcount metrics", "Seven-day attendance trend", "Pending leave approvals", "Department headcount"],
+      "flow": "HR overview -> review staff, attendance and leave workload -> related HR screen.",
+      "existing_strength": "Clear named metrics and attendance trend.",
+      "opportunity": "Make pending approval cards and department counts open filtered lists with context.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/dashboard/HrDashboardPage.jsx","line":291},{"path":"F:/FI/cosmos/frontend/src/pages/hr/dashboard/HrDashboardPage.jsx","line":305},{"path":"F:/FI/cosmos/frontend/src/pages/hr/dashboard/HrDashboardPage.jsx","line":336}]
+    },
+    {
+      "area": "HR departments",
+      "routes": ["/hr/departments"],
+      "classification": "Master",
+      "screens_and_children": ["Filtered/paginated department table", "Create/edit/view dialog", "Delete confirmation"],
+      "flow": "Create department code/name/description/active state -> use in designations and employees.",
+      "existing_strength": "Simple form, common controls, server field-error mapping and read-only view mode.",
+      "opportunity": "One setup workspace showing each department's designations and staff would reduce menu switching.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/departments/DepartmentFormModal.jsx","line":108},{"path":"F:/FI/cosmos/frontend/src/pages/hr/departments/DepartmentsPage.jsx","line":387}]
+    },
+    {
+      "area": "HR designations",
+      "routes": ["/hr/designations"],
+      "classification": "Master linked to department",
+      "screens_and_children": ["Designation list/filter/stats", "Create/edit/view dialog", "Inline department creation", "Delete confirmation"],
+      "flow": "Choose/create department -> create designation -> assign to employee.",
+      "existing_strength": "Department can already be created inline; this shortcut should be preserved.",
+      "opportunity": "Surface designation creation inside a department setup/detail panel and keep the created parent selected.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/designations/DesignationFormModal.jsx","line":138},{"path":"F:/FI/cosmos/frontend/src/pages/hr/designations/DesignationFormModal.jsx","line":152},{"path":"F:/FI/cosmos/frontend/src/pages/hr/designations/DesignationsPage.jsx","line":477}]
+    },
+    {
+      "area": "HR shifts",
+      "routes": ["/hr/shifts"],
+      "classification": "Master with embedded attendance settings",
+      "screens_and_children": ["Shift grid", "Create/edit/view dialog", "Start/end times", "Grace minutes", "Weekly hours", "Night shift and active flags", "Delete confirmation"],
+      "flow": "Configure shift -> assign employee -> use attendance operations.",
+      "existing_strength": "Relevant timing and grace settings are already together.",
+      "opportunity": "Show a human-readable duration/overnight preview and explain weekly hours before saving.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/shifts/ShiftFormModal.jsx","line":158},{"path":"F:/FI/cosmos/frontend/src/pages/hr/shifts/ShiftFormModal.jsx","line":182},{"path":"F:/FI/cosmos/frontend/src/pages/hr/shifts/ShiftFormModal.jsx","line":192}]
+    },
+    {
+      "area": "HR employees",
+      "routes": ["/hr/employees", "/hr/employees/new", "/hr/employees/:id/edit"],
+      "classification": "Employee master; addresses/bank/documents are embedded child records; resign/rejoin are lifecycle actions",
+      "screens_and_children": ["Search/filter/list", "Profile Overview tab", "Bank Details tab and dialog", "Documents tab and upload/delete", "Attendance tab", "Leaves tab", "Create/edit form", "Multiple addresses", "Department/designation/shift inline creation", "Resign/rejoin dialog", "Profile PDF"],
+      "flow": "Department/designation/shift -> employee identity/contact/employment -> optional addresses/bank -> save -> profile -> documents/attendance/leaves -> resign or rejoin.",
+      "existing_strength": "A useful unified employee profile already exists with bank, documents, attendance and leave tabs. Create drafts and inline related-master creation already exist.",
+      "opportunity": "Use a short onboarding form followed by optional sections; make PDF download explicit and distinguish bank-save failure from employee-save success.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeProfilePanel.jsx","line":41},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":261},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":277},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":295},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":383},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeLifecycleModal.jsx","line":116}]
+    },
+    {
+      "area": "HR attendance",
+      "routes": ["/hr/attendance"],
+      "classification": "Daily transactions and approval workflow, not a master",
+      "screens_and_children": ["Book view", "Details roster", "Date navigation", "Bulk present/absent for visible staff", "Draft status edits/save/reset", "Employee monthly attendance", "Check-in/out dialog", "Manual entry dialog", "Correction request dialog", "Approve/reject adjustment dialogs"],
+      "flow": "Select date/department -> mark visible staff -> review exceptions -> save -> correct individual attendance -> request/approve adjustment.",
+      "existing_strength": "The quick attendance book already matches the desired sheet-like daily workflow and supports save/reset.",
+      "opportunity": "Protect unsaved edits on date/navigation changes and replace manual adjustment IDs with a pending corrections inbox.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx","line":202},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx","line":684},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceBook.jsx","line":78},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceActionModals.jsx","line":322},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceActionModals.jsx","line":358}]
+    },
+    {
+      "area": "HR leave",
+      "routes": ["/hr/leaves"],
+      "classification": "Application and approval workflow; leave types are fixed enum options in this frontend",
+      "screens_and_children": ["Leave list/filter/current-page stats", "Apply Leave dialog", "Approve/reject/cancel dialogs", "Employee leave balance panel", "Manager pending approvals panel"],
+      "flow": "Choose employee/type/dates/reason -> apply -> manager reviews pending leave -> approve/reject/cancel -> review balance and history.",
+      "existing_strength": "Employee and manager selectors use display options; row actions prefill leave IDs; current-page statistics explicitly state their scope.",
+      "opportunity": "Show balances as named days remaining/used, retain context in approval dialogs and unify pending approvals with the list.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":150},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":237},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":277},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":687},{"path":"F:/FI/cosmos/frontend/src/utils/hrEnums.js","line":96}]
+    },
+    {
+      "area": "HR payroll",
+      "routes": ["/hr/payroll"],
+      "classification": "Period processing and approval workflow, not a salary-component master",
+      "screens_and_children": ["Month/year process dialog", "Selected payroll run and employee rows", "Gross/deduction/net totals", "Approval dialog", "Employee history query", "Payslip query/panel"],
+      "flow": "Select payroll month/year -> process -> review totals and employee values -> approve selected run -> inspect employee history/payslip.",
+      "existing_strength": "Process and approval are distinct steps; employee payslip queries already use an employee selector.",
+      "opportunity": "A review/approve step with period and staff context, a formatted printable payslip, and labelled query controls would make payroll client-ready.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":145},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":185},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":222},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":563},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":647}]
+    },
+    {
+      "area": "HR embedded policies and enum configuration",
+      "routes": [],
+      "classification": "Embedded shift settings and fixed frontend enum options; no separate maintenance route found",
+      "screens_and_children": ["Shift grace/night/weekly-hour settings", "Employment types", "Employee lifecycle statuses", "Attendance statuses", "Sick/casual/earned/unpaid leave type options"],
+      "flow": "Configured shift and fixed option sets feed employee, attendance and leave forms.",
+      "existing_strength": "Consistent shared option definitions.",
+      "opportunity": "Database/domain leave quotas and salary setup records exist, but corresponding maintenance controller/service commands and frontend screens were not found. Add an agreed setup API and client setup surface, plus payroll readiness checks; configurable holiday/rule maintenance was not found either.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/utils/hrEnums.js","line":28},{"path":"F:/FI/cosmos/frontend/src/utils/hrEnums.js","line":45},{"path":"F:/FI/cosmos/frontend/src/pages/hr/shifts/ShiftFormModal.jsx","line":182}]
+    },
+    {
+      "area": "Administration users",
+      "routes": ["/users"],
+      "classification": "Access-account master, separate from employee master",
+      "screens_and_children": ["Search/role/status filters", "List/stats/export", "Create/edit/view user dialog", "Role selection", "Create password/show-hide", "Activate/deactivate/delete confirmation"],
+      "flow": "Create account -> assign selected role -> activate/deactivate or update -> inspect effective permissions through role administration.",
+      "existing_strength": "Validation and role selection are explicit; destructive/status actions already have confirmations.",
+      "opportunity": "Guide Create account -> Assign role -> Review access in one flow and recover cleanly from a failed second API call.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/UserModal.jsx","line":294},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/UserModal.jsx","line":413},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/Users.jsx","line":98},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/Users.jsx","line":451}]
+    },
+    {
+      "area": "Administration roles",
+      "routes": ["/roles"],
+      "classification": "Master",
+      "screens_and_children": ["Role list/filter/stats", "Create/edit/view dialog", "Name/description/active", "Delete/status confirmations"],
+      "flow": "Create role -> configure page/action permissions -> assign role to users.",
+      "existing_strength": "Small, understandable role form and confirmation dialogs.",
+      "opportunity": "After creation, open permissions for that role; offer reviewed role templates/copy as a future speed improvement.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/rbac/roles/RoleModal.jsx","line":13},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/roles/Roles.jsx","line":837}]
+    },
+    {
+      "area": "Administration permissions",
+      "routes": ["/permissions"],
+      "classification": "Role-to-page/action mapping, not a separate business master",
+      "screens_and_children": ["Role selector", "Searchable page/action matrix", "Individual/column/all toggles", "Enabled count", "Dirty/save status", "Read-only SuperAdmin effective access"],
+      "flow": "Select role -> change page/action permissions -> save -> use role on account.",
+      "existing_strength": "Search, bulk toggles, dirty status and read-only SuperAdmin access already exist.",
+      "opportunity": "Guard unsaved role changes; show an impact summary of added/removed actions before saving broad changes.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/Permissions.jsx","line":371},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/Permissions.jsx","line":432},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/Permissions.jsx","line":472},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/PermissionsTable.jsx","line":263},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/PermissionsTable.jsx","line":297}]
+    },
+    {
+      "area": "Administration pages",
+      "routes": ["/rbac/pages", "/rbac/pages/new", "/rbac/pages/:id/edit", "/pages (redirect)"],
+      "classification": "Technical navigation/resource master with parent-child hierarchy",
+      "screens_and_children": ["Tree and table views", "Search/filter", "Add child shortcut", "Create/edit/view form", "Icon preview", "Parent selector", "Sort order/active", "Descendant-aware delete confirmation"],
+      "flow": "Configure page resource/route -> choose parent/icon/order -> map permissions -> navigation consumes configured records.",
+      "existing_strength": "Tree view, add-child shortcut and descendant-parent prevention are already implemented.",
+      "opportunity": "Keep this technical setup in an administrator area and provide a navigation preview plus clearer route/resource-name explanations.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/rbac/pages/PagesPage.jsx","line":158},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/pages/PagesPage.jsx","line":310},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/pages/PageFormPage.jsx","line":56},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/pages/PageFormPage.jsx","line":259},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/pages/PageFormPage.jsx","line":300}]
+    },
+    {
+      "area": "Website dashboard",
+      "routes": ["/website/dashboard"],
+      "classification": "Content/service operations overview, not a master",
+      "screens_and_children": ["Content/claim metrics", "Claims by resolution", "Recent claims with detail links"],
+      "flow": "Review content/service workload -> open warranty queue or claim.",
+      "existing_strength": "Recent claims already drill down directly.",
+      "opportunity": "Add task-oriented shortcuts for draft posts/products and unassigned claims if those queues are supported.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/dashboard/WebsiteDashboardPage.jsx","line":64},{"path":"F:/FI/cosmos/frontend/src/pages/website/dashboard/WebsiteDashboardPage.jsx","line":81},{"path":"F:/FI/cosmos/frontend/src/pages/website/dashboard/WebsiteDashboardPage.jsx","line":108}]
+    },
+    {
+      "area": "Website products",
+      "routes": ["/website/products", "/website/products/new", "/website/products/:id/edit"],
+      "classification": "Public content/catalogue master, distinct from inventory item master; benefits/media are child rows",
+      "screens_and_children": ["Product catalogue/filter/delete", "Basics", "Commercial values", "Comparison specifications", "Social proof", "Ordered benefits", "Media upload/alt text/primary image", "Public transition confirmation", "Concurrency comparison"],
+      "flow": "Create draft product -> enter public product values/benefits/media -> choose primary image -> review public status -> save -> public catalogue consumes values.",
+      "existing_strength": "Grouped sections, media validation/upload busy state, primary image control, sticky Save, transition confirmation and row-version conflict resolution.",
+      "opportunity": "A client-facing product-card/full-page preview and Basics-first progressive entry would simplify the long form.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/products/WebsiteProductFormPage.jsx","line":175},{"path":"F:/FI/cosmos/frontend/src/pages/website/products/WebsiteProductFormPage.jsx","line":218},{"path":"F:/FI/cosmos/frontend/src/pages/website/products/WebsiteProductFormPage.jsx","line":225},{"path":"F:/FI/cosmos/frontend/src/pages/website/products/WebsiteProductFormPage.jsx","line":238}]
+    },
+    {
+      "area": "Website blog categories",
+      "routes": ["/website/blog (Categories tab)"],
+      "classification": "Nested content category master",
+      "screens_and_children": ["Categories tab/table", "Create/edit category modal", "Automatic editable slug", "Description/sort/active", "Delete-in-use conflict", "Concurrency comparison"],
+      "flow": "Create category -> select category when writing blog post.",
+      "existing_strength": "Categories already exist in a nested tab; automatic slug and conflict handling exist.",
+      "opportunity": "Offer an inline Add category shortcut from the post editor when authorized, using the existing category form.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPage.jsx","line":144},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPage.jsx","line":149},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPage.jsx","line":160},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":167}]
+    },
+    {
+      "area": "Website blog posts",
+      "routes": ["/website/blog (Posts tab)", "/website/blog/new", "/website/blog/:id/edit"],
+      "classification": "Content records with category relation",
+      "screens_and_children": ["Post list/filter/featured/publish status", "Content and cover image", "Category/read time", "Plain/Markdown editor and text preview", "Publishing schedule", "SEO/Open Graph image", "Publish confirmation and conflict comparison"],
+      "flow": "Choose/create category -> write draft -> add media/SEO -> preview -> choose publishing state/time -> save.",
+      "existing_strength": "Auto slug, grouped content/publishing/SEO, explicit publishing state and conflict resolution.",
+      "opportunity": "Render a faithful website preview while preserving the stored plain/Markdown contract; current Preview displays source text.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":164},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":173},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":179}]
+    },
+    {
+      "area": "Website announcements",
+      "routes": ["/website/announcements"],
+      "classification": "Scheduled public content configuration",
+      "screens_and_children": ["Placement/active filters", "Live/not-live reason", "Create/edit modal", "Title/message/CTA", "Priority/sort order", "UTC start/end", "Dismissal version/bump action", "Delete confirmation/conflict comparison"],
+      "flow": "Compose top-bar message/CTA -> choose priority/time window -> activate -> public site displays eligible announcement.",
+      "existing_strength": "Live status explains eligibility, scheduled windows and dismissal-version helper already exist.",
+      "opportunity": "Show a visual top-bar preview, client local time with timezone label and a clear ordering explanation in the form.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":117},{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":122},{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":130},{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":133}]
+    },
+    {
+      "area": "Website warranty claims",
+      "routes": ["/website/warranty", "/website/warranty/:id"],
+      "classification": "Service case workflow, not a master",
+      "screens_and_children": ["Search/status/resolution/assignee/date filters", "Claim detail", "Protected evidence download", "Assign/approve/reject/resolve workflow", "Refund/replacement/repair fields", "History timeline", "Internal notes", "Customer messages and send confirmation", "Summary report"],
+      "flow": "Customer submission -> staff queue -> inspect detail/evidence -> assign/review -> approve or reject -> resolve refund/replacement/repair -> record history and customer communication.",
+      "existing_strength": "Permission/status-aware guarded actions, required rejection reason, separate internal/customer messages and confirmed sends.",
+      "opportunity": "A status board or saved My open/unassigned views can complement the table; show only useful next actions and hide technical backend explanations from client-facing report UI.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx","line":90},{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx","line":112},{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx","line":204},{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx","line":226},{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx","line":233}]
+    },
+    {
+      "area": "Website settings",
+      "routes": ["/website/settings"],
+      "classification": "Server-provided key/value settings, no client-side key creation",
+      "screens_and_children": ["Prefix-grouped setting rows", "Value edit", "Public/private toggle", "Unsaved marker/count", "Refresh/save"],
+      "flow": "Load centrally defined keys -> edit value/visibility -> save settings set -> website consumes allowed values.",
+      "existing_strength": "No invented setting keys; visibility warning and dirty indicators are explicit.",
+      "opportunity": "Map approved keys to friendly labels, help text and typed controls; review visibility changes and protect unsaved refresh/navigation.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":18},{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":40},{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":47},{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":82}]
+    },
+    {
+      "area": "Data Book",
+      "routes": ["/data-book"],
+      "classification": "Reusable public/private entries; sheet is a category string, not a separately persisted master; column aliases are local display preferences",
+      "screens_and_children": ["Sheet grid", "All-entry list", "Sheet selection/new sheet", "Public/My private tabs", "Editable cells", "Rename display columns", "Keyboard navigation", "Excel paste preview", "Auto-save and Save all", "Copy value", "Guided create/edit/detail", "Per-entry history", "Delete confirmation", "Row-version conflicts", "Filtered CSV export"],
+      "flow": "Choose/create sheet -> type or paste Excel block -> preview -> review dirty rows -> save -> find/copy values -> inspect history/conflicts.",
+      "existing_strength": "A substantial sheet-like workflow already exists; preview protects bulk paste, row states show saved/failed, private scope and conflicts are handled.",
+      "opportunity": "Protect dirty sheet/view/navigation changes and offer recoverable local drafts; clarify browser-local column aliases and sheet persistence after first row.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPage.jsx","line":325},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPage.jsx","line":907},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookGrid.jsx","line":203},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookGrid.jsx","line":363},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPasteModal.jsx","line":43},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookSheetBar.jsx","line":114},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/dataBookColumns.js","line":49}]
+    },
+    {
+      "area": "Account profile",
+      "routes": ["/profile"],
+      "classification": "Signed-in account profile, separate from employee master",
+      "screens_and_children": ["Saved name/email/username/roles/status", "Name/email edit", "Read-only endpoint fallback", "Change-password link"],
+      "flow": "Review own account -> edit name/email if supported -> save; use dedicated password flow.",
+      "existing_strength": "Small account form, field conflict handling and explicit read-only fallback.",
+      "opportunity": "Use client language for service-unavailable fallback and clarify account profile versus employee profile.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/profile/ProfilePage.jsx","line":156},{"path":"F:/FI/cosmos/frontend/src/pages/profile/ProfilePage.jsx","line":167},{"path":"F:/FI/cosmos/frontend/src/pages/profile/ProfilePage.jsx","line":198},{"path":"F:/FI/cosmos/frontend/src/pages/profile/ProfilePage.jsx","line":215}]
+    },
+    {
+      "area": "Preferences and Settings",
+      "routes": ["/preferences", "/settings"],
+      "classification": "Browser-local appearance/table/invoice/item preferences, not database or company configuration",
+      "screens_and_children": ["Login appearance", "Accent theme", "Default table rows", "Invoice template selection", "Manufacturing display/capability preference"],
+      "flow": "Choose appearance/template/table preference -> save immediately in this browser -> affected UI reads local preference.",
+      "existing_strength": "Live appearance changes and visual invoice template choices.",
+      "opportunity": "Group personal display preferences coherently and label persistence/scope; distinguish local manufacturing visibility from company/backend setup.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/preferences/PreferencesPage.jsx","line":29},{"path":"F:/FI/cosmos/frontend/src/pages/settings/sections/AppearanceSection.jsx","line":40},{"path":"F:/FI/cosmos/frontend/src/pages/settings/sections/ItemSettingsSection.jsx","line":33},{"path":"F:/FI/cosmos/frontend/src/utils/preferencesStorage.js","line":23},{"path":"F:/FI/cosmos/frontend/src/pages/sales/invoiceTemplates/templateStorage.js","line":28}]
+    },
+    {
+      "area": "Activity logs",
+      "routes": ["/activity-logs"],
+      "classification": "Audit evidence, not a master or daily data-entry screen",
+      "screens_and_children": ["Activity timeline/table", "Search/module/action/actor/date filters", "Advanced technical filters", "Filter chips", "Detail actor/changed fields", "Before/after comparison", "Optional raw snapshots", "Request context/support reference", "Filtered CSV export with cap notice"],
+      "flow": "Filter activity -> open event -> inspect actor/changes/before-after -> export or share support reference.",
+      "existing_strength": "Readable changed-field comparison is primary; raw JSON and technical filters are already in disclosures. Export limit is clearly disclosed.",
+      "opportunity": "Use this disclosure/diff pattern as a model for other screens and add related business-record links where entity routing is known.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/activityLogs/ActivityLogFilters.jsx","line":226},{"path":"F:/FI/cosmos/frontend/src/pages/activityLogs/ActivityLogDetailModal.jsx","line":182},{"path":"F:/FI/cosmos/frontend/src/pages/activityLogs/ActivityLogDetailModal.jsx","line":212},{"path":"F:/FI/cosmos/frontend/src/pages/activityLogs/ActivityLogsPage.jsx","line":238}]
+    }
+  ],
+  "findings": [
+    {
+      "id": "PAC-01",
+      "priority": "P1",
+      "title": "Dirty daily work can be silently discarded by changing context",
+      "observed": "Attendance changeSelectedDate clears all drafts immediately. Data Book sheet selection changes state immediately and remounts a keyed grid; grid cleanup cancels autosave timers. Pasted rows intentionally stay dirty until saved. Permissions selecting another role resets the matrix and dirty state immediately. No unsaved-navigation guard was found in these owned page/component/hook sources.",
+      "impact": "An operator can mark attendance, paste rows or edit permissions and lose work by choosing another date/sheet/role before saving.",
+      "recommendation": "Use a consistent Save changes / Keep draft / Discard choice before context switches, refresh and navigation; keep recoverable drafts. Preserve explicit Save review for pasted bulk rows.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx","line":202},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPage.jsx","line":325},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPage.jsx","line":907},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/useDataBookGrid.js","line":334},{"path":"F:/FI/cosmos/frontend/src/pages/dataBook/DataBookPasteModal.jsx","line":43},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/Permissions.jsx","line":371}],
+      "verification": "Source-confirmed reset/remount paths; browser reproduction remains unperformed."
+    },
+    {
+      "id": "PAC-02",
+      "priority": "P1",
+      "title": "HR approvals and corrections expose internal IDs instead of business context",
+      "observed": "Attendance correction requires Attendance Record ID. Attendance approve/reject opens an empty Adjustment ID input. Leave action dialogs prefill but allow editing Leave Application ID and Employee ID. Payroll approval similarly exposes an editable Run ID.",
+      "impact": "Nontechnical staff must find technical identifiers and can approve/correct a record without seeing its employee/date/period context.",
+      "recommendation": "Open corrections from an attendance row, provide a pending-adjustments inbox, and show employee/date/current/proposed values in approval dialogs. Bind IDs internally. Leave approval should show type/dates/days/balance; payroll approval should show period/headcount/totals.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceActionModals.jsx","line":322},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceActionModals.jsx","line":358},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/AttendanceActionModals.jsx","line":384},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":237},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":277},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":222}],
+      "verification": "Directly observed in form controls and initial state. API-side validation/authorization was not tested."
+    },
+    {
+      "id": "PAC-03",
+      "priority": "P1",
+      "title": "Core HR results remain raw JSON",
+      "observed": "The Leave Balance panel and Payroll Payslip panel use JSON.stringify in a pre element.",
+      "impact": "Client staff cannot quickly read entitlement/used/remaining days or issue a normal payslip.",
+      "recommendation": "Render leave balance cards/table by leave type and a formatted employee-period payslip with earnings, deductions, net amount and print/download. Keep raw payload only in an optional administrator disclosure if useful.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":698},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":647}],
+      "verification": "Source-confirmed output formatting; authenticated response fields still require verification."
+    },
+    {
+      "id": "PAC-04",
+      "priority": "P1",
+      "title": "Multi-request saves can leave partly completed account or employee setup",
+      "observed": "User create/update is followed by a separate role-assignment request. Employee edit is followed by a separate bank-details save. A second-request failure enters a general save error path after the first operation has already succeeded.",
+      "impact": "The operator may retry account creation or assume no employee update occurred, causing duplicate attempts or an unnoticed missing role/bank change.",
+      "recommendation": "Prefer an atomic supported API operation. Otherwise retain the created ID, show exactly which step succeeded, refresh the saved entity and offer Retry role assignment / Retry bank update without recreating the record.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/Users.jsx","line":457},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/Users.jsx","line":470},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/users/Users.jsx","line":483},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":266},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":271}],
+      "verification": "Conditional failure risk confirmed by request order; no failure was injected and no production defect is claimed."
+    },
+    {
+      "id": "PAC-05",
+      "priority": "P2",
+      "title": "Employee onboarding has too much work in its first save",
+      "observed": "The create/edit page combines identity, contact, employment, addresses and bank data. After create it automatically generates a profile PDF before navigating.",
+      "impact": "Simple onboarding requires a long form and an unexpected PDF action. Optional data competes with required staff setup.",
+      "recommendation": "Keep essential identity/contact/employment first; use optional address/bank/document steps, a completion checklist and explicit Save / Save and download profile actions. Preserve existing create drafts and inline lookup creation.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":277},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":365},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":467}],
+      "verification": "Source-confirmed form grouping and automatic PDF call."
+    },
+    {
+      "id": "PAC-06",
+      "priority": "P2",
+      "title": "Website content editors need a faithful public preview",
+      "observed": "Blog Preview displays content in a whitespace-preserving text div, so Markdown source remains text. Product form exposes public data in many sections without a public product preview. Announcements expose message/CTA/order/time values in a form without a top-bar preview.",
+      "impact": "Editors cannot confidently judge the customer-facing result before publishing.",
+      "recommendation": "Use shared website renderers or a safe preview page for posts/product cards/top bars, preserving current storage and API contracts. Show Draft -> Preview -> Publish as the client-facing sequence.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":173},{"path":"F:/FI/cosmos/frontend/src/pages/website/products/WebsiteProductFormPage.jsx","line":175},{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":130}],
+      "verification": "Source-observed editor behavior; exact public renderer was not compared in this scope."
+    },
+    {
+      "id": "PAC-07",
+      "priority": "P2",
+      "title": "Website settings expose technical keys and untyped values",
+      "observed": "Setting labels are raw settingKey values; every value uses the same text input. Prefix splitting supplies the only grouping. Refresh overwrites edited rows. Public/private is editable per key.",
+      "impact": "Client staff must infer what a key means and can discard work or change public visibility without a readable change summary.",
+      "recommendation": "Add a metadata map for known keys with friendly labels/examples/typed controls, protect dirty refresh/navigation, and review visibility changes. Retain the rule that only backend-approved keys are edited.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":41},{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":47},{"path":"F:/FI/cosmos/frontend/src/pages/website/settings/WebsiteSettingsPage.jsx","line":82}],
+      "verification": "Directly observed; the actual approved key list and response schema were not authenticated."
+    },
+    {
+      "id": "PAC-08",
+      "priority": "P2",
+      "title": "Public scheduling asks Indian client staff to enter UTC manually",
+      "observed": "Blog publishing and announcement start/end inputs explicitly show UTC datetime-local fields.",
+      "impact": "Staff must mentally convert their intended publishing time; timezone mistakes are easier even though the label is technically explicit.",
+      "recommendation": "Accept and display the configured client/company timezone with a clear timezone label and preview sentence, convert to UTC for the existing API, and optionally show UTC in details.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":179},{"path":"F:/FI/cosmos/frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx","line":132}],
+      "verification": "Source-confirmed controls; no timezone conversion defect is claimed."
+    },
+    {
+      "id": "PAC-09",
+      "priority": "P2",
+      "title": "Personal/browser preferences and business configuration look similar",
+      "observed": "Preferences and Settings both expose appearance. Manufacturing enabled state/default page size share a generic localStorage key; invoice template is also browser-local. The manufacturing setting label can be interpreted as enabling backend functionality.",
+      "impact": "A client may expect settings to apply to the company or follow their account on another machine, and may confuse manufacturing visibility with the missing company configuration discussed earlier.",
+      "recommendation": "Label these as This browser / My display preferences, group duplicate appearance entry points coherently, and keep company/backend setup in a separately labelled administrator area. Consider user/company scoped persistence only if required.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/preferences/PreferencesPage.jsx","line":29},{"path":"F:/FI/cosmos/frontend/src/pages/settings/sections/ItemSettingsSection.jsx","line":33},{"path":"F:/FI/cosmos/frontend/src/utils/preferencesStorage.js","line":23},{"path":"F:/FI/cosmos/frontend/src/pages/sales/invoiceTemplates/templateStorage.js","line":28}],
+      "verification": "Source-confirmed local storage scope; broader deployment configuration was outside this subaudit."
+    },
+    {
+      "id": "PAC-10",
+      "priority": "P2",
+      "title": "Several helpful summaries do not take the operator to the next task",
+      "observed": "HR dashboard pending approvals are noninteractive cards. Role creation and permission configuration are separate pages. Blog category maintenance exists in a tab but post category selection has no inline create option in the form.",
+      "impact": "Users re-find the same employee, role or category after switching menus.",
+      "recommendation": "Link HR cards to filtered lists; take new roles directly to their permission matrix; reuse category creation inline from the post editor. Use existing employee inline lookup flow as the model.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/dashboard/HrDashboardPage.jsx","line":318},{"path":"F:/FI/cosmos/frontend/src/pages/rbac/permissions/Permissions.jsx","line":592},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":167},{"path":"F:/FI/cosmos/frontend/src/pages/hr/employees/EmployeeFormPage.jsx","line":393}],
+      "verification": "Source-observed navigation; proposed shortcuts are usability improvements, not missing core APIs."
+    },
+    {
+      "id": "PAC-11",
+      "priority": "P2",
+      "title": "Technical implementation messages appear in ordinary client UI",
+      "observed": "Warranty summary says the backend has no CSV endpoint; self-profile fallback says the backend self-profile endpoint must be enabled; blog editor describes stored plain/Markdown format.",
+      "impact": "The client receives implementation details instead of a clear available action or understandable limitation.",
+      "recommendation": "Use action-oriented language such as Summary report available, Your account is view-only right now, or Write and preview your story. Keep API details in support disclosures/documentation.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx","line":113},{"path":"F:/FI/cosmos/frontend/src/pages/profile/ProfilePage.jsx","line":169},{"path":"F:/FI/cosmos/frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx","line":159}],
+      "verification": "Source-confirmed visible copy."
+    },
+    {
+      "id": "PAC-12",
+      "priority": "P2",
+      "title": "Payroll and leave side-panel queries need visible labels",
+      "observed": "Payroll employee/month/year query controls and Leave Balance/Pending Approvals selectors are rendered without explicit label props; surrounding headings do not identify each control individually.",
+      "impact": "The purpose of a selection/year field is harder to understand and screen-reader labelling is weaker.",
+      "recommendation": "Give each control a visible Employee, Payroll month, Payroll year or Approving manager label, maintain logical focus order and use named results below.",
+      "evidence": [{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":567},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":578},{"path":"F:/FI/cosmos/frontend/src/pages/hr/payroll/PayrollPage.jsx","line":585},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":689},{"path":"F:/FI/cosmos/frontend/src/pages/hr/leaves/LeavesPage.jsx","line":706}],
+      "verification": "Directly observed parent props; full assistive-technology runtime audit was not performed."
+    },
+    {
+      "id": "PAC-13",
+      "priority": "P1",
+      "title": "Payroll setup is a database foundation without an operator maintenance flow",
+      "observed": "SQL/domain defines salary structures, earning/deduction components, component amounts and effective employee assignments. No matching setup CRUD/assignment API in the inspected HR controllers, request types or IHrService, and no frontend form, were found. Payroll SQL creates a run then derives employees through CROSS APPLY/inner joins to configured salary structures/components; employees without setup do not enter its Salary result.",
+      "impact": "A normal operator cannot maintain the data that payroll depends on. A period can be processed while employees with missing salary setup are omitted; actual database setup has not been checked.",
+      "recommendation": "Define authorized salary-component/structure/effective-assignment setup APIs and UI. Before processing, show included staff, missing salary assignments/components, attendance completeness and period readiness, and block or explicitly resolve omissions. Review leave quota/paid-type setup similarly. Do not add frontend-only forms without backend support.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.Domain/HR/HrEntities.cs","line":149},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2299},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2314},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2969},{"path":"F:/FI/cosmos/backend/database/001_Full_Database_Setup.sql","line":2977},{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/PayrollController.cs","line":18}],
+      "verification": "Source-confirmed schema and processing dependency; no database rows or live payroll runs were inspected."
+    },
+    {
+      "id": "PAC-14",
+      "priority": "P2",
+      "title": "Department attendance report has no discovered operator surface",
+      "observed": "Backend department-report action and frontend service/Redux thunk exist. Unlike monthly reporting used by the employee modal, no page/component caller of the department-report action or thunk was found.",
+      "impact": "Available department-level attendance reporting is hard to reach from daily staff work.",
+      "recommendation": "Add a Department summary tab or link from attendance/HR dashboard with date/department filters and employee drill-down, reusing the existing endpoint.",
+      "evidence": [{"path":"F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HR/AttendanceController.cs","line":36},{"path":"F:/FI/cosmos/frontend/src/services/hr/attendanceService.js","line":87},{"path":"F:/FI/cosmos/frontend/src/store/slices/hr/attendanceSlice.js","line":51},{"path":"F:/FI/cosmos/frontend/src/pages/hr/attendance/EmployeeAttendanceModal.jsx","line":108}],
+      "verification": "Static endpoint/service/caller search; no hidden runtime plugin screens were tested."
+    }
+  ],
+  "strengths_to_preserve": [
+    "Employee profile unifies overview, bank, documents, attendance and leaves; employee create supports saved drafts and inline creation of department/designation/shift.",
+    "Attendance has a real quick book with visible-staff bulk present/absent, per-employee exceptions and explicit Save/Reset.",
+    "Data Book already provides a substantial sheet workspace, Excel paste preview, keyboard cell navigation, row save/failure state, copy/history/privacy and row-version conflict handling.",
+    "Page administration already supports parent-child tree/table views, add child, icon preview and descendant-parent validation.",
+    "Permission matrix has search, bulk controls, dirty status and read-only effective SuperAdmin presentation.",
+    "Website product media validation, ordered benefits, sticky save, public-change confirmations and concurrency comparisons already exist.",
+    "Blog category maintenance is present in a nested tab, with automatic editable slugs and server conflict feedback.",
+    "Warranty separates internal notes and customer-visible messages, confirms customer sends, guards actions by state/permission and records history.",
+    "Activity log before/after comparison and advanced disclosure patterns are good examples to reuse instead of exposing raw technical data by default."
+  ],
+  "limitations": [
+    "No live browser interactions, role logins, keyboard/screen-reader/mobile tests, network failure injection, database verification or authenticated end-to-end execution were performed in this subaudit.",
+    "Presence in source confirms implemented screens and intended service calls, not that every API works on the running database.",
+    "F:/FI/cosmos/frontend/src/services/website/websiteService.js:13 explicitly documents remaining authenticated response-shape verification for blog/categories, announcements, settings, warranty subresources and summary.",
+    "No dedicated frontend maintenance routes or owned HR controller/service setup commands were found for configurable holiday calendars, leave type quotas, salary components/structures/effective assignments or similar HR policies. Fixed enum options, embedded shift settings and salary/leave database/domain records do exist; foundation records are distinguished from an exposed maintenance API.",
+    "Recommendations involving company-level settings, new queues or new persistence must follow existing authorization and API contracts; this audit did not invent or mutate those contracts.",
+    "No claim of a fully tested or error-free project follows from this static review."
+  ]
+}

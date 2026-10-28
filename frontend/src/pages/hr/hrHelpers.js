@@ -3,6 +3,7 @@ import {
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../utils/inventoryQuery";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { quantityText } from "../../utils/productionValues";
 
 export const HR_STATUS_OPTIONS = [
   { value: "all", label: "All status" },
@@ -127,14 +128,14 @@ export const formatHrDateTime = (value) => {
 };
 
 export const formatHrCurrency = (value) => {
-  const amount = Number(value) || 0;
-
-  return amount.toLocaleString("en-IN", {
-    currency: "INR",
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: "currency",
-  });
+  if (value === undefined || value === null || value === "") return "—";
+  const text = quantityText(value, { scale: 2, group: false });
+  if (text === "Invalid quantity") return "—";
+  const [whole, fraction = ""] = text.split(".");
+  const negative = whole.startsWith("-");
+  const digits = whole.replace(/^-/, "");
+  const grouped = digits.length > 3 ? `${digits.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ",")},${digits.slice(-3)}` : digits;
+  return `${negative ? "-" : ""}₹${grouped}.${fraction.padEnd(2, "0")}`;
 };
 
 export const formatHrHours = (value) => {

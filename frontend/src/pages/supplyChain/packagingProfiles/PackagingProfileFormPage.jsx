@@ -76,6 +76,7 @@ const PackagingProfileFormPage = () => {
     route: "/supply-chain/packaging-profiles",
   });
   const { channels, error: channelError } = useSupplyChainChannels();
+  const profileReadOnly = readOnly || !(isEdit ? capabilities.canEdit : capabilities.canCreate);
 
   const [record, setRecord] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -153,7 +154,12 @@ const PackagingProfileFormPage = () => {
         : await supplyChainPackagingProfileService.create(result.data);
 
       toast.success(response.message || `Packaging profile ${isEdit ? "updated" : "created"}.`);
-      navigate("/supply-chain/packaging-profiles");
+      const savedId = response?.data?.id ?? (isEdit ? id : null);
+      if (!savedId) {
+        setErrors({ form: "The profile was saved but its identity was not returned. Open the profile list and verify its conversion before using it." });
+        return;
+      }
+      navigate(`/supply-chain/packaging-profiles/${savedId}/edit?step=conversion`);
     } catch (error) {
       const fieldErrors = getApiFieldErrors(error);
       const message = getApiErrorMessage(error, "Unable to save the packaging profile.");
@@ -168,7 +174,7 @@ const PackagingProfileFormPage = () => {
   const numericField = (key, label, { min = "0", ...props } = {}) => (
     <AppInput
       {...props}
-      disabled={readOnly || saving}
+      disabled={profileReadOnly || saving}
       error={errors[key]}
       label={label}
       min={min}
@@ -226,7 +232,7 @@ const PackagingProfileFormPage = () => {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div className="sm:col-span-2 lg:col-span-3">
               <ProcurementItemAutocomplete
-                disabled={readOnly || saving}
+                disabled={profileReadOnly || saving}
                 error={errors.itemId}
                 label="Existing Item"
                 required
@@ -235,7 +241,7 @@ const PackagingProfileFormPage = () => {
               />
             </div>
             <AppSelect
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.channelId}
               label="Channel"
               options={[
@@ -246,7 +252,7 @@ const PackagingProfileFormPage = () => {
               onChange={(value) => setField("channelId", value)}
             />
             <AppInput
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.packagingCode}
               label="Packaging code"
               required
@@ -254,18 +260,20 @@ const PackagingProfileFormPage = () => {
               onChange={(event) => setField("packagingCode", event.target.value)}
             />
             <AppInput
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.packagingName}
               label="Packaging name"
               value={form.packagingName}
               onChange={(event) => setField("packagingName", event.target.value)}
             />
             {numericField("unitsPerBox", "Units per box", { min: "0", required: true, step: "any" })}
+            <p className="sm:col-span-2 lg:col-span-3 text-sm text-slate-600">Example: 1 box contains {form.unitsPerBox || "?"} Item base units. Verify the actual source-to-base relationship after saving; a dimension or a mould cavity does not establish this conversion.</p>
+            <details className="sm:col-span-2 lg:col-span-3 rounded-xl border border-slate-200 p-4"><summary className="cursor-pointer text-sm font-semibold">Advanced dimensions, weight and volumetric policy</summary><p className="my-3 text-xs text-slate-500">Volumetric weight uses length × width × height ÷ the configured divisor. Gross weight and calculated volumetric weight remain separate; use the actual carrier unit basis.</p><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {numericField("length", "Length")}
             {numericField("width", "Width")}
             {numericField("height", "Height")}
             <AppSelect
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.dimensionUnit}
               label="Dimension unit"
               options={SUPPLY_CHAIN_DIMENSION_UNITS}
@@ -275,7 +283,7 @@ const PackagingProfileFormPage = () => {
             {numericField("grossWeight", "Gross weight")}
             {numericField("netWeight", "Net weight")}
             <AppSelect
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.weightUnit}
               label="Weight unit"
               options={SUPPLY_CHAIN_WEIGHT_UNITS}
@@ -297,8 +305,9 @@ const PackagingProfileFormPage = () => {
                   : record.calculatedVolumetricWeight
               }
             />
+            </div></details>
             <AppInput
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.effectiveFrom}
               label="Effective from"
               type="date"
@@ -306,7 +315,7 @@ const PackagingProfileFormPage = () => {
               onChange={(event) => setField("effectiveFrom", event.target.value)}
             />
             <AppInput
-              disabled={readOnly || saving}
+              disabled={profileReadOnly || saving}
               error={errors.effectiveTo}
               label="Effective to"
               min={form.effectiveFrom || undefined}
@@ -315,11 +324,11 @@ const PackagingProfileFormPage = () => {
               onChange={(event) => setField("effectiveTo", event.target.value)}
             />
             <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700">
-              <input checked={form.isDefault} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} type="checkbox" onChange={(event) => setField("isDefault", event.target.checked)} />
+              <input checked={form.isDefault} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={profileReadOnly || saving} type="checkbox" onChange={(event) => setField("isDefault", event.target.checked)} />
               Default profile
             </label>
             <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700">
-              <input checked={form.isActive} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={readOnly || saving} type="checkbox" onChange={(event) => setField("isActive", event.target.checked)} />
+              <input checked={form.isActive} className="h-4 w-4 rounded border-slate-300 accent-brand" disabled={profileReadOnly || saving} type="checkbox" onChange={(event) => setField("isActive", event.target.checked)} />
               Profile is active
             </label>
           </div>
@@ -329,7 +338,7 @@ const PackagingProfileFormPage = () => {
         </section>
       )}
 
-      {isEdit && record && <PackagingConversionPanel profileId={id} readOnly={readOnly} />}
+      {isEdit && record && <div id="packaging-conversion"><p className="mb-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm text-slate-700">Next: verify the source and base units below. Saving the profile alone does not approve its conversion. A colleague with Packaging Profiles approval can complete this step.</p><PackagingConversionPanel profileId={id} readOnly={readOnly} /></div>}
 
       {!readOnly && (
         <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">
@@ -337,7 +346,7 @@ const PackagingProfileFormPage = () => {
             Cancel
           </AppButton>
           <AppButton isLoading={saving} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined} onClick={submit}>
-            Save profile
+            Save & verify conversion
           </AppButton>
         </div>
       )}

@@ -6,6 +6,7 @@ const f = vi.hoisted(() => ({ access: {}, runtime: {}, saved: false, contextFail
 vi.mock("../../../services/manufacturing/productionOrderService", () => ({ default: f.api }));
 vi.mock("../../../hooks/useProductionRuntime", () => ({ default: () => f.runtime }));
 vi.mock("../../../hooks/useCapabilities", () => ({ default: () => ({ canView: true, canApprove: true }) }));
+vi.mock("../../../utils/userScope", () => ({ getUserScope: () => "test-operator", getTrustedDraftScope: () => null }));
 vi.mock("../orders/orderHooks", async original => ({ ...(await original()), useOrderCapabilities: () => f.access, useOrderLookupAccess: () => ({ boms: false }), useItemLabels: () => Object.assign(id => `Item ${id}`, { canView: true, unitLabel: () => "PCS" }) }));
 vi.mock("../../../components/common/AppSelect", () => ({ default: ({ label, value, onChange, options, disabled }) => <label>{label}<select aria-label={label} value={value} disabled={disabled} onChange={event => onChange(event.target.value)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label> }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn() } }));
@@ -16,6 +17,8 @@ const context = row => ({ data: { order: row, materials: [{ id: 11, itemId: 9, u
 function NavigationProbe() { const navigate = useNavigate(); return <button onClick={() => navigate("/manufacturing/daily?status=3")}>Browser navigation probe</button>; }
 const mount = (url = "/manufacturing/daily", probe = false) => render(<MemoryRouter initialEntries={[url]}>{probe && <NavigationProbe />}<ProductionDeskPage /></MemoryRouter>);
 beforeEach(() => {
+  sessionStorage.clear();
+  localStorage.clear();
   Object.values(f.api).forEach(mock => mock.mockReset());
   f.access = { canView: true, canCreate: true, canApprove: true };
   f.runtime = { runtime: { businessDate: "2026-10-28", businessTimeZone: "India Standard Time", browserTimeZone: "Asia/Kolkata" }, error: "", loading: false, reload: vi.fn() };
@@ -33,6 +36,34 @@ const enter = async (good = "10", reject = "1") => {
   return screen.findByRole("dialog");
 };
 describe("daily production desk against actual command modal", () => {
+  it("recovers a company-scoped versioned draft only after explicit review and never posts it", async () => {
+    f.runtime.runtime.companyKey = "fixture-company-a";
+    const first = mount();
+    const input = await screen.findByRole("textbox", { name: "Accepted today PRO-7" });
+    fireEvent.change(input, { target: { value: "10.000001" } });
+    expect(screen.getByText(/pending ·/)).toBeTruthy();
+    const dateControl = screen.getByLabelText("Entry date");
+    const originalDate = dateControl.textContent;
+    expect(dateControl.disabled).toBe(true);
+    fireEvent.click(dateControl);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(dateControl.textContent).toBe(originalDate);
+    expect(screen.getByText(/Review or discard pending entries before changing/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Keep draft" }));
+    first.unmount();
+    const restored = mount();
+    await screen.findByText("Saved production draft available");
+    expect(f.api.complete).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Recover draft" }));
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Accepted today PRO-7" }).value).toBe("10.000001"));
+    expect(f.api.complete).not.toHaveBeenCalled();
+    restored.unmount();
+    f.runtime.runtime.companyKey = "fixture-company-b";
+    mount();
+    await screen.findByRole("textbox", { name: "Accepted today PRO-7" });
+    expect(screen.queryByText("Saved production draft available")).toBeNull();
+    expect(screen.getByRole("textbox", { name: "Accepted today PRO-7" }).value).toBe("");
+  });
   it("prefills company date/time and entered quantities, requires actual review, then posts exact payload once", async () => {
     mount();
     const dialog = within(await enter("10.000001", "0.000001"));

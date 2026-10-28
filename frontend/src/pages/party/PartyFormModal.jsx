@@ -38,11 +38,9 @@ import {
 } from "../../store/slices/party/gstSlice";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { applyApiErrorsToForm } from "../../utils/formApiErrors";
-import {
-  clearFormDraft,
-  readFormDraft,
-  saveFormDraft,
-} from "../../utils/formDraftStorage";
+import useScopedDraft from "../../hooks/useScopedDraft";
+import useUnsavedChanges from "../../hooks/useUnsavedChanges";
+import usePartySettings, { partySettingEnabled, supportedPartySetting } from "./usePartySettings";
 import {
   PARTY_COMMAND_FIELDS,
   PARTY_FIELD_SECTIONS,
@@ -80,11 +78,13 @@ const OPENING_BALANCE_TYPE_OPTIONS = [
 ];
 
 const FIELD_OPTIONS = {
+  partyType: [{ label: "Customer", value: "Customer" }, { label: "Supplier", value: "Supplier" }, { label: "Both customer and supplier", value: "Both" }],
   gstTreatment: GST_TREATMENT_OPTIONS,
   openingBalanceType: OPENING_BALANCE_TYPE_OPTIONS,
 };
 
 const FIELD_HELPERS = {
+  partyType: "One shared Party record can be a customer, a supplier, or both.",
   partyCode: "Your internal unique code for this party.",
   gstTreatment: "How GST should be applied to this party.",
   openingBalance: "Balance carried forward when this party is created.",
@@ -1080,6 +1080,7 @@ export const PartyFormContent = ({
   isView,
   mode,
   onBusyChange,
+  onGuardChange,
   onClose,
   onSubmit,
   source,
@@ -1090,10 +1091,14 @@ export const PartyFormContent = ({
   const gstConfig = gstState?.config ?? {};
   const gstVerify = gstState?.verify ?? {};
   const isNewParty = mode === "create" && fields.some((field) => field.name === "gstin");
-  const [values, setValues] = useState(() => {
-    return (isNewParty ? readFormDraft("party-create") : null) ??
-      buildFormValues(fields, source);
-  });
+  const initialValues = useMemo(() => buildFormValues(fields, source), [fields, source]);
+  const [values, setValues] = useState(initialValues);
+  const dirty = !isView && JSON.stringify(values) !== JSON.stringify(initialValues);
+  const draft = useScopedDraft({ entity: "party", context: `${mode}:${source?.id ?? source?.partyType ?? "new"}`, version: 2, values, enabled: dirty && mode !== "settings" });
+  const { confirmLeave } = useUnsavedChanges({ when: dirty, message: "Leave this Party form with unsaved changes?" });
+  const settings = usePartySettings({ enabled: mode !== "settings" });
+  const shippingEnabled = partySettingEnabled(settings.settings, "enableShippingAddress");
+  const statusEnabled = partySettingEnabled(settings.settings, "enablePartyStatus");
   const [shippingSameAsBilling, setShippingSameAsBilling] = useState(() =>
     getInitialShippingSameAsBilling(buildFormValues(fields, source)),
   );
@@ -1124,6 +1129,11 @@ export const PartyFormContent = ({
     loaded: Boolean(gstConfig.loaded),
     loading: Boolean(gstConfig.loading),
   };
+
+  useEffect(() => {
+    onGuardChange?.(confirmLeave);
+    return () => onGuardChange?.(null);
+  }, [confirmLeave, onGuardChange]);
 
   useEffect(() => {
     onBusyChange?.(isSubmitting);
@@ -1190,16 +1200,16 @@ export const PartyFormContent = ({
         ...Object.fromEntries(Object.keys(appliedValues).map((name) => [name, true])),
       }));
       setValues(
-        shippingSameAsBilling ? copyBillingAddress(nextValues) : nextValues,
+        shippingEnabled && shippingSameAsBilling ? copyBillingAddress(nextValues) : nextValues,
       );
     },
-    [fields, shippingSameAsBilling, values],
+    [fields, shippingEnabled, shippingSameAsBilling, values],
   );
 
   const handleFieldChange = useCallback(
     (fieldName, value) => {
       const nextValue = fieldName === "gstin" ? normalizeGstin(value) : value;
-      const mirroredShippingField = shippingSameAsBilling
+      const mirroredShippingField = shippingEnabled && shippingSameAsBilling
         ? ADDRESS_FIELD_PAIRS[fieldName]
         : undefined;
 
@@ -1255,7 +1265,7 @@ export const PartyFormContent = ({
         dispatch(markGstVerificationStale(nextValue));
       }
     },
-    [dispatch, shippingSameAsBilling, verifiedGstinData],
+    [dispatch, shippingEnabled, shippingSameAsBilling, verifiedGstinData],
   );
 
   const handleVerifyGstin = useCallback(
@@ -1338,6 +1348,7 @@ export const PartyFormContent = ({
   }, [dispatch]);
 
   const handleShippingAddressToggle = useCallback(() => {
+    if (!shippingEnabled) return;
     setShippingSameAsBilling((current) => {
       const nextValue = !current;
 
@@ -1347,7 +1358,7 @@ export const PartyFormContent = ({
 
       return nextValue;
     });
-  }, []);
+  }, [shippingEnabled]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -1374,9 +1385,7 @@ export const PartyFormContent = ({
 
     try {
       await onSubmit(buildApiPayload(fields, values));
-      if (isNewParty) {
-        clearFormDraft("party-create");
-      }
+      draft.clearDraft();
     } catch (error) {
       const result = applyApiErrorsToForm({
         error,
@@ -1399,14 +1408,16 @@ export const PartyFormContent = ({
   const renderField = (field, options = {}) => {
     const isAutoFilled =
       Boolean(autoFilledFields[field.name]);
+    const unsupported = mode === "settings" && !supportedPartySetting(field.name);
+    const statusUnavailable = field.name === "isActive" && !statusEnabled;
 
     return (
       <FieldInput
         autoFilled={isAutoFilled}
-        disabled={isView || options.disabled}
+        disabled={isView || options.disabled || unsupported || statusUnavailable}
         error={apiErrors[field.name]}
         field={field}
-        helperText={options.helperText}
+        helperText={unsupported ? "Unavailable: this setting has no implemented operational consumer. Existing saved value is preserved." : statusUnavailable ? "Party status editing is disabled in Party settings. Existing status is preserved." : options.helperText}
         onChange={handleFieldChange}
         value={values[field.name]}
       />
@@ -1433,6 +1444,10 @@ export const PartyFormContent = ({
             {apiErrors["root.server"]}
           </p>
         )}
+        {mode !== "settings" && settings.error && <p role="alert" className="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{settings.error} <button type="button" className="underline" onClick={settings.refresh}>Retry settings</button></p>}
+        {!isView && mode !== "settings" && (!draft.available || draft.storageError) && <p className="mb-4 text-sm text-amber-800">{draft.storageError || "Recoverable drafts are unavailable until the signed-in company is verified. Save before leaving."}</p>}
+        {!isView && mode !== "settings" && draft.recoveredDraft && <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><p>{draft.stale ? "A draft from an older form version needs review." : "A recoverable Party draft is available."}</p><div className="mt-2 flex gap-4"><button type="button" className="underline" onClick={() => { const restored = buildFormValues(fields, draft.recoveredDraft.values); setValues(restored); setShippingSameAsBilling(getInitialShippingSameAsBilling(restored)); draft.acknowledgeRecovery(); }}>Restore and review</button><button type="button" className="underline" onClick={draft.clearDraft}>Discard saved draft</button></div></div>}
+        {mode === "settings" && <p className="mb-4 rounded-lg bg-blue-50 p-3 text-sm text-blue-900">Grouping, shipping address entry, shipping address print and status editing apply to their Party consumers. Reminder dispatch, loyalty accounting and custom field values remain unavailable; their saved configuration is preserved.</p>}
 
         <div className="mx-auto max-w-[1320px] space-y-5">
           {hasGstinField && (
@@ -1561,7 +1576,7 @@ export const PartyFormContent = ({
                           Used for dispatch and delivery documents.
                         </p>
                       </div>
-                      {!isView && (
+                      {!isView && shippingEnabled && (
                         <button
                           type="button"
                           aria-pressed={shippingSameAsBilling}
@@ -1591,8 +1606,8 @@ export const PartyFormContent = ({
                           }
                         >
                           {renderField(field, {
-                            disabled: shippingSameAsBilling,
-                            helperText: shippingSameAsBilling
+                            disabled: !shippingEnabled || shippingSameAsBilling,
+                            helperText: !shippingEnabled ? "Shipping entry is disabled in Party settings. Existing address is preserved." : shippingSameAsBilling
                               ? "Copied from billing address"
                               : undefined,
                           })}
@@ -1627,11 +1642,9 @@ export const PartyFormContent = ({
               {isNewParty && (
                 <button
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !draft.available}
                   onClick={() => {
-                    saveFormDraft("party-create", values);
-                    toast.success("Party draft saved on this device");
-                    onClose();
+                    if (draft.saveDraft(values)) toast.success("Party draft saved for this account and company on this device");
                   }}
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-60"
                 >
@@ -1677,6 +1690,9 @@ const PartyFormModal = ({
   const isView = mode === "view";
   const isPartyForm = fields.some((field) => field.name === "gstin");
   const [isFormBusy, setIsFormBusy] = useState(false);
+  const closeGuardRef = useRef(null);
+  const dialogRef = useRef(null);
+  const updateCloseGuard = useCallback(guard => { closeGuardRef.current = guard; }, []);
   const groupedFields = useMemo(() => {
     return sections
       .map((section) => ({
@@ -1688,7 +1704,8 @@ const PartyFormModal = ({
 
   const requestClose = useCallback(() => {
     if (!isFormBusy) {
-      onClose();
+      if (closeGuardRef.current) closeGuardRef.current(onClose);
+      else onClose();
     }
   }, [isFormBusy, onClose]);
 
@@ -1698,7 +1715,8 @@ const PartyFormModal = ({
     }
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !event.defaultPrevented && [...document.querySelectorAll('[aria-modal="true"]')].at(-1) === dialogRef.current) {
+        event.preventDefault();
         requestClose();
       }
     };
@@ -1734,6 +1752,7 @@ const PartyFormModal = ({
           onMouseDown={requestClose}
         >
           <motion.section
+            ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="party-modal-title"
@@ -1789,6 +1808,7 @@ const PartyFormModal = ({
                 source={source}
                 submitLabel={submitLabel}
                 onBusyChange={setIsFormBusy}
+                onGuardChange={updateCloseGuard}
                 onClose={requestClose}
                 onSubmit={onSubmit}
               />

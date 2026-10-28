@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppSelect from "../../../components/common/AppSelect";
@@ -259,6 +260,8 @@ const ConfirmDialog = ({ confirmation, onCancel, onConfirm }) => {
 };
 
 const Roles = () => {
+  const [createdRole, setCreatedRole] = useState(null);
+  const permissionAccess = useCapabilities({ actions: ["view"], pageName: "Permissions", resource: "permissions", route: "/permissions" });
   const [roles, setRoles] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search);
@@ -468,7 +471,9 @@ const Roles = () => {
         await roleService.updateRole(modalState.role.id, payload);
         toast.success("Role updated successfully");
       } else {
-        await roleService.createRole(payload);
+        const response = await roleService.createRole(payload);
+        const record = extractSingleRole(response.data);
+        setCreatedRole({ id: record?.id ?? record?.roleId ?? (typeof record === "number" || typeof record === "string" ? record : null), name: payload.name });
         toast.success("Role created successfully");
       }
 
@@ -695,6 +700,7 @@ const Roles = () => {
 
   return (
     <section className="min-w-0 space-y-5">
+      {createdRole && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm"><p><strong>{createdRole.name || "Role"} was created.</strong> Configure its page and action permissions before assigning users.</p>{permissionAccess.canView && createdRole.id ? <Link className="mt-2 inline-block font-semibold text-brand underline" to={`/permissions?roleId=${encodeURIComponent(createdRole.id)}`}>Continue to permission matrix</Link> : <p className="mt-1">Ask a permissions administrator to configure access.</p>}</div>}
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">

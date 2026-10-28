@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Search, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import RecentDestinations from "./RecentDestinations";
 
 import CosmosBrand from "../branding/CosmosBrand";
 import { useSidebar } from "../../hooks/useSidebar";
@@ -29,6 +30,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
 
   return (
     <div className="flex h-full flex-col">
+      <RecentDestinations />
       <div
         className={[
           "relative flex h-[72px] items-center justify-center border-b px-14",
@@ -84,6 +86,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
         </p>
 
         <nav className="isolate space-y-1" aria-label="Primary navigation">
+          <Link to="/today" onClick={onNavigate} className={`mb-2 block rounded-lg px-3 py-2.5 text-sm font-semibold ${classes.emptyTitle}`}>Today · My work</Link>
           {menuTree.map((item) =>
             item.children.length > 0 ? (
               <SidebarGroup
@@ -118,7 +121,7 @@ const SidebarContent = ({ closeAction, onNavigate, sidebarTheme }) => {
               No pages assigned
             </p>
             <p className={["mt-1 text-xs leading-5", classes.emptyBody].join(" ")}>
-              RBAC pages from the API will appear here.
+              Ask your administrator to assign the work areas you need.
             </p>
           </div>
         )}

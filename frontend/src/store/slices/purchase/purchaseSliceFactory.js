@@ -4,6 +4,7 @@ import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
+  getThunkFormError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
 import {
@@ -67,7 +68,7 @@ export const createPurchaseCrudSlice = ({
       try {
         return await service[serviceMethods.create](payload);
       } catch (error) {
-        return rejectWithValue(getThunkError(error, "Unable to create record."));
+        return rejectWithValue(getThunkFormError(error, "Unable to create record."));
       }
     },
   );
@@ -78,7 +79,7 @@ export const createPurchaseCrudSlice = ({
       try {
         return await service[serviceMethods.update](id, payload);
       } catch (error) {
-        return rejectWithValue(getThunkError(error, "Unable to update record."));
+        return rejectWithValue(getThunkFormError(error, "Unable to update record."));
       }
     },
   );
@@ -143,7 +144,7 @@ export const createPurchaseCrudSlice = ({
           if (state.listRequestId !== action.meta.requestId) return;
           state.loading = false;
           state.list = [];
-          state.error = action.payload ?? action.error.message;
+          state.error = getThunkError(action.payload ?? action.error);
           state.listRequestId = null;
         })
         .addCase(fetchById.pending, (state, action) => {
@@ -164,9 +165,13 @@ export const createPurchaseCrudSlice = ({
         .addCase(fetchById.rejected, (state, action) => {
           if (state.detailRequestId !== action.meta.requestId) return;
           state.detailLoading = false;
-          state.detailError = action.payload ?? action.error.message;
+          state.detailError = getThunkError(action.payload ?? action.error);
           state.detailRequestId = null;
         })
+        .addCase(createRecord.pending, state => { state.error = null; })
+        .addCase(createRecord.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to create record."); })
+        .addCase(updateRecord.pending, state => { state.error = null; })
+        .addCase(updateRecord.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to update record."); })
         .addCase(createRecord.fulfilled, (state, action) => {
           state.selected = extractEntity(action.payload.data, entityKey);
         })

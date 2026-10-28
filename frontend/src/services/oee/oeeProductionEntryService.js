@@ -1,4 +1,5 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { idWire } from "../../utils/productionValues";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 import { sanitizeOeeListParams } from "./oeeServiceUtils";
@@ -11,6 +12,8 @@ const PRODUCTION_ENTRY_SORT_FIELDS = [
   "calculatedOeePercentage",
   "createdAt",
 ];
+const wireEntry = payload => ({ ...payload, ...(payload.entries ? { entries: payload.entries.map(wireEntry) } : {}),
+  ...Object.fromEntries(["machineId", "mouldId", "downtimeReasonId"].filter(key => payload[key] != null && payload[key] !== "").map(key => [key, idWire(payload[key])])) });
 
 export const oeeProductionEntryService = {
   getProductionEntries: async (params, { signal } = {}) => {
@@ -39,7 +42,7 @@ export const oeeProductionEntryService = {
   createProductionEntriesBulk: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.OEE_PRODUCTION_ENTRIES_BULK,
-      payload,
+      wireEntry(payload),
     );
 
     return unwrapResponse(response);
@@ -48,7 +51,7 @@ export const oeeProductionEntryService = {
   updateProductionEntry: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.OEE_PRODUCTION_ENTRY_BY_ID(id),
-      payload,
+      wireEntry(payload),
     );
 
     return unwrapResponse(response);

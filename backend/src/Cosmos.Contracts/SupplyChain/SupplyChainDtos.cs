@@ -176,6 +176,11 @@ public sealed record ItemPackagingProfileDto(
     long? UpdatedBy,
     int TotalCount = 0)
 {
+    public bool? ConversionReady { get; init; }
+    public string? SourceUnitName { get; init; }
+    public string? BaseUnitName { get; init; }
+    public decimal? SourceQuantityBasis { get; init; }
+    public decimal? BaseQuantityBasis { get; init; }
     public ItemPackagingProfileDto() : this(0, 0, string.Empty, string.Empty, null, null, string.Empty, null, 0, 0, 0, 0, string.Empty, 0, 0, string.Empty, null, null, false, false, null, null, default, null, null, null, 0) { }
 }
 

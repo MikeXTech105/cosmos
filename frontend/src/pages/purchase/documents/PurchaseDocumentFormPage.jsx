@@ -1,20 +1,34 @@
+import useFormReturnContext from "../../../hooks/useFormReturnContext";
+import useUncertainSave from "../../../hooks/useUncertainSave";
+import UncertainSaveNotice from "../../../components/commerce/UncertainSaveNotice";
+import { purchaseOrderService } from "../../../services/purchase/purchaseOrderService";
+import { purchaseReturnService } from "../../../services/purchase/purchaseReturnService";
 import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
 import { documentLookupService } from "../../../services/documentLookupService";
 import { purchaseDocumentSchema as documentSchema } from "./purchaseDocumentSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 import PageHeader from "../../../components/common/PageHeader";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+import { purchaseDocumentActions } from "./purchaseLifecycle";
+import FormErrorSummary from "../../../components/commerce/FormErrorSummary";
+import { returnSourceLines } from "./purchaseReturnSource";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
+import { withoutDirtyPrompt } from "../../../utils/dirtyWork";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
 import { unitService } from "../../../services/inventory/unitService";
@@ -83,6 +97,12 @@ const PurchaseDocumentFormPage = ({ config }) => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { returnTo, returnState, savedState, returnToList } = useFormReturnContext(config.listPath);
+  const [searchParams] = useSearchParams();
+  const sourceBillId = config.supportsBillSelect && !isEdit ? searchParams.get("purchaseBillId") : null;
+  const returnRequest = useRef(0);
+  const inlineTarget = useRef(null);
+  const [returnSourceMessage, setReturnSourceMessage] = useState("");
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
     label: config.label,
@@ -98,7 +118,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
   const state = useSelector((store) => store[config.selectorKey]);
   const detailLoading = state.detailLoading;
   const detailError = state.detailError;
-  const detailRecord = state.selected;
+  const detailRecord = String(state.selected?.id??"")===String(id??"") ? state.selected : null;
 
   const [lookups, setLookups] = useState({
     bills: [], billsLoading: false,
@@ -119,12 +139,19 @@ const PurchaseDocumentFormPage = ({ config }) => {
     setValue,
     getValues,
     getFieldState,
-    formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
+    formState: { errors, isDirty, isSubmitting },
   } = useForm({
     resolver: zodResolver(documentSchema(config.dateField)),
     defaultValues: getDefaultValues(null, config),
   });
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
+  const supplierId = useWatch({ control, name: "supplierId" });
+  const draftValues = useWatch({ control });
+  const recovery=useUncertainSave({entity:config.selectorKey,context:id??`new:${sourceBillId??"manual"}`,recordId:isEdit?id:null});
+  const draft = useScopedDraft({ entity: config.selectorKey, context: id ?? `new:${sourceBillId ?? "manual"}`, version: detailRecord?.rowVersion ?? 1, values: draftValues, enabled: isDirty&&!recovery.blocked });
+  const { confirmLeave } = useUnsavedChanges({ when: isDirty && !isSubmitting });
   const discountAmount = useWatch({ control, name: "discountAmount" }) ?? "0";
   const roundOff = useWatch({ control, name: "roundOff" }) ?? "0";
   const paidAmount = useWatch({ control, name: "paidAmount" }) ?? "0";
@@ -192,6 +219,26 @@ const PurchaseDocumentFormPage = ({ config }) => {
 
   const businessContext = useDocumentBusinessDefaults({ enabled: !isEdit, fields: [config.dateField], getValues, getFieldState, setValue });
 
+  const loadReturnSource = useCallback(async (billId) => {
+    const requestId = ++returnRequest.current;
+    setValue("purchaseBillId", String(billId ?? ""), { shouldDirty: true });
+    setValue("items", [], { shouldDirty: true });
+    if (!billId) return;
+    setReturnSourceMessage("Loading original bill lines and remaining returnable quantities…");
+    try {
+      const response = await purchaseBillService.getPurchaseBillById(billId);
+      if (returnRequest.current !== requestId || String(getValues("purchaseBillId")) !== String(billId)) return;
+      const bill = getResponseRecord(response, "purchaseBill");
+      const lines = returnSourceLines(bill);
+      setValue("supplierId", bill.supplierId, { shouldDirty: true });
+      setValue("items", lines, { shouldDirty: true, shouldValidate: true });
+      setReturnSourceMessage(lines.length ? "Original lines and units are linked. Review quantities before saving. This return reduces stock and creates the supplier credit. Receipt-owned goods must use the original physical receipt return and its separate credit action." : "No bill-owned quantity remains returnable. Receipt-owned goods must be returned from their original physical receipt; its credit action does not deduct stock again.");
+    } catch (error) {
+      if (returnRequest.current === requestId) setReturnSourceMessage(getActionError(error, "Unable to load original bill lines. Retry the source selection."));
+    }
+  }, [getValues, setValue]);
+  useEffect(() => { if (sourceBillId) void Promise.resolve().then(() => loadReturnSource(sourceBillId)); }, [loadReturnSource, sourceBillId]);
+
   const supplierOptions = useMemo(
     () => lookups.suppliers.map((supplier) => ({ value: supplier.id, label: getPartyDisplayName(supplier) })),
     [lookups.suppliers],
@@ -225,7 +272,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
     }
   }, []);
 
-  const openLookupCreate = useCallback((type) => {
+  const openLookupCreate = useCallback((type, selectItem) => {
     const allowed = { category: canCreateCategory, item: canCreateItem, supplier: canCreateSupplier, unit: canCreateUnit }[type];
 
     if (!allowed) {
@@ -237,40 +284,35 @@ const PurchaseDocumentFormPage = ({ config }) => {
       void loadItemCreateLookups();
     }
 
+    inlineTarget.current = { selectItem: type === "item" ? selectItem : inlineTarget.current?.selectItem, selectMaster: type !== "item" ? selectItem : null, element: document.activeElement };
     setLookupCreateModal((current) => ({ ...current, [type]: true }));
   }, [canCreateCategory, canCreateItem, canCreateSupplier, canCreateUnit, loadItemCreateLookups]);
 
-  const closeLookupCreate = useCallback((type) => setLookupCreateModal((current) => ({ ...current, [type]: false })), []);
+  const closeLookupCreate = useCallback((type) => { setLookupCreateModal((current) => ({ ...current, [type]: false })); requestAnimationFrame(() => inlineTarget.current?.element?.focus?.()); }, []);
 
-  const refreshItemCreateLookup = useCallback(async (type) => {
-    if (type === "category") {
-      const response = await categoryService.getCategories({ IsActive: true, PageNumber: 1, PageSize: 200 });
-      setItemCreateLookups((current) => ({ ...current, categories: getLookupList(response) }));
-      return;
-    }
-
-    const response = await unitService.getUnits({ IsActive: true, PageNumber: 1, PageSize: 200 });
-    setItemCreateLookups((current) => ({ ...current, units: getLookupList(response) }));
-  }, []);
 
   const submitLookupCreate = useCallback(async (type, payload, saveAndNew = false) => {
     try {
       if (type === "supplier") {
-        await partyService.createParty(payload);
+        const response = await partyService.createParty(payload);
+        const created = response.data?.party ?? response.data;
+        if (created?.id) { setLookups(current => ({ ...current, suppliers: [...current.suppliers.filter(row => String(row.id) !== String(created.id)), created] })); setValue("supplierId", created.id, { shouldDirty: true, shouldValidate: true }); }
         toast.success("Supplier created successfully");
-        await loadLookup("suppliers");
       } else if (type === "item") {
-        await itemService.createItem(payload);
+        const response = await itemService.createItem(payload);
+        const created = response.data?.item ?? response.data;
+        if (created?.id) { setLookups(current => ({ ...current, items: [...current.items.filter(row => String(row.id) !== String(created.id)), created] })); inlineTarget.current?.selectItem?.(created); }
         toast.success("Item created successfully");
-        await loadLookup("items");
       } else if (type === "category") {
-        await categoryService.createCategory(payload);
+        const response = await categoryService.createCategory(payload);
+        const created = response.data?.category ?? response.data;
+        if (created?.id) { setItemCreateLookups(current => ({ ...current, categories: [...current.categories, created] })); inlineTarget.current?.selectMaster?.(created); }
         toast.success("Category created successfully");
-        await refreshItemCreateLookup("category");
       } else {
-        await unitService.createUnit(payload);
+        const response = await unitService.createUnit(payload);
+        const created = response.data?.unit ?? response.data;
+        if (created?.id) { setItemCreateLookups(current => ({ ...current, units: [...current.units, created] })); inlineTarget.current?.selectMaster?.(created); }
         toast.success("Unit created successfully");
-        await refreshItemCreateLookup("unit");
       }
 
       if (!saveAndNew) {
@@ -280,34 +322,45 @@ const PurchaseDocumentFormPage = ({ config }) => {
       toast.error(getActionError(error, "Unable to create record."));
       throw error;
     }
-  }, [closeLookupCreate, loadLookup, refreshItemCreateLookup]);
+  }, [closeLookupCreate, setValue]);
 
   const saveDisabledReason = (isEdit ? capabilities.canUpdate : capabilities.canCreate)
-    ? ""
+    ? isEdit && (!detailRecord || !purchaseDocumentActions(detailRecord,config.pluralLabel).edit) ? "This document is loading or cannot be edited in its current state or inventory ownership. Open its detail to review the next permitted action." : ""
     : `You need ${isEdit ? "edit" : "create"} permission for ${config.pluralLabel}.`;
 
   const submitForm = async (values) => {
+    clearErrors("root.server");
     if (saveDisabledReason) {
       toast.error(saveDisabledReason);
       return;
     }
 
     const payload = buildPayload(values, config);
+    draft.saveDraft(values);
+    if(!recovery.begin())return;
 
     try {
       const response = isEdit
         ? await dispatch(config.updateThunk({ id, payload })).unwrap()
         : await dispatch(config.createThunk(payload)).unwrap();
       const savedRecord = getResponseRecord(response, config.selectorKey.slice(0, -1));
+      recovery.succeed();
 
       toast.success(getSuccessMessage(response, `${config.singularLabel} saved`));
-      navigate(savedRecord?.id ? config.detailPath(savedRecord.id) : config.listPath);
+      draft.clearDraft();
+      reset(values);
+      withoutDirtyPrompt(() => savedRecord?.id ? navigate(config.detailPath(savedRecord.id),{state:savedState(savedRecord.id)}) : returnToList());
     } catch (error) {
-      toast.error(getActionError(error, `Unable to save ${config.singularLabel}.`));
-    }
+      if(recovery.fail(error)){draft.saveDraft(values);setError("root.server",{type:"server",message:"Save result is unconfirmed. Review saved history or readback before a retry; your values are retained."});toast.error("Save result needs review before retrying.");}
+      else {
+        applyApiErrorsToForm({error,formFieldNames:Object.keys(values).concat(values.items.flatMap((line,index)=>Object.keys(line).map(name=>`items.${index}.${name}`))),setError});
+        setError("root.server",{type:"server",message:getActionError(error,`The request was rejected. Your ${config.singularLabel} entries are retained.`)});
+        toast.error(getActionError(error,`Unable to save ${config.singularLabel}.`));
+      }
+    } finally {recovery.finish();}
   };
 
-  const backRoute = isEdit ? config.detailPath(id) : config.listPath;
+  const backRoute = returnTo;
   const title = isEdit ? `Edit ${config.singularLabel}` : `New ${config.singularLabel}`;
 
   if (isEdit && detailError) {
@@ -315,7 +368,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
       <div className="space-y-5">
         <PageHeader title={title} />
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{detailError}</div>
-        <AppButton variant="secondary" onClick={() => navigate(config.listPath)}>
+        <AppButton variant="secondary" onClick={() => returnToList()}>
           <ArrowLeft className="h-4 w-4" /> Back to {config.pluralLabel}
         </AppButton>
       </div>
@@ -324,12 +377,17 @@ const PurchaseDocumentFormPage = ({ config }) => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(submitForm)} noValidate>
+      <UncertainSaveNotice key={recovery.marker?.attemptId??"idle"} recovery={recovery} onReviewHistory={()=>{draft.saveDraft(getValues());returnToList();}} readRecord={isEdit?async()=>{const read=config.pluralLabel==="orders"?purchaseOrderService.getPurchaseOrderById:config.pluralLabel==="returns"?purchaseReturnService.getPurchaseReturnById:purchaseBillService.getPurchaseBillById;const response=await read(id);const saved=getResponseRecord(response,config.selectorKey.slice(0,-1));return `Saved ${config.singularLabel}: ${getDocumentNumber(saved,config.fallbackPrefix)}. Total ${formatCurrency(saved.grandTotal)}. Compare retained header and line values before deciding whether to retry.`;}:undefined}/>
+      <fieldset disabled={recovery.blocked} className="contents">
+      {draft.recoveredDraft && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{draft.stale ? "A draft from an earlier record version is available. Review current details before saving." : "An unsaved draft from this account and company is available."}<div className="mt-2 flex gap-3"><button type="button" className="font-semibold underline" onClick={() => { reset(draft.recoveredDraft.values, { keepDefaultValues: true }); draft.acknowledgeRecovery(); }}>Restore for review</button><button type="button" className="underline" onClick={draft.clearDraft}>Discard draft</button></div></div>}
+      <FormErrorSummary errors={errors}/>
+      {returnSourceMessage && <p role="status" className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">{returnSourceMessage}</p>}
       {!businessContext.runtime && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter the document date explicitly."}</p>}
       <PageHeader
         title={title}
         actions={
           <>
-            <AppButton variant="secondary" onClick={() => navigate(backRoute)}>
+            <AppButton variant="secondary" onClick={() => confirmLeave(() => navigate(backRoute,{state:returnState()}))}>
               <ArrowLeft className="h-4 w-4" /> Back
             </AppButton>
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
@@ -339,6 +397,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
         }
       />
 
+      {saveDisabledReason&&<p role="alert" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{saveDisabledReason}</p>}
       {isEdit && detailLoading ? (
         <div className="grid gap-4 sm:grid-cols-3">
           {Array.from({ length: 9 }, (_, index) => (
@@ -354,19 +413,20 @@ const PurchaseDocumentFormPage = ({ config }) => {
                 control={control}
                 name="supplierId"
                 render={({ field }) => (
-                  <AppSelect
+                  <AppLookup
                     label="Supplier"
                     required
-                    value={field.value}
-                    onChange={field.onChange}
+                    name={field.name} value={field.value}
+                    onChange={(value) => { if (config.supportsBillSelect && String(value) !== String(field.value)) { ++returnRequest.current; setValue("purchaseBillId", "", { shouldDirty: true }); setValue("items", [], { shouldDirty: true }); setReturnSourceMessage("Choose a bill for the selected supplier."); } field.onChange(value); }}
                     onBlur={field.onBlur}
-                    options={supplierOptions}
-                    placeholder={lookups.suppliersLoading ? "Loading suppliers..." : "Select supplier"}
-                    disabled={lookups.suppliersLoading}
+                    initialOptions={supplierOptions}
+                    loadPage={async ({ search, page, pageSize, signal }) => lookupPage(await partyService.getParties({ Search: search, PartyType: "Supplier", PageNumber: page, PageSize: pageSize, IsActive: true }, { signal }), page, pageSize)}
+                    loadById={async (value, options) => { const response = await partyService.getPartyById(value, options); return response.data?.party ?? response.data; }}
+                    getOptionLabel={row => row.label ?? getPartyDisplayName(row)}
+                    placeholder="Search supplier name or code"
                     error={errors.supplierId?.message}
-                    creatable={canCreateSupplier}
                     createLabel="Create new supplier"
-                    onCreateClick={() => openLookupCreate("supplier")}
+                    onCreate={canCreateSupplier ? () => openLookupCreate("supplier") : undefined}
                   />
                 )}
               />
@@ -376,12 +436,16 @@ const PurchaseDocumentFormPage = ({ config }) => {
                   control={control}
                   name="purchaseBillId"
                   render={({ field }) => (
-                    <AppSelect
+                    <AppLookup
                       label="Purchase Bill"
-                      value={field.value}
-                      onChange={(value) => field.onChange(String(value ?? ""))}
+                      name={field.name} value={field.value}
+                      onChange={(value) => { field.onChange(String(value ?? "")); void loadReturnSource(value); }}
                       onBlur={field.onBlur}
-                      options={billOptions}
+                      initialOptions={billOptions.filter(option => { const bill = lookups.bills.find(row => String(row.id) === String(option.value)); return !supplierId || String(bill?.supplierId) === String(supplierId); })}
+                      loadPage={async ({ search, page, pageSize, signal }) => lookupPage(await purchaseBillService.getPurchaseBills({ Search: search, SupplierId: supplierId || undefined, PageNumber: page, PageSize: pageSize }, { signal }), page, pageSize)}
+                      loadById={async (value, options) => { const response = await purchaseBillService.getPurchaseBillById(value, options); return response.data?.purchaseBill ?? response.data; }}
+                      getOptionLabel={row => row.label ?? `${getDocumentNumber(row, "PB")} · ${getSupplierName(row)}`}
+                      scopeKey={supplierId}
                       placeholder="Select linked bill"
                       error={errors.purchaseBillId?.message}
                     />
@@ -411,7 +475,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
                   control={control}
                   name="paymentType"
                   render={({ field }) => (
-                    <AppSelect label="Payment Type" value={field.value} onChange={(value) => field.onChange(Number(value))} onBlur={field.onBlur} options={PAYMENT_TYPE_OPTIONS} error={errors.paymentType?.message} />
+                    <AppSelect label="Payment Type" name={field.name} value={field.value} onChange={(value) => field.onChange(Number(value))} onBlur={field.onBlur} options={PAYMENT_TYPE_OPTIONS} error={errors.paymentType?.message} />
                   )}
                 />
               )}
@@ -430,7 +494,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
             itemOptions={itemOptions}
             itemsById={itemsById}
             canCreateItem={canCreateItem}
-            onCreateItem={() => openLookupCreate("item")}
+            onCreateItem={(selectItem) => openLookupCreate("item", selectItem)}
             setValue={setValue}
           />
 
@@ -495,7 +559,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
       )}
 
       <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">
-        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => navigate(backRoute)}>
+        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => confirmLeave(() => navigate(backRoute,{state:returnState()}))}>
           Cancel
         </AppButton>
         <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
@@ -507,6 +571,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
         isLoading={false}
         isOpen={lookupCreateModal.supplier}
         mode="create"
+        source={{ partyType: "Supplier" }}
         onClose={() => closeLookupCreate("supplier")}
         onSubmit={(payload) => submitLookupCreate("supplier", payload)}
         submitLabel="Create Supplier"
@@ -524,8 +589,8 @@ const PurchaseDocumentFormPage = ({ config }) => {
         item={null}
         mode="create"
         onClose={() => closeLookupCreate("item")}
-        onCreateCategory={() => openLookupCreate("category")}
-        onCreateUnit={() => openLookupCreate("unit")}
+        onCreateCategory={(selectMaster) => openLookupCreate("category", selectMaster)}
+        onCreateUnit={(selectMaster) => openLookupCreate("unit", selectMaster)}
         onSubmit={(payload, saveAndNew) => submitLookupCreate("item", payload, saveAndNew)}
         unitOptions={itemCreateLookups.units.map((unit) => ({ value: Number(unit.id), label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name }))}
         unitEmptyMessage="No units yet - add one in Units."
@@ -549,6 +614,7 @@ const PurchaseDocumentFormPage = ({ config }) => {
         onSubmit={(payload, saveAndNew) => submitLookupCreate("unit", payload, saveAndNew)}
         unit={null}
       />
+      </fieldset>
     </form>
   );
 };

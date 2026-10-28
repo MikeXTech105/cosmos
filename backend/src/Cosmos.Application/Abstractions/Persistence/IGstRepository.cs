@@ -19,6 +19,9 @@ public interface IGstRepository
     Task<EWayBillResponse?> GetEWayBillByNumberAsync(string ewayBillNumber, CancellationToken cancellationToken);
     Task<EWayBillResponse> SaveEWayBillAsync(GenerateEWayBillRequest request, EWayBillResponse providerResponse, long? userId, CancellationToken cancellationToken);
     Task<EWayBillResponse> UpdateEWayBillStatusAsync(CancelEWayBillRequest request, EWayBillResponse providerResponse, long? userId, CancellationToken cancellationToken);
+    Task<GstEWayExtensionOperation> ReserveEWayExtensionAsync(ExtendEWayBillRequest request, byte[] fingerprint, DateTime? priorValidity, long? userId, CancellationToken cancellationToken);
+    Task<GstEWayExtensionOperation?> GetEWayExtensionAsync(Guid idempotencyKey, CancellationToken cancellationToken);
+    Task<EWayBillResponse> CompleteEWayExtensionAsync(Guid idempotencyKey, EWayBillResponse? response, bool confirmed, long? userId, CancellationToken cancellationToken, bool rejected = false);
     Task<EInvoiceResponse?> GetEInvoiceByIrnAsync(string irn, CancellationToken cancellationToken);
     Task<EInvoiceResponse> SaveEInvoiceAsync(GenerateEInvoiceRequest request, EInvoiceResponse providerResponse, long? userId, CancellationToken cancellationToken);
     Task<EInvoiceResponse> UpdateEInvoiceStatusAsync(CancelEInvoiceRequest request, EInvoiceResponse providerResponse, long? userId, CancellationToken cancellationToken);

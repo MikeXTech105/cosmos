@@ -7,12 +7,14 @@ public interface IShipmentOperationsRepository
 {
     Task<PagedResult<ShipmentSummaryDto>> GetShipmentsAsync(ShipmentListQuery query, CancellationToken ct);
     Task<ShipmentDto?> GetShipmentAsync(long id, CancellationToken ct);
+    Task<IReadOnlyCollection<ShipmentDispatchAllocationDto>> GetDispatchAllocationsAsync(long runId, CancellationToken ct);
     Task<long> CreateManualShipmentAsync(CreateManualShipmentRequest request, long? userId, CancellationToken ct);
     Task<long> CreateFromDispatchPlanAsync(CreateShipmentFromDispatchPlanRequest request, long? userId, CancellationToken ct);
     Task TransitionShipmentAsync(long id, int sourceStatus, int targetStatus, string? remarks, long? userId, CancellationToken ct);
     Task CancelShipmentAsync(long id, string reason, long? userId, CancellationToken ct);
     Task<IReadOnlyCollection<ShipmentPackingSuggestionInput>> GetPackingSuggestionInputsAsync(long shipmentId, CancellationToken ct);
     Task SavePackageAsync(long shipmentId, SaveShipmentPackageRequest request, long? userId, CancellationToken ct);
+    Task RemovePackageAsync(long shipmentId, long packageId, RemoveShipmentPackageRequest request, long? userId, CancellationToken ct);
     Task SaveDocketAsync(long shipmentId, SaveShipmentDocketRequest request, long? userId, CancellationToken ct);
     Task SaveAppointmentAsync(long shipmentId, SaveShipmentAppointmentRequest request, long? userId, CancellationToken ct);
     Task AddTrackingEventAsync(long shipmentId, AddShipmentTrackingEventRequest request, long? userId, CancellationToken ct);

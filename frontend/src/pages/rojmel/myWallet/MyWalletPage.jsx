@@ -112,6 +112,7 @@ const MyWalletPage = () => {
 
   return (
     <section className="min-w-0 space-y-5">
+      <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900">My Wallet records your own cash movements. Use Expenses for the operating cost document. These modules do not automatically post to each other; use the Expense number as the cash movement reference when reconciling an actual payment.</p>
       <PageHeader
         badge={
           <>

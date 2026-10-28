@@ -151,6 +151,7 @@ const TransactionEntryModal = ({
       </div>
 
       <form className="mt-6 space-y-5" onSubmit={handleSubmit(submit)}>
+        {!isAdjustment && <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900">This records a Rojmel wallet movement. Operating cost documents belong in Expenses. An Expense does not automatically debit this wallet; record a separate movement only for actual cash paid and put its Expense number in Reference No. to reconcile it.</p>}
         {errors.root?.server?.message && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {errors.root.server.message}
@@ -260,7 +261,7 @@ const TransactionEntryModal = ({
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <AppInput label="Reference No." placeholder="Optional reference" {...register("referenceNo")} />
+          <AppInput label="Reference No." placeholder="Expense number or other source reference" helperText="Manual source reference; this does not link or post another document." {...register("referenceNo")} />
           <AppInput label="Description" placeholder="What was this for?" {...register("description")} />
         </div>
 

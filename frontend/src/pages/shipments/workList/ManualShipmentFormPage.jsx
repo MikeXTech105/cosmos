@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import {
@@ -15,7 +17,7 @@ import {
   SHIPMENT_PRIORITY_LABELS,
   toShipmentOptions,
 } from "../../../constants/shipmentEnums";
-import { itemService } from "../../../services/inventory/itemService";
+import itemService from "../../../services/manufacturing/productionOrderService";
 import { shipmentService, shipmentTransporterService } from "../../../services/shipments";
 import { supplyChainPackagingProfileService } from "../../../services/supplyChain/packagingProfileService";
 import { supplyChainWarehouseService } from "../../../services/supplyChain/warehouseService";
@@ -53,8 +55,6 @@ const ManualShipmentFormPage = () => {
   const [form, setForm] = useState(emptyManualForm);
   const [errors, setErrors] = useState({});
   const [conflict, setConflict] = useState(null);
-  const [items, setItems] = useState([]);
-  const [packagingProfiles, setPackagingProfiles] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [transporters, setTransporters] = useState([]);
   const [loadingMasters, setLoadingMasters] = useState(true);
@@ -66,15 +66,9 @@ const ManualShipmentFormPage = () => {
     const load = async () => {
       setLoadingMasters(true);
       try {
-        const [itemResponse, packagingResponse, transporterResponse] = await Promise.all([
-          itemService.getItems({ IsActive: true, PageNumber: 1, PageSize: 200, Search: "" }),
-          supplyChainPackagingProfileService.list({ IsActive: true, PageNumber: 1, PageSize: 200 }),
-          shipmentTransporterService.list(),
-        ]);
+        const transporterResponse = await shipmentTransporterService.list();
 
         if (!current) return;
-        setItems(getItems(itemResponse));
-        setPackagingProfiles(getItems(packagingResponse));
         setTransporters(Array.isArray(transporterResponse.data) ? transporterResponse.data : getItems(transporterResponse));
       } catch (error) {
         if (!current) return;
@@ -133,7 +127,7 @@ const ManualShipmentFormPage = () => {
   const setItem = (index, field, value) => {
     setForm((current) => ({
       ...current,
-      items: current.items.map((item, itemIndex) => (itemIndex === index ? { ...item, [field]: value } : item)),
+      items: current.items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...(field === "itemId" ? { packagingProfileId: "" } : {}), [field]: value } : item)),
     }));
     setErrors((current) => ({ ...current, [`items.${index}.${field}`]: "", form: "" }));
   };
@@ -263,11 +257,13 @@ const ManualShipmentFormPage = () => {
           <div className="mt-4 space-y-3">
             {form.items.map((line, index) => (
               <div className="grid gap-3 rounded-xl border border-slate-200 p-3 md:grid-cols-[minmax(220px,1.5fr)_160px_minmax(200px,1fr)_auto]" key={index}>
-                <AppSelect
+                <AppLookup
                   disabled={saving || loadingMasters}
                   error={errors[`items.${index}.itemId`]}
                   label="Item"
-                  options={items.map((item) => ({ label: `${item.itemCode} — ${item.name}`, value: item.id }))}
+                  loadPage={async ({ search, page, pageSize }) => lookupPage(await itemService.items({ IsActive: true, PageNumber: page, PageSize: pageSize, Search: search }), page, pageSize)}
+                  loadById={async id => (await itemService.item(id)).data}
+                  getOptionLabel={item => `${item.itemCode ?? ""} — ${item.name ?? ""}`}
                   required
                   value={line.itemId}
                   onChange={(value) => setItem(index, "itemId", value)}
@@ -283,16 +279,15 @@ const ManualShipmentFormPage = () => {
                   value={line.plannedQuantity}
                   onChange={(event) => setItem(index, "plannedQuantity", event.target.value)}
                 />
-                <AppSelect
-                  disabled={saving}
+                <AppLookup
+                  disabled={saving || !line.itemId}
                   error={errors[`items.${index}.packagingProfileId`]}
                   label="Packaging profile"
-                  options={[
-                    { label: "Use server default", value: "" },
-                    ...packagingProfiles
-                      .filter((profile) => !line.itemId || String(profile.itemId) === String(line.itemId))
-                      .map((profile) => ({ label: profile.profileName || `${profile.itemCode || "Item"} profile ${profile.id}`, value: profile.id })),
-                  ]}
+                  scopeKey={`${line.itemId}:${form.channelId}`}
+                  placeholder="Use server default or search"
+                  loadPage={async ({ search, page, pageSize }) => lookupPage(await supplyChainPackagingProfileService.list({ IsActive: true, ItemId: line.itemId, Search: search, PageNumber: page, PageSize: pageSize }), page, pageSize)}
+                  loadById={async id => (await supplyChainPackagingProfileService.getById(id)).data}
+                  getOptionLabel={profile => `${profile.packagingCode ?? ""} — ${profile.packagingName ?? ""}`}
                   value={line.packagingProfileId}
                   onChange={(value) => setItem(index, "packagingProfileId", value)}
                 />

@@ -17,6 +17,18 @@ const row = (id, machineId, productionDate, createdAt, extra = {}) => ({
   ...extra,
 });
 describe("daily submission grouping", () => {
+  it("keeps explicit stopped-day evidence separate from missing data and performance readings", () => {
+    const acknowledgements = [
+      { id: 1, productionDate: "2026-10-18", machineId: 1, state: "PlannedStop", reason: "Scheduled maintenance" },
+      { id: 2, productionDate: "2026-10-19", machineId: 1, state: "Withdrawn", reason: "Machine ran" },
+    ];
+    const groups = groupSubmissionDays([], "weighted", 3, now, acknowledgements);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({ date: "2026-10-18", status: "acknowledged", acknowledgedMachines: 1, count: 0, value: null, rows: [] });
+    const calendar = calendarAuditDays(groups, "2026-10-17", "2026-10-19", 0, now);
+    expect(calendar.map(day => day.status)).toEqual(["unlogged", "acknowledged", "unlogged"]);
+    expect(groups[0].acknowledgements[0].reason).toBe("Scheduled maintenance");
+  });
   it("keeps one complete date when its machine entries cross API pages", async () => {
     const entries = Array.from({ length: 205 }, (_, index) =>
       row(index + 1, index + 1, "2026-09-17", "2026-09-18T08:00:00Z"),
