@@ -8,28 +8,10 @@ import { useGstAccess, useGstQuery } from "./useGst";
 
 const managementFeatures = [
   {
-    pageName: "GST.HsnSac",
-    route: "/gst/hsn-sac",
-    title: "HSN / SAC master",
-    description: "Maintain the central HSN/SAC classifications used by the current GST mapping workflow.",
-  },
-  {
     pageName: "GST.RateHistory",
     route: "/gst/rate-history",
     title: "GST rate history",
     description: "Maintain approved, effective-dated total-rate versions. Component-tax calculation remains a separate compliance dependency.",
-  },
-  {
-    pageName: "GST.CategoryMapping",
-    route: "/gst/category-mappings",
-    title: "Category HSN mapping",
-    description: "Set effective-dated category defaults that feed classification resolution.",
-  },
-  {
-    pageName: "GST.ProductMapping",
-    route: "/gst/product-mappings",
-    title: "Item HSN override",
-    description: "Maintain effective-dated product overrides, which take precedence over category defaults.",
   },
 ];
 

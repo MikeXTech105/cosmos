@@ -68,18 +68,14 @@ describe("GST screens and document entry points", () => {
     expect(html).not.toContain("RequestPayload");
     expect(html).not.toContain("ResponsePayload");
   });
-  it("surfaces the implemented HSN and GST management pages instead of declaring them unavailable", () => {
+  it("surfaces only the retained GST rate-management page", () => {
     const pages = [
-      { pageName: "GST.HsnSac", route: "/gst/hsn-sac", canView: true },
       { pageName: "GST.RateHistory", route: "/gst/rate-history", canView: true },
-      { pageName: "GST.CategoryMapping", route: "/gst/category-mappings", canView: true },
-      { pageName: "GST.ProductMapping", route: "/gst/product-mappings", canView: true },
     ];
     const html = render(createElement(GstOverviewPage), pages);
-    expect(html).toContain('href="/gst/hsn-sac"');
     expect(html).toContain('href="/gst/rate-history"');
-    expect(html).toContain('href="/gst/category-mappings"');
-    expect(html).toContain('href="/gst/product-mappings"');
-    expect(html).not.toContain("Central HSN/SAC management is unavailable");
+    expect(html).not.toContain('href="/gst/hsn-sac"');
+    expect(html).not.toContain('href="/gst/category-mappings"');
+    expect(html).not.toContain('href="/gst/product-mappings"');
   });
 });

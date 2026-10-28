@@ -273,9 +273,8 @@ const InvoiceFormPage = () => {
       setValue(`items.${index}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "", { shouldDirty: true });
       setValue(`items.${index}.hsnSource`, classification?.source ?? "", { shouldDirty: true });
     } catch {
-      applyItem(lookupItem);
       setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Legacy" : "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Item master" : "", { shouldDirty: true });
     }
   };
 
@@ -513,7 +512,7 @@ const InvoiceFormPage = () => {
                         </td>
                         <td className="px-3 py-3 align-top text-xs text-slate-600">
                           <p className="font-semibold text-slate-800">{line.hsnSacCode || "—"}</p>
-                          {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource === "ProductOverride" ? "Product override" : line.hsnSource === "CategoryDefault" ? "Category default" : line.hsnSource}</p>}
+                          {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource}</p>}
                         </td>
                         <td className="px-3 py-3 align-top">
                           <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} required error={errors.items?.[index]?.quantity?.message} />

@@ -349,7 +349,10 @@ export const itemSchema = z
       .optional(),
     salesPrice: nonNegativeNumber("Sales price"),
     purchasePrice: nonNegativeNumber("Purchase price"),
-    hsnCode: z.string().trim().max(50).optional(),
+      hsnCode: z.string().trim().max(50).refine(
+        (value) => !value || /^[A-Za-z0-9]+$/.test(value),
+        "HSN code may contain letters and digits only",
+      ).optional(),
     gstRate: nonNegativeNumber("GST rate").max(100, "GST rate cannot exceed 100%"),
     trackInventory: z.boolean(),
     isManufactured: z.boolean(),
