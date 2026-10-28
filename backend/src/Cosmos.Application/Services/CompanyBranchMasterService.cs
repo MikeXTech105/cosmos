@@ -62,7 +62,7 @@ public sealed class CompanyBranchMasterService(
         }
 
         var saved = await repository.SaveCompanyAsync(id, request.Code.Trim(), request.Name.Trim(), request.IsActive, RequireUserId(), ct);
-        await audit.AddAsync(new AuditEntryRequest("Companies", saved.Id.ToString(), id is null ? "Create" : saved.IsActive ? "Update" : "Deactivate", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
+        await audit.AddAsync(new AuditEntryRequest("Companies", saved.Id.ToString(), AuditAction(id, old?.IsActive, saved.IsActive), old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
         return ApiResponse<CompanyDto>.Success(saved);
     }
 
@@ -110,7 +110,7 @@ public sealed class CompanyBranchMasterService(
         }
 
         var saved = await repository.SaveBranchAsync(id, request.CompanyId, request.Code.Trim(), request.Name.Trim(), request.IsActive, RequireUserId(), ct);
-        await audit.AddAsync(new AuditEntryRequest("Branches", saved.Id.ToString(), id is null ? "Create" : saved.IsActive ? "Update" : "Deactivate", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
+        await audit.AddAsync(new AuditEntryRequest("Branches", saved.Id.ToString(), AuditAction(id, old?.IsActive, saved.IsActive), old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
         return ApiResponse<BranchDto>.Success(saved);
     }
 
@@ -131,6 +131,10 @@ public sealed class CompanyBranchMasterService(
     }
 
     private int RequireUserId() => currentUser.UserId ?? throw new UnauthorizedCosmosException();
+
+    private static string AuditAction(long? id, bool? oldIsActive, bool newIsActive) => id is null
+        ? "Create"
+        : oldIsActive != newIsActive ? newIsActive ? "Activate" : "Deactivate" : "Update";
 
     private async Task<bool> IsSystemOwnerAsync(CancellationToken ct) =>
         currentUser.UserId is { } userId && await users.IsSystemOwnerAsync(userId, ct);
