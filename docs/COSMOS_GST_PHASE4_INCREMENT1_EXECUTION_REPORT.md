@@ -81,6 +81,14 @@ The write procedures take `UPDLOCK, HOLDLOCK` on the relevant active scope row i
 
 The disposable SQL test was extended to prove delegated company update, post-revocation denial at the procedure boundary, branch-only create denial, and assigned-branch update. The existing System Owner scope test now verifies the protected role convention rather than treating every `IsSystemUser` account as an owner.
 
+### Increment 1A.4 — validation, deactivation, audit and HTTP evidence
+
+`backend/database/migrations/20261028_34_company_branch_safe_deactivation.sql` was applied and rerun successfully against `CosmosSalesGstIntegrationTests_Local` only. It retains historical references but prevents Company deactivation when active branches, GST registrations, user scopes, or draft Sales invoices exist. It prevents Branch deactivation when active GST registrations, user scopes, or draft Sales invoices exist. It does not cascade, rewrite invoices, reassign users, or modify retained staging data.
+
+Company/Branch FluentValidation now rejects null/empty/whitespace codes and names, SQL length overflow, and non-positive Branch company identifiers before mutation. Duplicate identity, inactive-company, reassignment, authorization, and active-dependency errors remain transactionally enforced by stored procedures. Existing audit writes occur only after a successful mutation and include old/new serialized data and the acting user through the established audit repository; an audit persistence failure is returned to the caller rather than reported as success. Audit and master writes still use separate database connections, so one atomic cross-procedure transaction is not yet available and remains a deployment-hardening limitation.
+
+HTTP-host tests exercise authentication, the real `RequirePermission` filter, controller routing, API envelopes, and correlation-ID middleware: unauthenticated requests return `401`, missing page permission returns `403` without calling the service, and an authorized request returns the normal envelope with its correlation ID. SQL-backed tests retain scope/lifecycle coverage and now include active-branch and active-assignment deactivation blocking.
+
 Not run / incomplete:
 
 - Full HTTP-host response-path tests are not yet implemented; the existing controller routes retain their page/action permission attributes and the SQL-backed service/procedure tests cover their record-scope boundary. User-scope assignment administration and frontend administration/selectors remain later Increment 1 work.

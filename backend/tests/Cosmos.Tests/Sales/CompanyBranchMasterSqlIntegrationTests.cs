@@ -40,6 +40,7 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
             var updatedBranch = await repository.SaveBranchAsync(branch.Id, companyA.Id, branch.Code, "Integration Branch Updated", true, ownerId, CancellationToken.None);
             Assert.Equal("Integration Branch Updated", updatedBranch.Name);
             Assert.Contains(await repository.BranchesAsync(companyA.Id, Prefix, false, CancellationToken.None), item => item.Id == branch.Id);
+            await AssertConflictAsync(() => repository.SaveCompanyAsync(companyA.Id, companyA.Code, companyA.Name, false, ownerId, CancellationToken.None));
 
             var delegatedUser = await connection.QuerySingleAsync<int>("INSERT dbo.Users(Username,Email,PasswordHash,FullName,IsActive,IsDeleted,IsSystemUser) OUTPUT INSERTED.Id VALUES(N'ITP42-delegated',N'ITP42-delegated@example.test',N'not-a-login',N'ITP42 delegated',1,0,0);");
             await connection.ExecuteAsync("INSERT dbo.UserCompanyBranchScopes(UserId,CompanyId,BranchId) VALUES(@delegatedUser,@companyId,NULL);", new { delegatedUser, companyId = companyA.Id });
@@ -51,6 +52,7 @@ public sealed class CompanyBranchMasterSqlIntegrationTests
             await AssertNotFoundAsync(() => repository.SaveBranchAsync(null, companyA.Id, Prefix + "BLOCKED", "Blocked branch", true, delegatedUser, CancellationToken.None));
             var branchUpdate = await repository.SaveBranchAsync(branch.Id, companyA.Id, branch.Code, "Branch scoped update", true, delegatedUser, CancellationToken.None);
             Assert.Equal("Branch scoped update", branchUpdate.Name);
+            await AssertConflictAsync(() => repository.SaveBranchAsync(branch.Id, companyA.Id, branch.Code, branchUpdate.Name, false, ownerId, CancellationToken.None));
 
             await AssertConflictAsync(() => repository.SaveBranchAsync(null, companyA.Id, branch.Code, "Duplicate", true, ownerId, CancellationToken.None));
             await AssertConflictAsync(() => repository.SaveBranchAsync(branch.Id, companyB.Id, branch.Code, branch.Name, true, ownerId, CancellationToken.None));

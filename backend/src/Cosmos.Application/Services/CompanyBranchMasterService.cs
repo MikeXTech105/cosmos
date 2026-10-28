@@ -6,6 +6,7 @@ using Cosmos.Contracts.Organization;
 using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
+using FluentValidation;
 
 namespace Cosmos.Application.Services;
 
@@ -19,7 +20,9 @@ public sealed class CompanyBranchMasterService(
     ICompanyBranchScopeRepository scopes,
     IUserRepository users,
     IAuditRepository audit,
-    ICurrentUser currentUser) : ICompanyBranchMasterService
+    ICurrentUser currentUser,
+    IValidator<SaveCompanyRequest> companyValidator,
+    IValidator<SaveBranchRequest> branchValidator) : ICompanyBranchMasterService
 {
     public async Task<ApiResponse<IReadOnlyCollection<CompanyDto>>> CompaniesAsync(string? search, bool activeOnly, CancellationToken ct)
     {
@@ -44,8 +47,7 @@ public sealed class CompanyBranchMasterService(
 
     public async Task<ApiResponse<CompanyDto>> SaveCompanyAsync(long? id, SaveCompanyRequest request, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.Name))
-            throw new CosmosException("Company code and name are required.", 400);
+        await ValidationRunner.ValidateAsync(companyValidator, request, ct);
 
         CompanyDto? old = null;
         if (id is null)
@@ -60,7 +62,7 @@ public sealed class CompanyBranchMasterService(
         }
 
         var saved = await repository.SaveCompanyAsync(id, request.Code.Trim(), request.Name.Trim(), request.IsActive, RequireUserId(), ct);
-        await audit.AddAsync(new AuditEntryRequest("Companies", saved.Id.ToString(), id is null ? "Create" : "Update", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
+        await audit.AddAsync(new AuditEntryRequest("Companies", saved.Id.ToString(), id is null ? "Create" : saved.IsActive ? "Update" : "Deactivate", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
         return ApiResponse<CompanyDto>.Success(saved);
     }
 
@@ -87,8 +89,7 @@ public sealed class CompanyBranchMasterService(
 
     public async Task<ApiResponse<BranchDto>> SaveBranchAsync(long? id, SaveBranchRequest request, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.Name))
-            throw new CosmosException("Branch code and name are required.", 400);
+        await ValidationRunner.ValidateAsync(branchValidator, request, ct);
 
         var company = await repository.CompanyAsync(request.CompanyId, ct) ?? throw new NotFoundException("Company was not found.");
         if (!company.IsActive)
@@ -109,7 +110,7 @@ public sealed class CompanyBranchMasterService(
         }
 
         var saved = await repository.SaveBranchAsync(id, request.CompanyId, request.Code.Trim(), request.Name.Trim(), request.IsActive, RequireUserId(), ct);
-        await audit.AddAsync(new AuditEntryRequest("Branches", saved.Id.ToString(), id is null ? "Create" : "Update", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
+        await audit.AddAsync(new AuditEntryRequest("Branches", saved.Id.ToString(), id is null ? "Create" : saved.IsActive ? "Update" : "Deactivate", old is null ? null : AuditSerializer.Serialize(old), AuditSerializer.Serialize(saved), currentUser.UserId), ct);
         return ApiResponse<BranchDto>.Success(saved);
     }
 
