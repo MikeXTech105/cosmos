@@ -176,8 +176,10 @@ const ManualEntryWizard = ({ canCreate, channels, onCommitted, onHistory }) => {
 
   useEffect(() => {
     if (!entry.channelId) {
-      setWarehouses([]);
-      setWarehouseError("");
+      queueMicrotask(() => {
+        setWarehouses([]);
+        setWarehouseError("");
+      });
       return undefined;
     }
 
