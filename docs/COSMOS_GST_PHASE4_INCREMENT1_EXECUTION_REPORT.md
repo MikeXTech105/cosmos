@@ -103,6 +103,8 @@ Real SQL verification extended the guarded master test: Company and Branch creat
 
 The backend exposes `GET /api/v1/organization/scope-assignments/me`, `GET /api/v1/organization/scope-assignments/users/{userId}`, `POST /api/v1/organization/scope-assignments`, and `DELETE /api/v1/organization/scope-assignments/{assignmentId}`. Assignment mutation procedures recheck protected System Owner status and Company-level administrator scope under transaction locks, reject self-grants by delegated administrators, validate active target entities and branch/company matching, deactivate rather than delete revocations, and reject duplicate active grants. Assignment lifecycle SQL and HTTP-host tests remain required before this increment can be accepted.
 
+The guarded SQL assignment lifecycle test now passes against the disposable database. It verifies System Owner Company/Branch grants, delegated Company-level grant, cross-Company denial, branch-only denial, delegated self-assignment denial, inactive-user and branch/company mismatch denial, duplicate active-assignment denial, soft revocation and repeated-revocation behavior, persisted grant audit, and forced audit-trigger failure rollback. The fixture cleanup removes `ITP43%` users, scopes, Companies, Branches, roles, and test trigger. Full HTTP-host coverage for the four assignment routes and a concurrent duplicate-grant test are still pending.
+
 Not run / incomplete:
 
 - Full HTTP-host response-path tests are not yet implemented; the existing controller routes retain their page/action permission attributes and the SQL-backed service/procedure tests cover their record-scope boundary. User-scope assignment administration and frontend administration/selectors remain later Increment 1 work.
