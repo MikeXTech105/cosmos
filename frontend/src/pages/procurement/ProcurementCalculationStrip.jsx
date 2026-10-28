@@ -66,12 +66,12 @@ const ProcurementCalculationStrip = ({ line }) => {
         )}
         {hasValue(line?.minimumOrderQuantity) && (
           <ProcurementPill tone="slate">
-            Minimum order {formatProcurementDecimal(line.minimumOrderQuantity)}
+            Minimum order {formatProcurementQuantity(line.minimumOrderQuantity)}
           </ProcurementPill>
         )}
         {hasValue(line?.orderMultiple) && (
           <ProcurementPill tone="slate">
-            Order multiple {formatProcurementDecimal(line.orderMultiple)}
+            Order multiple {formatProcurementQuantity(line.orderMultiple)}
           </ProcurementPill>
         )}
         {hasValue(rounding) && <ProcurementPill tone="slate">{rounding}</ProcurementPill>}

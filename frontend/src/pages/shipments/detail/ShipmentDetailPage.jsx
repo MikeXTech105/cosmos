@@ -75,10 +75,14 @@ import ShipmentFreightTab from "./ShipmentFreightTab";
 import ShipmentPackingTab from "./ShipmentPackingTab";
 import ShipmentReceiptsReturnsTab from "./ShipmentReceiptsReturnsTab";
 import ShipmentTransportTab from "./ShipmentTransportTab";
+import ShipmentPhysicalPanel from "../../manufacturing/integrations/ShipmentPhysicalPanel";
+import SetupReadiness from "../../manufacturing/SetupReadiness";
+import { compareDecimal } from "../../../utils/productionValues";
 
 const TABS = [
   { id: "items", label: "Items" },
   { id: "packing", label: "Packing" },
+  { id: "ownership", label: "Invoice & unit verification" },
   { id: "transport", label: "Transport" },
   { id: "receipts-returns", label: "Receipts & returns" },
   { id: "freight", label: "Freight" },
@@ -778,6 +782,9 @@ const ShipmentDetailPage = () => {
   const [transitionOpen, setTransitionOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [trackingOpen, setTrackingOpen] = useState(false);
+  const [transporterRevision, setTransporterRevision] = useState(0);
+  const [transporterError, setTransporterError] = useState("");
+  const [transportersLoading, setTransportersLoading] = useState(false);
   const requestedTab = searchParams.get("tab") || "items";
   const activeTab = TABS.some((tab) => tab.id === requestedTab)
     ? requestedTab
@@ -790,6 +797,7 @@ const ShipmentDetailPage = () => {
     try {
       const response = await shipmentService.getById(id);
       setShipment(response.data ?? null);
+      return Boolean(response.data);
     } catch (requestError) {
       setShipment(null);
       if (isNotFoundError(requestError)) {
@@ -802,6 +810,7 @@ const ShipmentDetailPage = () => {
           ),
         );
       }
+      return false;
     } finally {
       setLoading(false);
     }
@@ -815,6 +824,8 @@ const ShipmentDetailPage = () => {
   useEffect(() => {
     let current = true;
     const loadTransporters = async () => {
+      setTransportersLoading(true);
+      setTransporterError("");
       try {
         const response = await shipmentTransporterService.list();
         if (current) {
@@ -826,15 +837,15 @@ const ShipmentDetailPage = () => {
                 : [],
           );
         }
-      } catch {
-        if (current) setTransporters([]);
-      }
+      } catch (failure) {
+        if (current) setTransporterError(getApiErrorMessage(failure, "Transporters could not be loaded. Check your access or retry."));
+      } finally { if (current) setTransportersLoading(false); }
     };
     void loadTransporters();
     return () => {
       current = false;
     };
-  }, []);
+  }, [transporterRevision]);
 
   if (loading && !shipment) return <LoadingDetail />;
 
@@ -939,8 +950,15 @@ const ShipmentDetailPage = () => {
           {shipment.dispatchMode}
         </span>
       </div>
+      {transporterError ? <SupplyChainInlineError title="Transporters unavailable" message={transporterError} onRetry={() => setTransporterRevision(value => value + 1)} /> : transportersLoading ? <p role="status" className="text-sm text-slate-500">Loading transporters…</p> : transporters.length === 0 ? <p className="text-sm text-slate-600">No transporters are configured. <Link className="text-brand" to="/shipments/transporters">Assign the Transporter role to an existing Party</Link>.</p> : null}
 
       <QuantityRibbon shipment={shipment} />
+      <SetupReadiness title="Shipment next steps" rows={[
+        { id: "packing", title: "Pack the planned quantities", status: !capabilities.packing.canView ? "permission" : compareDecimal(shipment.totalPackedQuantity ?? "0", shipment.totalPlannedQuantity ?? "0") >= 0 && compareDecimal(shipment.totalPlannedQuantity ?? "0", "0") > 0 ? "ready" : "missing", reason: "Review package quantities. Draft Remove / repack releases allocations; dispatched stock remains protected.", href: capabilities.packing.canView ? `/shipments/work-list/${shipment.id}?tab=packing` : null, action: "Review packing" },
+        { id: "ownership", title: "Verify invoice and unit ownership", status: !capabilities.shipments.canApprove ? "permission" : "missing", reason: "Review real base units, verified conversion and invoice line allocations. An invoice number alone does not prove physical stock ownership.", href: capabilities.shipments.canView ? `/shipments/work-list/${shipment.id}?tab=ownership` : null, action: "Review invoice and units" },
+        { id: "transport", title: "Transporter and docket", status: !capabilities.dockets.canView ? "permission" : transporterError ? "error" : transportersLoading ? "loading" : shipment.dockets?.length ? "ready" : "missing", reason: transporterError ? "Transporter lookup failed; retry without losing the shipment." : shipment.dockets?.length ? "Saved transport history is available for review." : "Assign the existing Party transporter role, then record the docket and pickup details.", href: capabilities.dockets.canView ? `/shipments/work-list/${shipment.id}?tab=transport` : null, action: "Review transport", onRetry: transporterError ? () => setTransporterRevision(value => value + 1) : undefined },
+        { id: "delivery", title: "Delivery, receipts and returns", status: !capabilities.receipts.canView ? "permission" : shipment.receipts?.length || shipment.returns?.length ? "ready" : "missing", reason: "Record original received, damaged, short and returned quantities after delivery. Review freight approval and payment in the Freight tab; stock and cash actions remain separate approvals.", href: capabilities.receipts.canView ? `/shipments/work-list/${shipment.id}?tab=receipts-returns` : null, action: "Review delivery evidence" },
+      ]} />
 
       {error ? (
         <SupplyChainInlineError
@@ -981,6 +999,7 @@ const ShipmentDetailPage = () => {
         </div>
         <div className="min-w-0 p-4">
           {activeTab === "items" ? <ItemsTab shipment={shipment} /> : null}
+          {activeTab === "ownership" ? <ShipmentPhysicalPanel shipment={shipment} onSaved={load} /> : null}
           {activeTab === "packing" ? (
             <ShipmentPackingTab
               action={actions.pack}

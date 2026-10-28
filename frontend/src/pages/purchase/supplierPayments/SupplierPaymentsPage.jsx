@@ -19,7 +19,16 @@ import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { PurchasePartyLookup, PurchaseSupplierBillLookup } from "../PurchaseMasterLookup";
+import { financialIdSchema, financialMoneySchema } from "../../../utils/financialEntry";
+import { addDecimal, compareDecimal, subtractDecimal } from "../../../utils/productionValues";
 import PageHeader from "../../../components/common/PageHeader";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
+import useProductionRuntime from "../../../hooks/useProductionRuntime";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+import { getApiStatus } from "../../../utils/apiError";
+import { formatCurrency } from "../../../utils/reportFormat";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
@@ -43,10 +52,8 @@ import { PurchaseNumberInput } from "../PurchaseLineItems";
 import {
   buildListParams,
   cleanNullableString,
-  formatCurrency,
   formatDate,
   getActionError,
-  getBalanceAmount,
   getDocumentNumber,
   getPaymentModeLabel,
   getSuccessMessage,
@@ -54,7 +61,6 @@ import {
   PAYMENT_MODE,
   PAYMENT_MODE_OPTIONS,
   toInputDate,
-  toNumber,
 } from "../purchaseHelpers";
 import {
   PurchaseConfirmDialog,
@@ -62,16 +68,18 @@ import {
   PurchaseStatCard,
 } from "../PurchaseShared";
 
+const supplierCreateSource = { partyType: "Supplier" };
+
 const allocationSchema = z.object({
-  purchaseBillId: z.coerce.number().int().positive("Bill is required"),
-  allocatedAmount: z.coerce.number().min(0, "Allocation cannot be negative"),
+  purchaseBillId: financialIdSchema,
+  allocatedAmount: financialMoneySchema(),
 });
 
 const paymentSchema = z
   .object({
     supplierId: z.string().uuid("Supplier is required"),
     paymentDate: requiredDate("Payment date"),
-    amount: z.coerce.number().positive("Amount must be greater than 0"),
+    amount: financialMoneySchema(true),
     paymentMode: enumNumber(PAYMENT_MODE, "Payment mode"),
     referenceNo: z.string().optional(),
     notes: z.string().optional(),
@@ -79,11 +87,11 @@ const paymentSchema = z
   })
   .superRefine((values, context) => {
     const allocated = (values.allocations ?? []).reduce(
-      (total, allocation) => total + toNumber(allocation.allocatedAmount),
-      0,
+      (total, allocation) => addDecimal(total, allocation.allocatedAmount || "0"),
+      "0",
     );
 
-    if (allocated > values.amount) {
+    if (compareDecimal(allocated, values.amount) > 0) {
       context.addIssue({
         code: "custom",
         message: "Total allocation cannot exceed payment amount",
@@ -117,8 +125,10 @@ const getDefaultValues = (payment) => ({
     : [],
 });
 
-const PaymentModal = ({
+export const PaymentModal = ({
   billOptions,
+  billsLoading,
+  billsError,
   canCreateSupplier = false,
   isOpen,
   mode,
@@ -128,18 +138,22 @@ const PaymentModal = ({
   onSubmit,
   payment,
   supplierOptions,
+  onReviewHistory,
 }) => {
   const {
     control,
     handleSubmit,
+    getValues,
     register,
     reset,
-    formState: { errors, isSubmitting },
+    setError,
+    setValue,
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: getDefaultValues(payment),
   });
-  const { append, fields, remove } = useFieldArray({
+  const { append, fields, remove, replace } = useFieldArray({
     control,
     name: "allocations",
   });
@@ -147,9 +161,22 @@ const PaymentModal = ({
   const watchedAmount = useWatch({ control, name: "amount" });
   const allocations = useWatch({ control, name: "allocations" }) ?? [];
   const allocatedTotal = allocations.reduce(
-    (total, allocation) => total + toNumber(allocation.allocatedAmount),
-    0,
+    (total, allocation) => { try { return addDecimal(total, allocation.allocatedAmount || "0"); } catch { return total; } },
+    "0",
   );
+
+  const formValues = useWatch({ control });
+  const submitLock = useRef({ context: null, locked: false });
+  const recordContext = String(payment?.id ?? "new");
+  const [unknownState, setUnknownState] = useState({ context: null, value: false });
+  const sessionUnknown = unknownState.context === recordContext && unknownState.value;
+  const business = useProductionRuntime();
+  const draft = useScopedDraft({ entity: "supplier-payment", context: payment?.id ?? "new", values: { form: formValues, outcomeUnknown: sessionUnknown || isSubmitting }, enabled: isOpen && (isDirty || sessionUnknown || isSubmitting) });
+  const outcomeUnknown = sessionUnknown || Boolean(draft.recoveredDraft?.values?.outcomeUnknown);
+  const { confirmLeave } = useUnsavedChanges({ when: isOpen && (isDirty || outcomeUnknown || isSubmitting) });
+  useEffect(() => {
+    if (isOpen && !payment && !isDirty && business.runtime?.businessDate) setValue("paymentDate", business.runtime.businessDate, { shouldDirty: false });
+  }, [business.runtime?.businessDate, isDirty, isOpen, payment, setValue]);
 
   useEffect(() => {
     if (isOpen) {
@@ -158,50 +185,70 @@ const PaymentModal = ({
   }, [isOpen, payment, reset]);
 
   useEffect(() => {
-    if (watchedSupplier) {
-      void onLoadBills(watchedSupplier);
-    }
-  }, [onLoadBills, watchedSupplier]);
+    if (isOpen) void onLoadBills(watchedSupplier || "");
+  }, [isOpen, onLoadBills, watchedSupplier]);
 
   return (
     <AppModal
+      title={mode === "edit" ? "Edit Supplier Payment" : "New Supplier Payment"}
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-5xl"
-      onClose={isSubmitting ? undefined : onClose}
+      onClose={isSubmitting ? undefined : () => confirmLeave(onClose)}
     >
-      <h2 className="text-lg font-semibold text-slate-900">
-        {mode === "edit" ? "Edit Supplier Payment" : "New Supplier Payment"}
-      </h2>
+      {draft.recoveredDraft && <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A saved draft is available for this payment. Review it before saving. <button type="button" className="underline" onClick={() => { reset(draft.recoveredDraft.values.form ?? draft.recoveredDraft.values, { keepDefaultValues: true }); setUnknownState({ context: recordContext, value: Boolean(draft.recoveredDraft.values.outcomeUnknown) }); draft.acknowledgeRecovery(); }}>Restore for review</button> <button type="button" className="underline" disabled={outcomeUnknown} onClick={draft.clearDraft}>Discard draft</button></div>}
+      {outcomeUnknown && <div role="alert" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">This result needs a history check. <button type="button" className="underline" onClick={async () => { draft.saveDraft({ form: draft.recoveredDraft?.values?.form ?? getValues(), outcomeUnknown: true }); await onReviewHistory?.(); onClose(); }}>Return to refreshed history</button> <button type="button" className="underline" onClick={() => { const reviewed = draft.recoveredDraft?.values?.form ?? getValues(); if (draft.recoveredDraft) { reset(reviewed, { keepDefaultValues: true }); draft.acknowledgeRecovery(); } draft.saveDraft({ form: reviewed, outcomeUnknown: false }); submitLock.current = { context: recordContext, locked: false }; setUnknownState({ context: recordContext, value: false }); }}>I reviewed saved entries; allow retry</button></div>}
+      {errors.root?.server && <p role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{errors.root.server.message}</p>}
+      {draft.storageError && <p role="alert" className="text-sm text-rose-700">{draft.storageError}</p>}
       <form
         className="mt-5 max-h-[calc(100vh-12rem)] space-y-5 overflow-y-auto px-1 pb-1"
-        onSubmit={handleSubmit((values) =>
-          onSubmit({
+        onSubmit={(event) => { void handleSubmit(async (values) => {
+          if (outcomeUnknown || (submitLock.current.context === recordContext && submitLock.current.locked)) return;
+          submitLock.current = { context: recordContext, locked: true };
+          let needsReview = false;
+          try {
+            const retained = draft.saveDraft({ form: values, outcomeUnknown: true });
+            if (draft.available && !retained) { setError("root.server", { type: "server", message: "The request was not sent because recovery storage could not be updated. Review the draft notice before retrying." }); return; }
+            await onSubmit({
             supplierId: values.supplierId,
             paymentDate: values.paymentDate,
-            amount: Number(values.amount),
+            amount: values.amount,
             paymentMode: Number(values.paymentMode),
             referenceNo: cleanNullableString(values.referenceNo),
             notes: cleanNullableString(values.notes),
             allocations: (values.allocations ?? [])
-              .filter((allocation) => toNumber(allocation.allocatedAmount) > 0)
+              .filter((allocation) => compareDecimal(allocation.allocatedAmount, "0") > 0)
               .map((allocation) => ({
-                purchaseBillId: Number(allocation.purchaseBillId),
-                allocatedAmount: Number(allocation.allocatedAmount),
+                purchaseBillId: allocation.purchaseBillId,
+                allocatedAmount: allocation.allocatedAmount,
               })),
-          }),
-        )}
+          }); reset(values); setUnknownState({ context: recordContext, value: false }); draft.clearDraft(); }
+          catch (error) {
+            const status = getApiStatus(error);
+            const uncertain = !status || status === 408 || status >= 500;
+            needsReview = uncertain;
+            if (uncertain) { setUnknownState({ context: recordContext, value: true }); draft.saveDraft({ form: values, outcomeUnknown: true }); }
+            else draft.saveDraft({ form: values, outcomeUnknown: false });
+            const names = Object.keys(values).concat((values.allocations ?? []).flatMap((line, index) => Object.keys(line).map((key) => `allocations.${index}.${key}`)));
+            applyApiErrorsToForm({ error, formFieldNames: names, setError });
+            setError("root.server", { type: "server", message: uncertain ? "The save result is unknown. Review saved entries before retrying to avoid a duplicate." : getActionError(error, "Save failed. Your entries have been retained.") });
+          } finally { submitLock.current = { context: recordContext, locked: needsReview }; }
+        })(event); }}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Controller
             control={control}
             name="supplierId"
             render={({ field }) => (
-              <AppSelect
+              <PurchasePartyLookup
                 label="Supplier"
+                partyType="Supplier"
                 required
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(value) => {
+                  if (String(value) !== String(field.value)) replace([]);
+                  field.onChange(value);
+                }}
                 onBlur={field.onBlur}
                 options={supplierOptions}
                 placeholder="Select supplier"
@@ -299,9 +346,11 @@ const PaymentModal = ({
                           control={control}
                           name={`allocations.${index}.purchaseBillId`}
                           render={({ field: billField }) => (
-                            <AppSelect
+                            <PurchaseSupplierBillLookup
+                              disabled={!watchedSupplier || isSubmitting}
+                              supplierId={watchedSupplier}
                               value={billField.value}
-                              onChange={(value) => billField.onChange(Number(value))}
+                              onChange={billField.onChange}
                               onBlur={billField.onBlur}
                               options={billOptions}
                               placeholder="Select bill"
@@ -348,14 +397,16 @@ const PaymentModal = ({
             <span>Allocated: {formatCurrency(allocatedTotal)}</span>
             <span
               className={
-                allocatedTotal > toNumber(watchedAmount)
+                compareDecimal(allocatedTotal, watchedAmount || "0") > 0
                   ? "font-semibold text-red-600"
                   : "font-semibold text-slate-900"
               }
             >
-              Unallocated: {formatCurrency(toNumber(watchedAmount) - allocatedTotal)}
+              Unallocated: {formatCurrency(subtractDecimal(watchedAmount || "0", allocatedTotal))}
             </span>
           </div>
+          {billsLoading && <p role="status" className="px-4 py-2 text-sm text-slate-600">Loading this supplier's bills…</p>}
+          {billsError && <div role="alert" className="px-4 py-2 text-sm text-red-700">{billsError} <button type="button" className="underline" onClick={() => onLoadBills(watchedSupplier)}>Retry</button></div>}
           {errors.allocations?.message && (
             <p className="px-4 py-2 text-xs font-medium text-red-600">
               {errors.allocations.message}
@@ -382,11 +433,11 @@ const PaymentModal = ({
           <AppButton
             variant="secondary"
             disabled={isSubmitting}
-            onClick={onClose}
+            onClick={() => confirmLeave(onClose)}
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
+          <AppButton type="submit" disabled={outcomeUnknown} isLoading={isSubmitting} loadingText="Saving…">
             Save Payment
           </AppButton>
         </div>
@@ -414,7 +465,11 @@ const SupplierPaymentsPage = () => {
   const [searchInput, setSearchInput] = useState(state.filters.Search);
   const [suppliers, setSuppliers] = useState([]);
   const [supplierBills, setSupplierBills] = useState([]);
+  const [billsLoading, setBillsLoading] = useState(false);
+  const [billsError, setBillsError] = useState("");
+  const billsRequest = useRef(0);
   const supplierCacheRef = useRef({ loaded: false, promise: null });
+  const supplierCreateResolver = useRef(null);
   const [modal, setModal] = useState({
     isLoading: false,
     isOpen: false,
@@ -422,6 +477,8 @@ const SupplierPaymentsPage = () => {
     payment: null,
   });
   const [supplierCreateOpen, setSupplierCreateOpen] = useState(false);
+  const requestSupplierCreate = () => canCreateSupplier ? new Promise((resolve) => { supplierCreateResolver.current?.(null); supplierCreateResolver.current = resolve; setSupplierCreateOpen(true); }) : undefined;
+  const closeSupplierCreate = () => { supplierCreateResolver.current?.(null); supplierCreateResolver.current = null; setSupplierCreateOpen(false); };
   const [confirmation, setConfirmation] = useState({
     isLoading: false,
     isOpen: false,
@@ -454,7 +511,7 @@ const SupplierPaymentsPage = () => {
     }
 
     supplierCacheRef.current.promise = partyService
-      .getParties({ PageNumber: 1, PageSize: 200, IsActive: true })
+      .getParties({ PageNumber: 1, PageSize: 40, IsActive: true })
       .then((response) => {
         setSuppliers(
           getLookupList(response).filter(
@@ -476,15 +533,23 @@ const SupplierPaymentsPage = () => {
   }, []);
 
   const loadSupplierBills = useCallback(async (supplierId) => {
+    const requestId = ++billsRequest.current;
+    setSupplierBills([]);
+    setBillsError("");
+    setBillsLoading(Boolean(supplierId));
+    if (!supplierId) return;
     try {
       const response = await purchaseBillService.getPurchaseBillsBySupplier(
         supplierId,
-        { PageNumber: 1, PageSize: 200 },
+        { PageNumber: 1, PageSize: 40 },
       );
-      setSupplierBills(getLookupList(response));
+      if (requestId !== billsRequest.current) return;
+      setSupplierBills(getLookupList(response).filter((bill) => !bill.supplierId || String(bill.supplierId) === String(supplierId)));
     } catch (error) {
-      toast.error(getActionError(error, "Unable to load supplier bills."));
-      setSupplierBills([]);
+      if (requestId !== billsRequest.current) return;
+      setBillsError(getActionError(error, "Unable to load supplier bills."));
+    } finally {
+      if (requestId === billsRequest.current) setBillsLoading(false);
     }
   }, []);
 
@@ -517,9 +582,9 @@ const SupplierPaymentsPage = () => {
   const billOptions = useMemo(
     () =>
       supplierBills.map((bill) => ({
-        value: Number(bill.id),
+        value: String(bill.id),
         label: `${getDocumentNumber(bill, "PB")} - Outstanding ${formatCurrency(
-          getBalanceAmount(bill),
+          bill.balanceAmount ?? bill.dueAmount ?? bill.outstandingAmount,
         )}`,
       })),
     [supplierBills],
@@ -527,8 +592,8 @@ const SupplierPaymentsPage = () => {
 
   const stats = useMemo(() => {
     const totalPaid = state.list.reduce(
-      (sum, payment) => sum + toNumber(payment.amount),
-      0,
+      (sum, payment) => addDecimal(sum, payment.amount),
+      "0",
     );
 
     return {
@@ -546,10 +611,13 @@ const SupplierPaymentsPage = () => {
       }
 
       try {
-        await partyService.createParty(payload);
+        const result = await partyService.createParty({ ...payload, partyType: payload.partyType ?? "Supplier" });
+        const created = result.data?.party ?? result.data;
         toast.success("Supplier created successfully");
         supplierCacheRef.current.loaded = false;
         await loadSuppliers({ force: true });
+        supplierCreateResolver.current?.(created);
+        supplierCreateResolver.current = null;
         setSupplierCreateOpen(false);
       } catch (error) {
         toast.error(getActionError(error, "Unable to create supplier."));
@@ -712,7 +780,7 @@ const SupplierPaymentsPage = () => {
               className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
-          <AppSelect
+          <PurchasePartyLookup
             value={state.filters.SupplierId}
             onChange={(value) => {
               dispatch(setSupplierPaymentFilters({ SupplierId: value }));
@@ -720,13 +788,10 @@ const SupplierPaymentsPage = () => {
             }}
             options={[{ value: "all", label: "All suppliers" }, ...supplierOptions]}
             aria-label="Filter by supplier"
+            partyType="Supplier"
             creatable={canCreateSupplier}
             createLabel="Create new supplier"
-            onCreateClick={() => {
-              if (canCreateSupplier) {
-                setSupplierCreateOpen(true);
-              }
-            }}
+            onCreateClick={requestSupplierCreate}
           />
 <AppDateRangeFilter
             className="w-full sm:col-span-2 sm:min-w-[260px]"
@@ -884,16 +949,15 @@ const SupplierPaymentsPage = () => {
       </div>
 
       <PaymentModal
+        onReviewHistory={loadPayments}
         billOptions={billOptions}
+        billsLoading={billsLoading}
+        billsError={billsError}
         canCreateSupplier={canCreateSupplier}
         isOpen={modal.isOpen}
         mode={modal.mode}
         onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-        onCreateSupplier={() => {
-          if (canCreateSupplier) {
-            setSupplierCreateOpen(true);
-          }
-        }}
+        onCreateSupplier={requestSupplierCreate}
         onLoadBills={loadSupplierBills}
         onSubmit={submitPayment}
         payment={modal.payment}
@@ -901,10 +965,11 @@ const SupplierPaymentsPage = () => {
       />
 
       <PartyFormModal
+        source={supplierCreateSource}
         isLoading={false}
         isOpen={supplierCreateOpen}
         mode="create"
-        onClose={() => setSupplierCreateOpen(false)}
+        onClose={closeSupplierCreate}
         onSubmit={submitSupplier}
         submitLabel="Create Supplier"
         title="Add Supplier"

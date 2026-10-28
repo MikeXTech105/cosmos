@@ -13,6 +13,7 @@ import {
 } from "../../../constants/procurementEnums";
 import { procurementSettingService } from "../../../services/procurement/procurementSettingService";
 import LeadTimeHistoryModal from "./LeadTimeHistoryModal";
+import { SupplierPolicyPanel } from "../../manufacturing/integrations/ProcurementPurchasePanel";
 import {
   ProcurementErrorState,
   ProcurementInlineError,
@@ -33,6 +34,7 @@ import {
   toNumberOrNull,
 } from "../procurementHelpers";
 import useProcurementCapabilities from "../useProcurementCapabilities";
+import PlanningPolicyExample from "../../manufacturing/PlanningPolicyExample";
 
 const getSettingItem = (setting) =>
   setting?.item ?? {
@@ -281,17 +283,18 @@ const ProcurementSettingFormPage = () => {
           </div>
 
           <LeadTimePanel form={form} setForm={setForm} />
+          <SupplierPolicyPanel itemId={getRecordId(form.item, ["itemId"]) || routeItemId} onSaved={policy => setForm(current => ({ ...current, configuredLeadTimeDays: String(policy.configuredLeadTimeDays ?? "") }))} />
           {(errors.configuredLeadTimeDays || errors.leadTimeOverrideDays) && (
             <p className="text-xs font-medium text-red-600">{errors.configuredLeadTimeDays || errors.leadTimeOverrideDays}</p>
           )}
 
           <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <details open={Boolean(errors.safetyFactor || errors.minimumOrderQuantity || errors.orderMultiple || errors.roundingRule) || undefined}><summary className="cursor-pointer text-sm font-semibold">Advanced stock targets, minimum order and multiples</summary><p className="my-3 text-xs text-slate-500">A minimum order applies only after a positive shortage. A configured order multiple rounds that purchase quantity upward. Override lead time wins over receipt history, then configured duration.</p><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <AppInput error={errors.safetyFactor} label="Safety factor" min="0" step="any" type="number" value={form.safetyFactor} onChange={(event) => setForm((current) => ({ ...current, safetyFactor: event.target.value }))} />
               <AppInput error={errors.minimumOrderQuantity} label="Minimum order qty" min="0" placeholder="Optional" step="any" type="number" value={form.minimumOrderQuantity} onChange={(event) => setForm((current) => ({ ...current, minimumOrderQuantity: event.target.value }))} />
               <AppInput error={errors.orderMultiple} label="Order multiple" min="0" placeholder="Optional" step="any" type="number" value={form.orderMultiple} onChange={(event) => setForm((current) => ({ ...current, orderMultiple: event.target.value }))} />
               <AppSelect error={errors.roundingRule} label="Rounding rule" options={PLANNING_ROUNDING_RULE_OPTIONS} value={form.roundingRule} onChange={(roundingRule) => setForm((current) => ({ ...current, roundingRule }))} />
-            </div>
+            </div></details>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <ProcurementToggle
                 checked={form.automaticCalculationEnabled}
@@ -321,6 +324,7 @@ const ProcurementSettingFormPage = () => {
               <ProcurementInlineError message={errors.form} title="Setting could not be saved" />
             </div>
           </section>
+          <PlanningPolicyExample kind="procurement" disabled={saving || loading} policy={{ configuredLeadTimeDays: form.configuredLeadTimeDays, leadTimeOverrideDays: form.leadTimeOverrideDays, historyAverageLeadTimeDays: form.historyAverageLeadTimeDays, safetyFactor: form.safetyFactor, minimumOrderQuantity: form.minimumOrderQuantity, orderMultiple: form.orderMultiple, automaticCalculationEnabled: form.automaticCalculationEnabled, manualPlanning: form.manualPlanning }} />
         </div>
       )}
 

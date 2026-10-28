@@ -1,11 +1,21 @@
 # COSMOS — API, Validation and Database Contracts
-**Reviewed:** 2026-10-26 · **Nature:** Master contract guide, not replacement for generated endpoint/column matrices.
+**Reviewed:** 2026-10-28 · **Nature:** Master contract guide, not replacement for generated endpoint/column matrices.
 
 ## API design and enforcement
 - Module-grouped ASP.NET controllers use bearer authentication and `RequirePermission` page/action checks where applicable. Public website APIs have a distinct anonymous contract; do not impose an internal ERP envelope on them without migration planning.
 - Use the shared `ApiResponse<T>` success/failure conventions, meaningful HTTP status, correlation IDs and field-specific validation diagnostics. CSV/file exports return file responses, not normal JSON.
 - Define DTO, validator, controller response metadata, application service, repository/stored procedure, page/permission seed and tests as one change unit.
 - Route/path requirements, optional query members, nullability, conditional validation and persisted `NOT NULL` constraints are **different concepts**. Do not turn every DB non-null field into a frontend mandatory input.
+
+## 28 October implementation contracts
+
+Remote lookups fetch bounded pages, retain exact IDs and hydrate historical selection by ID. `GET /api/v1/manufacturing/operations/{id}` and `/work-centres/{id}` require Configuration View and use the authenticated catalog; inactive records are readable for history, not new selection. Migration `20261028_07_production_master_lookup.sql` adds the read-only procedure. Account/company changes mask prior caches; revoked resource View blocks hydration. Quantity and identifier transport uses existing lossless JSON adapters; financial inputs reject excess scale instead of silently rounding.
+
+Packing remove/repack commands preserve allocation and package history with versions/idempotency; OEE stopped-day acknowledgements have their own retained lifecycle; order labels and packaging conversion readiness extend existing masters. Dispatch-linked shipment creation consumes actual persisted allocation IDs. Full CSV exports traverse all matching pages and reject partial/changing responses. The [operations coverage](../output/implementation-verification/operations-progress.json) maps exact routes, actions and tables.
+
+HR adds protected setup for leave entitlement, salary components/structures/effective assignments, contextual attendance correction, period payroll review and bank/access-account partial-save recovery. [HR_OPERATOR_SETUP.md](../backend/docs/HR_OPERATOR_SETUP.md) defines the verified source contract and confirmed payroll rules. Existing Active/Resigned payroll population remains; historical Inactive/Terminated inclusion has not been expanded without policy.
+
+HSN/SAC maintenance and effective mapping remain canonical. GST OTP/session parsing follows explicit provider success contracts, and E-Way extension records durable intent/readback. A separate immutable preparation API stores **PendingPolicy** source evidence and optional policy proposals. It does not calculate approved component taxes or enable generation. Current-at-preparation identities are labelled as such; they are not backfilled invoice-time facts. See [provider and snapshot handoff](COMMERCE_GST_PROVIDER_AND_VERIFICATION_HANDOFF.md). The [migration manifest](../output/implementation-verification/migration-manifest.json) records eight additive scripts; compilation/parser checks do not establish deployed database behavior.
 
 ## Canonical detailed evidence ledgers (retain)
 1. [API action/required fields matrix](../backend/docs/API_REQUIRED_FIELDS_MATRIX.md) — indexed action/DTO links; snapshot derived from controllers.

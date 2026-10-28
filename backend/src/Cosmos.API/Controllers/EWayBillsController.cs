@@ -48,6 +48,11 @@ public sealed class EWayBillsController : ApiControllerBase
     public async Task<IActionResult> Extend(ExtendEWayBillRequest request, CancellationToken cancellationToken) =>
         FromResponse(await _service.ExtendAsync(request, cancellationToken));
 
+    [HttpPost("extensions/{idempotencyKey:guid}/reconcile")]
+    [RequirePermission(GstPermissions.EWayBill, PermissionAction.Edit)]
+    [SwaggerOperation(Summary="Reconcile an uncertain E-Way Bill extension",Description="Performs provider readback for the original durable command without submitting another extension.")]
+    public async Task<IActionResult> ReconcileExtension(Guid idempotencyKey,CancellationToken cancellationToken) => FromResponse(await _service.ReconcileExtensionAsync(idempotencyKey,cancellationToken));
+
     [HttpPost("get-details")]
     [RequirePermission(GstPermissions.EWayBill, PermissionAction.View)]
     [SwaggerOperation(Summary = "Get E-Way Bill Details from GSTZen", Description = "Calls GSTZen Get E-Way Bill using ewbNo.")]

@@ -65,8 +65,10 @@ public sealed class PartyService : IPartyService
 
     public async Task<ApiResponse<PartyDto>> UpdateAsync(Guid id, UpdatePartyCommand command, CancellationToken cancellationToken)
     {
-        await ValidationRunner.ValidateAsync(_updateValidator, command, cancellationToken);
         var old = await _repository.GetByIdAsync(id, cancellationToken) ?? throw new NotFoundException("Party was not found.");
+        // Older clients did not send a PartyType. Omission must preserve the persisted role.
+        command = command with { PartyType = command.PartyType ?? old.PartyType };
+        await ValidationRunner.ValidateAsync(_updateValidator, command, cancellationToken);
         var updated = await _repository.UpdateAsync(id, command, cancellationToken);
         await _auditRepository.AddAsync(new AuditEntryRequest("Parties", id.ToString(), "Update", AuditSerializer.Serialize(old), AuditSerializer.Serialize(updated), null), cancellationToken);
         return ApiResponse<PartyDto>.Success(updated, "Party updated.");

@@ -1,0 +1,53 @@
+{
+  "fixtureOnly": true,
+  "stageCount": 1,
+  "cutoverDate": "2026-10-27",
+  "positions": [
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 2,
+      "column": "A: Business date",
+      "value": "2026-10-26"
+    },
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 2,
+      "column": "B: SKU",
+      "value": "0.000001"
+    },
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 2,
+      "column": "C: SKU",
+      "value": "9999999999999999.999999"
+    },
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 4,
+      "column": "A: Business date",
+      "value": "2026-10-25"
+    },
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 4,
+      "column": "B: SKU",
+      "value": "INACTIVE-HISTORY"
+    },
+    {
+      "tab": "PRODUCTION DATA",
+      "row": 4,
+      "column": "C: SKU",
+      "value": "Synthetic test evidence only"
+    }
+  ],
+  "materialRequest": {
+    "snapshotId": "00000000-0000-4000-8000-000000000001",
+    "outputs": [
+      {
+        "itemId": 101,
+        "quantity": 150
+      }
+    ]
+  },
+  "stockPostingRequests": 0
+}

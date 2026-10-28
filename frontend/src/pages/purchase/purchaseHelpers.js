@@ -1,4 +1,6 @@
 import { getApiErrorMessage } from "../../utils/apiError";
+import { decimalText } from "../../utils/productionValues";
+import { documentIdText, documentQuantityText, optionalDocumentIdText } from "../../utils/documentPrecision";
 
 export const PURCHASE_DOCUMENT_STATUS = {
   DRAFT: 1,
@@ -229,9 +231,7 @@ export const normalizeNumberBlurValue = (value, fallback = "0") => {
   const completedValue = normalized.endsWith(".")
     ? normalized.slice(0, -1)
     : normalized;
-  const numericValue = Number(completedValue);
-
-  return Number.isFinite(numericValue) ? String(numericValue) : fallback;
+  try { return decimalText(completedValue); } catch { return fallback; }
 };
 
 export const normalizeSignedNumberInput = (rawValue) => {
@@ -513,16 +513,14 @@ export const getDocumentTotals = ({
 
 export const buildLinePayload = (items = []) => {
   return items.map((item) => ({
-    itemId: Math.trunc(toNumber(item.itemId)),
-    quantity: toNumber(item.quantity),
+    itemId: documentIdText(item.itemId),
+    quantity: documentQuantityText(item.quantity),
     purchasePrice: toNumber(item.purchasePrice),
     discountPercentage: toNumber(item.discountPercentage),
     discountAmount: toNumber(item.discountAmount),
     taxPercentage: toNumber(item.taxPercentage),
-    unitId: item.unitId ? Math.trunc(toNumber(item.unitId)) : null,
-    purchaseBillItemId: item.purchaseBillItemId
-      ? Math.trunc(toNumber(item.purchaseBillItemId))
-      : null,
+    unitId: optionalDocumentIdText(item.unitId),
+    purchaseBillItemId: optionalDocumentIdText(item.purchaseBillItemId),
   }));
 };
 
@@ -534,9 +532,7 @@ export const buildPurchaseDocumentPayload = (values, config) => {
   };
 
   if (config.supportsBillSelect) {
-    base.purchaseBillId = values.purchaseBillId
-      ? Math.trunc(toNumber(values.purchaseBillId))
-      : null;
+    base.purchaseBillId = optionalDocumentIdText(values.purchaseBillId);
   }
 
   if (config.supportsReason) {

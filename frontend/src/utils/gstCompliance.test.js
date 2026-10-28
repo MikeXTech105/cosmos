@@ -5,7 +5,8 @@ import { GST_PAGES, GSTIN_PATTERN, registrationPayload, vehiclePayload, canChang
 describe("GST contract mapping and safety", () => {
   it("preserves editable registration fields without echoing audit or secret fields", () => {
     const body = registrationPayload({ gstin: " 27abcde1234f1z5 ", status: "Active", companyId: "8", addressJson: '{"old":"address"}', gstPortalUsername: "existing-user", isEInvoiceEnabled: true, sandboxToken: "do-not-send", createdBy: 17 });
-    expect(body).toMatchObject({ gstin: "27ABCDE1234F1Z5", companyId: 8, branchId: null, addressJson: '{"old":"address"}', gstPortalUsername: "existing-user", isEInvoiceEnabled: true });
+    expect(body).toMatchObject({ gstin: "27ABCDE1234F1Z5", branchId: null, addressJson: '{"old":"address"}', gstPortalUsername: "existing-user", isEInvoiceEnabled: true });
+    expect(String(body.companyId)).toBe("8");
     expect(body).not.toHaveProperty("sandboxToken");
     expect(body).not.toHaveProperty("createdBy");
     expect(GSTIN_PATTERN.test(body.gstin)).toBe(true);

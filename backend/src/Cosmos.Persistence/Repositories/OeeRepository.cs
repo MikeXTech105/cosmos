@@ -13,6 +13,10 @@ namespace Cosmos.Persistence.Repositories;
 
 public sealed class OeeRepository(ISqlConnectionFactory factory) : IOeeRepository
 {
+    public Task<PagedResult<OeeDayAcknowledgementDto>> GetDayAcknowledgementsAsync(OeeDayAcknowledgementQuery query, CancellationToken ct) =>
+        Paged<OeeDayAcknowledgementDto>("sp_OeeDayAcknowledgement_List", query, query.PageNumber, query.PageSize, ct);
+    public Task<OeeDayAcknowledgementDto> SaveDayAcknowledgementAsync(SaveOeeDayAcknowledgementRequest request, long? userId, CancellationToken ct) =>
+        Save<OeeDayAcknowledgementDto>("sp_OeeDayAcknowledgement_Save", new { request.ProductionDate, request.MachineId, request.State, request.Reason, request.PreviousId, request.CommandKey, UserId = userId }, ct);
     public Task<bool> MachineExistsAsync(long id, CancellationToken ct) => Scalar<bool>("sp_OeeMachine_Exists", new { Id = id }, ct);
     public Task<bool> MouldExistsAsync(long id, CancellationToken ct) => Scalar<bool>("sp_OeeMould_Exists", new { Id = id }, ct);
     public Task<bool> DowntimeReasonExistsAsync(long? id, CancellationToken ct) => id is null ? Task.FromResult(true) : Scalar<bool>("sp_OeeDowntimeReason_Exists", new { Id = id }, ct);

@@ -14,6 +14,7 @@ const ALWAYS_AUTHENTICATED_ROUTES = new Set([
   "/change-password",
   "/preferences",
   "/profile",
+  "/today",
 ]);
 
 const canViewModule = ({ module, pages, roles, user }) => {

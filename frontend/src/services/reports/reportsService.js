@@ -1,4 +1,4 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 
 export const runReport = async (endpoint, params, { signal } = {}) => {

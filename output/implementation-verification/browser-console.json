@@ -1,0 +1,6 @@
+{
+  "since": "2026-10-28T11:45:25.598Z",
+  "checkedAt": "2026-10-28T12:50:35.689Z",
+  "scope": "Synthetic actual-component fixture only; prior fixture HMR development failures excluded by clean reload time",
+  "errors": []
+}

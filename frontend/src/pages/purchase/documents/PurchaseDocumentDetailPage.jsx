@@ -1,25 +1,23 @@
+import useFormReturnContext from "../../../hooks/useFormReturnContext";
 import { ArrowLeft, Ban, CheckCircle2, Pencil, RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+
+import { quantityText } from "../../../utils/productionValues";
 import GstDocumentLinks from "../../gst/GstDocumentLinks";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
-import { itemService } from "../../../services/inventory/itemService";
-import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
-import {
-  getPartyDisplayName,
-  getPartyType,
-} from "../../party/partyHelpers";
-import { partyService } from "../../party/partyService";
+
+
+
 import {
   extractItems,
   formatCurrency,
   formatDate,
-  formatNumber,
   getActionError,
   getBalanceAmount,
   getDocumentNumber,
@@ -37,22 +35,16 @@ import {
   PurchaseConfirmDialog,
   PurchaseStatusPill,
 } from "../PurchaseShared";
-import PurchaseDocumentFormModal from "./PurchaseDocumentFormModal";
 
-const getLookupList = (response) => {
-  const data = response?.data;
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  return data?.items ?? [];
-};
+import { purchaseDocumentActions } from "./purchaseLifecycle";
+import PurchasePhysicalPanel from "../../manufacturing/integrations/PurchasePhysicalPanel";
+import PurchaseBillReceiptPanel from "../../manufacturing/integrations/PurchaseBillReceiptPanel";
 
 const PurchaseDocumentDetailPage = ({ config }) => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { returnState, savedState, returnToList } = useFormReturnContext(config.listPath);
   const state = useSelector((store) => store[config.selectorKey]);
   const capabilities = useCapabilities({
     actions: ["view", "update", "confirm", "cancel"],
@@ -62,25 +54,8 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   });
   const record =
     String(state.selected?.id ?? "") === String(id) ? state.selected : null;
-  const [lookups, setLookups] = useState({
-    bills: [],
-    billsLoading: false,
-    items: [],
-    itemsLoading: false,
-    suppliers: [],
-    suppliersLoading: false,
-  });
-  const cacheRef = useRef({
-    bills: { loaded: false, promise: null },
-    items: { loaded: false, promise: null },
-    suppliers: { loaded: false, promise: null },
-  });
-  const [modal, setModal] = useState({
-    isLoading: false,
-    isOpen: false,
-    mode: "edit",
-    record: null,
-  });
+  const allowedActions = purchaseDocumentActions(record, config.pluralLabel);
+  const returnCapabilities = useCapabilities({ actions: ["create"], pageName: "PurchaseExpense.PurchaseReturn", route: "/purchase/returns", resource: "purchaseReturns" });
   const [confirmation, setConfirmation] = useState({
     action: "confirm",
     isLoading: false,
@@ -90,122 +65,16 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const loadRecord = useCallback(async () => {
     try {
       await dispatch(config.detailThunk(id)).unwrap();
+      return true;
     } catch (error) {
       toast.error(getActionError(error, "Unable to load details."));
+      return false;
     }
   }, [config, dispatch, id]);
 
   useEffect(() => {
     void Promise.resolve().then(loadRecord);
   }, [loadRecord]);
-
-  const loadLookup = useCallback((type) => {
-    const cache = cacheRef.current[type];
-
-    if (cache.loaded) {
-      return Promise.resolve();
-    }
-
-    if (cache.promise) {
-      return cache.promise;
-    }
-
-    const request =
-      type === "suppliers"
-        ? partyService.getParties({
-            PageNumber: 1,
-            PageSize: 200,
-            IsActive: true,
-          })
-        : type === "items"
-          ? itemService.getItems({
-              PageNumber: 1,
-              PageSize: 200,
-              IsActive: true,
-            })
-          : purchaseBillService.getPurchaseBills({
-              PageNumber: 1,
-              PageSize: 200,
-            });
-
-    setLookups((current) => ({ ...current, [`${type}Loading`]: true }));
-
-    cache.promise = request
-      .then((response) => {
-        const rows = getLookupList(response).filter((entry) => {
-          if (entry?.id === null || entry?.id === undefined) {
-            return false;
-          }
-
-          if (type === "suppliers") {
-            return (
-              entry?.isActive !== false &&
-              ["supplier", "both"].includes(getPartyType(entry))
-            );
-          }
-
-          return entry?.isActive !== false;
-        });
-
-        cache.loaded = true;
-        setLookups((current) => ({
-          ...current,
-          [type]: rows,
-          [`${type}Loading`]: false,
-        }));
-      })
-      .catch((error) => {
-        toast.error(getActionError(error, `Unable to load ${type}.`));
-        setLookups((current) => ({ ...current, [`${type}Loading`]: false }));
-      })
-      .finally(() => {
-        cache.promise = null;
-      });
-
-    return cache.promise;
-  }, []);
-
-  const loadLookups = useCallback(
-    () =>
-      Promise.all([
-        loadLookup("suppliers"),
-        loadLookup("items"),
-        ...(config.supportsBillSelect ? [loadLookup("bills")] : []),
-      ]),
-    [config.supportsBillSelect, loadLookup],
-  );
-
-  const supplierOptions = useMemo(
-    () =>
-      lookups.suppliers.map((supplier) => ({
-        value: supplier.id,
-        label: getPartyDisplayName(supplier),
-      })),
-    [lookups.suppliers],
-  );
-
-  const itemOptions = useMemo(
-    () =>
-      lookups.items.map((item) => ({
-        value: Number(item.id),
-        label: [item.name, item.itemCode].filter(Boolean).join(" - "),
-      })),
-    [lookups.items],
-  );
-
-  const itemsById = useMemo(
-    () => new Map(lookups.items.map((item) => [String(item.id), item])),
-    [lookups.items],
-  );
-
-  const billOptions = useMemo(
-    () =>
-      lookups.bills.map((bill) => ({
-        value: Number(bill.id),
-        label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
-      })),
-    [lookups.bills],
-  );
 
   const lineItems = useMemo(() => (record ? extractItems(record) : []), [record]);
   const totals = useMemo(
@@ -219,32 +88,13 @@ const PurchaseDocumentDetailPage = ({ config }) => {
     [lineItems, record],
   );
 
-  const submitRecord = async (payload) => {
-    if (!capabilities.canUpdate || !record) {
-      return;
-    }
-
-    try {
-      const response = await dispatch(
-        config.updateThunk({ id: record.id, payload }),
-      ).unwrap();
-
-      toast.success(getSuccessMessage(response, `${config.singularLabel} saved`));
-      setModal((current) => ({ ...current, isOpen: false }));
-      await loadRecord();
-    } catch (error) {
-      toast.error(getActionError(error, `Unable to save ${config.singularLabel}.`));
-      throw error;
-    }
-  };
-
   const runAction = async () => {
     const permissionMap = {
       cancel: capabilities.canCancel,
       confirm: capabilities.canConfirm,
     };
 
-    if (!record || !permissionMap[confirmation.action]) {
+    if (!record || !permissionMap[confirmation.action] || !allowedActions[confirmation.action]) {
       return;
     }
 
@@ -257,6 +107,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       };
       const response = await dispatch(actionMap[confirmation.action](id)).unwrap();
 
+      savedState(record.id);
       toast.success(getSuccessMessage(response, "Action completed"));
       setConfirmation({ action: "confirm", isLoading: false, isOpen: false });
       await loadRecord();
@@ -269,17 +120,11 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const Icon = config.icon;
 
   const openEdit = () => {
-    if (!capabilities.canUpdate || !record) {
+    if (!capabilities.canUpdate || !record || !allowedActions.edit) {
       return;
     }
 
-    void loadLookups();
-    setModal({
-      isLoading: false,
-      isOpen: true,
-      mode: "edit",
-      record,
-    });
+    navigate(`${config.routeBase}/${record.id}/edit`,{state:returnState()});
   };
 
   const openAction = (action) => {
@@ -288,7 +133,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       confirm: capabilities.canConfirm,
     };
 
-    if (!permissionMap[action]) {
+    if (!permissionMap[action] || !allowedActions[action]) {
       return;
     }
 
@@ -318,7 +163,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
             <AppButton
               variant="secondary"
               className="h-10"
-              onClick={() => navigate(config.listPath)}
+              onClick={() => returnToList()}
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -345,7 +190,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
             <AppButton
               variant="secondary"
               className="h-10"
-              onClick={() => navigate(config.listPath)}
+              onClick={() => returnToList()}
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -366,6 +211,8 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       />
 
       {record && config.selectorKey === "purchaseBills" && <GstDocumentLinks id={record.id} purchase />}
+      {record && config.selectorKey === "purchaseOrders" && <PurchasePhysicalPanel record={record} onSaved={loadRecord} />}
+      {record && config.selectorKey === "purchaseBills" && <PurchaseBillReceiptPanel record={record} onSaved={loadRecord} />}
       {record && (
         <>
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -418,7 +265,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
 
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap gap-2">
-                {capabilities.canUpdate && (
+                {capabilities.canUpdate && allowedActions.edit && (
                   <AppButton
                     variant="secondary"
                     className="h-10 rounded-lg px-3"
@@ -428,7 +275,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     Edit
                   </AppButton>
                 )}
-                {config.supportsConfirm && capabilities.canConfirm && (
+                {config.supportsConfirm && capabilities.canConfirm && allowedActions.confirm && (
                   <AppButton
                     className="h-10 rounded-lg px-3"
                     onClick={() => openAction("confirm")}
@@ -437,7 +284,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     Confirm
                   </AppButton>
                 )}
-                {config.supportsCancel && capabilities.canCancel && (
+                {config.supportsCancel && capabilities.canCancel && allowedActions.cancel && (
                   <AppButton
                     variant="danger"
                     className="h-10 rounded-lg px-3"
@@ -447,7 +294,9 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                     Cancel
                   </AppButton>
                 )}
+                {allowedActions.return && returnCapabilities.canCreate && <AppButton variant="secondary" onClick={() => navigate(`/purchase/returns/new?purchaseBillId=${record.id}`,{state:returnState()})}>Return against this bill</AppButton>}
               </div>
+              {!allowedActions.edit && <p className="mt-3 text-xs text-slate-500">This document's posted or linked lines are protected. Use the linked receipt, return or approved correction workflow.</p>}
             </section>
           </div>
 
@@ -479,7 +328,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                           {line.itemName || `Item ${index + 1}`}
                         </td>
                         <td className="px-3 py-3 text-right text-slate-600">
-                          {formatNumber(line.quantity)}
+                          {quantityText(line.quantity, { scale: 6 })}
                         </td>
                         <td className="px-3 py-3 text-right text-slate-600">
                           {formatCurrency(line.purchasePrice)}
@@ -562,22 +411,6 @@ const PurchaseDocumentDetailPage = ({ config }) => {
               </dl>
             </section>
           </div>
-
-          <PurchaseDocumentFormModal
-            billOptions={billOptions}
-            config={config}
-            isLoading={modal.isLoading}
-            isOpen={modal.isOpen}
-            itemEmptyMessage="No items found in inventory."
-            itemLoading={lookups.itemsLoading}
-            itemOptions={itemOptions}
-            itemsById={itemsById}
-            mode="edit"
-            onClose={() => setModal((current) => ({ ...current, isOpen: false }))}
-            onSubmit={submitRecord}
-            record={modal.record}
-            supplierOptions={supplierOptions}
-          />
 
           <PurchaseConfirmDialog
             confirmLabel={confirmation.action === "cancel" ? "Cancel" : "Confirm"}

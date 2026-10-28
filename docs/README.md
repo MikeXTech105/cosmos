@@ -1,7 +1,10 @@
 # COSMOS Documentation Portal
-**Document status:** Current navigation index · **Reviewed:** 2026-10-26 · **Evidence:** GitHub `main` at `7046dbd61592f1c10c442d19b75cdbde78a64b42`.
+**Document status:** Current navigation index · **Reviewed:** 2026-10-28 · **Evidence:** GitHub `main` at `7046dbd61592f1c10c442d19b75cdbde78a64b42`.
 
 ## Start here
+
+The 28 October complete-brief delivery is indexed in [current status](PROJECT_STATUS.md), with [Gujarati client flows](../handoff/COSMOS_CLIENT_FLOW_GUIDE_GU.md), [user-run SQL verification](OPERATIONS.md#complete-brief-verification-28-october) and [exact automated evidence](../output/implementation-verification/verification-results.json). SQL/authenticated/provider acceptance remains explicit in those records.
+
 | Topic | Canonical document | What it answers |
 |---|---|---|
 | Project overview and architecture | [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) | Architecture, module dependencies and technical rules |

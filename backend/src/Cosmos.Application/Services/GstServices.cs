@@ -8,6 +8,9 @@ using Cosmos.Shared.Exceptions;
 using Cosmos.Shared.Responses;
 using Cosmos.Shared.Security;
 using FluentValidation;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace Cosmos.Application.Services;
 
@@ -207,10 +210,60 @@ public sealed class EWayBillService : IEWayBillService
     public async Task<ApiResponse<EWayBillResponse>> ExtendAsync(ExtendEWayBillRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_extendValidator, request, cancellationToken);
-        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
-        var response = await _provider.ExtendEWayBillAsync(request, cancellationToken);
-        return ApiResponse<EWayBillResponse>.Success(response, "E-Way Bill extended.");
+        var registration=await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
+        var stored=await StoredBill(request.CompanyGstRegistrationId,request.EWayBillNumber,cancellationToken);
+        var intent=request with { Gstin=registration.Gstin,RequestJson=null };
+        var fingerprint=SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(intent)));
+        var prior=await _provider.GetEWayBillAsync(new GetEWayBillDetailsRequest(registration.Id,request.EWayBillNumber,registration.Gstin),cancellationToken);
+        if(prior.EWayBillNumber!=request.EWayBillNumber || !IsActive(prior.Status) || prior.ValidUpTo is null) throw new ConflictException("Refresh an explicitly active provider record with a known validity before extending it.");
+        if(prior.Distance.HasValue && int.Parse(request.RemainingDistance!)>prior.Distance.Value) throw new CosmosException("Remaining distance cannot exceed the provider's original distance.");
+        var command=await _repository.ReserveEWayExtensionAsync(intent,fingerprint,prior.ValidUpTo,_currentUser.UserId,cancellationToken);
+        if(!command.IsNew)
+        {
+            if(command.State=="Confirmed") return ApiResponse<EWayBillResponse>.Success(stored,"The previously confirmed extension is already saved.");
+            throw new ConflictException("This extension already has a pending or unknown outcome. Reconcile its command instead of submitting again.",data:new { commandKey=request.IdempotencyKey,reconcileRequired=true });
+        }
+        try
+        {
+            var response=await _provider.ExtendEWayBillAsync(intent,cancellationToken);
+            if(response.EWayBillNumber!=request.EWayBillNumber || response.ValidUpTo is null || response.ValidUpTo<=prior.ValidUpTo) throw new CosmosException("Provider did not confirm this document's later validity; reconcile before another submission.",502);
+            var saved=await _repository.CompleteEWayExtensionAsync(command.IdempotencyKey,response,true,_currentUser.UserId,cancellationToken);
+            return ApiResponse<EWayBillResponse>.Success(saved,"E-Way Bill extension confirmed and saved.");
+        }
+        catch(CosmosException rejection) when(rejection.ResponseData is GstProviderRejection)
+        {
+            await _repository.CompleteEWayExtensionAsync(command.IdempotencyKey,null,false,_currentUser.UserId,CancellationToken.None,rejected:true);
+            throw;
+        }
+        catch
+        {
+            // Persist the uncertain intent even when the caller disconnects. Never replay it automatically.
+            try { await _repository.CompleteEWayExtensionAsync(command.IdempotencyKey,null,false,_currentUser.UserId,CancellationToken.None); }
+            catch { /* The committed InProgress reservation also blocks any replay if the database is temporarily unavailable. */ }
+            throw new ConflictException("The extension outcome requires provider reconciliation. Do not submit it again.",data:new { commandKey=command.IdempotencyKey,reconcileRequired=true,retrySafe=false });
+        }
     }
+
+    public async Task<ApiResponse<EWayBillResponse>> ReconcileExtensionAsync(Guid idempotencyKey,CancellationToken cancellationToken)
+    {
+        var command=await _repository.GetEWayExtensionAsync(idempotencyKey,cancellationToken)??throw new NotFoundException("Extension command was not found.");
+        var registration=await EnsureRegistrationAsync(command.CompanyGstRegistrationId,x=>x.IsEWayBillEnabled,"E-Way Bill is not enabled for this registration.",cancellationToken);
+        var stored=await StoredBill(command.CompanyGstRegistrationId,command.EWayBillNumber,cancellationToken);
+        if(command.State=="Confirmed") return ApiResponse<EWayBillResponse>.Success(stored,"Confirmed extension loaded.");
+        if(command.State=="Rejected") throw new CosmosException("The provider rejected this extension. Review and correct the details before starting a new command.",409,data:new GstProviderRejection());
+        var current=await _provider.GetEWayBillAsync(new GetEWayBillDetailsRequest(command.CompanyGstRegistrationId,command.EWayBillNumber,registration.Gstin),cancellationToken);
+        if(current.EWayBillNumber!=command.EWayBillNumber || !IsActive(current.Status) || current.ValidUpTo is null || current.ValidUpTo<=command.PriorValidUpTo) throw new ConflictException("Provider readback has not confirmed a later validity. This command remains unresolved; do not resubmit it.");
+        var saved=await _repository.CompleteEWayExtensionAsync(command.IdempotencyKey,current,true,_currentUser.UserId,cancellationToken);
+        return ApiResponse<EWayBillResponse>.Success(saved,"Provider readback confirmed the later validity and the extension was reconciled.");
+    }
+
+    private async Task<EWayBillResponse> StoredBill(long registrationId,string number,CancellationToken ct)
+    {
+        var stored=await _repository.GetEWayBillByNumberAsync(number,ct)??throw new NotFoundException("E-Way Bill was not found.");
+        if(stored.CompanyGstRegistrationId!=registrationId) throw new ConflictException("The stored E-Way Bill belongs to another GST registration.");
+        return stored;
+    }
+    private static bool IsActive(string status)=>status is "ACT" or "Active" or "Generated" or "Extended" or "VehicleUpdated";
 
     public async Task<ApiResponse<EWayBillResponse>> GetByNumberAsync(string ewayBillNumber, CancellationToken cancellationToken) =>
         ApiResponse<EWayBillResponse>.Success(await _repository.GetEWayBillByNumberAsync(ewayBillNumber, cancellationToken) ?? throw new NotFoundException("E-Way Bill was not found."));
@@ -218,17 +271,19 @@ public sealed class EWayBillService : IEWayBillService
     public async Task<ApiResponse<EWayBillResponse>> GetDetailsAsync(GetEWayBillDetailsRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_detailsValidator, request, cancellationToken);
-        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
-        return ApiResponse<EWayBillResponse>.Success(await _provider.GetEWayBillAsync(request, cancellationToken), "E-Way Bill details loaded from GSTZen.");
+        var registration=await EnsureRegistrationAsync(request.CompanyGstRegistrationId, x => x.IsEWayBillEnabled, "E-Way Bill is not enabled for the selected GST registration.", cancellationToken);
+        await StoredBill(request.CompanyGstRegistrationId,request.EWayBillNumber,cancellationToken);
+        return ApiResponse<EWayBillResponse>.Success(await _provider.GetEWayBillAsync(request with { Gstin=registration.Gstin }, cancellationToken), "E-Way Bill details loaded from GSTZen.");
     }
 
-    private async Task EnsureRegistrationAsync(long id, Func<CompanyGstRegistrationResponse, bool> enabled, string disabledMessage, CancellationToken cancellationToken)
+    private async Task<CompanyGstRegistrationResponse> EnsureRegistrationAsync(long id, Func<CompanyGstRegistrationResponse, bool> enabled, string disabledMessage, CancellationToken cancellationToken)
     {
         var registration = await _repository.GetRegistrationByIdAsync(id, cancellationToken) ?? throw new NotFoundException("GST registration was not found.");
         if (!enabled(registration))
         {
             throw new CosmosException(disabledMessage, 409);
         }
+        return registration;
     }
 }
 
@@ -313,8 +368,10 @@ public sealed class GstSessionService : IGstSessionService
     public async Task<ApiResponse<GstSessionResponse>> GenerateOtpAsync(GenerateGstOtpRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_otpValidator, request, cancellationToken);
-        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, cancellationToken);
-        var response = await _provider.GenerateOtpAsync(request, cancellationToken);
+        var registration = await EnsureRegistrationAsync(request.CompanyGstRegistrationId, cancellationToken);
+        var username = request.GstPortalUsername?.Trim() ?? registration.GstPortalUsername?.Trim();
+        if (string.IsNullOrWhiteSpace(username)) throw new CosmosException("Enter the GST portal username for this registration.");
+        var response = await _provider.GenerateOtpAsync(request with { Gstin = registration.Gstin, GstPortalUsername = username }, cancellationToken);
         var saved = await _repository.SaveSessionAsync(request.CompanyGstRegistrationId, response, null, null, _currentUser.UserId, cancellationToken);
         return ApiResponse<GstSessionResponse>.Success(saved, "GST OTP generated.");
     }
@@ -322,8 +379,8 @@ public sealed class GstSessionService : IGstSessionService
     public async Task<ApiResponse<GstSessionResponse>> AuthenticateOtpAsync(AuthenticateGstOtpRequest request, CancellationToken cancellationToken)
     {
         await ValidationRunner.ValidateAsync(_authValidator, request, cancellationToken);
-        await EnsureRegistrationAsync(request.CompanyGstRegistrationId, cancellationToken);
-        var response = await _provider.AuthenticateOtpAsync(request, cancellationToken);
+        var registration = await EnsureRegistrationAsync(request.CompanyGstRegistrationId, cancellationToken);
+        var response = await _provider.AuthenticateOtpAsync(request with { Gstin = registration.Gstin, RequestJson = null }, cancellationToken);
         var saved = await _repository.SaveSessionAsync(request.CompanyGstRegistrationId, response, null, null, _currentUser.UserId, cancellationToken);
         return ApiResponse<GstSessionResponse>.Success(saved, "GST OTP authenticated.");
     }
@@ -331,12 +388,11 @@ public sealed class GstSessionService : IGstSessionService
     public async Task<ApiResponse<GstSessionResponse>> GetStatusAsync(long companyGstRegistrationId, CancellationToken cancellationToken) =>
         ApiResponse<GstSessionResponse>.Success(await _repository.GetSessionAsync(companyGstRegistrationId, cancellationToken) ?? throw new NotFoundException("GST session was not found."));
 
-    private async Task EnsureRegistrationAsync(long id, CancellationToken cancellationToken)
+    private async Task<CompanyGstRegistrationResponse> EnsureRegistrationAsync(long id, CancellationToken cancellationToken)
     {
-        if (await _repository.GetRegistrationByIdAsync(id, cancellationToken) is null)
-        {
-            throw new NotFoundException("GST registration was not found.");
-        }
+        var registration = await _repository.GetRegistrationByIdAsync(id, cancellationToken) ?? throw new NotFoundException("GST registration was not found.");
+        if (!string.Equals(registration.Status,"Active",StringComparison.OrdinalIgnoreCase)) throw new CosmosException("Activate the selected GST registration before starting a session.",409);
+        return registration;
     }
 }
 

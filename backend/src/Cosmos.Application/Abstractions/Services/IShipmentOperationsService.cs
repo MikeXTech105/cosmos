@@ -8,12 +8,14 @@ public interface IShipmentOperationsService
 {
     Task<ApiResponse<PagedResult<ShipmentSummaryDto>>> GetShipmentsAsync(ShipmentListQuery query, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> GetShipmentAsync(long id, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<ShipmentDispatchAllocationDto>>> GetDispatchAllocationsAsync(long runId, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> CreateManualShipmentAsync(CreateManualShipmentRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> CreateFromDispatchPlanAsync(CreateShipmentFromDispatchPlanRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> TransitionAsync(long id, TransitionShipmentRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> CancelAsync(long id, CancelShipmentRequest request, CancellationToken ct);
     Task<ApiResponse<IReadOnlyCollection<ShipmentPackingSuggestionDto>>> GetPackingSuggestionsAsync(long shipmentId, ShipmentPackingSuggestionRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> SavePackageAsync(long shipmentId, SaveShipmentPackageRequest request, CancellationToken ct);
+    Task<ApiResponse<ShipmentDto>> RemovePackageAsync(long shipmentId, long packageId, RemoveShipmentPackageRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> SaveDocketAsync(long shipmentId, SaveShipmentDocketRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> SaveAppointmentAsync(long shipmentId, SaveShipmentAppointmentRequest request, CancellationToken ct);
     Task<ApiResponse<ShipmentDto>> AddTrackingEventAsync(long shipmentId, AddShipmentTrackingEventRequest request, CancellationToken ct);

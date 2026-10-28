@@ -10,12 +10,13 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
+import AppLookup from "../../../components/common/AppLookup";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
@@ -46,6 +47,12 @@ import {
   HrStatCard,
 } from "../HrShared";
 import useHrCapabilities from "../useHrCapabilities";
+import { PayslipResults } from "../HrResults";
+import { PayrollSetupPanel } from "../HrSetupPanels";
+import { hrSetupService } from "../../../services/hr/setupService";
+import { hrPayrollService } from "../../../services/hr/payrollService";
+import { addDecimal } from "../../../utils/productionValues";
+import PayrollRateReview from "./PayrollRateReview";
 import {
   normalizeHrNumberBlurValue,
   normalizeHrNumberInput,
@@ -111,6 +118,7 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
     formState: { errors, isSubmitting },
     handleSubmit,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrPayrollProcessSchema),
     defaultValues: {
@@ -118,9 +126,15 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
       payrollYear: currentYear(),
     },
   });
+  const [preflight, setPreflight] = useState(null);
+  const [rateSelections, setRateSelections] = useState([]);
+  const [checking, setChecking] = useState(false);
+  const period = useWatch({ control, name: ["payrollMonth", "payrollYear"] });
+  const periodKey = period.join("-");
 
   useEffect(() => {
     if (isOpen) {
+      void Promise.resolve().then(() => { setPreflight(null); setRateSelections([]); });
       reset({
         payrollMonth: currentMonth(),
         payrollYear: currentYear(),
@@ -129,14 +143,24 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
   }, [isOpen, reset]);
 
   const submitForm = async (values) => {
-    await onSubmit({
+    if (!preflight || preflight.period !== periodKey || !preflight.rows.length || preflight.rows.some((row) => row.blockedReason)) {
+      setError("root", { message: "Review preflight and resolve every blocked employee before processing payroll." });
+      return;
+    }
+    if (!preflight.rows.every((row) => !row.requiresRateSelection || rateSelections.some((selection) => String(selection.employeeId) === String(row.employeeId) && selection.reviewed && preflight.rates.some((rate) => String(rate.employeeId) === String(row.employeeId) && String(rate.salaryAssignmentId) === String(selection.salaryAssignmentId) && rate.rowVersion === selection.rowVersion)))) {
+      setError("root", { message: "Select and review one actual period rate for each employee who has multiple salary structures." }); return;
+    }
+    try { await onSubmit({
       payrollMonth: Number(values.payrollMonth),
       payrollYear: Number(values.payrollYear),
-    });
+      rateSelections,
+    }); } catch (error) { setError("root", { message: getHrActionError(error, "Payroll could not be processed. Review the preflight results and try again.") }); }
   };
+  const ratesReviewed = Boolean(preflight?.rows.every((row) => !row.requiresRateSelection || rateSelections.some((selection) => String(selection.employeeId) === String(row.employeeId) && selection.reviewed && preflight.rates.some((rate) => String(rate.employeeId) === String(row.employeeId) && String(rate.salaryAssignmentId) === String(selection.salaryAssignmentId) && rate.rowVersion === selection.rowVersion))));
 
   return (
     <AppModal
+      title="Run payroll"
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
@@ -169,11 +193,21 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
           required
           error={errors.payrollYear?.message}
         />
+        <AppButton variant="secondary" isLoading={checking} onClick={async () => {
+          setChecking(true); setRateSelections([]);
+          try { const query = { payrollMonth: Number(period[0]), payrollYear: Number(period[1]) }; const [response, rates] = await Promise.all([hrSetupService.preflight(query), hrSetupService.payrollRates(query)]); setPreflight({ period: periodKey, rows: response.data || [], rates: rates.data || [] }); }
+          catch (error) { setPreflight(null); setError("root", { message: getHrActionError(error, "Unable to load payroll preflight.") }); }
+          finally { setChecking(false); }
+        }}>Review payroll preflight</AppButton>
+        {errors.root && <p role="alert" className="text-sm text-red-700">{errors.root.message}</p>}
+        {preflight?.period === periodKey && <div className="max-h-64 space-y-2 overflow-auto" aria-label="Payroll preflight employees"><p className="text-sm font-semibold">{preflight.rows.length} employees to review</p>{preflight.rows.map((row) => <div className="rounded-lg bg-slate-50 p-3 text-sm" key={String(row.employeeId)}><p className="font-semibold">{row.employeeName} · {row.employeeCode}</p><p>{String(row.componentCount)} salary components · {String(row.attendanceDays)} attendance dates · {String(row.employmentDays)} employed calendar days</p><p className={row.blockedReason ? "text-red-700" : "text-emerald-700"}>{row.blockedReason || (row.requiresRateSelection ? "Choose and review one period rate below" : "Ready for review")}</p></div>)}</div>}
+        {preflight?.period === periodKey && <PayrollRateReview employees={preflight.rows} rates={preflight.rates} selections={rateSelections} onChange={setRateSelections} disabled={checking || isSubmitting} />}
+        <p className="text-xs leading-5 text-slate-500">Earnings use payable days divided by calendar days in the month; deductions use their configured fixed amounts. Resigned staff are included for dates actually employed. HR must correct attendance and approved paid leave on the same date before processing.</p>
         <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting} loadingText="Generating…">
+          <AppButton type="submit" disabled={checking || preflight?.period !== periodKey || !preflight?.rows.length || preflight?.rows.some((row) => row.blockedReason) || !ratesReviewed} isLoading={isSubmitting} loadingText="Generating…">
             Process Payroll
           </AppButton>
         </div>
@@ -184,10 +218,11 @@ const RunPayrollModal = ({ isOpen, onClose, onSubmit }) => {
 
 const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
   const {
-    control,
     formState: { errors, isSubmitting },
     handleSubmit,
+    register,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrPayrollApproveSchema),
     defaultValues: {
@@ -204,11 +239,13 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
   }, [isOpen, reset, run]);
 
   const submitForm = async (values) => {
-    await onSubmit({ payrollRunId: Number(values.payrollRunId) });
+    try { await onSubmit({ payrollRunId: run?.payrollRunId ?? run?.id ?? values.payrollRunId }); }
+    catch (error) { setError("root", { message: getHrActionError(error, "Approval could not be saved. Reload the run before trying again.") }); }
   };
 
   return (
     <AppModal
+      title="Approve payroll"
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
@@ -219,15 +256,9 @@ const ApprovePayrollModal = ({ isOpen, onClose, onSubmit, run }) => {
         Approve a processed payroll run.
       </p>
       <form className="mt-6 space-y-5" onSubmit={handleSubmit(submitForm)}>
-        <HrNumberInput
-          control={control}
-          id="payrollRunId"
-          name="payrollRunId"
-          label="Payroll Run ID"
-          allowDecimal={false}
-          required
-          error={errors.payrollRunId?.message}
-        />
+        <input type="hidden" {...register("payrollRunId")} />
+        {errors.root && <p role="alert" className="text-sm text-red-700">{errors.root.message}</p>}
+        <div className="rounded-xl bg-slate-50 p-4 text-sm"><p className="font-semibold">Payroll for {run?.payrollMonth}/{run?.payrollYear}</p><p>{getRunRows(run).length} employees · Net pay {formatHrCurrency(getRunRows(run).reduce((sum, row) => addDecimal(sum, row.netSalary || "0"), "0"))}</p>{errors.payrollRunId && <p role="alert">Load a payroll run before approving it.</p>}</div>
         <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
           <AppButton variant="secondary" onClick={onClose}>
             Cancel
@@ -245,7 +276,7 @@ const PayrollPage = () => {
   const dispatch = useDispatch();
   const payrollState = useSelector((state) => state.hrPayroll);
   const capabilities = useHrCapabilities({
-    actions: ["view", "create", "approve"],
+    actions: ["view", "create", "update", "approve"],
     label: "Payroll",
     pageName: "HR.Payroll",
     resource: ["payroll", "hrPayroll"],
@@ -285,11 +316,11 @@ const PayrollPage = () => {
           .map((key) => row?.[key])
           .find((candidate) => candidate !== undefined && candidate !== null);
 
-        return total + (Number(value) || 0);
-      }, 0);
+        return addDecimal(total, value ?? "0");
+      }, "0");
 
     return {
-      deductions: sum(["deductions", "totalDeductions", "deductionAmount"]),
+      deductions: sum(["totalDeduction", "deductions", "totalDeductions", "deductionAmount"]),
       employees: runRows.length,
       gross: sum(["grossPay", "grossSalary", "grossAmount"]),
       net: sum(["netPay", "netSalary", "netAmount"]),
@@ -455,21 +486,16 @@ const PayrollPage = () => {
                 Payroll Run
               </h2>
               <p className="mt-0.5 text-xs text-slate-500">
-                Process a run or load an existing payroll run by id.
+                Process a run or search existing payroll by month and year.
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-[160px_auto_auto]">
-              <AppInput
-                id="runId"
-                value={runId}
-                onChange={(event) => setRunId(event.target.value)}
-                placeholder="Run ID"
-              />
+              <AppLookup label="Payroll period" value={runId} onChange={setRunId} getOptionLabel={(row) => `${row.payrollMonth}/${row.payrollYear} · ${Number(row.status) === 3 ? "Approved" : "Processed"}`} loadPage={async ({ search, page, pageSize }) => { const response = await hrSetupService.runs({ search, pageNumber: page, pageSize }); return { items: response.data?.items || [], hasMore: page < (response.data?.totalPages || 0) }; }} loadById={async (value) => (await hrPayrollService.getPayrollRunById(value)).data} />
               <AppButton variant="secondary" className="h-10" onClick={loadRun}>
                 <Search className="h-4 w-4" />
                 Load
               </AppButton>
-              {capabilities.canApprove && (
+              {capabilities.canApprove && Number(payrollState.selectedRun?.status) === 2 && (
                 <AppButton
                   variant="secondary"
                   className="h-10"
@@ -565,6 +591,7 @@ const PayrollPage = () => {
             </h3>
             <div className="mt-4 space-y-3">
               <AppSelect
+                label="Employee for history and payslip"
                 value={employeeQuery.employeeId}
                 onChange={(value) =>
                   setEmployeeQuery((current) => ({
@@ -576,6 +603,7 @@ const PayrollPage = () => {
               />
               <div className="grid gap-3 sm:grid-cols-2">
                 <AppSelect
+                  label="Payslip month"
                   value={employeeQuery.month}
                   onChange={(value) =>
                     setEmployeeQuery((current) => ({ ...current, month: value }))
@@ -584,6 +612,7 @@ const PayrollPage = () => {
                 />
                 <AppInput
                   id="employeePayrollYear"
+                  label="Payslip year"
                   type="text"
                   inputMode="numeric"
                   value={employeeQuery.year}
@@ -645,11 +674,7 @@ const PayrollPage = () => {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-900">Payslip</h3>
-            <pre className="mt-3 max-h-64 overflow-auto rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-              {payrollState.payslip
-                ? JSON.stringify(payrollState.payslip, null, 2)
-                : "No payslip loaded"}
-            </pre>
+            <PayslipResults payslip={payrollState.payslip} />
           </div>
         </div>
       </div>
@@ -665,6 +690,7 @@ const PayrollPage = () => {
         onSubmit={approveRun}
         run={payrollState.selectedRun}
       />
+      <PayrollSetupPanel capabilities={capabilities} employeeOptions={employeeOptions} />
     </section>
   );
 };

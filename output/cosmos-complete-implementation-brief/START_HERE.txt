@@ -1,0 +1,19 @@
+COSMOS — START THIS COMPLETE IMPLEMENTATION
+
+Implement the complete Cosmos improvement scope using PROMPT_COSMOS_COMPLETE_IMPLEMENTATION.txt as the execution specification.
+
+In this workspace the full prompt is:
+F:\FI\cosmos\output\cosmos-complete-implementation-brief\PROMPT_COSMOS_COMPLETE_IMPLEMENTATION.txt
+
+Open the existing Cosmos repository and execute there. The handoff ZIP contains the brief/audit evidence, not the application project. Extract or attach it and read the FULL prompt plus audits/ and both tracker templates from disk. If the project moved, resolve the actual repository root instead of assuming the old drive. The full file is deliberately detailed; this launcher avoids manually pasting the entire file. A core excerpt alone is not the complete scope.
+
+This is a request to DO THE WORK: inspect the existing project/theme/architecture first, implement frontend + required backend/API/SQL, check every master/sub-master and end-to-end flow, fix problems and complete meaningful testing. Do not stop at a plan or demo.
+
+Track every one of the 56 finding IDs and 125 coverage rows; the full prompt embeds all of them and defines 44 verification scenarios. Preserve existing canonical masters, precision, permissions, history and the three distinct production concepts. Extend Daily Production and Kanban already in the project.
+
+Use real safe integration environments. Preserve company data; do not run reset scripts or invent company configuration. Do not claim skipped SQL tests, synthetic screenshots or unavailable GST provider integration as passed.
+
+Provide implementation, migration/API/config updates, complete finding/coverage outcomes, exact test evidence, UI screenshots, a Gujarati client flow guide and precise actual external blockers.
+
+Read the full execution prompt now, inspect the current checkout and start the implementation in dependency order. Keep progressing through the complete flow and testing review.
+

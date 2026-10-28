@@ -39,13 +39,15 @@ public sealed class GstZenProviderService : IGstZenProviderService
         AddSetting(nameof(_options.ProductionBaseUrl), _options.ProductionBaseUrl, configured, missing);
         AddSecretStatus(nameof(_options.SandboxToken), _options.SandboxToken, configured, missing);
         AddSecretStatus(nameof(_options.ProductionToken), _options.ProductionToken, configured, missing);
+        AddSecretStatus(nameof(_options.SandboxGstnAccessToken), _options.SandboxGstnAccessToken, configured, missing);
+        AddSecretStatus(nameof(_options.ProductionGstnAccessToken), _options.ProductionGstnAccessToken, configured, missing);
         AddSetting(nameof(_options.TokenHeaderName), _options.TokenHeaderName, configured, missing);
 
         var features = new List<string>();
         if (!string.IsNullOrWhiteSpace(_options.GstinVerificationPath)) features.Add("GSTIN Verification");
         if (!string.IsNullOrWhiteSpace(_options.EWayBillGeneratePath)) features.Add("E-Way Bill");
         if (!string.IsNullOrWhiteSpace(_options.EInvoiceGeneratePath)) features.Add("E-Invoice");
-        if (!string.IsNullOrWhiteSpace(_options.GstnGenerateOtpPath)) features.Add("GST Session/OTP");
+        if (!string.IsNullOrWhiteSpace(_options.GstnGenerateOtpPath) && !string.IsNullOrWhiteSpace(_options.GstnAuthenticateOtpPath) && !string.IsNullOrWhiteSpace(_options.CurrentGstnAccessToken)) features.Add("GST Session/OTP");
         if (!string.IsNullOrWhiteSpace(_options.Gstr1Path) || !string.IsNullOrWhiteSpace(_options.Gstr3BPath)) features.Add("GST Returns");
 
         return new GstConfigurationStatusResponse(_options.Environment, _options.CurrentBaseUrl, configured, missing, features);
@@ -128,14 +130,21 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> ExtendEWayBillAsync(ExtendEWayBillRequest request, CancellationToken cancellationToken)
     {
-        var payload = JsonPayloadOrObject(request.RequestJson, request);
-        var response = await SendAsync("E-Way Bill Extend", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillExtendPath, payload, cancellationToken);
+        // https://my.gstzen.in/docs/api/ewaybill-api/extend-eway-bill/
+        if (string.IsNullOrWhiteSpace(request.Gstin)) throw new CosmosException("A saved registration GSTIN is required for extension.");
+        var payload = new { ewbNo=NumberOrString(request.EWayBillNumber),vehicleNo=request.VehicleNumber??"",fromPlace=request.FromPlace,fromState=request.FromState,fromPincode=NumberOrString(request.FromPincode??""),remainingDistance=NumberOrString(request.RemainingDistance??""),transDocNo=request.TransportDocumentNumber??"",transDocDate=request.TransportDocumentDate?.ToString("dd/MM/yyyy",CultureInfo.InvariantCulture)??"",transMode=request.TransportMode,extnRsnCode=NumberOrString(request.ExtensionReasonCode??""),extnRemarks=request.ExtensionRemark,transitType=request.TransportMode=="5"?request.TransitType:"",consignmentStatus=request.ConsignmentStatus,addressLine1=request.AddressLine1??"",addressLine2=request.AddressLine2??"",addressLine3=request.AddressLine3??"" };
+        var response = await SendAsync("E-Way Bill Extend", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillExtendPath, payload, cancellationToken,gstin:request.Gstin);
+        var returnedNumber=GetString(response.Json,"ewayBillNo","ewbNo");
+        var validity=GetDate(response.Json,"validUpto","validUpTo","valid_upto");
+        if(returnedNumber!=request.EWayBillNumber || validity is null) throw new CosmosException("GSTZen extension response did not confirm this E-Way Bill and validity. Reconcile before another submission.",502);
         return new EWayBillResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
             EWayBillNumber = request.EWayBillNumber,
-            Status = GetString(response.Json, "status") ?? "Extended",
-            ValidUpTo = GetDate(response.Json, "validUpTo", "valid_upto"),
+            Status = "ACT",
+            ValidUpTo = validity,
+            VehicleNumber=request.VehicleNumber,
+            TransportMode=request.TransportMode,
             GeneratedRequestJson = JsonSerializer.Serialize(payload, JsonOptions),
             GeneratedResponseJson = response.RawJson
         };
@@ -143,11 +152,11 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<EWayBillResponse> GetEWayBillAsync(GetEWayBillDetailsRequest request, CancellationToken cancellationToken)
     {
-        var response = await SendAsync("E-Way Bill Details", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillGetDetailsPath, new { ewbNo = NumberOrString(request.EWayBillNumber) }, cancellationToken);
+        var response = await SendAsync("E-Way Bill Details", request.CompanyGstRegistrationId, HttpMethod.Post, _options.EWayBillGetDetailsPath, new { ewbNo = NumberOrString(request.EWayBillNumber) }, cancellationToken,gstin:request.Gstin);
         return new EWayBillResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
-            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo") ?? request.EWayBillNumber,
+            EWayBillNumber = GetString(response.Json, "ewayBillNumber", "ewbNo", "eWayBillNo"),
             Status = GetString(response.Json, "EwbStatus", "status") ?? "Fetched",
             DocumentType = GetString(response.Json, "docType"),
             DocumentNumber = GetString(response.Json, "docNo"),
@@ -243,43 +252,47 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     public async Task<GstSessionResponse> GenerateOtpAsync(GenerateGstOtpRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
-        var response = await SendAsync("GSTN Generate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnGenerateOtpPath, request, cancellationToken);
+        // https://my.gstzen.in/docs/api/gstn-generate-otp-api/ (reviewed 2026-10-28).
+        if (string.IsNullOrWhiteSpace(request.Gstin) || string.IsNullOrWhiteSpace(request.GstPortalUsername)) throw new CosmosException("A saved GSTIN and GST portal username are required.");
+        var response = await SendAsync("GSTN Generate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnGenerateOtpPath, new { gstin=request.Gstin, username=request.GstPortalUsername }, cancellationToken, gstnSession:true);
+        if (GetString(response.Json,"status") != "1" || GetString(response.Json,"api_call") != "OTPREQUEST") throw new CosmosException("GSTZen did not confirm OTP delivery. Inspect the session before requesting another OTP.",502);
         return new GstSessionResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
             SessionType = "OTP",
-            Status = GetString(response.Json, "status") ?? "OtpGenerated",
-            LastErrorMessage = GetString(response.Json, "error", "message")
+            Status = "OtpGenerated"
         };
     }
 
     public async Task<GstSessionResponse> AuthenticateOtpAsync(AuthenticateGstOtpRequest request, CancellationToken cancellationToken)
     {
-        // TODO: Update GSTZen payload mapping after final GSTZen API documentation/Postman collection is provided.
-        var payload = JsonPayloadOrObject(request.RequestJson, request);
-        var response = await SendAsync("GSTN Authenticate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnAuthenticateOtpPath, payload, cancellationToken);
+        // https://my.gstzen.in/docs/api/gstn-establish-session-api/ (reviewed 2026-10-28).
+        if (string.IsNullOrWhiteSpace(request.Gstin)) throw new CosmosException("Select a saved GST registration.");
+        var response = await SendAsync("GSTN Authenticate OTP", request.CompanyGstRegistrationId, HttpMethod.Post, _options.GstnAuthenticateOtpPath, new { gstin=request.Gstin, otp=request.Otp }, cancellationToken, gstnSession:true);
+        if (GetString(response.Json,"status") != "1" || GetString(response.Json,"api_call") != "AUTHTOKEN" || GetString(response.Json,"status_cd") != "1" || !long.TryParse(GetString(response.Json,"expiry_time"),out var expirySeconds)) throw new CosmosException("GSTZen did not confirm an authenticated session. The OTP has not been marked verified.",502);
+        DateTime expiresAt;
+        try { expiresAt=DateTimeOffset.FromUnixTimeSeconds(expirySeconds).UtcDateTime; } catch(ArgumentOutOfRangeException) { throw new CosmosException("GSTZen returned an invalid session expiry.",502); }
+        if (expiresAt<=DateTime.UtcNow) throw new CosmosException("GSTZen returned an expired session. Authenticate again.",502);
         return new GstSessionResponse
         {
             CompanyGstRegistrationId = request.CompanyGstRegistrationId,
             SessionType = request.SessionType ?? "OTP",
-            TokenExpiresAt = GetDate(response.Json, "tokenExpiresAt", "expires_at"),
+            TokenExpiresAt = expiresAt,
             OtpVerifiedAt = DateTime.UtcNow,
-            Status = GetString(response.Json, "status") ?? "Active",
-            LastErrorMessage = GetString(response.Json, "error", "message")
+            Status = "Active"
         };
     }
 
-    private async Task<ProviderResponse> SendAsync(string apiType, long? companyGstRegistrationId, HttpMethod method, string? path, object? payload, CancellationToken cancellationToken)
+    private async Task<ProviderResponse> SendAsync(string apiType, long? companyGstRegistrationId, HttpMethod method, string? path, object? payload, CancellationToken cancellationToken, bool gstnSession=false, string? gstin=null)
     {
         if (string.IsNullOrWhiteSpace(_options.CurrentBaseUrl))
         {
             throw new CosmosException("GSTZen base URL is not configured.", 500);
         }
 
-        if (string.IsNullOrWhiteSpace(_options.CurrentToken))
+        if (string.IsNullOrWhiteSpace(gstnSession ? _options.CurrentGstnAccessToken : _options.CurrentToken))
         {
-            throw new CosmosException("GSTZen token is not configured.", 500);
+            throw new CosmosException(gstnSession ? "GSTZen GSTN REST access token is not configured on the server." : "GSTZen token is not configured.", 503);
         }
 
         if (string.IsNullOrWhiteSpace(path))
@@ -289,7 +302,9 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
         var requestUri = new Uri(new Uri(_options.CurrentBaseUrl.TrimEnd('/') + "/"), path.TrimStart('/'));
         using var request = new HttpRequestMessage(method, requestUri);
-        ConfigureHeaders(request);
+        if (gstnSession) request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _options.CurrentGstnAccessToken);
+        else ConfigureHeaders(request);
+        if (!string.IsNullOrWhiteSpace(gstin)) request.Headers.TryAddWithoutValidation("gstin",gstin);
         var requestJson = payload is null ? null : JsonSerializer.Serialize(payload, JsonOptions);
         if (requestJson is not null && method != HttpMethod.Get)
         {
@@ -316,7 +331,7 @@ public sealed class GstZenProviderService : IGstZenProviderService
             if (!providerSucceeded)
             {
                 var message = Mask(GetString(parsed, "message", "error", "errors")) ?? "Provider returned an unsuccessful response.";
-                throw new CosmosException($"GSTZen {apiType} failed: {message}", 502);
+                throw new CosmosException($"GSTZen {apiType} failed: {message}", 502,data:new GstProviderRejection());
             }
 
             return new ProviderResponse(parsed, string.IsNullOrWhiteSpace(responseBody) ? "{}" : responseBody);
@@ -369,13 +384,13 @@ public sealed class GstZenProviderService : IGstZenProviderService
 
     private string? Mask(string? value)
     {
-        if (!_options.MaskSensitiveLogs || string.IsNullOrWhiteSpace(value))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return value;
         }
 
         var masked = value;
-        foreach (var secret in new[] { _options.SandboxToken, _options.ProductionToken, _options.CurrentToken })
+        foreach (var secret in new[] { _options.SandboxToken, _options.ProductionToken, _options.CurrentToken, _options.SandboxGstnAccessToken, _options.ProductionGstnAccessToken })
         {
             if (!string.IsNullOrWhiteSpace(secret))
             {

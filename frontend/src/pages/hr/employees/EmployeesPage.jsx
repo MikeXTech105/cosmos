@@ -82,11 +82,11 @@ const buildEmployeeQueryParams = ({ filters, pageNumber, pageSize }) => {
     pageSize,
     extra: {
       DepartmentId:
-        filters.DepartmentId === "all" ? undefined : Number(filters.DepartmentId),
+        filters.DepartmentId === "all" ? undefined : filters.DepartmentId,
       DesignationId:
         filters.DesignationId === "all"
           ? undefined
-          : Number(filters.DesignationId),
+          : filters.DesignationId,
       IncludeResigned: Boolean(filters.IncludeResigned),
       Status: filters.Status === "all" ? undefined : filters.Status,
     },

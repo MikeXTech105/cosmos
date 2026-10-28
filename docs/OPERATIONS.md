@@ -1,8 +1,35 @@
 # COSMOS — Operations, Deployment and Data Safety
-**Reviewed:** 2026-10-26 · **Scope:** Guidance from repository configuration and deployment records; not a verified production runbook.
+**Reviewed:** 2026-10-28 · **Scope:** Guidance from repository configuration and deployment records; not a verified production runbook.
 
 ## Environments
 Use distinct local, disposable test, staging and production configurations. Do not run destructive `000_Reset_Database.sql` or staging cleanup on an existing business database. Obtain a tested backup/restore path and explicit approval for production-like changes.
+
+## Complete brief verification — 28 October
+
+The user requested scripts to execute later. No company database or disposable SQL integration database was opened by this implementation session. [Test-CompleteImplementation.ps1](../backend/scripts/Test-CompleteImplementation.ps1) restores/builds the .NET solution, runs non-SQL tests and frontend test/lint/build, then bootstraps and tests four strictly guarded SQL families (Production, Sales GST, Dispatch and HR).
+
+On a PC with .NET 10 SDK, Node dependencies (`npm ci` in `frontend/` when missing) and Microsoft SQL Server LocalDB installed, run from the repository root:
+
+```powershell
+./backend/scripts/Test-CompleteImplementation.ps1 -UseLocalDb
+```
+
+The runner creates a private GUID-named LocalDB instance and distinct fresh/upgrade catalogs with suite-specific `Cosmos*IntegrationTests_` prefixes. It applies `001_Full_Database_Setup.sql`, `003_gst_integration_module.sql` and ordered applicable migrations; never a reset. Upgrade mode first installs the predecessor schema, inserts a labelled linked Unit/Category/Item/StockMovement sentinel at `12.345678`, applies the eight `20261028_*` migrations and repeats the new and production baseline migrations. The sentinel verifies retained references and quantities. This does not replace migration testing against a restored representative company backup.
+
+LocalDB and catalogs are retained for inspection; the owned instance is stopped after the run. Logs, TRX and `results.json` go under `output/implementation-verification/operator-<timestamp>/`. The runner rejects existing catalogs unless an explicit low-level reuse flag is supplied, checks `DB_NAME()` around every batch, rejects database-switch/server-control migration batches, and fails when required SQL tests are skipped or zero tests execute. Do not treat exit 2 (missing SQL environment) as a pass.
+
+For a separate SQL Server, configure **process environment privately**, with a different empty catalog for every suite and mode. Run `-Mode Fresh` and `-Mode Upgrade` separately; `Both` requires automatic private LocalDB catalogs. The bootstrap identity needs permission to create only these test databases. Never reuse a retained company catalog or send credentials in chat.
+
+| Suite | Private variable | Required catalog prefix |
+|---|---|---|
+| Production | `COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING` | `CosmosProductionIntegrationTests_` |
+| Sales GST | `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING` | `CosmosSalesGstIntegrationTests_` |
+| Dispatch | `COSMOS_DISPATCH_INTEGRATION_CONNECTION_STRING` | `CosmosDispatchIntegrationTests_` |
+| HR | `COSMOS_HR_INTEGRATION_CONNECTION_STRING` | `CosmosHrIntegrationTests_` |
+
+HR SQL fixtures require zero active staff initially and seed labelled synthetic employees. The snapshot suite retains immutable labelled source/snapshot evidence in its disposable catalog. Do not disable triggers or delete history to clean up tests. SQL fixture and provider tests do not issue legal invoices or send payroll payments.
+
+Review the [migration manifest](../output/implementation-verification/migration-manifest.json), [HR setup contract](../backend/docs/HR_OPERATOR_SETUP.md) and [GST provider/policy handoff](COMMERCE_GST_PROVIDER_AND_VERIFICATION_HANDOFF.md) before deployment. Apply migrations only through the target environment's approved backup/change process. No down script can safely reverse retained posted history; test application rollback/schema compatibility and a representative backup restore separately. Live ordinary-role isolation, provider sandbox checks, tax policy approval and end-to-end stock/cash/payroll reconciliation remain release gates.
 
 ## Docker and CI/CD
 - Root `docker-compose.yml` currently publishes frontend `3000:80` and API `8080:8080`; security review is required before using that shape publicly.

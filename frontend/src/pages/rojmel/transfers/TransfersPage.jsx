@@ -1,3 +1,4 @@
+import "../../purchase/commerceTables.css";
 import { ArrowLeftRight, Eye, Plus, RefreshCw, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -235,7 +236,7 @@ const TransfersPage = () => {
           <RojmelState error={state.error} isLoading={state.loading} noun="transfers" onRetry={loadTransfers} />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] table-fixed text-left">
+            <table className="commerce-record-table w-full min-w-[980px] table-fixed text-left">
               <thead className="bg-slate-50">
                 <tr>
                   {["#", "Transfer No", "Date", "From Wallet → To Wallet", "Amount", "Status", "Actions"].map((heading) => (
@@ -250,17 +251,17 @@ const TransfersPage = () => {
                   const active = Number(transfer.status) === 1;
                   return (
                     <tr key={transfer.id} className="hover:bg-slate-50">
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-semibold text-slate-800">{transfer.transferNo || "-"}</td>
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">{formatRojmelDate(transfer.transferDate)}</td>
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-sm font-medium text-slate-800">
+                      <td data-label="Row" className="border-b border-slate-100 px-3 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
+                      <td data-label="Transfer number" className="border-b border-slate-100 px-3 py-3.5 text-sm font-semibold text-slate-800">{transfer.transferNo || "-"}</td>
+                      <td data-label="Date" className="border-b border-slate-100 px-3 py-3.5 text-sm text-slate-600">{formatRojmelDate(transfer.transferDate)}</td>
+                      <td data-label="Wallets" className="border-b border-slate-100 px-3 py-3.5 text-sm font-medium text-slate-800">
                         <span className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-2.5 py-1.5 text-blue-800">
                           {transfer.fromWalletName} <ArrowLeftRight className="h-3.5 w-3.5" /> {transfer.toWalletName}
                         </span>
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatRojmelCurrency(transfer.amount)}</td>
-                      <td className="border-b border-slate-100 px-3 py-3.5"><RojmelStatusPill value={transfer.status} /></td>
-                      <td className="border-b border-slate-100 px-3 py-3.5">
+                      <td data-label="Amount" className="border-b border-slate-100 px-3 py-3.5 text-right text-sm font-semibold tabular-nums text-slate-900">{formatRojmelCurrency(transfer.amount)}</td>
+                      <td data-label="Status" className="border-b border-slate-100 px-3 py-3.5"><RojmelStatusPill value={transfer.status} /></td>
+                      <td data-label="Actions" className="border-b border-slate-100 px-3 py-3.5">
                         <div className="flex items-center justify-end gap-0.5">
                           {capabilities.canView && <Action icon={Eye} label="View transfer" onClick={() => viewTransfer(transfer)} />}
                           {capabilities.isAdmin && capabilities.canCancel && active && (

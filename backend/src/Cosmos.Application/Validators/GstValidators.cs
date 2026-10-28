@@ -203,6 +203,25 @@ public sealed class ExtendEWayBillValidator : AbstractValidator<ExtendEWayBillRe
     {
         RuleFor(x => x.CompanyGstRegistrationId).GreaterThan(0);
         RuleFor(x => x.EWayBillNumber).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.FromPlace).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.FromState).NotNull().InclusiveBetween(1,38);
+        RuleFor(x => x.FromPincode).NotEmpty().Matches("^[1-9][0-9]{5}$");
+        RuleFor(x => x.TransportMode).Must(x=>x is "1" or "2" or "3" or "4" or "5");
+        RuleFor(x => x.RemainingDistance).Must(x=>int.TryParse(x,out var distance) && distance>0).WithMessage("Enter a positive remaining distance in kilometres.");
+        RuleFor(x => x.ExtensionReasonCode).NotEmpty().MaximumLength(10);
+        RuleFor(x => x.ExtensionRemark).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.VehicleNumber).NotEmpty().MaximumLength(50).When(x=>x.TransportMode=="1");
+        RuleFor(x => x.TransportDocumentNumber).NotEmpty().MaximumLength(100).When(x=>x.TransportMode is "2" or "3" or "4");
+        RuleFor(x => x.TransportDocumentDate).NotNull().When(x=>!string.IsNullOrWhiteSpace(x.TransportDocumentNumber));
+        RuleFor(x => x.ConsignmentStatus).Must(x=>x=="M").When(x=>x.TransportMode!="5");
+        RuleFor(x => x.ConsignmentStatus).Must(x=>x=="T").When(x=>x.TransportMode=="5");
+        RuleFor(x => x.TransitType).Must(x=>x is "R" or "W" or "O").When(x=>x.TransportMode=="5");
+        RuleFor(x => x.AddressLine1).NotEmpty().MaximumLength(250).When(x=>x.TransportMode=="5");
+        RuleFor(x => x.AddressLine2).NotEmpty().MaximumLength(250).When(x=>x.TransportMode=="5");
+        RuleFor(x => x.AddressLine3).NotEmpty().MaximumLength(250).When(x=>x.TransportMode=="5");
+        RuleFor(x => x.IdempotencyKey).NotNull().NotEqual(Guid.Empty);
+        RuleFor(x => x.Version).NotEmpty().Matches("^0x[0-9A-Fa-f]{16}$");
+        RuleFor(x => x.RequestJson).Must(string.IsNullOrWhiteSpace).WithMessage("Raw provider request JSON is not accepted for extensions.");
     }
 }
 

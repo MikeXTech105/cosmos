@@ -11,6 +11,7 @@ public interface IPhysicalInventoryService
     Task<ApiResponse<ProductionCommandResult>> VerifyPackingAsync(long shipmentId,ShipmentPackingVerificationRequest r,CancellationToken ct);
     Task<ApiResponse<ProductionCommandResult>> ReceiptCreditAsync(long returnId,PurchaseReceiptCreditRequest r,CancellationToken ct);
     Task<ApiResponse<ProductionCommandResult>> PurchaseDraftAsync(long runId, ProcurementPurchaseDraftRequest r, CancellationToken ct);
+    Task<ApiResponse<ProcurementPurchaseSourceContext>> PurchaseSourcesAsync(long runId, CancellationToken ct);
     Task<ApiResponse<ProcurementSupplierPolicyDto>> SupplierPolicyAsync(long itemId, ProcurementSupplierPolicyRequest? r, CancellationToken ct);
     Task<ApiResponse<PagedResult<SupplierPerformanceLine>>> SupplierPerformanceAsync(SupplierPerformanceQuery q, CancellationToken ct);
     Task<ApiResponse<PhysicalOwnershipSnapshot>> ReadAsync(long id, string kind, CancellationToken ct);

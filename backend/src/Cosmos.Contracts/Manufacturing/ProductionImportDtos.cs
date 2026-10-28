@@ -17,4 +17,9 @@ public sealed record ProductionImportPreviewRow(long Id, string Tab, int RowNumb
     string EventFingerprint, string OriginalJson, string? NormalizedJson, string? ExceptionCode,
     ProductionImportDisposition? Disposition, string RowStatus, decimal? ReconciliationDifference);
 public sealed record ProductionImportPreview(Guid BatchId, string Version, string Status,
-    Cosmos.Contracts.Common.PagedResult<ProductionImportPreviewRow> Rows);
+    Cosmos.Contracts.Common.PagedResult<ProductionImportPreviewRow> Rows)
+{
+    public DateOnly? CutoverDate { get; init; }
+    public string? FileName { get; init; }
+    public string? FileFingerprint { get; init; }
+}

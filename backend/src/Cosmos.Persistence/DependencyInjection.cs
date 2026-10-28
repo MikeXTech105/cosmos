@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IWebsiteManagementRepository, WebsiteManagementRepository>();
         services.AddScoped<IRojmelRepository, RojmelRepository>();
         services.AddScoped<IGstRepository, GstRepository>();
+        services.AddScoped<IGstComplianceSnapshotRepository, GstComplianceSnapshotRepository>();
         services.AddScoped<IHsnGstRepository, HsnGstRepository>();
         services.AddScoped<IGstCalculationReferenceResolver, GstCalculationReferenceResolver>();
         return services;

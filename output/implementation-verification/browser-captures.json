@@ -1,0 +1,121 @@
+{
+  "scope": "Synthetic actual-component fixture; no authentication/API/SQL/provider verification",
+  "widths": [
+    360,
+    390,
+    768,
+    1024,
+    1440,
+    1920
+  ],
+  "themes": [
+    "indigo",
+    "emerald",
+    "rose"
+  ],
+  "captures": [
+    {
+      "file": "today-production-1440-synthetic.jpg",
+      "width": 1440,
+      "height": 1000,
+      "screen": "Today workspace",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T12:07:57.475Z",
+      "sha256": "7146ed1c6976d669deb25f3b3dc08c09a5fa724d7d747ebd940a877a626d0d8a",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "report-cards-390-emerald-synthetic.jpg",
+      "width": 390,
+      "height": 844,
+      "screen": "Report preferences",
+      "theme": "emerald",
+      "capturedAt": "2026-10-28T11:47:34.219Z",
+      "sha256": "e8e4a883952af30ae168f033265ff2a46616481b39e69d380490a0360635b2e8",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "hr-results-768-rose-synthetic.jpg",
+      "width": 768,
+      "height": 1024,
+      "screen": "HR results",
+      "theme": "rose",
+      "capturedAt": "2026-10-28T11:48:00.468Z",
+      "sha256": "1c5d381dfef46378a4e04d60dab07c0b2aa2a9e8038945692c754168a3bfb329",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "report-table-1024-synthetic.jpg",
+      "width": 1024,
+      "height": 900,
+      "screen": "Report preferences",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T11:45:27.484Z",
+      "sha256": "f58f41a61126cc50b7d31a00cf1d19ab1a0490c367676052f4dc93c251ce51e9",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "today-production-1920-synthetic.jpg",
+      "width": 1920,
+      "height": 1080,
+      "screen": "Today workspace",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T12:07:57.901Z",
+      "sha256": "565fb1df408d30a537793802d27ceaa19e5a13c741b61360bd839f9455204687",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "today-production-390-synthetic.jpg",
+      "width": 390,
+      "height": 844,
+      "screen": "Today workspace",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T12:08:00.224Z",
+      "sha256": "38968f2de9542ddfcfe1a4761f07647716e8cb1380f288ca25845de6872a3789",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "lookup-error-360-synthetic.jpg",
+      "width": 360,
+      "height": 800,
+      "screen": "Lookup error",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T11:46:31.350Z",
+      "sha256": "140c7897b9c95fbd4f522792f8081dee544991a25f1e26d56976663a2c080c43",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "lookup-retry-360-synthetic.jpg",
+      "width": 360,
+      "height": 800,
+      "screen": "Lookup retry results",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T11:58:38.085Z",
+      "sha256": "218ca7445df2d956a7b2b90edb4ebd11dc7d17a663d386a526496e5291ac74cd",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    },
+    {
+      "file": "lookup-selected-360-synthetic.jpg",
+      "width": 360,
+      "height": 800,
+      "screen": "Lookup keyboard selection",
+      "theme": "indigo",
+      "capturedAt": "2026-10-28T12:50:35.657Z",
+      "sha256": "0b939ec9da1a7caa377f4b476a87c9a66194bee9eb67701cd1e456f872d62f52",
+      "evidence": "Synthetic actual-component fixture; visually reviewed current layout, no authentication/API/SQL/provider calls"
+    }
+  ],
+  "interactions": [
+    "260-record search finds Item221",
+    "keyboard ArrowDown/Enter selection",
+    "simulated failure then actual Retry search returns result with query retained",
+    "actual report mobile cards preserve six-place source quantity/currency/status",
+    "actual leave balance and payslip layout"
+  ],
+  "console": "browser-console.json",
+  "limitations": [
+    "Fixture uses isolated synthetic Redux user/company and in-memory rows",
+    "Production queues deliberately disabled in fixture; real source queues remain API-driven",
+    "No real login/reset/payroll/stock/payment/publish/provider journey performed"
+  ]
+}

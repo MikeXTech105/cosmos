@@ -1,4 +1,4 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "./productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 

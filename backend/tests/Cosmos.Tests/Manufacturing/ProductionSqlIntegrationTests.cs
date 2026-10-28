@@ -17,6 +17,21 @@ public sealed class ProductionSqlIntegrationTests
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     [ProductionSqlFact, Trait("Category", "SqlIntegration")]
+    public async Task Exact_master_lookup_retains_inactive_history_and_isolates_company()
+    {
+        var f = await Fixture.Create();
+        var order = await f.Draft(1);
+        var operationId = await f.Scalar<long>("SELECT TOP(1) OperationId FROM dbo.ItemProductionRoutingSteps WHERE RoutingId=@Routing", new { Routing = order.RoutingId });
+        var current = await f.Command<ProductionMasterDto>("sp_ProductionMaster_Read", new { Kind = "operations", Id = operationId });
+        Assert.Equal(operationId, current.Id); Assert.Equal(10m, current.DefaultRate); Assert.True(current.IsActive);
+        await f.Scalar<int>("UPDATE dbo.ProductionOperations SET IsActive=0 WHERE Id=@Id; SELECT 1", new { Id = operationId });
+        var historic = await f.Command<ProductionMasterDto>("sp_ProductionMaster_Read", new { Kind = "operations", Id = operationId });
+        Assert.False(historic.IsActive); Assert.NotEqual(current.Version, historic.Version);
+        var otherCompany = await Assert.ThrowsAsync<CosmosException>(() => f.Repository.ExecuteAsync<ProductionMasterDto>("sp_ProductionMaster_Read", "other-company", 1, new { Kind = "operations", Id = operationId }, default));
+        Assert.Equal(404, otherCompany.StatusCode);
+    }
+
+    [ProductionSqlFact, Trait("Category", "SqlIntegration")]
     public async Task Release_is_reserve_only_and_competing_releases_cannot_oversell()
     {
         var f = await Fixture.Create();
@@ -88,6 +103,24 @@ public sealed class ProductionSqlIntegrationTests
         var stale = await Assert.ThrowsAsync<CosmosException>(() => f.Release(order, "other-release")); Assert.Equal(409, stale.StatusCode);
         var other = await Assert.ThrowsAsync<CosmosException>(() => f.Repository.ExecuteAsync<ProductionOrderDto>("sp_ProductionOrder_Read", "other-company", 1, new { Id = order.Id }, default));
         Assert.Equal(404, other.StatusCode);
+
+        // Exercise the installed capacity read, then verify both sides of its
+        // returned bound with the scheduling transaction's literal typed guard.
+        var draft = await f.Draft(0.000001m);
+        foreach (var vector in new (decimal Required, decimal Factor, long Seconds)[]
+        { (0.010000m, 0.600000m, 1), (0.016667m, 1m, 1), (0.016668m, 1m, 2), (30.000001m, 0.5m, 3601) })
+        {
+            await f.Scalar<int>("UPDATE dbo.ItemProductionRoutingSteps SET SetupMinutes=@Required,Rate=1000000,QuantityBasis=1 WHERE RoutingId=@RoutingId;UPDATE c SET CapacityFactor=@Factor FROM dbo.ProductionWorkCentreShifts c JOIN dbo.ItemProductionRoutingSteps s ON s.WorkCentreId=c.WorkCentreId WHERE s.RoutingId=@RoutingId;SELECT 1", new { vector.Required, vector.Factor, draft.RoutingId });
+            var capacity = await f.Command<CapacityFeasibilityDto>("sp_ProductionCapacity_Read", new { Id = draft.Id, BusinessDate = f.Date, TimeZone = "UTC" });
+            var line = Assert.Single(capacity.Lines);
+            Assert.Equal(vector.Required, line.RequiredMinutes);
+            Assert.Equal(vector.Seconds, line.MinimumBookingSeconds);
+            foreach (var seconds in new[] { vector.Seconds - 1, vector.Seconds })
+            {
+                var accepted = await f.Scalar<bool>("SELECT CONVERT(BIT,CASE WHEN CONVERT(BIGINT,@Seconds)/60.0*CONVERT(DECIMAL(9,6),@Factor)>=CONVERT(DECIMAL(22,6),@Required) THEN 1 ELSE 0 END)", new { Seconds = seconds, vector.Factor, vector.Required });
+                Assert.Equal(seconds == vector.Seconds, accepted);
+            }
+        }
     }
 
     [ProductionSqlFact,Trait("Category","SqlIntegration")]

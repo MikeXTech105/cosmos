@@ -7,6 +7,20 @@ namespace Cosmos.Application.Abstractions.Services;
 
 public interface IHrService
 {
+    Task<ApiResponse<IReadOnlyCollection<HrPayrollRateOptionDto>>> GetPayrollRateOptionsAsync(ProcessPayrollCommand query, CancellationToken ct);
+    Task<ApiResponse<PagedResult<HrPayrollRunOptionDto>>> GetPayrollRunsAsync(GetPayrollRunsQuery query, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrAdjustmentContextDto>>> GetPendingAdjustmentsAsync(CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrLeaveEntitlementDto>>> GetLeaveEntitlementsAsync(long employeeId, CancellationToken ct);
+    Task<ApiResponse<HrLeaveEntitlementDto>> SaveLeaveEntitlementAsync(SaveEmployeeLeaveEntitlementCommand command, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrLeaveTypeDto>>> GetLeaveTypesAsync(CancellationToken ct);
+    Task<ApiResponse<HrLeaveTypeDto>> SaveLeaveTypeAsync(long? id, SaveLeaveTypeCommand command, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrSalaryComponentDto>>> GetSalaryComponentsAsync(CancellationToken ct);
+    Task<ApiResponse<HrSalaryComponentDto>> SaveSalaryComponentAsync(long? id, SaveSalaryComponentCommand command, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrSalaryStructureDto>>> GetSalaryStructuresAsync(CancellationToken ct);
+    Task<ApiResponse<HrSalaryStructureDto>> SaveSalaryStructureAsync(long? id, SaveSalaryStructureCommand command, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrSalaryAssignmentDto>>> GetSalaryAssignmentsAsync(long? employeeId, CancellationToken ct);
+    Task<ApiResponse<HrSalaryAssignmentDto>> AssignSalaryStructureAsync(AssignSalaryStructureCommand command, CancellationToken ct);
+    Task<ApiResponse<IReadOnlyCollection<HrPayrollPreflightDto>>> GetPayrollPreflightAsync(ProcessPayrollCommand command, CancellationToken ct);
     Task<ApiResponse<DepartmentDto>> GetDepartmentAsync(long id, CancellationToken cancellationToken);
     Task<ApiResponse<PagedResult<DepartmentDto>>> GetDepartmentsAsync(HrPagedQuery query, CancellationToken cancellationToken);
     Task<ApiResponse<DepartmentDto>> CreateDepartmentAsync(CreateDepartmentCommand command, CancellationToken cancellationToken);

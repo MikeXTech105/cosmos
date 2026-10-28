@@ -9,6 +9,7 @@ import { gstService } from "../../services/gst/gstService";
 import { canManageGstDocument, GENERATION_DEPENDENCY, safeQrImage } from "../../utils/gstCompliance";
 import { GstDetails, GstError, GstFrame, GstNotice } from "./GstShared";
 import { useGstAccess, useGstOperation } from "./useGst";
+import EWayExtensionModal from "./EWayExtensionModal";
 
 function DocumentActionForm({ kind, action, record, onClose, onComplete, onUncertain }) {
   const operation = useGstOperation();
@@ -46,7 +47,9 @@ export default function GstDocumentPage({ kind }) {
   const title = invoice ? "E-Invoice" : "E-Way Bill";
   const pageName = invoice ? "GST.EInvoice" : "GST.EWayBill";
   const access = useGstAccess();
-  const [search] = useSearchParams();
+  const [search,setSearch] = useSearchParams();
+  const extensionCommand=search.get("extensionCommand");
+  const updateExtensionCommand=key=>setSearch(current=>{const next=new URLSearchParams(current);if(key)next.set("extensionCommand",key);else next.delete("extensionCommand");return next;},{replace:true});
   const contextId = search.get("salesInvoiceId") || search.get("purchaseInvoiceId");
   const contextKey = search.has("purchaseInvoiceId") ? "purchaseInvoiceId" : "salesInvoiceId";
   const [identifier, setIdentifier] = useState("");
@@ -103,12 +106,13 @@ export default function GstDocumentPage({ kind }) {
         {access(pageName, "create") && <AppButton disabled title={GENERATION_DEPENDENCY}>Generate {title}</AppButton>}
         {access(pageName, "delete") && <AppButton variant="danger" disabled={!active || operation.busy} onClick={() => setDialog("cancel")}>Cancel {title}</AppButton>}
         {!invoice && access(pageName, "update") && <AppButton variant="secondary" disabled={!active || operation.busy} onClick={() => setDialog("vehicle")}>Update vehicle</AppButton>}
-        {!invoice && access(pageName, "update") && <AppButton variant="secondary" disabled title="Provider extension mapping and capability are unverified.">Extend validity</AppButton>}
+        {!invoice && access(pageName, "update") && <AppButton variant="secondary" disabled={operation.busy || (!extensionCommand && (!active || !stored.concurrencyVersion))} title={!stored.concurrencyVersion ? "Ask an administrator to enable safe extension tracking for this installation." : undefined} onClick={()=>setDialog("extend")}>{extensionCommand?"Reconcile extension":"Extend validity"}</AppButton>}
       </div>
       {!active && <p className="text-sm text-slate-500">Changes require a matching stored record and a fresh provider response with an explicitly active status. Unknown or cancelled states cannot be changed here.</p>}
       <p className="text-xs leading-5 text-slate-500">Provider refresh results are displayed separately and are not saved by the current backend. Accounting invoice status, E-Invoice status and E-Way Bill status are independent. Provider rules determine whether cancellation or updates are accepted.</p>
     </article>}
-    {dialog && <DocumentActionForm kind={kind} action={dialog} record={{ ...stored, vehicleNumber: provider?.vehicleNumber ?? stored.vehicleNumber, vehicleType: provider?.vehicleType ?? stored.vehicleType, transportMode: provider?.transportMode ?? stored.transportMode }} onClose={() => setDialog(null)} onUncertain={() => { setUncertain(true); setReconciled(false); }} onComplete={data => {
+    {dialog==="extend" && <EWayExtensionModal record={{...stored,validUpTo:provider?.validUpTo??stored.validUpTo,vehicleNumber:provider?.vehicleNumber??stored.vehicleNumber,transportMode:provider?.transportMode??stored.transportMode}} commandKey={extensionCommand} onAttempt={updateExtensionCommand} onRejected={()=>{updateExtensionCommand(null);setUncertain(false);}} onClose={()=>setDialog(null)} onComplete={data=>{setStored(data);setProvider(null);setUncertain(false);setReconciled(false);updateExtensionCommand(null);setDialog(null);}}/>}
+    {dialog && dialog!=="extend" && <DocumentActionForm kind={kind} action={dialog} record={{ ...stored, vehicleNumber: provider?.vehicleNumber ?? stored.vehicleNumber, vehicleType: provider?.vehicleType ?? stored.vehicleType, transportMode: provider?.transportMode ?? stored.transportMode }} onClose={() => setDialog(null)} onUncertain={() => { setUncertain(true); setReconciled(false); }} onComplete={data => {
       if (dialog === "cancel") { setStored(data); setProvider(null); }
       else { setProvider(data); }
       setReconciled(false);

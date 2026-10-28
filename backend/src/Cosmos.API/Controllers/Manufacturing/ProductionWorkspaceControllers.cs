@@ -12,6 +12,9 @@ namespace Cosmos.API.Controllers.Manufacturing;
 [Authorize, ApiExplorerSettings(GroupName = "manufacturing"), Route("api/v1/manufacturing")]
 public sealed class ProductionConfigurationController(IProductionWorkspaceService service) : ProductionWorkspaceApiControllerBase
 {
+    [HttpGet("shift-capacity/{id:long}/calendar"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<CapacityCalendarContextDto>), 200)]
+    public async Task<IActionResult> CalendarContext(long id, [FromQuery] DateOnly businessDate, CancellationToken ct) => FromResponse(await service.CalendarContextAsync(id, businessDate, ct));
     [HttpPost("configuration/{kind}/{id:long}/effectivity"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.Approve)]
     [ProducesResponseType(typeof(ApiResponse<ProductionCommandResult>), 200)]
     public async Task<IActionResult> EndEffectivity(string kind,long id,ProductionEffectivityRequest r,CancellationToken ct) => FromResponse(await service.EndEffectivityAsync(kind=="bom" ? "invalid" : kind,id,r,ct));
@@ -27,6 +30,9 @@ public sealed class ProductionConfigurationController(IProductionWorkspaceServic
     [HttpGet("work-centres"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ProductionMasterDto>>), 200)]
     public async Task<IActionResult> WorkCentres([FromQuery] ProductionWorkspaceQuery q, CancellationToken ct) => FromResponse(await service.MastersAsync("work-centres", q, ct));
+    [HttpGet("work-centres/{id:long}"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<ProductionMasterDto>), 200)]
+    public async Task<IActionResult> WorkCentre(long id, CancellationToken ct) => FromResponse(await service.MasterByIdAsync("work-centres", id, ct));
     [HttpPost("work-centres"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<ProductionMasterDto>), 201)]
     public async Task<IActionResult> CreateWorkCentre(WorkCentreRequest r, CancellationToken ct) => FromResponse(await service.WorkCentreAsync(null, r, ct), 201);
@@ -36,6 +42,9 @@ public sealed class ProductionConfigurationController(IProductionWorkspaceServic
     [HttpGet("operations"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ProductionMasterDto>>), 200)]
     public async Task<IActionResult> Operations([FromQuery] ProductionWorkspaceQuery q, CancellationToken ct) => FromResponse(await service.MastersAsync("operations", q, ct));
+    [HttpGet("operations/{id:long}"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<ProductionMasterDto>), 200)]
+    public async Task<IActionResult> Operation(long id, CancellationToken ct) => FromResponse(await service.MasterByIdAsync("operations", id, ct));
     [HttpPost("operations"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.Create)]
     [ProducesResponseType(typeof(ApiResponse<ProductionMasterDto>), 201)]
     public async Task<IActionResult> CreateOperation(OperationRequest r, CancellationToken ct) => FromResponse(await service.OperationAsync(null, r, ct), 201);
@@ -68,6 +77,9 @@ public sealed class ProductionOrdersController(IProductionWorkspaceService servi
     [HttpGet("{id:long}/context"), RequirePermission(ManufacturingPermissions.Orders, PermissionAction.View)]
     [ProducesResponseType(typeof(ApiResponse<ProductionOrderContextDto>), 200)]
     public async Task<IActionResult> Context(long id, CancellationToken ct) => FromResponse(await service.ContextAsync(id, ct));
+    [HttpGet("{id:long}/labels"), RequirePermission(ManufacturingPermissions.Orders, PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<ProductionOrderLabelsDto>), 200)]
+    public async Task<IActionResult> Labels(long id, CancellationToken ct) => FromResponse(await service.OrderLabelsAsync(id, ct));
     [HttpGet, RequirePermission(ManufacturingPermissions.Orders, PermissionAction.View)]
     [ProducesResponseType(typeof(ApiResponse<PagedResult<ProductionOrderDto>>), 200)]
     public async Task<IActionResult> List([FromQuery] ProductionWorkspaceQuery q, CancellationToken ct) => FromResponse(await service.OrdersAsync(q, ct));

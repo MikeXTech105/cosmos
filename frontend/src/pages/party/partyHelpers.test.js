@@ -4,7 +4,20 @@ import {
   buildClientPartyView,
   buildPartyQueryParams,
   loadPartyFallbackCollection,
+  buildFormValues,
+  buildApiPayload,
 } from "./partyHelpers";
+import { PARTY_COMMAND_FIELDS } from "./partyColumns";
+
+describe("Party type create and edit contract", () => {
+  it.each(["Customer", "Supplier", "Both"])("retains the explicit %s role through form hydration and request construction", partyType => {
+    const values = buildFormValues(PARTY_COMMAND_FIELDS, { partyCode: "TEST", partyName: "Scoped fixture", partyType });
+    expect(buildApiPayload(PARTY_COMMAND_FIELDS, values).partyType).toBe(partyType);
+  });
+  it("uses Both only for a new unspecified party", () => {
+    expect(buildApiPayload(PARTY_COMMAND_FIELDS, buildFormValues(PARTY_COMMAND_FIELDS)).partyType).toBe("Both");
+  });
+});
 
 describe("party query contract", () => {
   it("maps every advanced filter to the backend contract", () => {

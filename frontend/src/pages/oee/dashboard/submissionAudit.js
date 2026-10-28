@@ -14,6 +14,7 @@ export function groupSubmissionDays(
   basis = "weighted",
   reviewDays = 3,
   now = Date.now(),
+  acknowledgements = [],
 ) {
   const groups = new Map();
   for (const entry of entries) {
@@ -21,6 +22,11 @@ export function groupSubmissionDays(
     if (!date) continue;
     if (!groups.has(date)) groups.set(date, []);
     groups.get(date).push(entry);
+  }
+  const stops = acknowledgements.filter(row => row.state !== "Withdrawn");
+  for (const acknowledgement of stops) {
+    const date = acknowledgement.productionDate?.slice(0, 10);
+    if (date && !groups.has(date)) groups.set(date, []);
   }
   return [...groups]
     .map(([date, rows]) => {
@@ -40,8 +46,9 @@ export function groupSubmissionDays(
       const duplicates = [...machineGroups.values()].filter(
         (items) => items.length > 1,
       );
+      const savedStops = stops.filter(row => row.productionDate?.slice(0, 10) === date);
       const status =
-        valid.length !== rows.length
+        rows.length === 0 && savedStops.length ? "acknowledged" : valid.length !== rows.length
           ? "unknown"
           : latency > reviewDays
             ? "delayed"
@@ -57,6 +64,8 @@ export function groupSubmissionDays(
         ),
         ...summarizeReadings(rows, basis),
         machines: machineGroups.size,
+        acknowledgements: savedStops,
+        acknowledgedMachines: savedStops.length,
         first,
         last,
         latency,

@@ -1,0 +1,443 @@
+PROMPT 2 — COMPLETE COSMOS FRONTEND IMPLEMENTATION
+Aligned with the implemented production/material/purchasing/dispatch backend
+
+ROLE AND OUTCOME
+You are the senior frontend engineer working inside the actual Cosmos repository. Implement the remaining production, material-planning, purchasing, dispatch, shipment, import and reporting UI described here and in the complete shared specification appended below. Deliver working code, routes/navigation, services, permissions, validation, localization, accessible responsive screens, automated behavioral tests and a written handoff. Do the implementation; do not stop at a roadmap, static mockup, API explorer, skeleton, demo data or a partial scope called phase 1.
+
+The user has already approved U01–U06 and the module boundaries. Resolve ordinary UI/implementation choices using the current code and these rules; do not restart a business-policy questionnaire. Missing real identities, source units, costs, dates or documents belong in repairable exceptions, never fabricated mappings. Continue useful independent work if a particular external test environment is unavailable.
+
+REPOSITORY AND REFERENCE PACKAGE
+The original local project is F:\FI\cosmos. Use the calling workspace's actual root if this package is opened elsewhere. Inspect git status, branch, current commit, applicable AGENTS.md and current code before editing. At package preparation, the repository HEAD was f6937755cf04349de2f014b40a5cac25b9bcf6de on lucifer-dev. This is evidence of the source snapshot, not permission to reset, checkout or discard later work.
+
+In the same Cosmos project, this prompt is sufficient to start: the reference files below are already in the repository. In another chat/workspace, the user must also provide COSMOS_FRONTEND_HANDOFF.zip and access to the current actual repository/backend implementation. Extract the reference ZIP to a separate reference directory first; its backend/docs paths are reference copies, not an instruction to overwrite newer repository files. The ZIP does not contain the whole app, credentials or a running database.
+
+Read in this order:
+1. backend/docs/PRODUCTION_API_CONTRACT.md
+2. backend/docs/production-contracts/implemented-routes.json and every supplied module OpenAPI JSON
+3. backend/docs/PRODUCTION_WORKSPACE_HANDOFF.md
+4. backend/docs/PRODUCTION_COVERAGE_MATRIX.md
+5. backend/docs/PRODUCTION_SOURCE_AUDIT.json
+6. backend/docs/PRODUCTION_MIGRATION_CUTOVER.md and PRODUCTION_VERIFICATION_RESULTS.json
+7. handoff/frontend-production/FRONTEND_ACCEPTANCE_CHECKLIST.md
+8. Relevant actual controllers, DTOs, services and procedures when a contract needs clarification.
+
+Use actual current code and regenerated Swagger to resolve discrepancies. The appended shared specification contains historical baseline observations; its confirmed business rules still apply, but its old test counts, old audit commit and descriptions of previously missing backend capabilities are historical. Do not resurrect old API proposals or rewrite implemented flows because that historical paragraph says they were absent.
+
+AUTHORITATIVE CONTRACTS AND IMPLEMENTATION BOUNDARY
+The backend already contains the two masters, three child families, separate production order/completion model, reservations, planning snapshots, physical ownership, purchase receipt/bill/return/credit integration, staged imports and report endpoints. The recorded inventory contains 81 actual controller operations; inspect the current inventory rather than relying on that count as proof of coverage.
+
+Frontend changes already implemented and to preserve:
+- Item current/reserved balances are read-only; opening is editable at creation only.
+- The existing Item BOM editor carries OutputBaseQuantity and describes material per declared BOM output.
+- Manufacturing reports use authoritative server paging/totals, separate actual/expected/waste measures and null preservation, rather than N+1 detail aggregation.
+- Manufacturing quantity display preserves six decimals; a server waste value 0.5 means 0.5%, not 50%.
+
+The complete new production-order/configuration/planning/capacity/import workspace is not yet implemented. Existing frontend manufacturing services cover legacy BOM/production only. Complete the missing UI and extend the existing Procurement, Purchase, Sales/Invoice, Shipment, Supply Chain, Item and Reports areas. Do not create another ERP or duplicate existing master modules.
+
+This is a frontend implementation task. Preserve working backend semantics. If a required real UI journey reveals an actual missing or inconsistent read field, lookup, timezone/context contract, DTO, permission mapping or endpoint binding, trace it to the source and make the smallest necessary compatible backend correction, with tests and regenerated schemas. Record the finding. Do not fake the missing field in JavaScript, expose implementation JSON editors to operators, invent endpoints, redesign SQL ownership or add unapproved masters. Do not report a discovered gap as implemented merely because a route name exists.
+
+CURRENT COSMOS CONVENTIONS TO REUSE
+- React 19, Vite 8, Tailwind 4, Redux Toolkit, existing Axios instance, React Router, react-hook-form/Zod and Vitest; inspect actual package.json before choosing APIs.
+- frontend/src/routes/AppRoutes.jsx, ProtectedRoute.jsx and PermissionGuard.jsx
+- frontend/src/config/sidebar.js, permissions.js and iconMap.js
+- frontend/src/api/axios.js, api/endpoints.js and services/apiServiceUtils.js
+- frontend/src/hooks/useCapabilities.js and utils/permissionResolver.js
+- frontend/src/pages/inventory/items/ItemManufacturingTab.jsx and existing Item form/page/modal
+- frontend/src/pages/manufacturing/ManufacturingShared.jsx and manufacturingHelpers.js
+- frontend/src/services/manufacturing/manufacturingService.js
+- frontend/src/services/reports/manufacturingReportsService.js, pages/reports/reportRegistry.js and existing report/export infrastructure
+- Existing procurement, supplyChain, purchase, invoice, shipment, OEE, HR and Party components/services; locate the actual files by symbol instead of assuming a new folder structure.
+- frontend/src/components/common: AppInput, AppSelect, AppDateInput, AppDateRangeFilter, AppModal, AppButton, AppTooltip, PageHeader, DataTableShell, MetricCard, CosmosLoader and related shared helpers.
+- Existing styles/tokens in frontend/src/index.css and localization loading conventions, including en and hi-en namespaces.
+
+Inspect existing component props and test conventions before using them. Keep styling consistent with Cosmos. Use readable product language, useful hierarchy, efficient entry tables and real source-document drilldowns. Preserve existing localization; add translated labels, validation, empty/error/stale/forbidden states for every new screen. Match existing lazy routing, page permissions, responsive layouts and feedback patterns. Do not rebuild the application's global shell or add a new styling system.
+
+FE01 — INVENTORY, NAVIGATION AND DELIVERY TRACKING
+Map every T01–T22, F01–F24, U01–U06 and C01–C16 requirement to its actual UI route/component, service/DTO, permission and meaningful test. Track implemented existing behavior separately from newly required UI and from real-data/runtime exceptions. Use the companion acceptance checklist as a minimum, not a substitute for the shared specification.
+
+Create an integrated Production workspace reachable from actual navigation, with appropriate order/planning/configuration/import views and drilldowns. UI URL choices must follow the current router and registered page routes; backend URL roots must match actual Swagger. Existing unrelated routes must continue working. Direct navigation, reload, unauthorized access, active sidebar state and back navigation must work. A workbook tab does not automatically become a sidebar item.
+
+FE02 — EXACTLY TWO MASTERS AND THREE CHILD FAMILIES
+Build Work Centre and Process/Operation list/create/edit/detail/active-state UIs against their real DTOs and rowversions. Show references, audit/version metadata where available and effective resource/capacity context. Do not offer destructive history deletion where the backend supports deactivation/effectivity closure instead.
+
+House Item Production Routing and Item–Machine–Mould Eligibility in Item > Manufacturing. Routing needs a revision, effective range, ordered unique steps, existing Operation/Work Centre, real rate basis/rate/setup/quantity basis and allowed resource selections. Eligibility selects existing OEE machine/mould IDs and verified SKU output per shot; do not assign a family mould's entire cavity count independently to each SKU.
+
+House Work Centre Shift & Capacity under Work Centre, referencing existing HR shifts. Include effective shift configuration, capacity factor and dated break/downtime calendar editing supported by the API. There must not be separate Product, Raw Material, Vendor, Packaging, Stock, BOM, Warehouse or Planning master clones. Transaction, history and import screens are not new masters.
+
+FE03 — CANONICAL BOM AND VERIFIED CONVERSION
+Keep the existing canonical Manufacturing BOM version/effectivity workflow. Preserve the already integrated output-base-quantity field. Clearly distinguish source pack size, Item base unit, BOM output basis, additive component waste and actual measured scrap. Display each material's real unit.
+
+Extend the existing packaging-profile UI with the implemented verified source-unit/base-quantity ratio and provenance actions. Support inverse count conversions such as 330 PCS / 11 PCS-per-BOX = 30 BOX without pretending every Item is PCS. Use actual effective dates/context/profile ID; never default missing units-per-box or conversion to 1. Unknown dimensions or mappings remain actionable exceptions.
+
+If full required order/resource/conversion fields are missing from an existing read DTO, inspect context endpoints and actual server contracts, then correct the contract minimally if necessary. Do not guess IDs or load today's defaults as though they were historical snapshots.
+
+FE04 — PRODUCTION ORDER WORKSPACE
+Implement a real server-paged/filterable order list, create/edit draft flow, detail/context view, source reference/channel/planning links, business/planned/due dates, Item/base unit, BOM and routing choices, existing machine/mould/shift choices and meaningful quantity/status summaries.
+
+Keep these separate enums:
+- Legacy ManufacturingProduction: Draft=1, Posted=2, Cancelled=3.
+- ProductionOrder: Draft=1, Released=2, InProgress=3, Completed=4, Closed=5, Cancelled=6.
+Do not reuse one status map across both models or derive order states from UI preference.
+
+Draft editing must use the returned version and preserve actual selected source IDs. Detail views show frozen BOM/route/material context and completion/correction history. Action availability must follow actual state and permissions; the server remains authoritative.
+
+FE05 — RELEASE, ACTUAL COMPLETION AND CORRECTION
+Provide explicit approved release quantity and an understandable entire-allocation reservation preview/result. Release reserves components; it does not deduct on-hand stock. An explicit smaller release is not a partially failed request.
+
+Completion entry must distinguish accepted good output, rejected output, actual consumed material, material scrap and returned/staging quantity. Show component base units, frozen expected quantities, actual resource/shift, actual offset timestamp/business date, source reference, variance and required reason/authority. Rejected output is not sellable stock. Staging return is not a new stock-in: under this model staging never consumed stock, so the posted deduction is actual consumed plus scrap, not another issue posting.
+
+Support repeated partial completion, remaining reservation, shortages and over-consumption explanations. Refresh order/material/stock context after commands without optimistic fabrication of stock balances. Prevent duplicate submissions while preserving the key for an identical uncertain retry.
+
+Provide explicit released amendment, required rescheduling after amendment, short close/cancel remainder and eligible linked completion reversal. Show why a reversal is blocked when output is already unavailable/shipped/consumed. Preserve original transactions in history; do not present correction as deleting history or silently reopening reservation.
+
+FE06 — DEMAND, FINISHED PLANNING AND SOURCE SNAPSHOTS
+Provide explicit as-of business date, observed demand period, refresh/freshness threshold, channel and Item selections supported by the API. Support genuine aggregate demand observation with source identity; do not distribute aggregates into fictional daily sales.
+
+Show Current/Stale/Missing/NoDemand distinctly. Display daily, normalized30, actual7-day and separate source quarter-month values with accurate labels, target21, warning15, coverage, physical/reserved quantities, distinct remaining released output, dated eligible inbound, recommendation and data-quality explanations.
+
+Use server planning/snapshot results as authoritative. The delivered policy is a current-business-date 21-day total top-up; it is not 36 or 42 days. Do not double subtract a reservation when its demand is already represented. Unapproved draft POs are not firm inbound. Undated inbound is excluded from the finished horizon with an explanation.
+
+Save/open server snapshots and use their real source revision/identity when creating selected recommendation-backed production drafts. The saved snapshot read returns paged lines; honor its actual envelope/metadata. Detect stale source dates/revisions, explain refresh requirements and preserve filter/selection context. Do not auto-replace a stale snapshot with recalculated browser values.
+
+FE07 — MATERIAL WHAT-IF AND CAPACITY
+Provide selected-product material explosion and what-if output controls using the actual service. Show shared pool, expected requirement, free stock, proposed allocation, shortage and bottleneck by real Item/unit. A proposal does not reserve inventory and one shared component pool cannot be promised independently to every product.
+
+Capacity views must show actual work-centre/operation/shift windows, remaining required minutes, usable/reserved time, unknown rate/cavity/calendar conflicts and overloaded resources. Preserve returned timezone/offsets and overnight shifts. Missing rate or verified mapping means capacity unavailable, not infinite capacity or zero runtime.
+
+Implement explicit booking/scheduling of ordered route operations with valid time windows and current version. A recommendation must not automatically occupy capacity. Calendar approval and scheduling have different real request DTOs; send only the fields their contracts support. Use existing OEE/HR resource context without inventing telemetry or OEE metrics.
+
+FE08 — PROCUREMENT AND PURCHASE DRAFT CONVERSION
+Extend the existing procurement planning/history/settings flows, under their actual routes, for v3 semantics and selected finalized-line to existing PO draft conversion. Show calculation version, observed period and inventory basis; historical finalized versions remain historical.
+
+Show material forecast separately from actual ledger consumption; physical, reserved, free/available, blocked/unavailable and eligible inbound must be labeled according to actual available fields. Null blocked/unavailable data is not zero. Present normalized30 half-month safety, typed lead time, MOQ and genuine order multiple with server explanations.
+
+Support typed CalendarDays/Weeks lead source, source reference and default supplier policy on existing Item procurement settings/Party identities. Preserve explicit override/history/configured precedence returned by the server.
+
+Selected conversion requires actual approved run/line IDs, existing supplier Party, business/expected date, explicit source price and tax input/provenance. Unknown cost stays unknown; do not silently submit zero. Persist source identity through the real API and explain already-converted/stale conflicts. An order draft does not post stock or financial journals.
+
+FE09 — PO APPROVAL, RECEIPT, BILL, RETURN AND CREDIT
+Extend existing Purchase screens with approval into the existing Sent state, promise revision/history, current-business-date follow-up/overdue view and approved close of unreceived remainder. Sent here is a workflow state; do not send an email or message as a side effect.
+
+Receive against an actual PO line, supplier, Item and base unit. Keep accepted/rejected/quarantined quantities, source receipt/attachment reference and nullable source cost distinct. Display accepted-outstanding supply, returnable quantities and the zero permitted over-accepted tolerance. Never fabricate an unmatched PO or user identity from a source label.
+
+Support partial receipts now, explicit later bill-line links and existing bill confirmation/conversion. Receipt-owned bill lines must not trigger another physical receipt. Whole-PO conversion after partial work must respect the server's line-level reconciliation and already-billed conflicts rather than forcing conversion through a different endpoint.
+
+Support supplier return against original receipt/dispositions, followed by the implemented financial credit against its actual confirmed bill line. Credit does not repeat physical stock-out; unbilled rejected/quarantine goods do not get fabricated cost or credit. Preserve financial/physical links in detail/history. Returns do not automatically reopen PO supply under the delivered policy.
+
+Provide the additional supplier-performance view using actual receipt/promised dates and unit/quantity-weighted denominators, clearly separate from the production/dispatch scorecard. Missing due-date metrics are unavailable, not invented 100% delivery.
+
+FE10 — INVOICE, SHIPMENT, PACKING AND PHYSICAL OWNERSHIP
+Extend existing Sales/Invoice and Shipment screens with explicit invoice line ownership and actual shipment/invoice line links, including partial shipments and multiple linked documents. Owner1 is standalone invoice; owner2 is shipment-owned. A linked invoice is financial and must not deduct the same dispatched goods again.
+
+Support both action orders: invoice confirmation before dispatch and dispatch before invoice confirmation, respecting the server's declaration/link prerequisites. Show legacy double-posting/reconciliation conflicts; do not automatically reverse or delete existing history. Standalone invoices retain their existing physical policy.
+
+Integrate verified packing and base-unit snapshot/legacy draft verification into the existing packaging flow. No fallback unitsPerBox=1. If verification requires draft allocations to be removed and repacked, guide that actual workflow with a reason and current version. Existing docket, carton/loose packing, freight, Freight Rojmel, original-line receipt/return and cancellation flows must remain operational. Returned/restocked quantities may not exceed actual returnable dispatched balance.
+
+Preserve the existing configured DispatchCalculationService policy and separate parity helper semantics. No API policy selector was implemented, so do not display a working selector backed by an invented request field. Label the active policy/basis that actually exists.
+
+FE11 — IMPORT, RECONCILIATION AND CONTROLLED STOCK
+Implement an operator-friendly wizard: source selection/stage → preview → positional mapping/repair → validate → reconcile → approve → post selected safe rows. Stage currently receives typed provenance rows; reuse actual existing file/CSV/workbook adapters or add a real adapter, rather than inventing a multipart endpoint. Preserve repeated headers by tab/column position and retain original values/errors.
+
+Every row needs file/tab/row/column/event provenance and actual mapping/disposition. Cover all22 source tabs, including inactive history, blank Sheet6 and seven canvas dependencies. Preserve original/normalized quantities, unit/factor/exact ratio basis, source dates/period/refresh, real IDs and unresolved reason. Differentiate historical production/dispatch, demand aggregate, opening, master reference, pending purchase and evidence-only dispositions.
+
+Mapping is not posting approval. Show exact balance differences and duplicate/source/unit/PO/cost/date exceptions. Select safe unrelated rows while unresolved rows remain repairable. Keep approval/post permissions separate. Treat source role text such as Store Supervisor as evidence, not an actor ID. Inactive historical source quantities must not disappear because today's entry mapping is disabled.
+
+Use approved start-of-day cutover opening semantics. Historical evidence must precede cutover; opening plus later signed movements is reconciled once. An imported cumulative production total is not a new completion. Keep direct Item balances read-only and use the implemented authorized adjustment/opening workflow, with version, sign, reason, source and audit. Do not change CurrentStock/ReservedStock through normal Item editing.
+
+FE12 — REPORTS, DRILLDOWNS AND EXPORTS
+Preserve the implemented authoritative manufacturing report adapter and add reachable operational stock-as-of, signed ledger, production-and-dispatch scorecard, plan-v-actual and capacity views using actual report kinds/queries. Include row-level source-document drilldown and quality flags. Source SCORECARD is production AND dispatch, not supplier performance.
+
+Required, expected, actual consumed, material waste, good output and rejected output remain separate measures. Legacy missing scrap/reject/unit values stay unavailable. Never substitute requirement for actual consumption or default missing measured waste to zero. Render six-place quantities and literal server percentage points consistently; distinguish counts, currency and quantity.
+
+Use real server paging, filters and full-filter unit-separated totals. Do not sum KG+PCS+ROLL, compute totals from only one page, reintroduce N+1 detail requests or manufacture totalPages=1. Reset/cancel stale fetches on filter/page changes and handle empty later pages correctly.
+
+Wire the existing CSV report export infrastructure for manufacturing history/consumption and the actual operational NDJSON export where appropriate. Same filters, permissions, units, calculation versions and business dates must reach export. Show appropriate download names/types and errors; do not label an operational multi-page export as an immutable historical snapshot. Explain unavailable historical ledger evidence rather than silently substituting current balances/reservations.
+
+FE13 — RBAC, COMPANY, VERSIONS AND ERRORS
+Use actual permission pages/actions from the generated route inventory: View/Create/Edit/Delete/Export/Approve. Frontend normalization may call Edit update; follow the existing resolver. The default useCapabilities action list is CRUD only: explicitly request/derive approve/export where needed instead of assuming canApprove exists. Actions requiring both invoice and shipment permissions must enforce both in the UI, while the server stays authoritative.
+
+One trusted company owns one database catalog in the implemented backend. CompanyKey/actor identity comes from authenticated server context. Do not invent a client company selector/header/payload field to bypass this. Existing tokens may need re-login/refresh after company enablement. Browser useManufacturingPreference remains a UI preference; it cannot grant eligibility, approval or stock rights.
+
+Carry returned opaque rowversions exactly. Generate a stable unique idempotency key per intended command; keep it for an identical uncertain retry. A changed payload/action uses a new key and current version. Disable duplicate clicks, handle timeout/abort/uncertain success and recover by reading authoritative context instead of silently posting a second transaction.
+
+Provide proper400 field validation,401 auth recovery,403 forbidden,404 missing source and409 stale-version/stale-plan/shortage/duplicate/idempotency conflict states. Use conflictCode/currentVersion/reloadRequired when returned; if a currentVersion is absent, reload the source. Never silently overwrite a concurrent edit, auto-approve a conflict or automatically retry a changed payload. Preserve entered data appropriately while offering safe refresh/review.
+
+Existing OEE/HR/Party/Item lookups have their own real view permissions. Missing lookup permission is a clear forbidden/required-access state, not permission to hardcode test IDs, grant extra roles or expose inaccessible records.
+
+FE14 — DATE, NULL AND DECIMAL CONTRACT
+DateOnly fields are yyyy-MM-dd business dates. Completion timestamps have explicit offsets. Derive business-day defaults from verified configured company timezone/context; do not use toISOString().slice(0,10) or the workstation timezone as a hidden replacement. If the required runtime context is absent, identify and minimally fix that contract instead of inventing a timezone or company. Preserve actual returned timezone/offsets in overnight scheduling.
+
+Maintain six-place posting precision and twelve-place source evidence. Keep raw input strings/decimal representations through validation and only serialize according to the verified wire contract. Native JavaScript Number cannot preserve arbitrary22-digit decimal quantities: implement and test a compatible precision-safe adapter/serialization strategy for supported values, or make an actual compatible contract correction with backend tests. Do not merely claim lossless precision after Number()/JSON.parse. Currency remains separately governed; the server is authoritative for financial/calculation rounding.
+
+Null, zero, missing, no-demand, stale and unavailable are distinct UI states. Avoid numeric coercion that turns null/blank into0. Unknown quantity/cost/rate/pack/snapshot evidence must not become a fabricated default. Use stable underlying IDs rather than display strings for references; route IDs and command result IDs may identify different documents, so read each concrete DTO.
+
+FE15 — USABILITY AND ACCESSIBILITY
+Build practical operational forms/tables with clear units, source links, editable vs frozen fields, variance/difference explanations, useful row validation and review summaries. Do not expose API routes, SQL names, raw request JSON, internal enum integers or database setup details as normal operator UX. Preserve provenance in a purposeful evidence/detail view instead.
+
+Support loading, submitting, success, empty, no-results, unavailable prerequisites, error/retry, forbidden, stale data/conflict and read-only history states. Responsive tables may scroll or use a coherent mobile layout; critical actions/units must remain reachable. Use semantic controls, labels, keyboard navigation, focus trapping/return, accessible validation/live feedback and existing modal/date-picker patterns. Do not make color the only indicator.
+
+All visible actions must work through actual services and permissions. No fake data fallback, dummy KPI, hardcoded Item/user/PO ID or dead button is acceptable. Synthetic data is allowed only in explicitly labeled tests/fixtures. Preserve existing working financial/stock workflows and avoid unrelated redesign/refactors.
+
+FE16 — TESTING, TWO VERIFICATION PASSES AND HANDOFF
+Capture current baseline before edits; it may have advanced. Recorded prior results are401 backend passed/13 SQL skipped; frontend581 passed/3 pre-existing employee-validation failures out of584;12 relevant frontend tests passed; frontend production build passed. The three known failures concern optional employee email/bank/address expectations. Track them separately; do not silently weaken unrelated employee behavior or declare the entire suite green.
+
+Use meaningful behavioral tests for components/services/permissions/dates/precision and actual contract fixtures. Cover at least:
+- config and canonical BOM/conversion, including inverse ratio and effectivity/missing unit;
+- target21/warning15, true7-day vs quarter-month, zero/stale/missing demand, snapshot refresh and selected draft creation;
+- one shared material pool, bottlenecks and unknown capacity;
+- release/partial good+reject/actual scrap/staging return/amend-reschedule/complete/close/reversal UI payloads and state;
+- version conflict, identical retry, changed-payload new key, double-click and uncertain-network recovery;
+- positive-shortage-only MOQ, equality/surplus, fractional shortage, typed2weeks=14days plus half normalized month;
+- selected approved procurement→PO draft→Sent approval→partial receipt→later bill link→supplier return→financial credit→remainder close;
+- invoice-before/after partial dispatch, standalone policy, packing verification, original-line returns/cancel and conflict handling;
+- import provenance/duplicate/inactive/selected-safe rows and unresolved exceptions;
+- full-filter unit totals/paging/export, missing waste/reject/unit evidence,0.000001 display and0.5% display;
+- route/button/lookup permissions, forbidden/read-only/loading/empty/error/mobile/keyboard/focus/localization states.
+
+Run appropriate changed-area tests, full npm test -- --run, npm run build and lint according to the existing repository baseline. If backend contracts change, run the matching backend tests and regenerate schemas with the existing contract-generation test. Do not add tests that only check a label/keyword or merely mirror implementation. Report new regressions separately from known baseline issues and fix regressions caused by this work.
+
+Inspect the real screens in a browser when available, using the applicable computer-use instructions/tools. Exercise responsive and keyboard journeys. Mocked UI/API tests and the NoSql Swagger factory do not prove real SQL transaction correctness.
+
+The new backend SQL has not been executed locally. For authenticated live integration journeys, use only an explicitly configured disposable guarded test catalog and the existing runner/test instructions. Never start the backend against bundled appsettings/company/staging credentials merely to make the UI work: startup provisioning may write to that catalog. Do not print secrets, alter a live company database, deploy, or send external messages. If no disposable SQL runtime exists, finish all independent UI/build/contract/browser work possible and clearly list exact unverified authenticated/SQL journeys and real prerequisites. Do not fake end-to-end success.
+
+Verification pass1: map all T/F/U/C IDs to actual code, routes, DTOs, screen behavior and tests; audit source columns and affected workflows, not keyword presence.
+Verification pass2: independently walk complete user journeys, recompute the representative quantities, inspect network payloads/versions/permissions, inspect UI states and final diff, and reconcile expected movement/reservation ownership against the actual backend contract. Correct gaps found in the second pass. Do not claim both passes from the same shallow checklist.
+
+Deliver: changed-file summary; actual screen/route/service/permission map; completed capability/source coverage; before/after behavior and calculation examples; test/build/lint/browser results; any minimal backend contract fixes and regenerated schemas; disposable SQL/runtime gate status; unresolved real-data exceptions and exact remaining limitations. Update the existing production handoff and add a frontend implementation/verification handoff using repository documentation conventions. Do not stop after the first few screens or leave authorized scope as a future phase.
+
+MANDATORY SHARED SPECIFICATION APPENDIX
+The complete shared specification follows. Business rules, source dispositions and capability coverage remain mandatory. Apply the actual-backend alignment and updated execution evidence above when the appendix describes the historical pre-implementation baseline. No separate old prompt or prior chat is required to understand the business scope.
+
+
+COSMOS COMPLETE PRODUCTION, MATERIAL PLANNING AND DISPATCH SPECIFICATION
+Verified reference date: 27 October 2026
+Repository baseline reviewed: 367be4edea8d00026072a9462487ba0ec34f61f9
+Reference workbook: https://docs.google.com/spreadsheets/d/1p5gCaPMU5gI2f_vvnuODt24eVDYDaOvUNW-ZWjCsnew/edit
+Language: implementation instructions in English; preserve Cosmos's existing localization.
+
+OBJECTIVE AND AUTHORIZATION
+Implement the entire scope in this document as one coordinated delivery. Do not stop after a roadmap, skeleton screens, mock data, or a subset called phase 1. Work in dependency order, but do not leave the remaining agreed scope for another phase. Inspect the current branch before editing because it may have advanced beyond the audited baseline. Respect applicable repository instructions. Reuse working features and extend their existing contracts; this is a complete integration into Cosmos, not a second ERP inside it. Do not deploy, alter a live production database, or manufacture missing business data merely to make a demo pass.
+
+The workbook is a functional/data reference, not an authoritative source of correct units, formulas, identities or live balances. Preserve all useful capabilities and historical evidence while correcting the defects below. Exact anonymous canvas visuals were unavailable: the seven canvases rendered blank. Their actual "View data" dependencies were verified. Do not claim pixel or interaction parity or invent hidden canvas metric definitions.
+
+NON-NEGOTIABLE BUSINESS RULES ALREADY CONFIRMED BY THE USER
+U01. Units vary by Item. Determine source unit per Item AND source context/effective date. Production, dispatch, historical sales, opening stock and BOM quantities need not share the same unit. Store source quantity/unit, conversion factor, normalized base quantity and conversion provenance. Never assume all values such as 50 or 80 are BOX or PCS.
+U02. Release production orders: reserve components. Posted completion: deduct actual component consumption and add accepted finished output, atomically. An issue/return record under this model tracks staging/physical custody and must not deduct consumption a second time. Partial completions consume only their attributable reservation; unused reservation survives until final close/cancel.
+U03. Finished-goods stock target is 21 days TOTAL; 15 days is the warning threshold. Never use 36 days.
+U04. Purchase suggestion equals zero when purchase shortage is zero or negative, including stock exactly at reorder point. Apply MOQ only after positive shortage exists. MOQ and order multiple are different settings. This rule does not silently change the existing separate dispatch minimum policy.
+U05. Raw-material safety stock is half-month demand: 50% of a normalized 30-day requirement. The sheet's "2 Weeks" safety label must not turn this into 14 days. A supplier lead time genuinely recorded as 2 weeks DOES mean 14 calendar days.
+U06. For linked invoice/shipment goods, confirmed dispatch owns physical stock-out. The linked invoice must not deduct those goods again. Preserve an explicit standalone-invoice inventory policy. Handle partial shipments, linked invoice lines, returns, cancellation and retries using the same ownership rule.
+
+MASTER AND MODULE BOUNDARIES
+Add exactly TWO new business masters:
+1. Work Centre / Production Line.
+2. Process / Operation.
+Add exactly THREE subordinate configuration families, housed in their parent's existing screen:
+1. Item Production Routing, under Item > Manufacturing.
+2. Item–Machine–Mould Eligibility, under Item > Manufacturing.
+3. Work Centre Shift & Capacity, under Work Centre.
+Routing steps or resource options may require multiple relational child tables but are not additional business masters. Transactions, status history, import staging and read models are not masters.
+
+Reuse existing Items for finished goods, raw materials and packaging; Categories; Units; versioned Manufacturing BOMs; OEE Machines and Moulds; HR Shifts; packaging profiles; SalesChannels; ChannelWarehouses; ChannelSkuMappings; supplier Parties; existing Procurement/Dispatch settings; Purchase Orders/Bills; Shipment Operations; StockMovements; RBAC and audit infrastructure. ChannelWarehouses represent external channel destinations; never silently turn them into company stock locations. Use an existing genuine internal inventory-location model if available. Do not introduce another warehouse master or location stock model without an actual reviewed requirement.
+
+Do not create separate Product, Raw Material, Vendor, Packaging, Stock, BOM, Production Planning or Purchase Planning master modules just because a sheet tab has that title. Use an integrated Production workspace with appropriate views under existing navigation, plus existing Purchase, Procurement, Dispatch, Shipment and Reports areas.
+
+SOURCE INVENTORY AND COVERAGE CONTRACT
+All 22 source tabs must have a disposition, including blank and historical tabs. Use this inventory as the initial manifest, then verify current workbook changes through authorized read-only access.
+T01 Form Responses 2 -> staging/import provenance; duplicate-source detection against normalized dispatch/production events.
+T02 Form Responses 1 -> staging/import provenance; repeated question headers, dates and submission IDs need explicit mapping.
+T03 DISPATCH DATA -> daily item/channel dispatch history, editable draft entry, posting and reconciliation through the existing inventory/shipment ownership rules.
+T04 PRODUCTION DATA -> daily item/channel production history and production completion entry.
+T05 PRODUCTION PLANNING [canvas] -> actual sources PRODUCTION DATA + ADU; integrated finished-goods planning.
+T06 CURREENT STOCK [source spelling] -> openings, daily running balance, current stock and low-cover warnings.
+T07 ADU -> demand averages, channel/item rollups, pack conversions, demand period and target calculations.
+T08 FORM_CONFIG -> active entry columns, ordering, channel/SKU mapping, history of disabled columns.
+T09 LAST 30 DAYS SALE -> aggregate demand staging, explicit sales period and last-refresh metadata; not invented individual sales.
+T10 JUNCTION -> canonical versioned BOM mapping, source per-box basis and source production totals.
+T11 RAW_MATERIAL_MASTER -> existing Item extensions/settings and supplier links.
+T12 PROCUREMENT PLANNING [canvas] -> actual source RM_CURRENT_STOCK; material planning and purchase recommendations.
+T13 PROCUREMENT_INWARD -> staged historical receipts, quantity, unit, supplier, PO identity, cost and received-by provenance.
+T14 VENDOR_MASTER -> existing supplier Parties, contact/lead-time/MOQ data where real.
+T15 Sheet6 -> observed blank; no new module, retain an explicit "empty/no import" disposition.
+T16 PO_TRACKER -> existing PO tracker with ordered/received/pending quantities, dates and supplier status.
+T17 PURCHASE TRACKER [canvas] -> actual source PO_TRACKER.
+T18 PURCHASE IN [canvas] -> actual sources RAW_MATERIAL_MASTER + PROCUREMENT_INWARD + VENDOR_MASTER.
+T19 RM_CURRENT_STOCK -> reconciled raw/packaging material balances, requirement, lead time, safety, reorder and suggested purchase quantities.
+T20 RAW MATERIAL [canvas] -> actual source RM_CURRENT_STOCK.
+T21 VENDORS [canvas] -> actual source VENDOR_MASTER; supplier view, not a duplicate vendor master.
+T22 SCORECARD [canvas] -> actual sources DISPATCH DATA + PRODUCTION DATA. Deliver a production/dispatch scorecard. Do not relabel this as a supplier scorecard.
+
+Aesthetic layout in the workbook is not permission to clone every tab into a navigation item. Keep the functions reachable in existing Cosmos flows. Add a sheet-to-capability-to-contract-to-screen-to-test mapping. Count every populated source column, formula family, repeated header, inactive entry column and data-quality exception; do not assume the table names alone prove completeness.
+
+SOURCE DEFECTS AND IMPORT QUARANTINE
+- 32 raw-material rows: 12 negative balances, 20 zero-demand rows; all 32 currently display REORDER REQUIRED. Correct the zero/equality alert defect; do not import that flag as truth.
+- Raw openings are zero in all 32 rows; this is not evidence that audited company opening stock is zero.
+- BLACK PP source shows 13,256.25 KG consumption, 10,000 KG inward, -3,256.25 KG balance. Consumption assumes source production is in boxes; reconcile units before posting anything.
+- BLI HAPPY30 has -1 and HAPPY40 has -6 in the source; units/identities remain unresolved. Do not silently clamp negatives to zero or add artificial opening adjustments.
+- Source "monthly consumption" is fed by cumulative production totals. Separate observed actual consumption from a demand forecast.
+- Raw reorder lead formula extracts 2 from "2 Weeks" as 2 days, while PO logic converts weeks to days. Normalize typed durations once.
+- LAST 30 DAYS SALE has a 20 Jul 2026 update hint while operations include October. Require an explicit period and freshness; do not present it as current rolling demand.
+- 24 historical channel/SKU columns exist in the daily data; FORM_CONFIG has 23 active plus inactive INS HAPPY20. Preserve the inactive column's historical production (15) even though current ADU/stock coverage omits it.
+- JUNCTION has 11 finished SKUs: BH-20, BH-25, BH-40, MH-20, GH-20, WH-20, FX-16, HAPPY-20, HAPPY-25, HAPPY-30, HAPPY-40 (preserve these exact source codes; BH25 below is shorthand for BH-25). Each has three populated component pairs. Validate mappings to real Item IDs and all component identities.
+- Source BOM quantities are per BOX. Example BH25: 13.090 KG BLACK PP, 11 inner boxes and 1 carton per box of 11 finished units. It is invalid to apply this BOM directly to a PCS quantity.
+- Seven named vendors coexist with blank active rows. Do not create blank suppliers.
+- One inward entry: source date serial 46318 = 23 Oct 2026, PO-2026-001, MAHADEV POLYPLAST, GRN-BLACK-PP, 10,000 KG; cost blank; received-by text "Store Supervisor". PO_TRACKER has no corresponding populated PO. Treat PO match, opening/receipt proof, cost and user identity as unresolved. Never invent a purchase order or map that role text to an arbitrary user.
+- Form responses and normalized grids can describe the same physical event. Assign source provenance and deduplicate before inventory posting.
+- Preserve original values and errors in staging. Ambiguous units, duplicates, missing BOM/cost/supplier identities and negative reconciliation must block affected posting, with a repairable exception. Safe unrelated rows can proceed.
+
+CALCULATION CONTRACT: 16 FAMILIES
+Use precise decimal arithmetic on the backend. Frontend previews use the same documented rules and are never authoritative. Every result carries units, input period, as-of business date, source IDs, calculation version, freshness, policy and rounding explanation. Do not sum KG + PCS + ROLL or unlike finished units. Counts, money and quantities need distinct aggregation rules.
+
+C01 Unit normalization and packaging.
+BaseQty = SourceQty * VerifiedFactor(source unit -> Item base unit, effective on event).
+Persist the factor on posted lines; future pack edits must not rewrite historical quantities. Reject cross-dimension or missing conversions. Keep pack size/units-per-box separate from BOM output basis. Where source demand is PCS and target base is BOX with 11 PCS/BOX, 330 PCS = 30 BOX; where base is PCS, 10 BOX = 110 PCS. KG, PCS and ROLL can all be legitimate base units. Never fabricate factor=1 for missing packaging.
+
+C02 Versioned BOM, waste and actual consumption.
+ExpectedComponent = FinishedBaseQty / BomOutputBaseQty * ComponentBaseQty.
+Include approved component waste exactly once. ExpectedWithWaste = ExpectedComponent * (1 + WastePercent/100) when the BOM uses additive waste; do not confuse this with a yield-loss divisor. Keep planned requirement, staged issue, material return, actual consumed, material scrap and accepted/rejected finished output distinct.
+Conditional verified example: BH25 has 11 PCS/BOX, 13.090 KG/BOX -> 1.190 KG/PCS; 110 PCS require 130.900 KG; with additive 2% waste, 133.518 KG. Eleven inner boxes per output box means one inner box per PCS, not 11 per PCS. Freeze the approved BOM version and conversion snapshot at release, including effectivity, and validate as-of dates.
+
+C03 Inventory ledger, reservations and balances.
+OnHand(asOf) = approved opening + signed posted movements up to the defined business-date cutoff.
+FreeStock = OnHand - active owned reservations - blocked/unavailable stock, subtracting each exclusion exactly once according to the actual inventory model.
+AvailableToOrder = FreeStock + the same order's existing valid reservation when recalculating its own feasibility.
+Release adds reservation; it does not alter OnHand. Completion consumes the attributable reservation and posts actual consumption/accepted output together. Extra actual consumption needs an availability check; shortages cannot silently overdraw another order's reservation. Final close releases only unused reservation. Historical reserved quantities require historical events/snapshots, not today's ReservedStock. Reconcile any stored CurrentStock/ReservedStock cache to the ledger; prohibit arbitrary API field edits that bypass controls.
+
+C04 Demand, cover and finished targets.
+For verified demand quantity Q over N calendar days, DailyDemand = Q/N. Keep zero-demand, unavailable-demand and stale-demand different. Normalize a verified observed period to Monthly30 = DailyDemand*30. Aggregate demand must not be split into fictional daily transactions.
+FinishedTarget = DailyDemand*21; WarningThreshold = DailyDemand*15.
+CoverageDays = sellable stock / DailyDemand when DailyDemand > 0; with zero demand show an explicit no-demand state, not infinity/zero as a misleading metric.
+The workbook's display conventions are MonthlyBoxes=ceil(Q30/B), HalfMonthBoxes=ceil(Q30/(2B)), FourWeekSliceBoxes=ceil(Q30/(4B)), Target21Boxes=ceil(21*Q30/(30B)). That "weekly" source column is a four-week slice, not an actual 7-day forecast. Label it accurately; operational 7-day demand is DailyDemand*7. Do not round the daily average before multiplying a horizon. Apply whole-pack constraints only at the execution/suggestion boundary where the item policy requires them.
+
+C05 Finished-goods production netting.
+Within a stated horizon, project stock using dated eligible receipts/open released output, reservations/commitments and demand exactly once.
+SuggestedProduction = max(0, required horizon demand/target + distinct commitments outside that demand - eligible projected supply), with a documented forecast/order netting policy.
+Orders already represented by aggregate demand must not be added a second time. Distinguish "open order output" from a posted completion already in OnHand. Deduplicate linked demand, inbound and production IDs. A horizon-average suggestion and a dated fulfillment projection are different views; show each basis. As-of snapshots must be stable and recomputed before release.
+For the workbook-style 21-day top-up, do not add a second full 21-day forecast on top of the 21-day target. Use eligible unblocked physical supply plus distinct inbound/open output; when a commitment is already in requirement demand, do not also subtract its reservation from supply. If a dated projection deliberately carries an ending safety target beyond forecast demand, label that separate policy and horizon explicitly rather than silently turning this target into 42 days. Example: target 231 PCS, physical eligible supply 100 PCS and distinct remaining released output 40 PCS -> suggestion 91 PCS.
+
+C06 Material explosion and feasible output.
+Explode only remaining unproduced quantities against the frozen applicable BOM. Aggregate shared components in base units. Exclude cancelled/closed requirements, already consumed quantities and duplicated forecast/order demand.
+For one product, material-limited output = min over required components(available-to-that-order / component-per-output), respecting actual item output increments. Multi-product plans share one component pool; never promise every row the same available stock. Provide bottleneck and shortage explanations. Track proposed allocations separately from durable release reservations.
+
+C07 Routing, resource eligibility and capacity.
+Work Centre shift windows must respect the configured business timezone, overnight shifts, breaks, approved downtime and calendar exceptions. Reject overlapping capacity double counting. AvailableMinutes = usable shift minutes - reserved minutes/downtime, using the existing data model without double-subtracting breaks.
+RequiredMinutes = setup minutes + runtime for the remaining operation quantity under its verified rate basis.
+Units/minute, seconds/unit and injection cycles/shots with eligible cavities are different rate bases. Only convert shots to SKU output when the mould/cavity allocation is verified; shared/family moulds must not multiply the full output into each SKU. Carry setup/changeover rules, lot size, operation sequence and resource exclusivity. Show material-limited and capacity-limited plans separately. OEE monitoring is reused; no invented OEE score from absent telemetry.
+
+C08 Raw-material demand, lead time and safety.
+Separate actual material ledger consumption from future material forecast. Derive forecast from a declared finished-demand or production-plan basis, verified BOM versions, item conversions and deduplicated remaining order requirements. Document which demand is already covered by firm production; do not add it twice.
+If normalized 30-day requirement R30 is chosen, D=R30/30, Safety=R30/2, LeadDemand=D*LeadTimeCalendarDays, ReorderPoint=LeadDemand+Safety.
+Example R30=3,000 KG and lead=2 weeks: D=100 KG/day, LeadDemand=1,400 KG, Safety=1,500 KG, ROP=2,900 KG.
+Map the existing Procurement SafetyFactor deliberately: 0.5 means half-month only when RequirementQty is normalized to 30 days. A 10-day run's raw requirement must not be multiplied by 0.5 and mislabeled half-month.
+Show physical, reserved, available, blocked, eligible inbound and projected inventory position separately. Use existing compatible procurement policy versioning for whether reservation affects reorder; audit current calculator, which excludes reservations. Do not change inventory-position semantics invisibly. Default worksheet-compatible inventory position is physical eligible stock + deduplicated eligible inbound, with reservations visible separately; if another policy is chosen, make it explicit and versioned.
+
+C09 Purchase shortage, MOQ and order multiples.
+Shortage = max(0, ReorderPoint - EligibleInventoryPosition).
+If Shortage <= 0: RecommendedPurchase=0 and no reorder alert.
+Else Baseline=max(Shortage, MinimumOrderQty); if a valid positive order multiple M exists, Suggested=ceil(Baseline/M)*M; otherwise preserve valid unit precision.
+Never round a positive fractional shortage to zero before applying MOQ. Apply whole-unit constraints only for that item's unit. MOQ is a minimum, not a multiple, and a source field labeled EOQ is not an economic optimization model.
+At ROP=100, position=100, MOQ=50 -> 0. Position=99 ->50. Shortage=55, MOQ=50, multiple=12 ->60. No-demand with negative stock is a reconciliation exception, not a reason to hide shortage without review. No-demand with nonnegative position and ROP0 ->0.
+
+C10 Purchase orders, receipts and returns.
+PO outstanding = ordered - effective accepted receipts - effective cancellations, according to a documented disposition model. Keep received, accepted, rejected/quarantined and returned quantities separately. A return may reopen supply only if the selected PO policy says so. Remaining must not silently be negative; over-receipts need explicit permitted tolerance/approval.
+One physical receipt creates inventory once. Existing PO-to-confirmed-PurchaseBill conversion already posts stock: coordinate bill/receipt links and posting ownership before adding GRN-style screens. Partial receipts, direct bills, later invoicing, backdating, duplicate source references and returns must not duplicate movements. Never net unlike units or currencies.
+
+C11 Existing configured dispatch policy.
+Inspect and preserve the current DispatchCalculationService unless an explicitly approved, versioned policy is selected.
+Current configured calculation uses recurring demand=sales*recurringFactor; safety=recurring*safetyFactor; ROP=recurring+safety; supply=current sellable+eligible inbound; raw shortage=max(0,ROP-supply); pre-round suggestion=max(raw shortage,MinimumDispatchQuantity), followed by the configured pack/loose/rounding rules.
+For configured rounding, preserve the actual modes: Exact; NearestBox with midpoint away from zero; RoundUpToBox; RoundDownToBox; ExactBelowOneBox (retain exact below one box, otherwise ceiling to a box); HalfBoxThreshold (round box fraction >=0.5 up, otherwise down). AllowLooseQuantity bypasses box rounding. Quantize at the service's actual six-decimal boundaries and validate missing pack data rather than accepting a fabricated conversion.
+It can apply a dispatch minimum at zero shortage. U04 is a purchase rule, not authorization to silently rewrite this dispatch policy. Show the active policy/version and supply basis.
+
+C12 Existing dispatch Excel parity helper.
+The separate DispatchExcelParityCalculationService is not the default DispatchPlanningService calculator and is not evidence that API policy selection already exists.
+If workbook-parity is offered, wire and test explicit policy selection without silently replacing configured behavior:
+Tier1 if Sales30 >20*BoxSize; Tier2 if >7*BoxSize; otherwise Tier3 (strict boundaries).
+(SafetyFactor, RecurringFactor): Tier1=(3,4), Tier2=(4,2), Tier3=(4,4).
+Recurring=WarehouseWeeklyDemand*RecurringFactor.
+Safety=Sales30*(WarehouseWeeklyDemand/NetworkWeeklyDemand)*(SafetyFactor/4).
+When Sales30 is positive, NetworkWeeklyDemand must be positive; WarehouseWeeklyDemand cannot exceed NetworkWeeklyDemand and inputs must satisfy the helper's nonnegative constraints. When Sales30 is zero the current helper sets safety to zero without dividing. Handle zero/missing denominator explicitly. Eligibility requires Safety>0 and positive shortage. Tier1 suppress below one box; Tier2 suppress below half a box; Tier3 permits loose below one box; otherwise preserve the helper's actual nearest/midpoint-away and six-decimal boundary semantics. Read the implementation/tests before modifying it. Keep source four-week slices separate from true seven-day demand.
+
+C13 Allocation, shipment ownership and concurrency.
+Planning recommendations and stock-snapshot allocation are not durable inventory reservations. Do not subtract both a recommendation and its resulting reservation. Maintain unique owner/line IDs, expiry/release/cancel transitions and predictable allocation priority.
+At dispatch, revalidate actual eligible stock, reservation ownership, packing and invoice linkage in a transaction. A stock-out is unique per effective physical event and line; dispatch plus invoice of the same goods is one event. Two different valid partial dispatches are not duplicates. Reverse only what was posted, once. Cross-linked invoices, returns and shipment cancellation cannot restore more than actually dispatched. Use rowversion/ETag and idempotency for concurrent commands.
+
+C14 Production/dispatch scorecard and reporting.
+T22 is backed by production AND dispatch data. Deliver dated production and dispatch quantities, channel/item comparisons, reconciliation to balances and trends with explicit unit grouping. Add plan-versus-actual, completion/yield/waste and service metrics only where their numerator, denominator and event dates are available and defined. Missing target/due dates are unavailable metrics, not fabricated 100% performance.
+Supplier delivery performance may be an additional PO/receipt view using real promised/receipt dates; it is not source SCORECARD parity. Calculate weighted/grouped metrics from underlying quantities; do not average percentages indiscriminately. On-time denominator excludes/labels records missing due dates. Exports and totals use all filtered records, not one UI page.
+
+C15 PO follow-up and expected dates.
+Persist ordered date, promised/expected receipt date, revised promise history and actual receipt dates using existing PO fields where possible. Compute pending/overdue in the business timezone from remaining accepted supply and the selected promised date. A source "+3 days" follow-up is a configurable reminder candidate, not an invented supplier SLA. Label calendar vs working days explicitly.
+Reuse in-app task/reminder infrastructure if present. Do not send emails/messages or enable an external scheduled automation without separately authorized behavior. An in-app due list can be delivered without external messaging.
+
+C16 Packing, freight and cost continuity.
+Reuse shipment carton/loose packing, docket checks, freight and Freight Rojmel flows. Require verified pack conversions; fallback unitsPerBox=1 cannot masquerade as validated packaging.
+Respect current decimal and currency policies, purchase valuation, inventory valuation and rounding responsibilities. Missing source cost is unknown, not zero. Do not fabricate production absorption costs, freight allocation, taxes or accounting journal entries. Integrate with existing costing rules only when real source fields and approved semantics exist.
+
+COMPLETE CAPABILITY CHECKLIST
+F01 Existing-flow inventory, capability reuse and gap matrix.
+F02 Exactly two masters and three child configuration families.
+F03 Existing Item, Unit, category, packaging and supplier enhancements.
+F04 Canonical versioned BOM, source per-box basis and effectivity.
+F05 Channel/SKU configuration, inactive history and identity mapping.
+F06 Demand inputs, period normalization, freshness and forecasts.
+F07 Finished target/cover and explainable production recommendations.
+F08 Material explosion, shortages and shared-stock feasibility.
+F09 Routing, resource compatibility, shifts and capacity feasibility.
+F10 Production order release/reservation/partial completion/close/cancel lifecycle.
+F11 Daily production entry, corrections, reconciliation and import.
+F12 Daily dispatch entry, existing shipment integration and physical ownership.
+F13 Openings, stock ledger, reservations, historical balance and as-of reporting.
+F14 RM planning, half-month safety, typed lead time and positive-shortage MOQ.
+F15 Purchase suggestions, PO creation/linkage and approval reuse.
+F16 Purchase tracker, promised dates, follow-ups and supplier view.
+F17 Partial inward/receipt/bill/return handling and stock-posting ownership.
+F18 Dispatch policy selection where introduced, rounding and allocation transparency.
+F19 Shipment packing, freight, dispatch, cancellation and return integration.
+F20 Production/dispatch scorecard, operational reports and exports.
+F21 All 22 source dispositions, staged migration and controlled cutover.
+F22 RBAC, tenant/company scope, audit, concurrency and idempotency.
+F23 Cosmos theme, localization, responsive accessibility and all UI states.
+F24 Real frontend/backend contract integration, automated tests, reconciliation and delivery evidence.
+
+REPOSITORY ANCHORS AND BASELINE FINDINGS
+Backend: .NET 10, Clean layers, Dapper/stored procedures, FluentValidation, API envelopes, JWT/RBAC and DI. Frontend: React 19, Vite 8, Tailwind 4, Redux/Axios, existing shared components.
+Inspect:
+- backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs
+- backend/src/Cosmos.Contracts/Manufacturing/ManufacturingDtos.cs
+- backend/src/Cosmos.Application/Services/ManufacturingService.cs
+- backend/src/Cosmos.Persistence/Repositories/ManufacturingRepository.cs
+- backend/src/Cosmos.Domain/Manufacturing/ManufacturingEnums.cs
+- backend/src/Cosmos.Domain/Security/ManufacturingPermissions.cs
+- backend/database/migrations/20260921_manufacturing_module.sql
+- backend/database/migrations/20260923_manufacturing_stored_procedures_fix.sql
+- backend/database/migrations/20261006_unify_procurement_with_manufacturing_boms.sql
+- backend/database/migrations/20261007_purchase_order_conversion_validation.sql
+- backend/database/migrations/20261008_dispatch_planning_sku_snapshot_integrity.sql
+- backend/database/migrations/20260729_shipment_operations_module.sql
+- backend/database/migrations/20260710_stock_reports_module.sql
+- backend/database/001_Full_Database_Setup.sql
+- locate ProcurementCalculationService, DispatchCalculationService, DispatchExcelParityCalculationService, DispatchPlanningService, DispatchAllocationService, ShipmentOperationsService and ShipmentPackingSuggestionService by symbol.
+- frontend/src/components (locate existing ItemManufacturingTab and shared components)
+- frontend/src/services/reports/manufacturingReportsService.js
+- frontend/src/hooks/useManufacturingPreference.js
+- frontend/src/index.css and current route/navigation/permission definitions.
+
+Current Manufacturing endpoints live under /api/v1/manufacturing/boms and /api/v1/manufacturing/productions. Applicable BOM, post and cancel exist. Legacy production Draft=1, Posted=2, Cancelled=3; do not renumber them to fit an order lifecycle. Current production contracts do not carry a full order/routing/channel/resource context. The existing post deducts BOM materials and adds output; cancellation reverses it. There is no complete owned release-reservation workflow there.
+Canonical Manufacturing BOMs already replace legacy ProductBomComponents for planning; preserve historical legacy records and reuse canonical effectivity.
+Current procurement root is /api/v1/procurement-planning/plans; do not invent /planning routes as though already implemented.
+Shipment dispatch status 6 already posts stock; sales invoice confirmation can independently post stock, so linked-flow ownership needs a deliberate coordinated fix.
+Current PO conversion can confirm a whole PurchaseBill and stock-in. Partial receipt implementation must integrate with that behavior.
+Items.CurrentStock/ReservedStock and StockMovements.Quantity have two-decimal storage in the audited setup, while manufacturing/planning quantities have finer precision. Verify all deployed definitions and make a coordinated quantity-precision migration where necessary; UI decimals alone do not fix truncation.
+Stock reports use CreatedAtUtc dates in places and today's reserved balance for historical reporting. Define transaction business date vs UTC creation date, and reconstruct historical data correctly. Movement sign/source cannot be inferred only from overloaded integer movement types.
+Manufacturing frontend reports currently fetch one production page with N+1 detail calls, manufacture totalPages=1, can use RequiredQty rather than actual consumption, can default waste percent to zero, and mix statuses/units in summaries. Replace these with authoritative paged report contracts and correct measures.
+useManufacturingPreference.js reads and writes browser preference storage/events; that flag is not an authoritative server-side manufacturing configuration or inventory control.
+Snapshot dispatch allocation is not a durable reservation system. Missing packing can currently fall back to one; do not use that as a verified conversion.
+
+EXECUTION, VERIFICATION AND HANDOFF
+Start by checking the branch and this document against actual code. Maintain a decision/gap log with evidence, not a fresh business-policy questionnaire for U01-U06. Resolve ordinary implementation details using existing conventions. Missing business identities/units/dates must appear in a specific exception list; never invent values.
+Coordinate a written API/DTO and calculation contract between frontend and backend before dependent UI calls. Endpoint names proposed by an implementer are proposals until actually implemented; generated clients/types or explicit contract fixtures must agree.
+Verification pass 1: map T01-T22, F01-F24, U01-U06 and C01-C16 to code, contracts, screens and meaningful tests. Check values/fields and behavior, not keyword presence.
+Verification pass 2: independently walk complete user journeys, recompute representative calculations and reconcile movements/reservations, partials and corrections. Read the final diff and confirm there are no accidental extra masters, duplicate posting paths or missing source dispositions.
+Run appropriate existing tests/builds and new behavioral tests for the actual changes. Do not add tests that merely repeat implementation or claim mocked flows prove SQL correctness. Use a disposable SQL test database for migration/procedure/concurrency tests, never a live company catalog. Respect existing integration-test catalog guards.
+Baseline audit on 27 Oct 2026: backend non-SQL tests 338 passed; frontend 579 total, 576 passed and 3 existing employee-validation failures; 120 relevant frontend tests across 19 filename-selected files passed; frontend production build passed. SQL integration and full authenticated runtime journeys were not run because a SQL runtime was unavailable. These results verify existing code, not the future features requested here. Record new results separately and do not claim the entire baseline suite is green.
+Final handoff must include changed-file summary, actual route/API map, master count, all coverage matrices, verified formula examples, migration/rollback and import/cutover instructions, test commands/results, unresolved real-data exceptions and remaining limitations. Do not hide incomplete work behind "production ready".

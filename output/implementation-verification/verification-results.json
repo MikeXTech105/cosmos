@@ -1,0 +1,126 @@
+{
+  "createdAt": "2026-10-28T12:52:44.450Z",
+  "baselineCommit": "da4620383e88f4831a2c0d719882befd497661d7",
+  "implementationStatus": "Delivered current working tree; no commit, merge, deployment or whole-release acceptance claimed",
+  "environment": {
+    "operatingSystem": "Windows",
+    "node": "v22.17.0",
+    "sdk": ".NET SDK 10.0.403",
+    "sqlEnvironment": "Not used; user will execute prepared scripts later"
+  },
+  "executed": {
+    "frontend": {
+      "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=4 (same worker bound as npm test)",
+      "testFilesPassed": 167,
+      "testsPassed": 945,
+      "failed": 0,
+      "evidence": {
+        "path": "output/implementation-verification/frontend-complete-tests.log",
+        "sha256": "c000a285b3ed3ed0788ebc4077e1866ef105ea783c8db02862a08b9ceed5f37a",
+        "modifiedAt": "2026-10-28T12:50:48.661Z"
+      }
+    },
+    "frontendLint": {
+      "exitCode": 0,
+      "evidence": {
+        "path": "output/implementation-verification/frontend-complete-lint.log",
+        "sha256": "98cdc628d09a5242698fda93e945f0e0efa0645207f11c522f5bffab308bd486",
+        "modifiedAt": "2026-10-28T12:51:15.230Z"
+      }
+    },
+    "frontendBuild": {
+      "exitCode": 0,
+      "evidence": {
+        "path": "output/implementation-verification/frontend-complete-build.log",
+        "sha256": "47f8f050594ed3d103137110302aec5393d6df1505ba14daf4936383a3e46835",
+        "modifiedAt": "2026-10-28T12:52:16.792Z"
+      }
+    },
+    "backendBuild": {
+      "exitCode": 0,
+      "warnings": 12,
+      "warningScope": "Existing NuGet advisory/pruning warnings; see exact build log",
+      "evidence": {
+        "path": "output/implementation-verification/backend-complete-build.log",
+        "sha256": "c2978c946325be56821e4a1a392d3574e296dedd86c07e1e88fb586ed13e0631",
+        "modifiedAt": "2026-10-28T11:46:20.858Z"
+      }
+    },
+    "backendNonSql": {
+      "total": 501,
+      "executed": 501,
+      "passed": 501,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0,
+      "evidence": {
+        "path": "output/implementation-verification/backend-complete-unit/complete-unit.trx",
+        "sha256": "d070c1d76177575942ab6a6d8536f0e07dc9a1e672fead2c8e6598207f4b9619",
+        "modifiedAt": "2026-10-28T11:46:59.249Z"
+      },
+      "output": {
+        "path": "output/implementation-verification/backend-complete-unit.log",
+        "sha256": "15945ac6acd0223054b318934e138567d4654f483c6fbcc2ef461601a7f2be75",
+        "modifiedAt": "2026-10-28T11:46:59.367Z"
+      },
+      "scope": "Category!=SqlIntegration; mocks, pure logic, contracts and SQL syntax parsing are not persistence evidence"
+    },
+    "operatorScriptSyntax": {
+      "status": "PowerShell parser success; runtime SQL gates not executed"
+    },
+    "browser": {
+      "artifact": "output/implementation-verification/browser-captures.json",
+      "console": "output/implementation-verification/browser-console.json",
+      "scope": "Actual components with isolated synthetic data only; six widths, three themes, search failure/retry and keyboard selection",
+      "authenticatedPassClaimed": false
+    }
+  },
+  "priorAttempt": {
+    "artifact": "output/implementation-verification/frontend-parallel-attempt-tests.log",
+    "outcome": "Six failures in parallel test/lint/build attempt: one reproducible inline-create focus/display defect corrected and regression-tested; other failures were timeouts. Bounded first run had944pass and one5s multi-route journey deadline; its unchanged assertions and real debounce windows now have a10s journey deadline. Final bounded4-worker run separately passed945/945.",
+    "boundedAttempt": "output/implementation-verification/frontend-bounded-first-tests.log"
+  },
+  "unexecuted": [
+    {
+      "gate": "SQL fresh/upgrade/repeatability and real persistence/concurrency/conservation/rollback fixtures",
+      "reason": "User requested prepared scripts and will run them later; no LocalDB or private disposable connection available to this session",
+      "runner": "backend/scripts/Test-CompleteImplementation.ps1"
+    },
+    {
+      "gate": "Ordinary-role authenticated end-to-end journeys and retained-company representative restore/application rollback",
+      "reason": "No connected safe authenticated deployment or representative restored catalog used; bounded synthetic predecessor sentinel is prepared, not a company backup rehearsal"
+    },
+    {
+      "gate": "GST sandbox session/extension/readback and statutory issuance",
+      "reason": "No provider mutation executed; tax policy is explicitly deferred by user and generation remains blocked. Snapshot preparation is PendingPolicy"
+    },
+    {
+      "gate": "Exact public website preview parity",
+      "reason": "Public-site renderer/source is absent from this ERP repository; safe previews are implemented, production-site visual parity cannot be verified here"
+    }
+  ],
+  "traceability": {
+    "findings": 56,
+    "coverageRows": 125,
+    "scenarios": 44,
+    "artifacts": [
+      "finding-tracker.json",
+      "coverage-tracker.json",
+      "acceptance-scenarios.json",
+      "scope-integrity.json",
+      "source-manifest.json",
+      "migration-manifest.json"
+    ]
+  },
+  "guide": "handoff/COSMOS_CLIENT_FLOW_GUIDE_GU.md"
+}

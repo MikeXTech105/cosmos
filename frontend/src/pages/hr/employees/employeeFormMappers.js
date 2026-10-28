@@ -4,6 +4,7 @@ import {
   HR_GENDER,
 } from "../../../utils/hrEnums";
 import { normalizeEmployeeMobile } from "../../../utils/validationSchemas";
+import { idWire } from "../../../utils/productionValues";
 
 const BANK_FIELDS = [
   "bankName",
@@ -30,9 +31,7 @@ const getNumberOrEmpty = (...values) => {
     return "";
   }
 
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : "";
+  try { return String(idWire(value)); } catch { return ""; }
 };
 
 const getEnumValue = (value, fallback) => {
@@ -114,6 +113,7 @@ const getAddresses = (employee) => {
 
 export const extractEmployeeBankDetails = (payload) => {
   const data = payload?.data ?? payload;
+  if (Array.isArray(data)) return data[0] ?? {};
   const nested =
     data?.bankDetails ??
     data?.employeeBankDetails ??
@@ -269,7 +269,7 @@ export const mapFormToBankDetails = (values) => ({
 
 export const mapFormToPayload = (
   values,
-  { includeBankDetails = true } = {},
+  { includeBankDetails = true, preserveExistingAddresses = false } = {},
 ) => {
   const addresses = Array.isArray(values.addresses)
     ? values.addresses.filter(hasAddress).map(mapAddressToPayload)
@@ -283,12 +283,12 @@ export const mapFormToPayload = (
     joiningDate: trimValue(values.joiningDate),
     mobile: normalizeEmployeeMobile(trimValue(values.mobile)),
     email: trimValue(values.email),
-    departmentId: Number(values.departmentId),
-    designationId: Number(values.designationId),
+    departmentId: idWire(values.departmentId),
+    designationId: idWire(values.designationId),
     reportingManagerId: values.reportingManagerId
-      ? Number(values.reportingManagerId)
+      ? idWire(values.reportingManagerId)
       : null,
-    shiftId: Number(values.shiftId),
+    shiftId: idWire(values.shiftId),
     employmentType: Number(values.employmentType),
     status: Number(values.status),
     profilePhotoUrl: trimValue(values.profilePhotoUrl),
@@ -300,14 +300,18 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // Omitted addresses mean "leave existing addresses unchanged" on PUT. This also
-  // avoids creating an empty address row during employee creation.
+  // Create sends an empty collection. On PUT, omission preserves saved addresses
+  // when this form did not supply an actual address replacement.
   if (payloadAddresses) {
     payload.addresses = payloadAddresses;
+  } else if (!preserveExistingAddresses) {
+    payload.addresses = [];
   }
 
   if (includeBankDetails && hasBankDetails(values)) {
     payload.bankDetails = mapFormToBankDetails(values);
+  } else if (includeBankDetails) {
+    payload.bankDetails = null;
   }
 
   return payload;

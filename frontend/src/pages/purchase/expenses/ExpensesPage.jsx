@@ -8,7 +8,7 @@ import {
   Search,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -19,7 +19,16 @@ import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { PurchasePartyLookup, PurchaseExpenseCategoryLookup } from "../PurchaseMasterLookup";
+import { financialIdSchema, financialMoneySchema } from "../../../utils/financialEntry";
+import { addDecimal } from "../../../utils/productionValues";
 import PageHeader from "../../../components/common/PageHeader";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
+import useProductionRuntime from "../../../hooks/useProductionRuntime";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
+import { getApiStatus } from "../../../utils/apiError";
+import { formatCurrency } from "../../../utils/reportFormat";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
@@ -39,7 +48,6 @@ import { PurchaseNumberInput } from "../PurchaseLineItems";
 import {
   buildListParams,
   cleanNullableString,
-  formatCurrency,
   formatDate,
   getActionError,
   getCategoryName,
@@ -48,7 +56,6 @@ import {
   PAYMENT_MODE,
   PAYMENT_MODE_OPTIONS,
   toInputDate,
-  toNumber,
 } from "../purchaseHelpers";
 import {
   PurchaseConfirmDialog,
@@ -60,10 +67,10 @@ import { CategoryModal } from "../expenseCategories/ExpenseCategoriesPage";
 
 const expenseSchema = z.object({
   expenseDate: z.string().min(1, "Expense date is required"),
-  categoryId: z.coerce.number().int().positive("Category is required"),
+  categoryId: financialIdSchema,
   paidToPartyId: z.string().optional(),
-  amount: z.coerce.number().min(0, "Amount cannot be negative"),
-  taxAmount: z.coerce.number().min(0, "Tax cannot be negative"),
+  amount: financialMoneySchema(),
+  taxAmount: financialMoneySchema(),
   paymentMode: z.coerce.number().int().min(0),
   referenceNo: z.string().max(100, "Reference is too long").optional(),
   notes: z.string().max(1000, "Notes are too long").optional(),
@@ -96,7 +103,7 @@ const getResponseRecord = (response) => {
   return response?.data?.expense ?? response?.data ?? null;
 };
 
-const ExpenseModal = ({
+export const ExpenseModal = ({
   canCreateCategory = false,
   canCreateParty = false,
   categoryOptions,
@@ -108,18 +115,34 @@ const ExpenseModal = ({
   onCreateParty,
   onSubmit,
   partyOptions,
+  onReviewHistory,
 }) => {
   const {
     control,
     handleSubmit,
+    getValues,
     register,
     reset,
+    setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(expenseSchema),
     defaultValues: getExpenseDefaultValues(expense),
   });
+
+  const formValues = useWatch({ control });
+  const submitLock = useRef({ context: null, locked: false });
+  const recordContext = String(expense?.id ?? "new");
+  const [unknownState, setUnknownState] = useState({ context: null, value: false });
+  const sessionUnknown = unknownState.context === recordContext && unknownState.value;
+  const business = useProductionRuntime();
+  const draft = useScopedDraft({ entity: "purchase-expense", context: expense?.id ?? "new", values: { form: formValues, outcomeUnknown: sessionUnknown || isSubmitting }, enabled: isOpen && (isDirty || sessionUnknown || isSubmitting) });
+  const outcomeUnknown = sessionUnknown || Boolean(draft.recoveredDraft?.values?.outcomeUnknown);
+  const { confirmLeave } = useUnsavedChanges({ when: isOpen && (isDirty || outcomeUnknown || isSubmitting) });
+  useEffect(() => {
+    if (isOpen && !expense && !isDirty && business.runtime?.businessDate) setValue("expenseDate", business.runtime.businessDate, { shouldDirty: false });
+  }, [business.runtime?.businessDate, isDirty, isOpen, expense, setValue]);
 
   useEffect(() => {
     if (isOpen) {
@@ -129,29 +152,47 @@ const ExpenseModal = ({
 
   return (
     <AppModal
+      title={mode === "edit" ? "Edit Expense" : "New Expense"}
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-4xl"
-      onClose={isSubmitting ? undefined : onClose}
+      onClose={isSubmitting ? undefined : () => confirmLeave(onClose)}
     >
-      <h2 className="text-lg font-semibold text-slate-900">
-        {mode === "edit" ? "Edit Expense" : "New Expense"}
-      </h2>
+      {draft.recoveredDraft && <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">A saved draft is available. Review it before saving. <button type="button" className="underline" onClick={() => { reset(draft.recoveredDraft.values.form ?? draft.recoveredDraft.values, { keepDefaultValues: true }); setUnknownState({ context: recordContext, value: Boolean(draft.recoveredDraft.values.outcomeUnknown) }); draft.acknowledgeRecovery(); }}>Restore for review</button> <button type="button" className="underline" disabled={outcomeUnknown} onClick={draft.clearDraft}>Discard draft</button></div>}
+      {outcomeUnknown && <div role="alert" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">This result needs a history check. <button type="button" className="underline" onClick={async () => { draft.saveDraft({ form: draft.recoveredDraft?.values?.form ?? getValues(), outcomeUnknown: true }); await onReviewHistory?.(); onClose(); }}>Return to refreshed history</button> <button type="button" className="underline" onClick={() => { const reviewed = draft.recoveredDraft?.values?.form ?? getValues(); if (draft.recoveredDraft) { reset(reviewed, { keepDefaultValues: true }); draft.acknowledgeRecovery(); } draft.saveDraft({ form: reviewed, outcomeUnknown: false }); submitLock.current = { context: recordContext, locked: false }; setUnknownState({ context: recordContext, value: false }); }}>I reviewed saved entries; allow retry</button></div>}
+      {errors.root?.server && <p role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{errors.root.server.message}</p>}
+      {draft.storageError && <p role="alert" className="text-sm text-rose-700">{draft.storageError}</p>}
       <form
         className="mt-5 max-h-[calc(100vh-12rem)] space-y-5 overflow-y-auto px-1 pb-1"
-        onSubmit={handleSubmit((values) =>
-          onSubmit({
+        onSubmit={(event) => { void handleSubmit(async (values) => {
+          if (outcomeUnknown || (submitLock.current.context === recordContext && submitLock.current.locked)) return;
+          submitLock.current = { context: recordContext, locked: true };
+          let needsReview = false;
+          try {
+            const retained = draft.saveDraft({ form: values, outcomeUnknown: true });
+            if (draft.available && !retained) { setError("root.server", { type: "server", message: "The request was not sent because recovery storage could not be updated. Review the draft notice before retrying." }); return; }
+            await onSubmit({
             expenseDate: values.expenseDate,
-            categoryId: Number(values.categoryId),
+            categoryId: values.categoryId,
             paidToPartyId: values.paidToPartyId || null,
-            amount: Number(values.amount),
-            taxAmount: Number(values.taxAmount),
+            amount: values.amount,
+            taxAmount: values.taxAmount,
             paymentMode: Number(values.paymentMode),
             referenceNo: cleanNullableString(values.referenceNo),
             notes: cleanNullableString(values.notes),
             attachmentPath: cleanNullableString(values.attachmentPath),
-          }),
-        )}
+          }); reset(values); setUnknownState({ context: recordContext, value: false }); draft.clearDraft(); }
+          catch (error) {
+            const status = getApiStatus(error);
+            const uncertain = !status || status === 408 || status >= 500;
+            needsReview = uncertain;
+            if (uncertain) { setUnknownState({ context: recordContext, value: true }); draft.saveDraft({ form: values, outcomeUnknown: true }); }
+            else draft.saveDraft({ form: values, outcomeUnknown: false });
+            const names = Object.keys(values).concat((values.allocations ?? []).flatMap((line, index) => Object.keys(line).map((key) => `allocations.${index}.${key}`)));
+            applyApiErrorsToForm({ error, formFieldNames: names, setError });
+            setError("root.server", { type: "server", message: uncertain ? "The save result is unknown. Review saved entries before retrying to avoid a duplicate." : getActionError(error, "Save failed. Your entries have been retained.") });
+          } finally { submitLock.current = { context: recordContext, locked: needsReview }; }
+        })(event); }}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <AppInput
@@ -166,11 +207,11 @@ const ExpenseModal = ({
             control={control}
             name="categoryId"
             render={({ field }) => (
-              <AppSelect
+              <PurchaseExpenseCategoryLookup
                 label="Category"
                 required
                 value={field.value}
-                onChange={(value) => field.onChange(Number(value))}
+                onChange={field.onChange}
                 onBlur={field.onBlur}
                 options={categoryOptions}
                 placeholder="Select category"
@@ -185,7 +226,7 @@ const ExpenseModal = ({
             control={control}
             name="paidToPartyId"
             render={({ field }) => (
-              <AppSelect
+              <PurchasePartyLookup
                 label="Paid To"
                 value={field.value}
                 onChange={field.onChange}
@@ -278,11 +319,11 @@ const ExpenseModal = ({
           <AppButton
             variant="secondary"
             disabled={isSubmitting}
-            onClick={onClose}
+            onClick={() => confirmLeave(onClose)}
           >
             Cancel
           </AppButton>
-          <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…">
+          <AppButton type="submit" disabled={outcomeUnknown} isLoading={isSubmitting} loadingText="Saving…">
             Save Expense
           </AppButton>
         </div>
@@ -320,6 +361,7 @@ const ExpensesPage = () => {
     parties: [],
     partiesLoading: false,
   });
+  const lookupCreateResolvers = useRef({});
   const lookupCacheRef = useRef({
     categories: { loaded: false, promise: null },
     parties: { loaded: false, promise: null },
@@ -371,12 +413,12 @@ const ExpensesPage = () => {
     const request = isCategories
       ? expenseCategoryService.getExpenseCategories({
           PageNumber: 1,
-          PageSize: 200,
+          PageSize: 40,
           IsActive: true,
         })
       : partyService.getParties({
           PageNumber: 1,
-          PageSize: 200,
+          PageSize: 40,
           IsActive: true,
         });
 
@@ -433,7 +475,7 @@ const ExpensesPage = () => {
   const categoryOptions = useMemo(
     () =>
       lookups.categories.map((category) => ({
-        value: Number(category.id),
+        value: String(category.id),
         label: category.name,
       })),
     [lookups.categories],
@@ -458,8 +500,8 @@ const ExpensesPage = () => {
 
   const stats = useMemo(() => {
     const total = state.list.reduce(
-      (sum, expense) => sum + toNumber(expense.amount),
-      0,
+      (sum, expense) => addDecimal(sum, expense.amount),
+      "0",
     );
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -468,9 +510,9 @@ const ExpensesPage = () => {
       const date = new Date(expense.expenseDate);
 
       return !Number.isNaN(date.getTime()) && date >= monthStart
-        ? sum + toNumber(expense.amount)
+        ? addDecimal(sum, expense.amount)
         : sum;
-    }, 0);
+    }, "0");
 
     return {
       count: state.summary?.totalCount ?? state.totalCount,
@@ -486,13 +528,15 @@ const ExpensesPage = () => {
       const allowed = type === "category" ? canCreateCategory : canCreateParty;
 
       if (allowed) {
-        setLookupCreateModal((current) => ({ ...current, [type]: true }));
+        return new Promise((resolve) => { lookupCreateResolvers.current[type]?.(null); lookupCreateResolvers.current[type] = resolve; setLookupCreateModal((current) => ({ ...current, [type]: true })); });
       }
     },
     [canCreateCategory, canCreateParty],
   );
 
   const closeLookupCreate = useCallback((type) => {
+    lookupCreateResolvers.current[type]?.(null);
+    delete lookupCreateResolvers.current[type];
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
   }, []);
 
@@ -505,18 +549,24 @@ const ExpensesPage = () => {
       }
 
       try {
+        let created;
         if (type === "category") {
-          await expenseCategoryService.createExpenseCategory(payload);
+          const result = await expenseCategoryService.createExpenseCategory(payload);
+          created = result.data?.expenseCategory ?? result.data;
           toast.success("Expense category created successfully");
           lookupCacheRef.current.categories.loaded = false;
           await loadLookup("categories", { force: true });
         } else {
-          await partyService.createParty(payload);
+          const result = await partyService.createParty(payload);
+          created = result.data?.party ?? result.data;
           toast.success("Party created successfully");
           lookupCacheRef.current.parties.loaded = false;
           await loadLookup("parties", { force: true });
         }
 
+        const resolveCreated = lookupCreateResolvers.current[type];
+        delete lookupCreateResolvers.current[type];
+        resolveCreated?.(created);
         closeLookupCreate(type);
       } catch (error) {
         toast.error(getActionError(error, "Unable to create record."));
@@ -620,7 +670,7 @@ const ExpensesPage = () => {
           </>
         }
         title="Expenses"
-        description="Record operating expenses, tax, payment mode, and attachments."
+        description="Record operating costs, tax and attachments. Saving an Expense does not debit a Rojmel wallet. Record a separate cash movement only when cash actually moves, and reference this Expense number to reconcile."
         actions={
           <>
             <AppButton
@@ -690,7 +740,7 @@ const ExpensesPage = () => {
               className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
-          <AppSelect
+          <PurchaseExpenseCategoryLookup
             value={state.filters.CategoryId}
             onChange={(value) => {
               dispatch(setExpenseFilters({ CategoryId: value }));
@@ -858,6 +908,7 @@ const ExpensesPage = () => {
       </div>
 
       <ExpenseModal
+        onReviewHistory={loadExpenses}
         canCreateCategory={canCreateCategory}
         canCreateParty={canCreateParty}
         categoryOptions={categoryOptions}

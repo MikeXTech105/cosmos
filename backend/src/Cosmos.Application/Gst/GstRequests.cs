@@ -87,7 +87,8 @@ public sealed record CancelEWayBillRequest(
 
 public sealed record GetEWayBillDetailsRequest(
     long CompanyGstRegistrationId,
-    string EWayBillNumber);
+    string EWayBillNumber,
+    string? Gstin = null);
 
 public sealed record UpdateEWayBillVehicleRequest(
     long CompanyGstRegistrationId,
@@ -104,7 +105,21 @@ public sealed record ExtendEWayBillRequest(
     string? RemainingDistance,
     string? ExtensionReasonCode,
     string? ExtensionRemark,
-    string? RequestJson);
+    string? RequestJson,
+    string? FromPlace = null,
+    int? FromState = null,
+    string? FromPincode = null,
+    string? TransportDocumentNumber = null,
+    DateOnly? TransportDocumentDate = null,
+    string? TransportMode = null,
+    string? ConsignmentStatus = null,
+    string? TransitType = null,
+    string? AddressLine1 = null,
+    string? AddressLine2 = null,
+    string? AddressLine3 = null,
+    Guid? IdempotencyKey = null,
+    string? Version = null,
+    string? Gstin = null);
 
 public sealed record GenerateEInvoiceRequest(
     long CompanyGstRegistrationId,
@@ -129,13 +144,14 @@ public sealed record GetEInvoiceDetailsRequest(
     string? SellerGstin = null,
     string? Irp = null);
 
-public sealed record GenerateGstOtpRequest(long CompanyGstRegistrationId, string? GstPortalUsername = null);
+public sealed record GenerateGstOtpRequest(long CompanyGstRegistrationId, string? GstPortalUsername = null, string? Gstin = null);
 
 public sealed record AuthenticateGstOtpRequest(
     long CompanyGstRegistrationId,
     string Otp,
     string? SessionType = null,
-    string? RequestJson = null);
+    string? RequestJson = null,
+    string? Gstin = null);
 
 public sealed record GstApiLogListRequest(
     string? Search = null,

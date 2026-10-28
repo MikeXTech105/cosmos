@@ -1,4 +1,7 @@
+import useFormReturnContext from "../../../hooks/useFormReturnContext";
 import GstDocumentLinks from "../../gst/GstDocumentLinks";
+import GstSnapshotPreparationPanel from "../../gst/GstSnapshotPreparationPanel";
+import InvoiceOwnershipPanel from "../../manufacturing/integrations/InvoiceOwnershipPanel";
 import {
   ArrowLeft,
   Ban,
@@ -30,6 +33,7 @@ import {
   recordInvoicePayment,
 } from "../../../store/slices/sales/invoiceSlice";
 import { partyService } from "../../party/partyService";
+import usePartySettings from "../../party/usePartySettings";
 import { exportInvoicePdf } from "../invoiceTemplates/exportInvoicePdf";
 import {
   getInvoiceTemplate,
@@ -124,6 +128,7 @@ const InvoiceDetailPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { returnState, savedState, returnToList } = useFormReturnContext("/sales/invoices");
   const invoiceState = useSelector((state) => state.salesInvoices);
   const capabilities = useCapabilities({
     actions: ["view", "update", "confirm", "cancel", "payment", "export"],
@@ -137,6 +142,7 @@ const InvoiceDetailPage = () => {
       ? invoiceState.selected
       : null;
   const [customer, setCustomer] = useState(null);
+  const partySettings = usePartySettings();
   const [templateId, setTemplateId] = useState(getStoredInvoiceTemplate);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -148,8 +154,10 @@ const InvoiceDetailPage = () => {
   });
 
   const loadInvoice = useCallback(async () => {
+    let invoiceLoaded = false;
     try {
       await dispatch(fetchInvoiceById(id)).unwrap();
+      invoiceLoaded = true;
     } catch (error) {
       toast.error(getActionError(error, "Unable to load invoice details."));
     }
@@ -159,6 +167,7 @@ const InvoiceDetailPage = () => {
     } catch {
       // The page still renders invoice details if payment history is unavailable.
     }
+    return invoiceLoaded;
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -192,7 +201,7 @@ const InvoiceDetailPage = () => {
 
   const template = getInvoiceTemplate(templateId);
   const TemplateComponent = template.Component;
-  const templateInvoice = invoice ? buildTemplateInvoice(invoice, customer) : null;
+  const templateInvoice = invoice ? buildTemplateInvoice(invoice, customer, partySettings.settings) : null;
 
   const openEdit = useCallback(() => {
     if (!invoice) {
@@ -204,8 +213,8 @@ const InvoiceDetailPage = () => {
       return;
     }
 
-    navigate(`/sales/invoices/${invoice.id}/edit`);
-  }, [capabilities.canUpdate, invoice, navigate]);
+    navigate(`/sales/invoices/${invoice.id}/edit`,{state:returnState()});
+  }, [capabilities.canUpdate, invoice, navigate, returnState]);
 
   const openConfirmation = useCallback((action) => {
     const allowed =
@@ -257,6 +266,7 @@ const InvoiceDetailPage = () => {
           ? await dispatch(cancelInvoice(confirmation.entity.id)).unwrap()
           : await dispatch(confirmInvoice(confirmation.entity.id)).unwrap();
 
+      savedState(confirmation.entity.id);
       toast.success(
         getSuccessMessage(
           response,
@@ -285,6 +295,7 @@ const InvoiceDetailPage = () => {
     confirmation,
     dispatch,
     loadInvoice,
+    savedState,
   ]);
 
   const submitPayment = useCallback(
@@ -299,6 +310,7 @@ const InvoiceDetailPage = () => {
           recordInvoicePayment({ id: invoice.id, payload }),
         ).unwrap();
 
+        savedState(invoice.id);
         toast.success(getSuccessMessage(response, "Payment recorded"));
         setPaymentOpen(false);
         await loadInvoice();
@@ -307,7 +319,7 @@ const InvoiceDetailPage = () => {
         throw error;
       }
     },
-    [capabilities.canPayment, dispatch, invoice, loadInvoice],
+    [capabilities.canPayment, dispatch, invoice, loadInvoice, savedState],
   );
 
   const openPayment = useCallback(() => {
@@ -380,7 +392,7 @@ const InvoiceDetailPage = () => {
             <AppButton
               variant="secondary"
               className="h-10"
-              onClick={() => navigate("/sales/invoices")}
+              onClick={() => returnToList()}
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -393,6 +405,7 @@ const InvoiceDetailPage = () => {
 
   return (
     <section className="min-w-0 space-y-5">
+      {partySettings.error && <p role="alert" className="no-print rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{partySettings.error} Shipping address print is unavailable until settings can be read. <button type="button" className="underline" onClick={partySettings.refresh}>Retry settings</button></p>}
       <PageHeader
         title={invoice?.invoiceNumber ?? `Invoice #${id}`}
         description="Preview, print, download, confirm, cancel, and record payments."
@@ -401,7 +414,7 @@ const InvoiceDetailPage = () => {
             <AppButton
               variant="secondary"
               className="h-10"
-              onClick={() => navigate("/sales/invoices")}
+              onClick={() => returnToList()}
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -422,6 +435,8 @@ const InvoiceDetailPage = () => {
       />
 
       {invoice && <GstDocumentLinks id={invoice.id} />}
+      {invoice && <GstSnapshotPreparationPanel key={invoice.id} invoiceId={invoice.id} confirmed={isInvoiceConfirmed(invoice)}/>}
+      {invoice && <InvoiceOwnershipPanel invoice={invoice} onSaved={loadInvoice} />}
       {invoice && (
         <div className="no-print grid gap-4 xl:grid-cols-[1fr_auto]">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

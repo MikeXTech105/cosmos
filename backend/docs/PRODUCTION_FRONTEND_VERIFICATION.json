@@ -1,0 +1,209 @@
+{
+  "verifiedOn": "2026-10-28",
+  "startingCommit": "f6937755cf04349de2f014b40a5cac25b9bcf6de",
+  "branch": "lucifer-dev",
+  "scope": "Existing Cosmos frontend implementation plus minimal typed read-contract corrections",
+  "frontend": {
+    "command": "npm test -- --run",
+    "passed": 745,
+    "failed": 0,
+    "total": 745,
+    "testFiles": 117,
+    "result": "All frontend tests passed. Optional employee email and explicit create/update payload behavior are aligned with the existing API.",
+    "knownFailures": [],
+    "build": {
+      "command": "npm run build",
+      "result": "passed"
+    },
+    "lint": {
+      "command": "npm run lint",
+      "result": "Whole-project ESLint passed with zero errors or warnings; no rule was suppressed.",
+      "newErrors": 0,
+      "existingErrors": 0
+    },
+    "focusedBehavior": [
+      "Raw exact JSON tokens for DECIMAL(22,6), twelve-place import evidence, six-place imported cost and bigint ID boundaries",
+      "Business-date/closed-period validation; explicit company offsets, overnight dates and DST gaps/ambiguity",
+      "Configuration/effectivity/packaging provenance; actual dated calendar GET version used for replacement PUT",
+      "Order lifecycle, immutable source/resources/materials/reservation context, partial good/reject/scrap/staging payloads and capacity exclusions",
+      "Selected saved snapshot output, stale/no-demand/missing separation and shared-material pool source payload",
+      "Fractional positive procurement shortage and exact adjustment/preview/read transport with money formatting separate",
+      "Actual receipt and multi-PO bill allocations, disposition return balances, confirmed-source credit and unsupported spanning-credit guard",
+      "Invoice/shipment partial ownership/link quantities and independent dual permission boundaries",
+      "Import repeated-header/blank-row positions, frozen-state transitions and independent selected-safe rows",
+      "DOM duplicate-click lock, identical uncertain retry, changed-intent refusal, stale conflict latch and committed-write/readback-failure distinction",
+      "DOM forbidden no-fetch, 101-record paging, full-filter unit-separated totals, nulls, 0.000001 display and matching export filters",
+      "Existing manufacturing report one-page request, full totals, null actuals, maximum posting quantity and literal 0.5% rendering"
+    ]
+  },
+  "backend": {
+    "command": "dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore",
+    "passed": 422,
+    "failed": 0,
+    "skipped": 14,
+    "total": 436,
+    "sqlSkipped": true,
+    "swaggerRegeneration": {
+      "result": "passed",
+      "testPassed": 1,
+      "documents": 6,
+      "routeEntries": 85,
+      "factory": "Real application Swagger with a connection factory that forbids SQL and a mocked startup provisioner; synthetic JWT/GST options only"
+    },
+    "additionalMigrations": [
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "allProductionMigrationScripts": 39,
+    "migrationSyntax": "Passed SQL Server ScriptDom parser tests; execution and binding are unverified."
+  },
+  "browser": {
+    "result": "Mock API UI checks completed; not authenticated SQL end-to-end verification",
+    "runner": "frontend/scripts/production-browser-fixture.mjs",
+    "origin": "http://127.0.0.1:4177",
+    "fixtureLabel": "SYNTHETIC UI FIXTURE - NO SQL",
+    "journeys": [
+      "Orders list rendered with returned status/quantities and actual Item context",
+      "Saved planning snapshot showed target210/warning150/true7day70/quarter-month75 for synthetic daily10 demand",
+      "Selected output150 called shared-material feasibility and linked a source-preserving draft",
+      "Draft deep link preserved source plan/line/quantity; missing effective BOM/routing/resources blocked save with validation and no stock write",
+      "390x844 mobile layout: document/main/root width390, no document horizontal overflow; tables retained their own horizontal scroll",
+      "Work Centre dialog: initial focus inside, Shift+Tab wrapped to Save, Escape closed, focus returned to Create work centre",
+      "Actual file chooser imported synthetic positional CSV: repeated SKU columns B/C, blank row3 preserved as row4 provenance, 0.000001 and 9999999999999999.999999 unchanged",
+      "Staged batch showed unresolved mapping evidence and disabled approval/posting controls",
+      "Operational stock report showed real fixture rows and full unit summary after Apply, with unavailable due-date measures"
+    ],
+    "networkEvidence": "PRODUCTION_FRONTEND_BROWSER_NETWORK.json",
+    "realStockPostingRequests": 0,
+    "viewportOverrideReset": true,
+    "freshAudit": {
+      "result": "Browser confirmed report rows and full unit totals from Pascal-shaped synthetic SQL summary aliases.",
+      "realSql": false,
+      "fixtureOnly": true,
+      "source": "PRODUCTION_FRONTEND_REVERIFICATION_BROWSER.json",
+      "testTabClosedAndFixtureStopped": true
+    }
+  },
+  "verificationPasses": {
+    "first": "Trace complete source/acceptance requirements through actual code, contracts, services, permissions and tests.",
+    "second": "Independent journey/contract review plus actual DOM/browser/network checks; corrected identified precision, context, retry, report and import defects.",
+    "matrix": "PRODUCTION_FRONTEND_COVERAGE.md"
+  },
+  "unverifiedAndRemainingBoundaries": [
+    "All39 production migrations need guarded execution, SQL object binding and repeatability checks in an explicitly configured disposable catalog.",
+    "Real JWT/RBAC/company, concurrency/rollback and stock/financial ownership journeys require that disposable SQL catalog. Mock tests and Swagger do not prove them.",
+    "CSV/TSV imports use one genuine source-tab export per file with explicit original starting row, at most5000 source cells and bounded serialized evidence. Native XLSX/ZIP workbook parsing is not advertised.",
+    "One financial credit consumes one whole accepted physical return against one actual confirmed bill line. Existing returns spanning multiple bills remain an explicit financial reconciliation boundary.",
+    "Unverified source units, openings, stale demand, negative RM stock, inactive history, unmatched PO/cost/actor evidence and blank vendor fields remain repairable exceptions.",
+    "The source canvases had no readable rendered visuals, so pixel or hidden-interaction parity is not claimed."
+  ],
+  "liveDatabaseChanged": false,
+  "deploymentPerformed": false,
+  "externalMessagesSent": false,
+  "commitsCreatedByFrontendTask": false,
+  "reverifiedAgainstCommit": "df5401a471ff1cfb9d1a8eb975791cf1a9fd3764",
+  "freshAudit": {
+    "report": "PRODUCTION_FRONTEND_REVERIFICATION.md",
+    "result": "Confirmed gaps corrected and independently rechecked; actual SQL gate remains unverified.",
+    "correctedAreas": [
+      "planned-start configuration and route-compatible resources/shifts",
+      "permission-gated exact lookups",
+      "same-source unknown/conflict/committed recovery and stale response masking",
+      "capacity factor and minimum booking seconds",
+      "amendment baseline partial preview and source channel invariants",
+      "precise bill/order/return/invoice form, selector, service and print quantity paths",
+      "verified untouched company business dates",
+      "snapshot/batch URL scope and bounded positional source identity",
+      "stored cutover/source metadata and identical staging recovery",
+      "actual Pascal SQL summaries and nullable purchase remainder"
+    ],
+    "frontendLog": "frontend-reverification-tests.log",
+    "backendLog": "frontend-reverification-backend.log",
+    "buildLog": "frontend-reverification-build.log",
+    "lintLog": "frontend-reverification-lint.log",
+    "schemaLog": "frontend-reverification-schemas.log",
+    "finalFocusedLog": "frontend-reverification-final-focused.log",
+    "finalFocused": {
+      "passed": 29,
+      "failed": 0,
+      "files": 4,
+      "bookingRecoveryRepeatRuns": 8,
+      "bookingRecoveryRepeatExecutions": 40,
+      "repeatLog": "frontend-order-recovery-repeat.log"
+    },
+    "capacityDurationFollowup": "Exact integer candidate and typed scheduling predecessor check, with matching frontend second-boundary validation; four installed-read SQL vectors added to an existing guarded test and remain skipped."
+  },
+  "dailyDesk": {
+    "implementedOn": "2026-10-28",
+    "baseCommit": "ee31d1893d0416c0e91abcedd249e1d77d1d13a1",
+    "routes": [
+      "/manufacturing/daily",
+      "/manufacturing/daily?view=board",
+      "/manufacturing/board"
+    ],
+    "features": [
+      "Exact daily quantity grid, bounded paste and keyboard row navigation",
+      "Selected entries reviewed and saved separately in sequence",
+      "Prefilled verified company clock and collapsed advanced review fields",
+      "Explicit blank-only copy from frozen expected consumption",
+      "Six independently paged Kanban status lanes",
+      "Drag/keyboard move opens authoritative review, never a direct status update",
+      "Existing permission, rowversion, command identity and readback recovery",
+      "Human-readable setup gating without fabricated company/stock defaults"
+    ],
+    "frontendLog": "frontend-daily-desk-full-tests.log",
+    "backendLog": "frontend-daily-desk-backend-tests.log",
+    "buildLog": "frontend-daily-desk-build.log",
+    "lintLog": "frontend-daily-desk-lint.log",
+    "browserEvidence": "PRODUCTION_DAILY_DESK_BROWSER.json",
+    "sqlGateLog": "frontend-daily-desk-sql-gate.log",
+    "actualSqlExecuted": false,
+    "applicationConnectionConfigured": false,
+    "companyScopeConfigured": false,
+    "businessTimeZoneConfigured": false,
+    "newPostingApiOrMigration": false,
+    "backendOwnerInstructions": "PRODUCTION_MIGRATION_CUTOVER.md",
+    "preExistingWorkingChangesPreserved": [
+      "frontend/src/pages/manufacturing/orders/OrdersPage.jsx",
+      "frontend/src/pages/manufacturing/orders/OrderViews.test.jsx",
+      "frontend/src/pages/manufacturing/orders/orderMessages.en.json",
+      "frontend/src/pages/manufacturing/orders/orderMessages.hi-en.json"
+    ]
+  },
+  "themeAndErrorAudit": {
+    "date": "2026-10-28",
+    "startingCommit": "ee31d18",
+    "frontendLog": "frontend-theme-audit-tests.log",
+    "backendLog": "frontend-theme-audit-backend.log",
+    "buildLog": "frontend-theme-audit-build.log",
+    "lintLog": "frontend-theme-audit-lint.log",
+    "sqlGateLog": "frontend-theme-audit-sql-gate.log",
+    "browserProof": "PRODUCTION_UI_THEME_AUDIT.json",
+    "resolvedBaselineFailures": [
+      "validationRules.test.js: allows an employee without optional identity/contact/bank fields",
+      "validationRules.test.js: requires complete bank details only when supplied",
+      "validationRules.test.js: validates partially populated addresses without requiring an empty address"
+    ],
+    "resolvedAreas": [
+      "Direct discoverable Kanban route/sidebar",
+      "Existing theme brand tokens and keyboard tab panel",
+      "Late context read cancellation and scoped selection/queue",
+      "Verified runtime masking during refresh",
+      "Optional employee email and create/update omission semantics",
+      "Dispatch channel warehouse selection and stale lookup masking"
+    ],
+    "sqlLauncher": "backend/scripts/Test-ProductionWorkspace.ps1",
+    "actualSqlExecuted": false,
+    "sqlRuntimeInstalled": false,
+    "administratorSession": false,
+    "applicationConnectionConfigured": false,
+    "disposableConnectionConfigured": false
+  }
+}

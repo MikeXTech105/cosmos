@@ -7,6 +7,8 @@ namespace Cosmos.Application.Abstractions.Services;
 
 public interface IOeeService
 {
+    Task<ApiResponse<PagedResult<OeeDayAcknowledgementDto>>> GetDayAcknowledgementsAsync(OeeDayAcknowledgementQuery query, CancellationToken ct);
+    Task<ApiResponse<OeeDayAcknowledgementDto>> SaveDayAcknowledgementAsync(SaveOeeDayAcknowledgementRequest request, CancellationToken ct);
     Task<ApiResponse<PagedResult<OeeMachineDto>>> GetMachinesAsync(OeeMasterListQuery query, CancellationToken ct);
     Task<ApiResponse<OeeMachineDto>> GetMachineAsync(long id, CancellationToken ct);
     Task<ApiResponse<OeeMachineDto>> CreateMachineAsync(CreateOeeMachineRequest request, CancellationToken ct);

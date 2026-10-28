@@ -35,6 +35,26 @@ const flattenLabels = (items) => {
 };
 
 describe("buildMenuTree", () => {
+  it("shows the daily production shortcut with the existing order read permission and its own identity", () => {
+    const granted = page({ pageId: 990, pageName: "Manufacturing.Orders", displayName: "Production Orders", route: "/manufacturing/orders" });
+    const production = buildMenuTree([granted], false).find(item => item.label === "Production");
+    const desk = production.children.find(item => item.route === "/manufacturing/daily");
+    expect(desk.label).toBe("Daily Production");
+    expect(desk.id).toBe("productionDaily");
+    const board = production.children.find(item => item.route === "/manufacturing/board");
+    expect(board.label).toBe("Kanban Board");
+    expect(board.id).toBe("productionKanban");
+    expect(production.children.map((item) => [item.id, item.label, item.route])).toEqual([
+      ["productionDaily", "Daily Production", "/manufacturing/daily"],
+      ["productionKanban", "Kanban Board", "/manufacturing/board"],
+      ["productionOrders", "Production Orders", "/manufacturing/orders"],
+      ["productionPlanning", "Production Planning", "/manufacturing/planning"],
+      ["productionImports", "Import & Reconciliation", "/manufacturing/imports"],
+    ]);
+    expect(new Set(production.children.map((item) => item.id)).size).toBe(5);
+    expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/daily");
+    expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/board");
+  });
   it("groups Deep Dive aliases without granting unrelated financial or GST pages", () => {
     const granted = page({ pageId: 901, pageName: "OEE.ProductionEntries", route: "/oee/production-entries" });
     const tree = buildMenuTree([granted], false);

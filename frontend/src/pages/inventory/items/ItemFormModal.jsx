@@ -1,3 +1,11 @@
+import ItemMasterLookup from "./ItemMasterLookup";
+import useUncertainSave from "../../../hooks/useUncertainSave";
+import UncertainSaveNotice from "../../../components/commerce/UncertainSaveNotice";
+import { itemService } from "../../../services/inventory/itemService";
+import FormErrorSummary from "../../../components/commerce/FormErrorSummary";
+import ItemDraftRecovery from "./ItemDraftRecovery";
+import useItemDraft from "./useItemDraft";
+import { completeItemDecimal } from "./itemPrecision";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Check,
@@ -39,6 +47,7 @@ const ToggleRow = ({
   description,
   disabled,
   label,
+  name,
   onChange,
 }) => {
   return (
@@ -58,6 +67,7 @@ const ToggleRow = ({
       </span>
       <input
         type="checkbox"
+        name={name}
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
@@ -98,20 +108,7 @@ const normalizeItemNumberInput = (rawValue) => {
   return value.replace(/^0+(?=\d)/, "") || "0";
 };
 
-const normalizeItemNumberBlurValue = (value) => {
-  const normalized = normalizeItemNumberInput(value);
-
-  if (!normalized) {
-    return "0";
-  }
-
-  const completedValue = normalized.endsWith(".")
-    ? normalized.slice(0, -1)
-    : normalized;
-  const numericValue = Number(completedValue);
-
-  return Number.isFinite(numericValue) ? String(numericValue) : "0";
-};
+const normalizeItemNumberBlurValue = completeItemDecimal;
 
 const ItemNumberInput = ({
   control,
@@ -163,8 +160,6 @@ const ItemNumberInput = ({
 const ItemFormModal = ({
   canCreateCategory = false,
   canCreateUnit = false,
-  categoryEmptyMessage,
-  categoryLoading,
   categoryOptions,
   isLoading,
   isOpen,
@@ -174,24 +169,26 @@ const ItemFormModal = ({
   onCreateCategory,
   onCreateUnit,
   onSubmit,
-  unitEmptyMessage,
-  unitLoading,
   unitOptions,
 }) => {
   const isEdit = mode === "edit";
   const [activeTab, setActiveTab] = useState("pricing");
   const {
     control,
+    getValues,
     handleSubmit,
     register,
     reset,
     setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(itemSchema),
     defaultValues: getItemDefaultValues(item),
   });
+  const recovery=useUncertainSave({entity:"item",context:isEdit?item?.id:"new",recordId:isEdit?item?.id:null});
+  const {draft,confirmLeave}=useItemDraft({control,isDirty,context:isEdit?item?.id:"new",enabled:isOpen,persist:!recovery.blocked});
+  const requestClose=()=>confirmLeave(onClose);
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
   const isManufactured = useWatch({ control, name: "isManufactured" });
@@ -212,9 +209,14 @@ const ItemFormModal = ({
       : activeTab;
 
   const submitForm = async (values, saveAndNew = false) => {
+    draft.saveDraft(values);
+    if(!recovery.begin())return;
     try {
       await onSubmit(buildItemPayload(values), saveAndNew);
+      recovery.succeed();
+      draft.clearDraft();
     } catch (error) {
+      if(recovery.fail(error)){draft.saveDraft(values);setError("root.server",{type:"server",message:"Save result is unconfirmed. Review Item history or readback before retrying; your values are retained."});return;}
       applyApiErrorsToForm({
         error,
         fieldAliases: { gstRate: "GSTRate", hsnCode: "HSNCode" },
@@ -222,7 +224,7 @@ const ItemFormModal = ({
         setError,
       });
       return;
-    }
+    } finally {recovery.finish();}
 
     if (saveAndNew) {
       reset(getItemDefaultValues(null));
@@ -237,8 +239,9 @@ const ItemFormModal = ({
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-[1480px]"
-      onClose={isSubmitting ? undefined : onClose}
+      onClose={isSubmitting ? undefined : requestClose}
     >
+      <ItemDraftRecovery disabled={recovery.blocked} draft={draft} onRestore={values=>reset({...getValues(),...values,imageFile:null},{keepDefaultValues:true})}/>
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
           <PackagePlus className="h-5 w-5" />
@@ -265,12 +268,10 @@ const ItemFormModal = ({
           className="mt-5 flex max-h-[calc(100vh-16rem)] min-h-0 flex-col"
           onSubmit={handleSubmit((values) => submitForm(values, false))}
         >
+          <UncertainSaveNotice key={recovery.marker?.attemptId??"idle"} recovery={recovery} historyHref="/items" readRecord={isEdit?async()=>{const response=await itemService.getItemById(item.id);const saved=response.data?.item??response.data;return `Saved Item ${saved.itemCode||saved.name}. Name: ${saved.name}. Minimum stock: ${saved.minimumStock}. Compare retained changes before deciding whether to retry.`;}:undefined}/>
+          <fieldset disabled={recovery.blocked} className="contents">
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-1 pb-5">
-            {errors.root?.server?.message && (
-              <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-                {errors.root.server.message}
-              </p>
-            )}
+            <FormErrorSummary errors={errors} onNavigate={field=>setActiveTab(["openingStock","openingStockValue","minimumStock","trackInventory"].includes(field)?"stock":field==="isManufactured"?"manufacturing":"pricing")}/>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <p className="mb-1.5 block text-xs font-semibold text-slate-700">
@@ -284,6 +285,7 @@ const ItemFormModal = ({
                     return (
                       <button
                         key={type}
+                        name="itemType"
                         type="button"
                         onClick={() => {
                           setValue("itemType", type, {
@@ -316,7 +318,7 @@ const ItemFormModal = ({
                     <AppSelect
                       id="itemMaterialType"
                       label="Material type"
-                      value={field.value}
+                      name={field.name} value={field.value}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       options={[
@@ -390,25 +392,7 @@ const ItemFormModal = ({
                   control={control}
                   name="categoryId"
                   render={({ field }) => (
-                    <AppSelect
-                      label="Category"
-                      required
-                      value={field.value}
-                      onChange={(value) => field.onChange(Number(value))}
-                      onBlur={field.onBlur}
-                      options={categoryOptions}
-                      emptyMessage={categoryEmptyMessage}
-                      placeholder={
-                        categoryLoading
-                          ? "Loading categories..."
-                          : "Select category"
-                      }
-                      disabled={categoryLoading}
-                      error={errors.categoryId?.message}
-                      creatable={canCreateCategory}
-                      createLabel="Create new category"
-                      onCreateClick={onCreateCategory}
-                    />
+                    <ItemMasterLookup kind="category" label="Category" required name={field.name} value={field.value} onChange={value => field.onChange(String(value))} onBlur={field.onBlur} initialOptions={categoryOptions} error={errors.categoryId?.message} placeholder="Search category name or code" createLabel="Create new category" onCreate={canCreateCategory ? () => onCreateCategory?.(created => setValue("categoryId", String(created.id), { shouldDirty: true, shouldValidate: true })) : undefined} />
                   )}
                 />
 
@@ -416,23 +400,7 @@ const ItemFormModal = ({
                   control={control}
                   name="unitId"
                   render={({ field }) => (
-                    <AppSelect
-                      label="Unit"
-                      required
-                      value={field.value}
-                      onChange={(value) => field.onChange(Number(value))}
-                      onBlur={field.onBlur}
-                      options={unitOptions}
-                      emptyMessage={unitEmptyMessage}
-                      placeholder={
-                        unitLoading ? "Loading units..." : "Select unit"
-                      }
-                      disabled={unitLoading}
-                      error={errors.unitId?.message}
-                      creatable={canCreateUnit}
-                      createLabel="Create new unit"
-                      onCreateClick={onCreateUnit}
-                    />
+                    <ItemMasterLookup kind="unit" label="Unit" required name={field.name} value={field.value} onChange={value => field.onChange(String(value))} onBlur={field.onBlur} initialOptions={unitOptions} error={errors.unitId?.message} placeholder="Search unit name or code" createLabel="Create new unit" onCreate={canCreateUnit ? () => onCreateUnit?.(created => setValue("unitId", String(created.id), { shouldDirty: true, shouldValidate: true })) : undefined} />
                   )}
                 />
 
@@ -441,7 +409,7 @@ const ItemFormModal = ({
                   control={control}
                   name="imageUrl"
                   render={({ field }) => (
-                    <AppImageUpload
+                    <div data-error-field="imageFile" tabIndex={-1}><AppImageUpload
                       label="Item Image"
                       value={field.value}
                       disabled={isSubmitting}
@@ -460,7 +428,7 @@ const ItemFormModal = ({
                               })
                       }
                       error={errors.imageUrl?.message}
-                    />
+                    /></div>
                   )}
                 />
               </div>
@@ -530,7 +498,7 @@ const ItemFormModal = ({
                       render={({ field }) => (
                         <AppSelect
                           label="GST Rate"
-                          value={field.value}
+                          name={field.name} value={field.value}
                           onChange={field.onChange}
                           onBlur={field.onBlur}
                           options={GST_RATE_OPTIONS}
@@ -549,7 +517,7 @@ const ItemFormModal = ({
                   control={control}
                   name="trackInventory"
                   render={({ field }) => (
-                    <ToggleRow
+                    <ToggleRow name={field.name}
                       checked={field.value}
                       label="Track inventory"
                       description="Opening stock is set during creation. Current and reserved balances follow inventory transactions."
@@ -643,7 +611,7 @@ const ItemFormModal = ({
                   control={control}
                   name="isActive"
                   render={({ field }) => (
-                    <ToggleRow
+                    <ToggleRow name={field.name}
                       checked={field.value}
                       label="Active item"
                       description="Active items are available for inventory and transaction workflows."
@@ -659,7 +627,7 @@ const ItemFormModal = ({
             <AppButton
               variant="secondary"
               disabled={isSubmitting}
-              onClick={onClose}
+              onClick={requestClose}
             >
               Cancel
             </AppButton>
@@ -688,6 +656,7 @@ const ItemFormModal = ({
               )}
             </AppButton>
           </div>
+          </fieldset>
         </form>
       )}
     </AppModal>

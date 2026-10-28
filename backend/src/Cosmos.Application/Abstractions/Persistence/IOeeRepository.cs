@@ -6,6 +6,8 @@ namespace Cosmos.Application.Abstractions.Persistence;
 
 public interface IOeeRepository
 {
+    Task<PagedResult<OeeDayAcknowledgementDto>> GetDayAcknowledgementsAsync(OeeDayAcknowledgementQuery query, CancellationToken ct);
+    Task<OeeDayAcknowledgementDto> SaveDayAcknowledgementAsync(SaveOeeDayAcknowledgementRequest request, long? userId, CancellationToken ct);
     Task<bool> MachineExistsAsync(long id, CancellationToken ct);
     Task<bool> MouldExistsAsync(long id, CancellationToken ct);
     Task<bool> DowntimeReasonExistsAsync(long? id, CancellationToken ct);

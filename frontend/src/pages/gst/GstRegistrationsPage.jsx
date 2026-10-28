@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import AppButton from "../../components/common/AppButton";
@@ -11,25 +11,31 @@ import { gstService } from "../../services/gst/gstService";
 import { GSTIN_PATTERN, GST_REGISTRATION_SORTS } from "../../utils/gstCompliance";
 import { GstError, GstFrame, GstPager } from "./GstShared";
 import { useGstAccess, useGstOperation, useGstQuery } from "./useGst";
+import { getGstStateName, GST_STATE_CODE_MAP } from "../../constants/gstStateCodes";
+import "../purchase/commerceTables.css";
 
 const fields = [
   ["gstin", "GSTIN", 15], ["legalName", "Legal name", 250], ["tradeName", "Trade name", 250],
-  ["stateCode", "State code", 10], ["stateName", "State name", 100], ["branchName", "Branch name", 150],
+  ["branchName", "Branch name", 150],
   ["addressLine1", "Address line 1"], ["addressLine2", "Address line 2"], ["city", "City"], ["district", "District"], ["pincode", "PIN code", 20],
-  ["companyId", "Company ID"], ["branchId", "Branch ID"], ["gstPortalUsername", "GST portal username", 150], ["status", "Status", 50],
+  ["gstPortalUsername", "GST portal username", 150],
 ];
 
-function RegistrationForm({ record, onClose, onSaved }) {
+export function RegistrationForm({ record, onClose, onSaved }) {
   const operation = useGstOperation();
-  const { register, handleSubmit, formState: { errors } } = useForm({ defaultValues: record ?? { status: "Active", isEInvoiceEnabled: false, isEWayBillEnabled: false, isGstReturnEnabled: false, isDefault: false } });
+  const { control, register, handleSubmit, setError, formState: { errors } } = useForm({ defaultValues: record ?? { status: "Active", isEInvoiceEnabled: false, isEWayBillEnabled: false, isGstReturnEnabled: false, isDefault: false } });
+  const gstin = String(useWatch({control,name:"gstin"}) ?? "").trim().toUpperCase();
+  const stateCode = gstin.slice(0,2);
+  const stateName = getGstStateName(stateCode);
   const submit = values => operation.run(async () => {
-    await gstService.saveRegistration(record?.id, values);
+    if (!stateName) { setError("gstin",{message:"GSTIN must begin with a supported GST state code."}); return; }
+    await gstService.saveRegistration(record?.id, {...values,stateCode,stateName,companyId:record?.companyId??null,branchId:record?.branchId??null});
     toast.success(record ? "GST registration updated." : "GST registration created.");
     onSaved();
   });
   return <AppModal isOpen title={record ? "Edit GST registration" : "Add GST registration"} maxWidth="max-w-3xl" onClose={onClose} isBusy={operation.busy}>
     <form onSubmit={handleSubmit(submit)} className="space-y-5">
-      <p className="text-sm text-slate-500">Company and branch IDs are optional. Provider secrets are configured on the server.</p>
+      <p className="text-sm text-slate-500">Identify the registration by GSTIN and branch name. State is derived from GSTIN. Provider secrets are configured on the server.</p>
       <div className="grid gap-4 sm:grid-cols-2">{fields.map(([name, label, maxLength]) => <AppInput key={name} label={label} maxLength={maxLength} required={name === "gstin" || name === "status"} type={name.endsWith("Id") ? "number" : "text"} min={name.endsWith("Id") ? 1 : undefined} step={name.endsWith("Id") ? 1 : undefined} error={errors[name]?.message}
         {...register(name, {
           required: ["gstin", "status"].includes(name) ? `${label} is required.` : false,
@@ -37,6 +43,9 @@ function RegistrationForm({ record, onClose, onSaved }) {
           ...(maxLength ? { maxLength: { value: maxLength, message: `Use at most ${maxLength} characters.` } } : {}),
           ...(name.endsWith("Id") ? { validate: value => !value || (Number.isSafeInteger(Number(value)) && Number(value) > 0) || "Enter a positive whole-number ID." } : {}),
         })} />)}</div>
+      <div className="grid gap-4 sm:grid-cols-2"><AppInput label="GST state code" readOnly value={stateName?stateCode:""}/><AppInput label="GST state" readOnly value={stateName}/></div>
+      <Controller control={control} name="status" render={({field})=><AppSelect label="Registration status" value={field.value} onChange={field.onChange} options={["Active","Inactive",...(!["Active","Inactive"].includes(field.value)?[{value:field.value,label:`${field.value} (stored status)`,disabled:true}]:[])]}/>}/>
+      <details className="rounded-lg border border-slate-200 p-3 text-xs text-slate-600"><summary>Support integration metadata</summary><p className="mt-2">Company reference: {record?.companyId??"Unassigned"}; branch reference: {record?.branchId??"Unassigned"}. These optional integration references have no maintained company or branch master in this application. Existing values are preserved.</p></details>
       <fieldset className="flex flex-wrap gap-5 rounded-xl border border-slate-200 p-4"><legend className="px-1 text-sm font-medium text-slate-700">Registration settings</legend>{[["isEInvoiceEnabled", "E-Invoice enabled"], ["isEWayBillEnabled", "E-Way Bill enabled"], ["isGstReturnEnabled", "GST returns enabled"], ["isDefault", "Default registration"]].map(([key, label]) => <label key={key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" {...register(key)} className="h-4 w-4 accent-brand" />{label}</label>)}</fieldset>
       <GstError error={operation.error} />
       <div className="flex flex-wrap justify-end gap-2"><AppButton variant="secondary" disabled={operation.busy} onClick={onClose}>Cancel</AppButton><AppButton type="submit" isLoading={operation.busy}>Save registration</AppButton></div>
@@ -70,14 +79,14 @@ export default function GstRegistrationsPage() {
   return <GstFrame title="GST registrations" description="Manage company GSTINs, state details and compliance settings." actions={access("GST.Registration", "create") && <AppButton disabled={operation.busy} onClick={() => setEditor({ record: null })}>Add registration</AppButton>}>
     <form onSubmit={event => { event.preventDefault(); list.retry(); }} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 xl:grid-cols-5">
       <AppInput label="Search GSTIN / name" value={query.Search} onChange={event => filter("Search", event.target.value)} />
-      <AppInput label="Status filter" helperText="Exact registration status" value={query.Status} onChange={event => filter("Status", event.target.value)} />
-      <AppInput label="State code filter" maxLength={10} value={query.StateCode} onChange={event => filter("StateCode", event.target.value)} />
+      <AppSelect label="Status filter" value={query.Status} onChange={value => filter("Status", value)} options={[{value:"",label:"All statuses"},"Active","Inactive"]} />
+      <AppSelect label="State filter" value={query.StateCode} onChange={value => filter("StateCode", value)} options={[{value:"",label:"All states"},...Object.entries(GST_STATE_CODE_MAP).map(([value,label])=>({value,label}))]} />
       <AppSelect label="Sort by" value={query.SortBy} onChange={value => filter("SortBy", value)} options={GST_REGISTRATION_SORTS} />
       <div className="flex items-end gap-2"><AppSelect label="Direction" value={query.SortDirection} onChange={value => filter("SortDirection", value)} options={["DESC", "ASC"]} /><AppButton type="submit" variant="secondary" disabled={list.loading}>Refresh</AppButton></div>
     </form>
     <GstError error={list.error} retry={list.retry} /><GstError error={operation.error} />
-    {!list.error && <><DataTableShell columnCount={5} loading={list.loading} emptyTitle={!rows.length ? "No GST registrations found" : undefined} emptyHint="Add a company registration or adjust your filters." minWidth="min-w-[900px]" head={<><th>GSTIN / name</th><th>State / branch</th><th>Settings</th><th>Status</th><th>Actions</th></>}>
-      {rows.map(record => <tr key={record.id}><td><p className="font-mono text-xs">{record.gstin}</p><p className="mt-1">{record.legalName || record.tradeName || "Name not supplied"}</p><p className="mt-1 text-xs text-slate-500">Registration ID: {record.id}</p></td><td>{record.stateName || record.stateCode || "—"}<p className="text-xs text-slate-500">{record.branchName}</p></td><td className="text-xs">{[record.isDefault && "Default", record.isEInvoiceEnabled && "E-Invoice", record.isEWayBillEnabled && "E-Way Bill"].filter(Boolean).join(" · ") || "None enabled"}</td><td>{record.status}<p className="mt-1 text-xs text-slate-500">{record.lastVerifiedAt ? `Verified ${new Date(record.lastVerifiedAt).toLocaleDateString()}` : "Not verified"}</p></td><td><div className="flex flex-wrap gap-1">
+    {!list.error && <><DataTableShell className="commerce-record-table" columnCount={5} loading={list.loading} emptyTitle={!rows.length ? "No GST registrations found" : undefined} emptyHint="Add a company registration or adjust your filters." minWidth="min-w-[900px]" head={<><th>GSTIN / name</th><th>State / branch</th><th>Settings</th><th>Status</th><th>Actions</th></>}>
+      {rows.map(record => <tr key={record.id}><td data-label="GSTIN / name"><p className="font-mono text-xs">{record.gstin}</p><p className="mt-1">{record.legalName || record.tradeName || "Name not supplied"}</p><p className="mt-1 text-xs text-slate-500">Registration ID: {record.id}</p></td><td data-label="State / branch">{record.stateName || record.stateCode || "—"}<p className="text-xs text-slate-500">{record.branchName}</p></td><td data-label="Settings" className="text-xs">{[record.isDefault && "Default", record.isEInvoiceEnabled && "E-Invoice", record.isEWayBillEnabled && "E-Way Bill"].filter(Boolean).join(" · ") || "None enabled"}</td><td data-label="Status">{record.status}<p className="mt-1 text-xs text-slate-500">{record.lastVerifiedAt ? `Verified ${new Date(record.lastVerifiedAt).toLocaleDateString()}` : "Not verified"}</p></td><td data-label="Actions"><div className="flex flex-wrap gap-1">
         {access("GST.Registration", "update") && <AppButton variant="ghost" className="h-8 px-2" disabled={operation.busy} onClick={() => edit(record)}>Edit</AppButton>}
         {access("GST.Registration", "approve") && <AppButton variant="ghost" className="h-8 px-2" disabled={operation.busy} onClick={() => { operation.clearError(); setConfirmation({ action: "Verify", record }); }}>Verify</AppButton>}
         {access("GST.Registration", "update") && !record.isDefault && <AppButton variant="ghost" className="h-8 px-2" disabled={operation.busy} onClick={() => { operation.clearError(); setConfirmation({ action: "Set default", record }); }}>Set default</AppButton>}

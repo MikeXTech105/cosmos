@@ -9,6 +9,7 @@ import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
+  getThunkFormError,
   normalizePagedPayload,
 } from "./inventorySliceHelpers";
 import { getMediaUrl } from "../../../utils/mediaUrl";
@@ -89,7 +90,7 @@ export const createItem = createAsyncThunk(
     try {
       return await itemService.createItem(payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to create item."));
+      return rejectWithValue(getThunkFormError(error, "Unable to create item."));
     }
   },
 );
@@ -100,7 +101,7 @@ export const updateItem = createAsyncThunk(
     try {
       return await itemService.updateItem(id, payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to update item."));
+      return rejectWithValue(getThunkFormError(error, "Unable to update item."));
     }
   },
 );
@@ -165,7 +166,7 @@ const itemSlice = createSlice({
         if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
-        state.error = action.payload ?? action.error.message;
+        state.error = getThunkError(action.payload ?? action.error);
         state.listRequestId = null;
       })
       .addCase(fetchItemById.pending, (state, action) => {
@@ -185,9 +186,13 @@ const itemSlice = createSlice({
       .addCase(fetchItemById.rejected, (state, action) => {
         if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
-        state.detailError = action.payload ?? action.error.message;
+        state.detailError = getThunkError(action.payload ?? action.error);
         state.detailRequestId = null;
       })
+      .addCase(createItem.pending, state => { state.error = null; })
+      .addCase(createItem.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to create item."); })
+      .addCase(updateItem.pending, state => { state.error = null; })
+      .addCase(updateItem.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to update item."); })
       .addCase(createItem.fulfilled, (state, action) => {
         state.selected = normalizeItemImage(
           extractEntity(action.payload.data, "item"),

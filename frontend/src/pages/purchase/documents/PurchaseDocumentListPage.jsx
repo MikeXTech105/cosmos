@@ -1,3 +1,4 @@
+import { documentLookupService } from "../../../services/documentLookupService";
 import {
   ArrowRight,
   Ban,
@@ -21,6 +22,7 @@ import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useListReturnContext from "../../../hooks/useListReturnContext";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
 import { unitService } from "../../../services/inventory/unitService";
@@ -57,6 +59,8 @@ import {
 } from "../PurchaseShared";
 import PurchaseDocumentFormModal from "./PurchaseDocumentFormModal";
 import ConvertOrderModal from "./ConvertOrderModal";
+import { purchaseDocumentActions } from "./purchaseLifecycle";
+import CommerceFilterLookup from "../../party/CommerceFilterLookup";
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -123,6 +127,14 @@ const PurchaseDocumentListPage = ({ config }) => {
     route: "/units",
   });
   const [searchInput, setSearchInput] = useState(state.filters.Search);
+  const supplierCreateResolution = useRef(null);
+  const restoreListFilters = useCallback(snapshot => {
+    dispatch(config.setFilters(snapshot.filters));
+    dispatch(config.setPageSize(snapshot.pageSize));
+    dispatch(config.setPage(snapshot.pageNumber));
+    setSearchInput(snapshot.filters.Search ?? "");
+  }, [config, dispatch]);
+  const { capture, highlightId, clearHighlight } = useListReturnContext({ key: `purchase-${config.pluralLabel}`, filters: { filters: state.filters, pageNumber: state.pageNumber, pageSize: state.pageSize }, setFilters: restoreListFilters, ready: !state.loading });
   const [lookups, setLookups] = useState({
     bills: [],
     billsLoading: false,
@@ -200,7 +212,7 @@ const PurchaseDocumentListPage = ({ config }) => {
             IsActive: true,
           })
         : type === "items"
-          ? itemService.getItems({
+          ? documentLookupService.items({
               PageNumber: 1,
               PageSize: 200,
               IsActive: true,
@@ -266,13 +278,14 @@ const PurchaseDocumentListPage = ({ config }) => {
   }, [loadLookups]);
 
   useEffect(() => {
+    if (searchInput === state.filters.Search) return undefined;
     const timeoutId = window.setTimeout(() => {
       dispatch(config.setFilters({ Search: searchInput }));
       dispatch(config.setPage(1));
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [config, dispatch, searchInput]);
+  }, [config, dispatch, searchInput, state.filters.Search]);
 
   const supplierOptions = useMemo(
     () =>
@@ -286,7 +299,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   const itemOptions = useMemo(
     () =>
       lookups.items.map((item) => ({
-        value: Number(item.id),
+        value: String(item.id),
         label: [item.name, item.itemCode].filter(Boolean).join(" - "),
       })),
     [lookups.items],
@@ -300,7 +313,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   const billOptions = useMemo(
     () =>
       lookups.bills.map((bill) => ({
-        value: Number(bill.id),
+        value: String(bill.id),
         label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
       })),
     [lookups.bills],
@@ -395,6 +408,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   );
 
   const closeLookupCreate = useCallback((type) => {
+    if (type === "supplier") { supplierCreateResolution.current?.(null); supplierCreateResolution.current = null; }
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
   }, []);
 
@@ -438,10 +452,17 @@ const PurchaseDocumentListPage = ({ config }) => {
 
       try {
         if (type === "supplier") {
-          await partyService.createParty(payload);
+          const response = await partyService.createParty(payload);
+          const created = response.data?.party ?? response.data;
           toast.success("Supplier created successfully");
-          cacheRef.current.suppliers.loaded = false;
-          await loadLookup("suppliers", { force: true });
+          if (created?.id) {
+            setLookups(current => ({ ...current, suppliers: [...current.suppliers, created] }));
+            if (supplierCreateResolution.current) { supplierCreateResolution.current(created); supplierCreateResolution.current = null; }
+            else { dispatch(config.setFilters({ SupplierId: String(created.id) })); dispatch(config.setPage(1)); }
+          } else {
+            cacheRef.current.suppliers.loaded = false;
+            await loadLookup("suppliers", { force: true });
+          }
         } else if (type === "item") {
           await itemService.createItem(payload);
           toast.success("Item created successfully");
@@ -470,6 +491,8 @@ const PurchaseDocumentListPage = ({ config }) => {
       canCreateItem,
       canCreateSupplier,
       canCreateUnit,
+      config,
+      dispatch,
       closeLookupCreate,
       loadLookup,
       refreshItemCreateLookup,
@@ -477,7 +500,7 @@ const PurchaseDocumentListPage = ({ config }) => {
   );
 
   const openEdit = async (record) => {
-    if (!capabilities.canUpdate) {
+    if (!capabilities.canUpdate || !purchaseDocumentActions(record,config.pluralLabel).edit) {
       return;
     }
 
@@ -490,22 +513,22 @@ const PurchaseDocumentListPage = ({ config }) => {
 
     try {
       const response = await dispatch(config.detailThunk(record.id)).unwrap();
-
-      setModal({
-        isLoading: false,
-        isOpen: true,
-        mode: "edit",
-        record: getResponseRecord(response, config.selectorKey.slice(0, -1)),
-      });
+      const fresh=getResponseRecord(response,config.selectorKey.slice(0,-1));
+      if(!purchaseDocumentActions(fresh,config.pluralLabel).edit){setModal(current=>({...current,isOpen:false,isLoading:false}));toast.error("This document can no longer be edited in its current state or inventory ownership.");return;}
+      navigate(`${config.routeBase}/${record.id}/edit`, { state: capture() });
+      setModal(current=>({...current,isOpen:false,isLoading:false}));
+      return;
     } catch (error) {
       toast.error(getActionError(error, "Unable to load details."));
-      setModal((current) => ({ ...current, isLoading: false }));
+      // A list row is not a complete edit source. Never expose a partially hydrated legacy editor.
+      setModal((current) => ({ ...current, isLoading: false, isOpen: false }));
     }
   };
 
   const submitRecord = async (payload) => {
     if (
       (modal.mode === "edit" && !capabilities.canUpdate) ||
+      (modal.mode === "edit" && !purchaseDocumentActions(modal.record,config.pluralLabel).edit) ||
       (modal.mode !== "edit" && !capabilities.canCreate)
     ) {
       return;
@@ -542,6 +565,7 @@ const PurchaseDocumentListPage = ({ config }) => {
     if (!permissionMap[confirmation.action]) {
       return;
     }
+    if(["confirm","cancel"].includes(confirmation.action)&&!purchaseDocumentActions(confirmation.record,config.pluralLabel)[confirmation.action])return;
 
     setConfirmation((current) => ({ ...current, isLoading: true }));
 
@@ -585,7 +609,7 @@ const PurchaseDocumentListPage = ({ config }) => {
       setConvertOrder({ isOpen: false, order: null });
       await loadRecords();
       if (billId) {
-        navigate(`/purchase/bills/${billId}`);
+        navigate(`/purchase/bills/${billId}`, { state: capture() });
       }
     } catch (error) {
       toast.error(getActionError(error, "Unable to convert order."));
@@ -607,12 +631,7 @@ const PurchaseDocumentListPage = ({ config }) => {
       return;
     }
 
-    setModal({
-      isLoading: false,
-      isOpen: true,
-      mode: "create",
-      record: null,
-    });
+    navigate(`${config.routeBase}/new`, { state: capture() });
   };
 
   const openAction = (action, record) => {
@@ -625,6 +644,7 @@ const PurchaseDocumentListPage = ({ config }) => {
     if (!permissionMap[action]) {
       return;
     }
+    if(["confirm","cancel"].includes(action)&&!purchaseDocumentActions(record,config.pluralLabel)[action])return;
 
     setConfirmation({
       action,
@@ -701,6 +721,7 @@ const PurchaseDocumentListPage = ({ config }) => {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        {highlightId && <p role="status" className="mb-3 flex items-center justify-between gap-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">Saved {config.singularLabel} {highlightId}. Existing filters are retained.{!state.list.some(record => String(record.id) === String(highlightId)) && " It is outside the current filtered page."}<button type="button" className="underline" onClick={clearHighlight}>Dismiss</button></p>}
         <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_220px_180px_160px_160px_auto]">
           <label className="relative block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -711,17 +732,16 @@ const PurchaseDocumentListPage = ({ config }) => {
               className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
-          <AppSelect
+          <CommerceFilterLookup
+            kind="supplier"
             value={state.filters.SupplierId}
             onChange={(value) => {
               dispatch(config.setFilters({ SupplierId: value }));
               dispatch(config.setPage(1));
             }}
-            options={[{ value: "all", label: "All suppliers" }, ...supplierOptions]}
+            initialOptions={supplierOptions}
             aria-label="Filter by supplier"
-            creatable={canCreateSupplier}
-            createLabel="Create new supplier"
-            onCreateClick={() => openLookupCreate("supplier")}
+            onCreate={canCreateSupplier ? () => new Promise(resolve => { supplierCreateResolution.current = resolve; openLookupCreate("supplier"); }) : undefined}
           />
           {Object.hasOwn(state.filters, "Status") ? (
             <AppSelect
@@ -841,7 +861,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                 </tr>
               ) : (
                 state.list.map((record, index) => (
-                  <tr key={record.id} className="hover:bg-slate-50">
+                  <tr key={record.id} data-record-id={String(record.id)} data-saved-highlight={String(highlightId ?? "") === String(record.id) || undefined} className={`hover:bg-slate-50 ${String(highlightId ?? "") === String(record.id) ? "bg-emerald-50 ring-2 ring-inset ring-emerald-400" : ""}`}>
                     <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                       {(state.pageNumber - 1) * state.pageSize + index + 1}
                     </td>
@@ -876,23 +896,23 @@ const PurchaseDocumentListPage = ({ config }) => {
                         <ActionButton
                           icon={Eye}
                           label="View"
-                          onClick={() => navigate(config.detailPath(record.id))}
+                          onClick={() => navigate(config.detailPath(record.id), { state: capture() })}
                         />
-                        {capabilities.canUpdate && (
+                        {capabilities.canUpdate && purchaseDocumentActions(record,config.pluralLabel).edit && (
                           <ActionButton
                             icon={Pencil}
                             label="Edit"
                             onClick={() => void openEdit(record)}
                           />
                         )}
-                        {config.supportsConfirm && capabilities.canConfirm && (
+                        {config.supportsConfirm && capabilities.canConfirm && purchaseDocumentActions(record,config.pluralLabel).confirm && (
                           <ActionButton
                             icon={CheckCircle2}
                             label="Confirm"
                             onClick={() => openAction("confirm", record)}
                           />
                         )}
-                        {config.supportsCancel && capabilities.canCancel && (
+                        {config.supportsCancel && capabilities.canCancel && purchaseDocumentActions(record,config.pluralLabel).cancel && (
                           <ActionButton
                             icon={Ban}
                             label="Cancel"
@@ -900,7 +920,7 @@ const PurchaseDocumentListPage = ({ config }) => {
                             onClick={() => openAction("cancel", record)}
                           />
                         )}
-                        {config.supportsConvert && capabilities.canConvert && (
+                        {config.supportsConvert && capabilities.canConvert && [1,2,3].includes(Number(record.status)) && (
                           <ActionButton
                             icon={ArrowRight}
                             label="Convert to Bill"
@@ -961,6 +981,7 @@ const PurchaseDocumentListPage = ({ config }) => {
         isLoading={false}
         isOpen={lookupCreateModal.supplier}
         mode="create"
+        source={{partyType:"Supplier"}}
         onClose={() => closeLookupCreate("supplier")}
         onSubmit={(payload) => submitLookupCreate("supplier", payload)}
         submitLabel="Create Supplier"

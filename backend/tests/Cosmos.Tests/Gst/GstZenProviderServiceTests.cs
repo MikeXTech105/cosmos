@@ -15,6 +15,71 @@ namespace Cosmos.Tests.Gst;
 public sealed class GstZenProviderServiceTests
 {
     [Fact]
+    public async Task ExtendEWayBill_UsesReviewedProviderFieldsAndGstinHeaderAndRequiresReturnedIdentity()
+    {
+        var handler=new StubHttpMessageHandler(_=>JsonResponse("""{"ewayBillNo":"141010282840","validUpto":"29/10/2026 11:59:00 PM"}"""));
+        var request=new ExtendEWayBillRequest(7,"141010282840","GJ01AB1234","50","1","Flood delay",null,FromPlace:"Surat",FromState:24,FromPincode:"395001",TransportMode:"1",ConsignmentStatus:"M",Gstin:"24AADCG4992P1ZZ");
+        var response=await CreateService(handler).ExtendEWayBillAsync(request,default);
+        Assert.Equal("141010282840",response.EWayBillNumber);
+        Assert.Equal("ACT",response.Status);
+        Assert.Equal(new DateTime(2026,10,29,23,59,0),response.ValidUpTo);
+        Assert.Contains("24AADCG4992P1ZZ",handler.LastRequest!.Headers.GetValues("gstin"));
+        Assert.Contains("\"ewbNo\":141010282840",handler.LastRequestBody);
+        Assert.Contains("\"fromPlace\":\"Surat\"",handler.LastRequestBody);
+        Assert.DoesNotContain("companyGstRegistrationId",handler.LastRequestBody);
+        Assert.DoesNotContain("idempotencyKey",handler.LastRequestBody);
+    }
+    [Fact]
+    public async Task GenerateOtp_UsesDocumentedGstinUsernamePayloadAndSeparateBearerCredential()
+    {
+        var handler = new StubHttpMessageHandler(_=>JsonResponse("""{"status":1,"api_call":"OTPREQUEST","message":"OTP sent successfully."}"""));
+        var result=await CreateService(handler).GenerateOtpAsync(new GenerateGstOtpRequest(7,"portal-user","24AADCG4992P1ZZ"),default);
+        Assert.Equal("OtpGenerated",result.Status);
+        Assert.Equal("https://my.gstzen.in/api/gstn-generate-otp/",handler.LastRequest!.RequestUri!.ToString());
+        Assert.Equal("Bearer",handler.LastRequest.Headers.Authorization!.Scheme);
+        Assert.Equal("session-test-token",handler.LastRequest.Headers.Authorization.Parameter);
+        Assert.False(handler.LastRequest.Headers.Contains("Token"));
+        Assert.Equal("""{"gstin":"24AADCG4992P1ZZ","username":"portal-user"}""",handler.LastRequestBody);
+    }
+
+    [Fact]
+    public async Task AuthenticateOtp_RequiresExplicitConfirmedSuccessAndUnixExpiry()
+    {
+        var handler = new StubHttpMessageHandler(_=>JsonResponse("""{"status":1,"api_call":"AUTHTOKEN","message":{"status_cd":"1","expiry_time":4102444800}}"""));
+        var result=await CreateService(handler).AuthenticateOtpAsync(new AuthenticateGstOtpRequest(7,"123456",RequestJson:"{\"ignored\":true}",Gstin:"24AADCG4992P1ZZ"),default);
+        Assert.Equal("Active",result.Status);
+        Assert.Equal(new DateTime(2100,1,1,0,0,0,DateTimeKind.Utc),result.TokenExpiresAt);
+        Assert.Equal("""{"gstin":"24AADCG4992P1ZZ","otp":"123456"}""",handler.LastRequestBody);
+        Assert.NotNull(result.OtpVerifiedAt);
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"status\":1}")]
+    [InlineData("{\"status\":1,\"api_call\":\"AUTHTOKEN\",\"message\":{\"status_cd\":\"0\",\"expiry_time\":4102444800}}")]
+    [InlineData("{\"status\":1,\"api_call\":\"AUTHTOKEN\",\"message\":{\"status_cd\":\"1\",\"expiry_time\":1}}")]
+    public async Task AuthenticateOtp_NeverTreatsMissingFailedOrExpiredProviderStatusAsAuthenticated(string response)
+    {
+        var handler = new StubHttpMessageHandler(_=>JsonResponse(response));
+        await Assert.ThrowsAsync<CosmosException>(()=>CreateService(handler).AuthenticateOtpAsync(new AuthenticateGstOtpRequest(7,"123456",Gstin:"24AADCG4992P1ZZ"),default));
+    }
+
+    [Fact]
+    public async Task OtpAndSessionSecretsRemainRedactedEvenWhenDetailedLoggingIsEnabled()
+    {
+        AddGstApiLogRequest? log = null;
+        var logService=new Mock<IGstApiLogService>();
+        logService.Setup(x=>x.AddAsync(It.IsAny<AddGstApiLogRequest>(),It.IsAny<CancellationToken>())).Callback<AddGstApiLogRequest,CancellationToken>((request,_)=>log=request).Returns(Task.CompletedTask);
+        var handler=new StubHttpMessageHandler(_=>JsonResponse("""{"status":1,"api_call":"AUTHTOKEN","message":{"status_cd":"1","expiry_time":4102444800}}"""));
+        var options=Options.Create(new GstZenOptions { SandboxBaseUrl="https://my.gstzen.in", SandboxGstnAccessToken="private-session-token", MaskSensitiveLogs=false });
+        var service=new GstZenProviderService(new HttpClient(handler),options,logService.Object,NullLogger<GstZenProviderService>.Instance);
+        await service.AuthenticateOtpAsync(new AuthenticateGstOtpRequest(7,"654321",Gstin:"24AADCG4992P1ZZ"),default);
+        Assert.NotNull(log);
+        Assert.DoesNotContain("654321",log.RequestPayload);
+        Assert.DoesNotContain("private-session-token",log.RequestPayload);
+        Assert.Contains("***",log.RequestPayload);
+    }
+    [Fact]
     public async Task VerifyGstinAsync_SendsConfiguredTokenHeaderAndMapsResponse()
     {
         var handler = new StubHttpMessageHandler(_ => JsonResponse("""
@@ -106,6 +171,7 @@ public sealed class GstZenProviderServiceTests
                 Environment = "Sandbox",
                 SandboxBaseUrl = "https://my.gstzen.in",
                 SandboxToken = "test-token",
+                SandboxGstnAccessToken = "session-test-token",
                 TokenHeaderName = "Token",
                 GstinVerificationPath = "/api/gstin-validator/",
                 EInvoiceGeneratePath = "/~gstzen/a/post-einvoice-data/einvoice-json/",

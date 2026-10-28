@@ -112,8 +112,8 @@ const DashboardPage = () => {
             Dashboard
           </>
         }
-        title="Analytics Overview"
-        description="Live platform metrics, trends, top lists, alerts, and workforce signals."
+        title="Work overview"
+        description="Review work needing attention, then explore trends and activity."
       />
 
       <DashboardFilters
@@ -122,6 +122,25 @@ const DashboardPage = () => {
         onChange={updateFilters}
         onRefresh={runDashboard}
       />
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <AlertsPanel
+          alerts={dashboard.alerts.data}
+          error={dashboard.alerts.error}
+          filters={filters}
+          isLoading={dashboard.alerts.loading}
+          onChange={updateFilters}
+          onRetry={() => retryWidget("alerts")}
+        />
+        <HrSummaryPanel
+          error={dashboard.hrSummary.error}
+          filters={filters}
+          isLoading={dashboard.hrSummary.loading}
+          summary={dashboard.hrSummary.data}
+          onChange={updateFilters}
+          onRetry={() => retryWidget("hrSummary")}
+        />
+      </div>
 
       <OverviewStats
         error={dashboard.overview.error}
@@ -176,24 +195,7 @@ const DashboardPage = () => {
         onRetry={() => retryWidget("recentActivity")}
       />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-        <AlertsPanel
-          alerts={dashboard.alerts.data}
-          error={dashboard.alerts.error}
-          filters={filters}
-          isLoading={dashboard.alerts.loading}
-          onChange={updateFilters}
-          onRetry={() => retryWidget("alerts")}
-        />
-        <HrSummaryPanel
-          error={dashboard.hrSummary.error}
-          filters={filters}
-          isLoading={dashboard.hrSummary.loading}
-          summary={dashboard.hrSummary.data}
-          onChange={updateFilters}
-          onRetry={() => retryWidget("hrSummary")}
-        />
-      </div>
+
     </section>
   );
 };

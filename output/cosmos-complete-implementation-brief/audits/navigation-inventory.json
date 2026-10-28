@@ -1,0 +1,1939 @@
+{
+  "reviewedOn": "2026-10-28",
+  "commit": "da46203",
+  "scope": "Source inventory; navigation entries and routes are not master counts or runtime proof",
+  "navigationEntries": 95,
+  "literalRoutes": 136,
+  "gstNavigationEntries": 8,
+  "deepDiveViews": 5,
+  "categories": [
+    {
+      "id": "manufacturing",
+      "label": "Production",
+      "icon": "manufacturing",
+      "sortOrder": 54
+    },
+    {
+      "id": "deepDive",
+      "label": "Deep Dive",
+      "icon": "analytics",
+      "sortOrder": 81
+    },
+    {
+      "id": "gst",
+      "label": "GST compliance",
+      "icon": "invoice",
+      "sortOrder": 57
+    },
+    {
+      "id": "rbac",
+      "label": "Administration",
+      "icon": "shieldcheck",
+      "sortOrder": 85
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "icon": "inventory",
+      "sortOrder": 40
+    },
+    {
+      "id": "sale",
+      "label": "Sale",
+      "icon": "sale",
+      "sortOrder": 50
+    },
+    {
+      "id": "rojmel",
+      "label": "Rojmel",
+      "icon": "wallet",
+      "sortOrder": 52
+    },
+    {
+      "id": "purchase",
+      "label": "Purchase & Expense",
+      "icon": "purchase",
+      "sortOrder": 55
+    },
+    {
+      "id": "supplyChain",
+      "label": "Supply Chain",
+      "icon": "channels",
+      "sortOrder": 56
+    },
+    {
+      "id": "procurement",
+      "label": "Procurement Planning",
+      "icon": "procurement",
+      "sortOrder": 57
+    },
+    {
+      "id": "dispatch",
+      "label": "Dispatch Planning",
+      "icon": "clipboard",
+      "sortOrder": 58
+    },
+    {
+      "id": "shipments",
+      "label": "Shipments",
+      "icon": "truck",
+      "sortOrder": 59
+    },
+    {
+      "id": "hr",
+      "label": "HR",
+      "icon": "hr",
+      "sortOrder": 60
+    },
+    {
+      "id": "website",
+      "label": "Website",
+      "icon": "app",
+      "sortOrder": 70
+    },
+    {
+      "id": "oee",
+      "label": "OEE",
+      "icon": "oee",
+      "sortOrder": 80
+    },
+    {
+      "id": "reports",
+      "label": "Reports",
+      "icon": "reports",
+      "sortOrder": 70
+    },
+    {
+      "id": "system",
+      "label": "System",
+      "icon": "settings",
+      "sortOrder": 90
+    }
+  ],
+  "modules": [
+    {
+      "id": "deepDive_executive",
+      "label": "Executive Command Center",
+      "route": "/deep-dive-analytics/executive-command-center",
+      "categoryId": "deepDive",
+      "preservePresentation": true
+    },
+    {
+      "id": "deepDive_oee",
+      "label": "OEE Manufacturing Telemetry",
+      "route": "/deep-dive-analytics/oee-telemetry",
+      "categoryId": "deepDive",
+      "preservePresentation": true
+    },
+    {
+      "id": "deepDive_finance",
+      "label": "Rojmel Financial Hub",
+      "route": "/deep-dive-analytics/rojmel-financial-hub",
+      "categoryId": "deepDive",
+      "preservePresentation": true
+    },
+    {
+      "id": "deepDive_gst",
+      "label": "GST & Statutory Intelligence",
+      "route": "/deep-dive-analytics/gst-intelligence",
+      "categoryId": "deepDive",
+      "preservePresentation": true
+    },
+    {
+      "id": "deepDive_cross",
+      "label": "Cross-Module Intelligence",
+      "route": "/deep-dive-analytics/cross-module-intelligence",
+      "categoryId": "deepDive",
+      "preservePresentation": true
+    },
+    {
+      "id": "dashboard",
+      "label": "Dashboard",
+      "route": "/dashboard",
+      "categoryId": null,
+      "permissionPageName": "Dashboard",
+      "preservePresentation": false
+    },
+    {
+      "id": "users",
+      "label": "Users",
+      "route": "/users",
+      "categoryId": "rbac",
+      "permissionPageName": "Users",
+      "preservePresentation": false
+    },
+    {
+      "id": "roles",
+      "label": "Roles",
+      "route": "/roles",
+      "categoryId": "rbac",
+      "permissionPageName": "Roles",
+      "preservePresentation": false
+    },
+    {
+      "id": "permissions",
+      "label": "Permissions",
+      "route": "/permissions",
+      "categoryId": "rbac",
+      "permissionPageName": "Permissions",
+      "preservePresentation": false
+    },
+    {
+      "id": "pages",
+      "label": "Pages",
+      "route": "/rbac/pages",
+      "categoryId": "rbac",
+      "permissionPageName": "Pages",
+      "preservePresentation": false
+    },
+    {
+      "id": "party",
+      "label": "Party Master",
+      "route": "/party",
+      "categoryId": null,
+      "permissionPageName": "Party",
+      "preservePresentation": false
+    },
+    {
+      "id": "saleInvoices",
+      "label": "Sale Invoices",
+      "route": "/sales/invoices",
+      "categoryId": "sale",
+      "permissionPageName": "Sales.Invoice",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelDashboard",
+      "label": "Dashboard",
+      "route": "/rojmel/dashboard",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.Dashboard",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelMyWallet",
+      "label": "My Wallet",
+      "route": "/rojmel/my-wallet",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.MyWallet",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelWallets",
+      "label": "Wallets",
+      "route": "/rojmel/wallets",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.Wallets",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelTransactions",
+      "label": "Transactions",
+      "route": "/rojmel/transactions",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.Transactions",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelTransfers",
+      "label": "Transfers",
+      "route": "/rojmel/transfers",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.Transfers",
+      "preservePresentation": false
+    },
+    {
+      "id": "rojmelReports",
+      "label": "Reports",
+      "route": "/rojmel/reports",
+      "categoryId": "rojmel",
+      "permissionPageName": "Rojmel.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseBills",
+      "label": "Purchase Bills",
+      "route": "/purchase/bills",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.PurchaseBill",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseOrders",
+      "label": "Purchase Orders",
+      "route": "/purchase/orders",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.PurchaseOrder",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseReturns",
+      "label": "Purchase Returns",
+      "route": "/purchase/returns",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.PurchaseReturn",
+      "preservePresentation": false
+    },
+    {
+      "id": "supplierPayments",
+      "label": "Supplier Payments",
+      "route": "/purchase/supplier-payments",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.PaymentOut",
+      "preservePresentation": false
+    },
+    {
+      "id": "expenses",
+      "label": "Expenses",
+      "route": "/purchase/expenses",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.Expense",
+      "preservePresentation": false
+    },
+    {
+      "id": "expenseCategories",
+      "label": "Expense Categories",
+      "route": "/purchase/expense-categories",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.ExpenseCategory",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseReports",
+      "label": "Reports",
+      "route": "/purchase/reports",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.Report",
+      "preservePresentation": false
+    },
+    {
+      "id": "scChannels",
+      "label": "Channels",
+      "route": "/supply-chain/channels",
+      "categoryId": "supplyChain",
+      "permissionPageName": "SupplyChain.Channels",
+      "preservePresentation": false
+    },
+    {
+      "id": "scWarehouses",
+      "label": "Warehouses",
+      "route": "/supply-chain/warehouses",
+      "categoryId": "supplyChain",
+      "permissionPageName": "SupplyChain.Warehouses",
+      "preservePresentation": false
+    },
+    {
+      "id": "scMappings",
+      "label": "Item Mappings",
+      "route": "/supply-chain/item-mappings",
+      "categoryId": "supplyChain",
+      "permissionPageName": "SupplyChain.ItemMappings",
+      "preservePresentation": false
+    },
+    {
+      "id": "scPackaging",
+      "label": "Packaging Profiles",
+      "route": "/supply-chain/packaging-profiles",
+      "categoryId": "supplyChain",
+      "permissionPageName": "SupplyChain.PackagingProfiles",
+      "preservePresentation": false
+    },
+    {
+      "id": "scImports",
+      "label": "Imports",
+      "route": "/supply-chain/imports",
+      "categoryId": "supplyChain",
+      "permissionPageName": "SupplyChain.Imports",
+      "preservePresentation": false
+    },
+    {
+      "id": "ppHome",
+      "label": "Procurement",
+      "route": "/procurement",
+      "categoryId": "procurement",
+      "preservePresentation": true
+    },
+    {
+      "id": "ppSalesImport",
+      "label": "Sales Data",
+      "route": "/procurement/sales-import",
+      "categoryId": "procurement",
+      "permissionPageName": "ProcurementPlanning.SalesImport",
+      "preservePresentation": true
+    },
+    {
+      "id": "ppPlanningHistory",
+      "label": "Plans",
+      "route": "/procurement/planning-history",
+      "categoryId": "procurement",
+      "permissionPageName": "ProcurementPlanning.PlanningHistory",
+      "preservePresentation": true
+    },
+    {
+      "id": "ppSetup",
+      "label": "Setup",
+      "route": "/procurement/setup",
+      "categoryId": "procurement",
+      "preservePresentation": true
+    },
+    {
+      "id": "dpDashboard",
+      "label": "Dashboard",
+      "route": "/dispatch/dashboard",
+      "categoryId": "dispatch",
+      "permissionPageName": "DispatchPlanning.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "dpRuns",
+      "label": "Planning Runs",
+      "route": "/dispatch/runs",
+      "categoryId": "dispatch",
+      "permissionPageName": "DispatchPlanning.PlanningRuns",
+      "preservePresentation": false
+    },
+    {
+      "id": "dpImports",
+      "label": "Imports",
+      "route": "/dispatch/imports",
+      "categoryId": "dispatch",
+      "permissionPageName": "DispatchPlanning.Imports",
+      "preservePresentation": false
+    },
+    {
+      "id": "dpSettings",
+      "label": "SKU Settings",
+      "route": "/dispatch/settings",
+      "categoryId": "dispatch",
+      "permissionPageName": "DispatchPlanning.SkuSettings",
+      "preservePresentation": false
+    },
+    {
+      "id": "dpReports",
+      "label": "Reports",
+      "route": "/dispatch/reports",
+      "categoryId": "dispatch",
+      "permissionPageName": "DispatchPlanning.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "soDashboard",
+      "label": "Dashboard",
+      "route": "/shipments/dashboard",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "soWorkList",
+      "label": "Work List",
+      "route": "/shipments/work-list",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Shipments",
+      "preservePresentation": false
+    },
+    {
+      "id": "soFreight",
+      "label": "Freight",
+      "route": "/shipments/freight",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Freight",
+      "preservePresentation": false
+    },
+    {
+      "id": "soTransport",
+      "label": "Transporters",
+      "route": "/shipments/transporters",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Shipments",
+      "preservePresentation": false
+    },
+    {
+      "id": "soImports",
+      "label": "Historical Import",
+      "route": "/shipments/imports",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Imports",
+      "preservePresentation": false
+    },
+    {
+      "id": "soReports",
+      "label": "Reports",
+      "route": "/shipments/reports",
+      "categoryId": "shipments",
+      "permissionPageName": "ShipmentOperations.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "items",
+      "label": "Items",
+      "route": "/items",
+      "categoryId": "inventory",
+      "permissionPageName": "Items",
+      "preservePresentation": false
+    },
+    {
+      "id": "categories",
+      "label": "Categories",
+      "route": "/categories",
+      "categoryId": "inventory",
+      "permissionPageName": "Categories",
+      "preservePresentation": false
+    },
+    {
+      "id": "units",
+      "label": "Units",
+      "route": "/units",
+      "categoryId": "inventory",
+      "permissionPageName": "Units",
+      "preservePresentation": false
+    },
+    {
+      "id": "hrDashboard",
+      "label": "Dashboard",
+      "route": "/hr/dashboard",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Employee",
+      "preservePresentation": false
+    },
+    {
+      "id": "employees",
+      "label": "Employees",
+      "route": "/hr/employees",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Employee",
+      "preservePresentation": false
+    },
+    {
+      "id": "departments",
+      "label": "Departments",
+      "route": "/hr/departments",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Department",
+      "preservePresentation": false
+    },
+    {
+      "id": "designations",
+      "label": "Designations",
+      "route": "/hr/designations",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Designation",
+      "preservePresentation": false
+    },
+    {
+      "id": "attendance",
+      "label": "Attendance",
+      "route": "/hr/attendance",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Attendance",
+      "preservePresentation": false
+    },
+    {
+      "id": "leaves",
+      "label": "Leaves",
+      "route": "/hr/leaves",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Leave",
+      "preservePresentation": false
+    },
+    {
+      "id": "shifts",
+      "label": "Shifts",
+      "route": "/hr/shifts",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Shift",
+      "preservePresentation": false
+    },
+    {
+      "id": "payroll",
+      "label": "Payroll",
+      "route": "/hr/payroll",
+      "categoryId": "hr",
+      "permissionPageName": "HR.Payroll",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeDashboard",
+      "label": "Dashboard",
+      "route": "/oee/dashboard",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.Dashboard",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeInsights",
+      "label": "Production Insights",
+      "route": "/oee/insights",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.ProductionEntries",
+      "preservePresentation": true
+    },
+    {
+      "id": "oeeProduction",
+      "label": "Production Entries",
+      "route": "/oee/production-entries",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.ProductionEntries",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeMachines",
+      "label": "Machines",
+      "route": "/oee/machines",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.Machines",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeMoulds",
+      "label": "Moulds",
+      "route": "/oee/moulds",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.Moulds",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeDowntimeReasons",
+      "label": "Downtime Reasons",
+      "route": "/oee/downtime-reasons",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.DowntimeReasons",
+      "preservePresentation": false
+    },
+    {
+      "id": "oeeReports",
+      "label": "Reports",
+      "route": "/oee/reports",
+      "categoryId": "oee",
+      "permissionPageName": "OEE.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "reportsHome",
+      "label": "All Reports",
+      "route": "/reports",
+      "categoryId": "reports",
+      "permissionPageName": "Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "salesReports",
+      "label": "Sales Reports",
+      "route": "/reports/sales",
+      "categoryId": "reports",
+      "permissionPageName": "Reports.Sales",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseReportsV1",
+      "label": "Purchase Reports",
+      "route": "/reports/purchase",
+      "categoryId": "reports",
+      "permissionPageName": "Reports.Purchase",
+      "preservePresentation": false
+    },
+    {
+      "id": "inventoryReports",
+      "label": "Inventory Reports",
+      "route": "/reports/inventory",
+      "categoryId": "reports",
+      "permissionPageName": "Reports.Inventory",
+      "preservePresentation": false
+    },
+    {
+      "id": "partyReports",
+      "label": "Party Reports",
+      "route": "/reports/party",
+      "categoryId": "reports",
+      "permissionPageName": "Reports.Parties",
+      "preservePresentation": false
+    },
+    {
+      "id": "expenseReports",
+      "label": "Expense Reports",
+      "route": "/reports/expense",
+      "categoryId": "reports",
+      "permissionPageName": "Reports.Expenses",
+      "preservePresentation": false
+    },
+    {
+      "id": "manufacturingReports",
+      "label": "Manufacturing Reports",
+      "route": "/reports/manufacturing",
+      "categoryId": "reports",
+      "permissionPageName": "Manufacturing.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "productionDaily",
+      "label": "Daily Production",
+      "route": "/manufacturing/daily",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Orders",
+      "preservePresentation": true
+    },
+    {
+      "id": "productionKanban",
+      "label": "Kanban Board",
+      "route": "/manufacturing/board",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Orders",
+      "preservePresentation": true
+    },
+    {
+      "id": "productionOrders",
+      "label": "Production Orders",
+      "route": "/manufacturing/orders",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Orders",
+      "preservePresentation": false
+    },
+    {
+      "id": "productionPlanning",
+      "label": "Production Planning",
+      "route": "/manufacturing/planning",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Orders",
+      "preservePresentation": false
+    },
+    {
+      "id": "productionConfiguration",
+      "label": "Work Centres & Operations",
+      "route": "/manufacturing/configuration",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Configuration",
+      "preservePresentation": false
+    },
+    {
+      "id": "productionImports",
+      "label": "Import & Reconciliation",
+      "route": "/manufacturing/imports",
+      "categoryId": "manufacturing",
+      "permissionPageName": "Manufacturing.Orders",
+      "preservePresentation": false
+    },
+    {
+      "id": "productionOperations",
+      "label": "Production Operations",
+      "route": "/reports/manufacturing/operations",
+      "categoryId": "reports",
+      "permissionPageName": "Manufacturing.Reports",
+      "preservePresentation": false
+    },
+    {
+      "id": "purchaseOperations",
+      "label": "Purchase Follow-ups",
+      "route": "/purchase/operations",
+      "categoryId": "purchase",
+      "permissionPageName": "PurchaseExpense.PurchaseOrder",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmDashboard",
+      "label": "Dashboard",
+      "route": "/website/dashboard",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.Dashboard",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmProducts",
+      "label": "Products",
+      "route": "/website/products",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.Products",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmBlogs",
+      "label": "Blog",
+      "route": "/website/blog",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.Blogs",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmAnnouncements",
+      "label": "Announcements",
+      "route": "/website/announcements",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.Announcements",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmWarranty",
+      "label": "Warranty Claims",
+      "route": "/website/warranty",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.WarrantyClaims",
+      "preservePresentation": false
+    },
+    {
+      "id": "wmSettings",
+      "label": "Site Settings",
+      "route": "/website/settings",
+      "categoryId": "website",
+      "permissionPageName": "WebsiteManagement.Settings",
+      "preservePresentation": false
+    },
+    {
+      "id": "dataBook",
+      "label": "Data Book",
+      "route": "/data-book",
+      "categoryId": null,
+      "permissionPageName": "DataBook.Entries",
+      "preservePresentation": false
+    },
+    {
+      "id": "activityLogs",
+      "label": "Activity Logs",
+      "route": "/activity-logs",
+      "categoryId": "system",
+      "permissionPageName": "ActivityLogs",
+      "preservePresentation": false
+    },
+    {
+      "id": "settings",
+      "label": "Settings",
+      "route": "/settings",
+      "categoryId": "system",
+      "permissionPageName": "Settings",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_configuration",
+      "label": "GST overview",
+      "route": "/gst/configuration",
+      "categoryId": "gst",
+      "permissionPageName": "GST.Configuration",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_registrations",
+      "label": "GST registrations",
+      "route": "/gst/registrations",
+      "categoryId": "gst",
+      "permissionPageName": "GST.Registration",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_verification",
+      "label": "GSTIN verification",
+      "route": "/gst/verify-gstin",
+      "categoryId": "gst",
+      "permissionPageName": "GST.Verification",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_rateHistory",
+      "label": "GST rate history",
+      "route": "/gst/rate-history",
+      "categoryId": "gst",
+      "permissionPageName": "GST.RateHistory",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_invoices",
+      "label": "E-Invoice lookup",
+      "route": "/gst/e-invoices",
+      "categoryId": "gst",
+      "permissionPageName": "GST.EInvoice",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_wayBills",
+      "label": "E-Way Bill lookup",
+      "route": "/gst/eway-bills",
+      "categoryId": "gst",
+      "permissionPageName": "GST.EWayBill",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_sessions",
+      "label": "GST session status",
+      "route": "/gst/sessions",
+      "categoryId": "gst",
+      "permissionPageName": "GST.Session",
+      "preservePresentation": false
+    },
+    {
+      "id": "gst_logs",
+      "label": "GST API logs",
+      "route": "/gst/api-logs",
+      "categoryId": "gst",
+      "permissionPageName": "GST.Logs",
+      "preservePresentation": false
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "line": 251,
+      "elements": [
+        "ProtectedRoute",
+        "DefaultRouteRedirect"
+      ]
+    },
+    {
+      "path": "/login",
+      "line": 267,
+      "elements": [
+        "Login"
+      ]
+    },
+    {
+      "path": "/forgot-password",
+      "line": 268,
+      "elements": [
+        "ForgotPassword"
+      ]
+    },
+    {
+      "path": "/reset-password",
+      "line": 269,
+      "elements": [
+        "ResetPassword"
+      ]
+    },
+    {
+      "path": "/gst",
+      "line": 279,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/manufacturing",
+      "line": 283,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/manufacturing/daily",
+      "line": 284,
+      "elements": [
+        "PermissionGuard",
+        "ProductionDesk"
+      ]
+    },
+    {
+      "path": "/manufacturing/board",
+      "line": 285,
+      "elements": [
+        "PermissionGuard",
+        "ProductionDesk"
+      ]
+    },
+    {
+      "path": "/manufacturing/configuration",
+      "line": 286,
+      "elements": [
+        "PermissionGuard",
+        "ProductionConfiguration"
+      ]
+    },
+    {
+      "path": "/manufacturing/orders",
+      "line": 287,
+      "elements": [
+        "PermissionGuard",
+        "ProductionOrders"
+      ]
+    },
+    {
+      "path": "/manufacturing/orders/new",
+      "line": 288,
+      "elements": [
+        "PermissionGuard",
+        "ProductionOrderForm"
+      ]
+    },
+    {
+      "path": "/manufacturing/orders/:id/edit",
+      "line": 289,
+      "elements": [
+        "PermissionGuard",
+        "ProductionOrderForm"
+      ]
+    },
+    {
+      "path": "/manufacturing/orders/:id",
+      "line": 290,
+      "elements": [
+        "PermissionGuard",
+        "ProductionOrderDetail"
+      ]
+    },
+    {
+      "path": "/manufacturing/planning",
+      "line": 291,
+      "elements": [
+        "PermissionGuard",
+        "ProductionPlanning"
+      ]
+    },
+    {
+      "path": "/manufacturing/imports",
+      "line": 292,
+      "elements": [
+        "PermissionGuard",
+        "ProductionImports"
+      ]
+    },
+    {
+      "path": "/reports/manufacturing/operations",
+      "line": 293,
+      "elements": [
+        "PermissionGuard",
+        "ProductionOperationalReports"
+      ]
+    },
+    {
+      "path": "/purchase/operations",
+      "line": 294,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseOperations"
+      ]
+    },
+    {
+      "path": "/deep-dive-analytics",
+      "line": 295,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/dashboard",
+      "line": 298,
+      "elements": [
+        "PermissionGuard",
+        "Dashboard"
+      ]
+    },
+    {
+      "path": "/users",
+      "line": 306,
+      "elements": [
+        "PermissionGuard",
+        "Users"
+      ]
+    },
+    {
+      "path": "/roles",
+      "line": 314,
+      "elements": [
+        "PermissionGuard",
+        "Roles"
+      ]
+    },
+    {
+      "path": "/rbac/pages",
+      "line": 322,
+      "elements": [
+        "PermissionGuard",
+        "Pages"
+      ]
+    },
+    {
+      "path": "/rbac/pages/new",
+      "line": 330,
+      "elements": [
+        "PermissionGuard",
+        "PageForm"
+      ]
+    },
+    {
+      "path": "/rbac/pages/:id/edit",
+      "line": 338,
+      "elements": [
+        "PermissionGuard",
+        "PageForm"
+      ]
+    },
+    {
+      "path": "/pages",
+      "line": 346,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/permissions",
+      "line": 347,
+      "elements": [
+        "PermissionGuard",
+        "Permissions"
+      ]
+    },
+    {
+      "path": "/party",
+      "line": 355,
+      "elements": [
+        "PermissionGuard",
+        "Party"
+      ]
+    },
+    {
+      "path": "/party/new",
+      "line": 363,
+      "elements": [
+        "PermissionGuard",
+        "PartyForm"
+      ]
+    },
+    {
+      "path": "/party/:id/edit",
+      "line": 371,
+      "elements": [
+        "PermissionGuard",
+        "PartyForm"
+      ]
+    },
+    {
+      "path": "/items",
+      "line": 379,
+      "elements": [
+        "PermissionGuard",
+        "Items"
+      ]
+    },
+    {
+      "path": "/items/new",
+      "line": 387,
+      "elements": [
+        "PermissionGuard",
+        "ItemForm"
+      ]
+    },
+    {
+      "path": "/items/:id/edit",
+      "line": 395,
+      "elements": [
+        "PermissionGuard",
+        "ItemForm"
+      ]
+    },
+    {
+      "path": "/categories",
+      "line": 403,
+      "elements": [
+        "PermissionGuard",
+        "Categories"
+      ]
+    },
+    {
+      "path": "/units",
+      "line": 411,
+      "elements": [
+        "PermissionGuard",
+        "Units"
+      ]
+    },
+    {
+      "path": "/rojmel/dashboard",
+      "line": 419,
+      "elements": [
+        "PermissionGuard",
+        "RojmelDashboard"
+      ]
+    },
+    {
+      "path": "/rojmel/my-wallet",
+      "line": 430,
+      "elements": [
+        "PermissionGuard",
+        "RojmelMyWallet"
+      ]
+    },
+    {
+      "path": "/rojmel/wallets",
+      "line": 441,
+      "elements": [
+        "PermissionGuard",
+        "RojmelWallets"
+      ]
+    },
+    {
+      "path": "/rojmel/transactions",
+      "line": 452,
+      "elements": [
+        "PermissionGuard",
+        "RojmelTransactions"
+      ]
+    },
+    {
+      "path": "/rojmel/transfers",
+      "line": 463,
+      "elements": [
+        "PermissionGuard",
+        "RojmelTransfers"
+      ]
+    },
+    {
+      "path": "/rojmel/reports",
+      "line": 474,
+      "elements": [
+        "PermissionGuard",
+        "RojmelReports"
+      ]
+    },
+    {
+      "path": "/rojmel/reports/:reportId",
+      "line": 485,
+      "elements": [
+        "RojmelReportRoute"
+      ]
+    },
+    {
+      "path": "/hr/dashboard",
+      "line": 489,
+      "elements": [
+        "PermissionGuard",
+        "HrDashboard"
+      ]
+    },
+    {
+      "path": "/hr/employees",
+      "line": 497,
+      "elements": [
+        "PermissionGuard",
+        "HrEmployees"
+      ]
+    },
+    {
+      "path": "/hr/employees/new",
+      "line": 505,
+      "elements": [
+        "PermissionGuard",
+        "HrEmployeeForm"
+      ]
+    },
+    {
+      "path": "/hr/employees/:id/edit",
+      "line": 513,
+      "elements": [
+        "PermissionGuard",
+        "HrEmployeeForm"
+      ]
+    },
+    {
+      "path": "/hr/departments",
+      "line": 521,
+      "elements": [
+        "PermissionGuard",
+        "HrDepartments"
+      ]
+    },
+    {
+      "path": "/hr/designations",
+      "line": 529,
+      "elements": [
+        "PermissionGuard",
+        "HrDesignations"
+      ]
+    },
+    {
+      "path": "/hr/attendance",
+      "line": 540,
+      "elements": [
+        "PermissionGuard",
+        "HrAttendance"
+      ]
+    },
+    {
+      "path": "/hr/leaves",
+      "line": 548,
+      "elements": [
+        "PermissionGuard",
+        "HrLeaves"
+      ]
+    },
+    {
+      "path": "/hr/shifts",
+      "line": 556,
+      "elements": [
+        "PermissionGuard",
+        "HrShifts"
+      ]
+    },
+    {
+      "path": "/hr/payroll",
+      "line": 564,
+      "elements": [
+        "PermissionGuard",
+        "HrPayroll"
+      ]
+    },
+    {
+      "path": "/sales/invoices",
+      "line": 572,
+      "elements": [
+        "PermissionGuard",
+        "SalesInvoices"
+      ]
+    },
+    {
+      "path": "/sales/invoices/new",
+      "line": 583,
+      "elements": [
+        "PermissionGuard",
+        "SalesInvoiceForm"
+      ]
+    },
+    {
+      "path": "/sales/invoices/:id",
+      "line": 594,
+      "elements": [
+        "PermissionGuard",
+        "SalesInvoiceDetail"
+      ]
+    },
+    {
+      "path": "/sales/invoices/:id/edit",
+      "line": 605,
+      "elements": [
+        "PermissionGuard",
+        "SalesInvoiceForm"
+      ]
+    },
+    {
+      "path": "/purchase/bills",
+      "line": 616,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseBills"
+      ]
+    },
+    {
+      "path": "/purchase/bills/new",
+      "line": 627,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseBillForm"
+      ]
+    },
+    {
+      "path": "/purchase/bills/:id",
+      "line": 638,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseBillDetail"
+      ]
+    },
+    {
+      "path": "/purchase/bills/:id/edit",
+      "line": 649,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseBillForm"
+      ]
+    },
+    {
+      "path": "/purchase/orders",
+      "line": 660,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseOrders"
+      ]
+    },
+    {
+      "path": "/purchase/orders/new",
+      "line": 671,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseOrderForm"
+      ]
+    },
+    {
+      "path": "/purchase/orders/:id",
+      "line": 682,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseOrderDetail"
+      ]
+    },
+    {
+      "path": "/purchase/orders/:id/edit",
+      "line": 693,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseOrderForm"
+      ]
+    },
+    {
+      "path": "/purchase/returns",
+      "line": 704,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseReturns"
+      ]
+    },
+    {
+      "path": "/purchase/returns/new",
+      "line": 715,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseReturnForm"
+      ]
+    },
+    {
+      "path": "/purchase/returns/:id",
+      "line": 726,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseReturnDetail"
+      ]
+    },
+    {
+      "path": "/purchase/returns/:id/edit",
+      "line": 737,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseReturnForm"
+      ]
+    },
+    {
+      "path": "/purchase/supplier-payments",
+      "line": 748,
+      "elements": [
+        "PermissionGuard",
+        "SupplierPayments"
+      ]
+    },
+    {
+      "path": "/purchase/expenses",
+      "line": 759,
+      "elements": [
+        "PermissionGuard",
+        "Expenses"
+      ]
+    },
+    {
+      "path": "/purchase/expense-categories",
+      "line": 770,
+      "elements": [
+        "PermissionGuard",
+        "ExpenseCategories"
+      ]
+    },
+    {
+      "path": "/purchase/reports",
+      "line": 781,
+      "elements": [
+        "PermissionGuard",
+        "PurchaseReports"
+      ]
+    },
+    {
+      "path": "/reports",
+      "line": 792,
+      "elements": [
+        "PermissionGuard",
+        "ReportsHome"
+      ]
+    },
+    {
+      "path": "/reports/:group",
+      "line": 800,
+      "elements": [
+        "ReportsHome"
+      ]
+    },
+    {
+      "path": "/reports/:group/:reportId",
+      "line": 804,
+      "elements": [
+        "ReportRoutePage"
+      ]
+    },
+    {
+      "path": "/oee/dashboard",
+      "line": 808,
+      "elements": [
+        "PermissionGuard",
+        "OeeDashboard"
+      ]
+    },
+    {
+      "path": "/oee/insights",
+      "line": 816,
+      "elements": [
+        "PermissionGuard",
+        "OeeInsights"
+      ]
+    },
+    {
+      "path": "/oee/production-entries",
+      "line": 824,
+      "elements": [
+        "PermissionGuard",
+        "OeeProductionEntries"
+      ]
+    },
+    {
+      "path": "/oee/machines",
+      "line": 835,
+      "elements": [
+        "PermissionGuard",
+        "OeeMachines"
+      ]
+    },
+    {
+      "path": "/oee/moulds",
+      "line": 843,
+      "elements": [
+        "PermissionGuard",
+        "OeeMoulds"
+      ]
+    },
+    {
+      "path": "/oee/downtime-reasons",
+      "line": 851,
+      "elements": [
+        "PermissionGuard",
+        "OeeDowntimeReasons"
+      ]
+    },
+    {
+      "path": "/oee/reports",
+      "line": 862,
+      "elements": [
+        "PermissionGuard",
+        "OeeReports"
+      ]
+    },
+    {
+      "path": "/supply-chain/channels",
+      "line": 870,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainChannels"
+      ]
+    },
+    {
+      "path": "/supply-chain/warehouses",
+      "line": 881,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainWarehouses"
+      ]
+    },
+    {
+      "path": "/supply-chain/item-mappings",
+      "line": 892,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainItemMappings"
+      ]
+    },
+    {
+      "path": "/supply-chain/packaging-profiles",
+      "line": 903,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainPackagingProfiles"
+      ]
+    },
+    {
+      "path": "/supply-chain/packaging-profiles/new",
+      "line": 914,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainPackagingProfileForm"
+      ]
+    },
+    {
+      "path": "/supply-chain/packaging-profiles/:id/edit",
+      "line": 925,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainPackagingProfileForm"
+      ]
+    },
+    {
+      "path": "/supply-chain/imports",
+      "line": 936,
+      "elements": [
+        "PermissionGuard",
+        "SupplyChainImports"
+      ]
+    },
+    {
+      "path": "/procurement",
+      "line": 947,
+      "elements": [
+        "PermissionGuard",
+        "ProcurementHome"
+      ]
+    },
+    {
+      "path": "/procurement/sales-import",
+      "line": 958,
+      "elements": [
+        "PermissionGuard",
+        "ProcurementSalesImport"
+      ]
+    },
+    {
+      "path": "/procurement/sku-mapping",
+      "line": 969,
+      "elements": [
+        "PermissionGuard",
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/procurement/bom-mapping",
+      "line": 980,
+      "elements": [
+        "PermissionGuard",
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/procurement/settings",
+      "line": 991,
+      "elements": [
+        "PermissionGuard",
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/procurement/setup",
+      "line": 1002,
+      "elements": [
+        "ProcurementSetup"
+      ]
+    },
+    {
+      "path": "/procurement/settings/:itemId/edit",
+      "line": 1006,
+      "elements": [
+        "PermissionGuard",
+        "ProcurementSettingForm"
+      ]
+    },
+    {
+      "path": "/procurement/generate-plan",
+      "line": 1017,
+      "elements": [
+        "PermissionGuard",
+        "ProcurementGeneratePlan"
+      ]
+    },
+    {
+      "path": "/procurement/planning-history",
+      "line": 1028,
+      "elements": [
+        "PermissionGuard",
+        "ProcurementPlanningHistory"
+      ]
+    },
+    {
+      "path": "/dispatch",
+      "line": 1039,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/dispatch/dashboard",
+      "line": 1043,
+      "elements": [
+        "PermissionGuard",
+        "DispatchDashboard"
+      ]
+    },
+    {
+      "path": "/dispatch/runs",
+      "line": 1054,
+      "elements": [
+        "PermissionGuard",
+        "DispatchRuns"
+      ]
+    },
+    {
+      "path": "/dispatch/runs/:id",
+      "line": 1065,
+      "elements": [
+        "PermissionGuard",
+        "DispatchRunDetail"
+      ]
+    },
+    {
+      "path": "/dispatch/imports",
+      "line": 1076,
+      "elements": [
+        "PermissionGuard",
+        "DispatchImports"
+      ]
+    },
+    {
+      "path": "/dispatch/settings",
+      "line": 1087,
+      "elements": [
+        "PermissionGuard",
+        "DispatchSettings"
+      ]
+    },
+    {
+      "path": "/dispatch/settings/new",
+      "line": 1098,
+      "elements": [
+        "PermissionGuard",
+        "DispatchSettingForm"
+      ]
+    },
+    {
+      "path": "/dispatch/settings/:id/edit",
+      "line": 1109,
+      "elements": [
+        "PermissionGuard",
+        "DispatchSettingForm"
+      ]
+    },
+    {
+      "path": "/dispatch/reports",
+      "line": 1120,
+      "elements": [
+        "PermissionGuard",
+        "DispatchReports"
+      ]
+    },
+    {
+      "path": "/shipments",
+      "line": 1131,
+      "elements": [
+        "Navigate"
+      ]
+    },
+    {
+      "path": "/shipments/dashboard",
+      "line": 1135,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentDashboard"
+      ]
+    },
+    {
+      "path": "/shipments/work-list",
+      "line": 1146,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentWorkList"
+      ]
+    },
+    {
+      "path": "/shipments/work-list/new",
+      "line": 1157,
+      "elements": [
+        "PermissionGuard",
+        "ManualShipmentForm"
+      ]
+    },
+    {
+      "path": "/shipments/work-list/new-from-plan",
+      "line": 1168,
+      "elements": [
+        "PermissionGuard",
+        "DispatchPlanShipmentForm"
+      ]
+    },
+    {
+      "path": "/shipments/work-list/:id",
+      "line": 1179,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentDetail"
+      ]
+    },
+    {
+      "path": "/shipments/freight",
+      "line": 1190,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentFreight"
+      ]
+    },
+    {
+      "path": "/shipments/transporters",
+      "line": 1201,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentTransporters"
+      ]
+    },
+    {
+      "path": "/shipments/imports",
+      "line": 1212,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentImports"
+      ]
+    },
+    {
+      "path": "/shipments/reports",
+      "line": 1223,
+      "elements": [
+        "PermissionGuard",
+        "ShipmentReports"
+      ]
+    },
+    {
+      "path": "/data-book",
+      "line": 1234,
+      "elements": [
+        "PermissionGuard",
+        "DataBook"
+      ]
+    },
+    {
+      "path": "/activity-logs",
+      "line": 1242,
+      "elements": [
+        "PermissionGuard",
+        "ActivityLogs"
+      ]
+    },
+    {
+      "path": "/website/dashboard",
+      "line": 1250,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteDashboard"
+      ]
+    },
+    {
+      "path": "/website/products",
+      "line": 1254,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteProducts"
+      ]
+    },
+    {
+      "path": "/website/products/new",
+      "line": 1258,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteProductForm"
+      ]
+    },
+    {
+      "path": "/website/products/:id/edit",
+      "line": 1262,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteProductForm"
+      ]
+    },
+    {
+      "path": "/website/blog",
+      "line": 1266,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteBlog"
+      ]
+    },
+    {
+      "path": "/website/blog/new",
+      "line": 1270,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteBlogPostForm"
+      ]
+    },
+    {
+      "path": "/website/blog/:id/edit",
+      "line": 1274,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteBlogPostForm"
+      ]
+    },
+    {
+      "path": "/website/announcements",
+      "line": 1278,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteAnnouncements"
+      ]
+    },
+    {
+      "path": "/website/warranty",
+      "line": 1282,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteWarranty"
+      ]
+    },
+    {
+      "path": "/website/warranty/:id",
+      "line": 1286,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteWarrantyDetail"
+      ]
+    },
+    {
+      "path": "/website/settings",
+      "line": 1290,
+      "elements": [
+        "PermissionGuard",
+        "WebsiteSettings"
+      ]
+    },
+    {
+      "path": "/settings",
+      "line": 1294,
+      "elements": [
+        "PermissionGuard",
+        "Settings"
+      ]
+    },
+    {
+      "path": "/change-password",
+      "line": 1302,
+      "elements": [
+        "ChangePassword"
+      ]
+    },
+    {
+      "path": "/profile",
+      "line": 1303,
+      "elements": [
+        "Profile"
+      ]
+    },
+    {
+      "path": "/preferences",
+      "line": 1304,
+      "elements": [
+        "Preferences"
+      ]
+    },
+    {
+      "path": "/403",
+      "line": 1305,
+      "elements": [
+        "AccessDeniedPage"
+      ]
+    },
+    {
+      "path": "/404",
+      "line": 1306,
+      "elements": [
+        "NotFoundPage"
+      ]
+    },
+    {
+      "path": "*",
+      "line": 1307,
+      "elements": [
+        "NotFoundPage"
+      ]
+    }
+  ]
+}

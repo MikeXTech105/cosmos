@@ -1,4 +1,6 @@
 import axiosInstance from "../../api/axios";
+import productionApi from "../manufacturing/productionApi";
+import { decimalWire } from "../../utils/productionValues";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 import {
@@ -22,21 +24,21 @@ const LINE_SORT_FIELDS = [
 
 export const planningService = {
   validate: async (payload) => {
-    const response = await axiosInstance.post(
+    const response = await productionApi.post(
       ENDPOINTS.PP_PLAN_VALIDATE,
       payload,
     );
     return unwrapResponse(response);
   },
   preview: async (payload) => {
-    const response = await axiosInstance.post(
+    const response = await productionApi.post(
       ENDPOINTS.PP_PLAN_PREVIEW,
       payload,
     );
     return unwrapResponse(response);
   },
   saveRun: async (payload) => {
-    const response = await axiosInstance.post(ENDPOINTS.PP_PLAN_RUNS, payload);
+    const response = await productionApi.post(ENDPOINTS.PP_PLAN_RUNS, payload);
     return unwrapResponse(response);
   },
   listRuns: async (params) => {
@@ -46,19 +48,19 @@ export const planningService = {
     return unwrapResponse(response);
   },
   getRun: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.PP_PLAN_RUN_BY_ID(id));
+    const response = await productionApi.get(ENDPOINTS.PP_PLAN_RUN_BY_ID(id));
     return unwrapResponse(response);
   },
   getRunLines: async (id, params) => {
-    const response = await axiosInstance.get(ENDPOINTS.PP_PLAN_RUN_LINES(id), {
+    const response = await productionApi.get(ENDPOINTS.PP_PLAN_RUN_LINES(id), {
       params: sanitizeProcurementListParams(params, LINE_SORT_FIELDS),
     });
     return unwrapResponse(response);
   },
   adjustLine: async (runId, lineId, payload) => {
-    const response = await axiosInstance.patch(
+    const response = await productionApi.patch(
       ENDPOINTS.PP_PLAN_RUN_LINE(runId, lineId),
-      payload,
+      { ...payload, finalQuantity: decimalWire(payload.finalQuantity) },
     );
     return unwrapResponse(response);
   },

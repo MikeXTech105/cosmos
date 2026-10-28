@@ -25,9 +25,12 @@ import { toast } from "sonner";
 
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
 import { hrAttendanceService } from "../../../services/hr/attendanceService";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import { hrEmployeeService } from "../../../services/hr/employeeService";
+import { hrSetupService } from "../../../services/hr/setupService";
 import {
   approveHrAttendanceAdjustment,
   createHrAttendanceManualEntry,
@@ -54,6 +57,8 @@ import {
 import AttendanceRoster from "./AttendanceRoster";
 import AttendanceBook from "./AttendanceBook";
 import EmployeeAttendanceModal from "./EmployeeAttendanceModal";
+import DepartmentAttendancePanel from "./DepartmentAttendancePanel";
+import { useSearchParams } from "react-router-dom";
 import {
   extractAttendanceItems,
   formatLocalDateKey,
@@ -164,9 +169,10 @@ const ToolbarButton = ({ icon: Icon, label, onClick, tone = "default" }) => {
 };
 
 const AttendanceWorkspace = () => {
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const capabilities = useHrCapabilities({
-    actions: ["view", "create", "approve"],
+    actions: ["view", "create", "update", "approve"],
     label: "Attendance",
     pageName: "HR.Attendance",
     resource: ["attendance", "hrAttendance"],
@@ -174,9 +180,9 @@ const AttendanceWorkspace = () => {
   });
   const workforceRequestRef = useRef(0);
   const dailyRequestRef = useRef(0);
-  const [selectedDate, setSelectedDate] = useState(today());
+  const [selectedDate, setSelectedDate] = useState(() => /^\d{4}-\d{2}-\d{2}$/.test(searchParams.get("date") || "") ? searchParams.get("date") : today());
   const [filters, setFilters] = useState({
-    departmentId: "all",
+    departmentId: searchParams.get("departmentId") || "all",
     search: "",
     status: "all",
   });
@@ -198,13 +204,21 @@ const AttendanceWorkspace = () => {
   const [viewMode, setViewMode] = useState("book");
   const [attendanceDrafts, setAttendanceDrafts] = useState({});
   const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [selectedAttendance, setSelectedAttendance] = useState(null);
+  const [selectedAdjustment, setSelectedAdjustment] = useState(null);
+  const [adjustmentInbox, setAdjustmentInbox] = useState({ open: false, loading: false, rows: [], error: "" });
+  const hasDrafts = Object.keys(attendanceDrafts).length > 0;
+  const { confirmLeave } = useUnsavedChanges({ when: hasDrafts || isBulkSaving, message: "Attendance has unsaved entries. Keep a draft or save before changing the date. Continue without these entries?" });
+  const draft = useScopedDraft({ entity: "attendance-book", context: selectedDate, values: attendanceDrafts, enabled: hasDrafts });
 
   const changeSelectedDate = useCallback((nextDate) => {
-    setSelectedDate((current) =>
-      typeof nextDate === "function" ? nextDate(current) : nextDate,
-    );
-    setAttendanceDrafts({});
-  }, []);
+    if (isBulkSaving) return;
+    confirmLeave(() => {
+      if (hasDrafts) draft.saveDraft();
+      setSelectedDate((current) => typeof nextDate === "function" ? nextDate(current) : nextDate);
+      setAttendanceDrafts({});
+    });
+  }, [confirmLeave, draft, hasDrafts, isBulkSaving]);
 
   const loadWorkforce = useCallback(async () => {
     const requestId = ++workforceRequestRef.current;
@@ -370,10 +384,17 @@ const AttendanceWorkspace = () => {
     { value: "not-required", label: "Not required" },
   ];
 
+  const loadAdjustmentInbox = useCallback(async () => {
+    setAdjustmentInbox((current) => ({ ...current, open: true, loading: true, error: "" }));
+    try { const response = await hrSetupService.adjustments(); setAdjustmentInbox({ open: true, loading: false, rows: response.data || [], error: "" }); }
+    catch (error) { setAdjustmentInbox((current) => ({ ...current, loading: false, error: getHrActionError(error, "Unable to load pending corrections.") })); }
+  }, []);
   const openAction = useCallback((type, employeeId = "") => {
+    if (type === "decision") { void loadAdjustmentInbox(); return; }
+    if (type === "adjustment") setSelectedAttendance(null);
     setInitialEmployeeId(employeeId || "");
     setModal(type);
-  }, []);
+  }, [loadAdjustmentInbox]);
 
   const closeAction = useCallback(() => {
     setModal(null);
@@ -435,7 +456,7 @@ const AttendanceWorkspace = () => {
 
   const saveAdjustment = useCallback(
     async (payload) => {
-      if (!capabilities.canCreate) return;
+      if (!capabilities.canUpdate) return;
 
       try {
         const response = await dispatch(
@@ -448,7 +469,7 @@ const AttendanceWorkspace = () => {
         throw error;
       }
     },
-    [capabilities.canCreate, closeAction, dispatch],
+    [capabilities.canUpdate, closeAction, dispatch],
   );
 
   const saveDecision = useCallback(
@@ -462,12 +483,14 @@ const AttendanceWorkspace = () => {
             : await dispatch(rejectHrAttendanceAdjustment(payload)).unwrap();
         toast.success(getHrSuccessMessage(response, "Adjustment updated"));
         closeAction();
+        await loadAdjustmentInbox();
+        await loadDailyAttendance();
       } catch (error) {
         toast.error(getHrActionError(error, "Unable to update adjustment."));
         throw error;
       }
     },
-    [capabilities.canApprove, closeAction, decisionMode, dispatch],
+    [capabilities.canApprove, closeAction, decisionMode, dispatch, loadAdjustmentInbox, loadDailyAttendance],
   );
 
   const refreshEverything = useCallback(() => {
@@ -534,7 +557,7 @@ const AttendanceWorkspace = () => {
               createHrAttendanceManualEntry({
                 attendanceDate: selectedDate,
                 attendanceStatus: Number(attendanceStatus),
-                employeeId: Number(employeeId),
+                employeeId: employeeId,
               }),
             ).unwrap(),
           ),
@@ -564,6 +587,8 @@ const AttendanceWorkspace = () => {
         toast.error(
           `${failed.length} ${failed.length === 1 ? "entry" : "entries"} could not be saved. Unsaved rows are still highlighted.`,
         );
+      } else {
+        draft.clearDraft();
       }
     } finally {
       setIsBulkSaving(false);
@@ -575,10 +600,14 @@ const AttendanceWorkspace = () => {
     isBulkSaving,
     loadDailyAttendance,
     selectedDate,
+    draft,
   ]);
 
   return (
     <section className="min-w-0 space-y-6">
+      {adjustmentInbox.open && <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"><div className="flex justify-between gap-3"><h2 className="font-semibold">Pending attendance corrections</h2><button type="button" className="text-sm underline" onClick={() => setAdjustmentInbox((current) => ({ ...current, open: false }))}>Close inbox</button></div>{adjustmentInbox.loading ? <p role="status">Loading corrections…</p> : adjustmentInbox.error ? <p role="alert" className="text-red-700">{adjustmentInbox.error} <button type="button" className="underline" onClick={loadAdjustmentInbox}>Retry</button></p> : !adjustmentInbox.rows.length ? <p className="text-sm text-slate-500">No pending corrections.</p> : adjustmentInbox.rows.map((row) => <div key={String(row.id)} className="rounded-lg bg-slate-50 p-3 text-sm"><p className="font-semibold">{row.employeeName} · {formatHrDate(row.attendanceDate)}</p><p>Requested correction: {row.reason}</p><div className="mt-2 flex gap-3"><button type="button" className="font-semibold text-emerald-700 underline" onClick={() => { setSelectedAdjustment(row); setDecisionMode("approve"); setModal("decision"); }}>Review approval</button><button type="button" className="font-semibold text-red-700 underline" onClick={() => { setSelectedAdjustment(row); setDecisionMode("reject"); setModal("decision"); }}>Review rejection</button></div></div>)}</section>}
+      {draft.recoveredDraft && !hasDrafts && <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm"><span>A saved attendance draft is available for {selectedDate}. Review it before saving.</span><button type="button" className="font-semibold underline" disabled={draft.stale} onClick={() => { if (draft.stale) return; setAttendanceDrafts(draft.recoveredDraft.values || {}); draft.acknowledgeRecovery(); }}>{draft.stale ? "Draft version changed; review with support" : "Restore draft"}</button><button type="button" className="underline" onClick={draft.clearDraft}>Discard draft</button></div>}
+      {hasDrafts && <div className="text-sm text-amber-800">{Object.keys(attendanceDrafts).length} unsaved entries. <button type="button" className="font-semibold underline" disabled={!draft.available} onClick={() => draft.saveDraft() && toast.success("Attendance draft kept for this user, company and date")}>Keep draft</button>{draft.storageError || (!draft.available ? " Draft recovery needs the current company identity; save before leaving." : "")}</div>}
       <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand text-white shadow-lg shadow-brand/20">
@@ -763,13 +792,9 @@ const AttendanceWorkspace = () => {
                     label="Check Out"
                     onClick={() => openAction("checkOut")}
                   />
-                  <ToolbarButton
-                    icon={FileClock}
-                    label="Adjustment"
-                    onClick={() => openAction("adjustment")}
-                  />
                 </>
               )}
+              {capabilities.canUpdate && <ToolbarButton icon={FileClock} label="Request correction" onClick={() => openAction("adjustment")} />}
               {capabilities.canApprove && (
                 <>
                   <ToolbarButton
@@ -942,6 +967,7 @@ const AttendanceWorkspace = () => {
         onClose={closeAction}
         onSubmit={(payload) => runAction(modal, payload)}
       />
+      <DepartmentAttendancePanel date={selectedDate} departmentId={filters.departmentId} onDrilldown={(departmentId) => { setFilters((current) => ({ ...current, departmentId })); return true; }} />
       <ManualEntryModal
         employeeOptions={employeeOptions}
         initialEmployeeId={initialEmployeeId}
@@ -950,18 +976,22 @@ const AttendanceWorkspace = () => {
         onSubmit={saveManualEntry}
       />
       <AdjustmentModal
+        attendanceRecord={selectedAttendance}
         employeeOptions={employeeOptions}
         isOpen={modal === "adjustment"}
         onClose={closeAction}
         onSubmit={saveAdjustment}
       />
       <DecisionModal
+        adjustment={selectedAdjustment}
         mode={decisionMode}
         isOpen={modal === "decision"}
         onClose={closeAction}
         onSubmit={saveDecision}
       />
       <EmployeeAttendanceModal
+        canRequestCorrection={capabilities.canUpdate}
+        onRequestCorrection={(record) => { setSelectedAttendance({ ...record, employeeId: getHrRecordId(selectedEmployee, "employee") }); setSelectedEmployee(null); setModal("adjustment"); }}
         key={getHrRecordId(selectedEmployee, "employee") || "closed"}
         canCreate={capabilities.canCreate}
         employee={selectedEmployee}

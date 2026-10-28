@@ -1,6 +1,6 @@
 import { ArrowLeft, Save } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -33,6 +33,7 @@ const emptyDispatchForm = () => ({
 
 const DispatchPlanShipmentFormPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const capabilities = useShipmentCapabilities();
   const [form, setForm] = useState(emptyDispatchForm);
   const [runs, setRuns] = useState([]);
@@ -42,13 +43,18 @@ const DispatchPlanShipmentFormPage = () => {
   const [conflict, setConflict] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [runPage, setRunPage] = useState(1), [hasMoreRuns, setHasMoreRuns] = useState(false);
+  const [availableAllocations, setAvailableAllocations] = useState([]);
+  const [transporterState, setTransporterState] = useState({ loading: false, error: "" });
+  const runRequest = useRef(0);
 
   const loadRuns = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await dispatchRunService.list({ PageNumber: 1, PageSize: 200, Status: DISPATCH_RUN_STATUS.Finalized });
+      const response = await dispatchRunService.list({ PageNumber: runPage, PageSize: 40, Status: DISPATCH_RUN_STATUS.Finalized });
 
       setRuns(getItems(response));
+      setHasMoreRuns(Number(response.data?.totalPages ?? 0) > runPage || (response.data?.totalPages == null && getItems(response).length === 40));
       setErrors((current) => ({ ...current, runs: "" }));
     } catch (error) {
       setRuns([]);
@@ -56,26 +62,37 @@ const DispatchPlanShipmentFormPage = () => {
     } finally {
       setLoading(false);
     }
+  }, [runPage]);
+
+  const loadTransporters = useCallback(async () => {
+    setTransporterState({ loading: true, error: "" });
+    try {
+      const response = await shipmentTransporterService.list();
+      setTransporters(Array.isArray(response.data) ? response.data : getItems(response));
+      setTransporterState({ loading: false, error: "" });
+    } catch (failure) {
+      setTransporterState({ loading: false, error: getApiErrorMessage(failure, "Transporters could not be loaded. Check your access or retry.") });
+    }
   }, []);
 
   useEffect(() => {
     void loadRuns();
 
-    void shipmentTransporterService
-      .list()
-      .then((response) => setTransporters(Array.isArray(response.data) ? response.data : getItems(response)))
-      .catch(() => setTransporters([]));
-  }, [loadRuns]);
+    void loadTransporters();
+  }, [loadRuns, loadTransporters]);
 
   const selectRun = async (value) => {
+    const request = ++runRequest.current;
     setForm((current) => ({ ...current, allocations: [], dispatchPlanningRunId: value, warehouseId: "" }));
     setRun(null);
+    setAvailableAllocations([]);
     setErrors((current) => ({ ...current, dispatchPlanningRunId: "", run: "" }));
     if (!value) return;
 
     setLoading(true);
     try {
-      const response = await dispatchRunService.getById(value);
+      const [response, allocationResponse] = await Promise.all([dispatchRunService.getById(value), shipmentService.dispatchAllocations(value)]);
+      if (request !== runRequest.current) return;
       const detail = response.data;
 
       if (detail?.status !== DISPATCH_RUN_STATUS.Finalized) {
@@ -83,14 +100,25 @@ const DispatchPlanShipmentFormPage = () => {
       }
 
       setRun(detail);
+      setAvailableAllocations(Array.isArray(allocationResponse.data) ? allocationResponse.data : []);
+      const warehouseId = searchParams.get("warehouseId");
+      if (warehouseId && allocationResponse.data?.some(row => String(row.warehouseId) === warehouseId)) setForm(current => ({ ...current, warehouseId }));
     } catch (error) {
+      if (request !== runRequest.current) return;
       setErrors((current) => ({ ...current, run: getApiErrorMessage(error, "Unable to load this dispatch run.") }));
     } finally {
-      setLoading(false);
+      if (request === runRequest.current) setLoading(false);
     }
   };
 
-  const recommendations = Array.isArray(run?.recommendations) ? run.recommendations : [];
+  useEffect(() => {
+    const runId = searchParams.get("runId");
+    if (runId) void selectRun(runId);
+    // The verified linked source is loaded once; ordinary selection remains explicit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const recommendations = availableAllocations;
   const warehouseOptions = Array.from(
     new Map(
       recommendations.map((recommendation) => [
@@ -100,7 +128,7 @@ const DispatchPlanShipmentFormPage = () => {
     ).values(),
   );
   const allocations = recommendations.filter(
-    (recommendation) => String(recommendation.warehouseId) === String(form.warehouseId) && Number(recommendation.allocatedQuantity) > 0,
+    (recommendation) => String(recommendation.warehouseId) === String(form.warehouseId) && Number(recommendation.remainingQuantity) > 0,
   );
 
   const chooseWarehouse = (value) => {
@@ -121,12 +149,8 @@ const DispatchPlanShipmentFormPage = () => {
         allocations: [
           ...without,
           {
-            // BACKEND: The finalized Dispatch DTO publishes recommendation.id,
-            // while Shipment Operations names this foreign key
-            // dispatchPlanningAllocationId. The integration contract provides
-            // no separate allocation-list endpoint.
             dispatchPlanningAllocationId: recommendation.id,
-            plannedQuantity: recommendation.allocatedQuantity,
+            plannedQuantity: recommendation.remainingQuantity,
           },
         ],
       };
@@ -208,11 +232,12 @@ const DispatchPlanShipmentFormPage = () => {
               disabled={loading || saving}
               error={errors.dispatchPlanningRunId || errors.runs}
               label="Finalized dispatch run"
-              options={runs.map((item) => ({ label: `${item.runNumber} — ${item.channelCode}`, value: item.id }))}
+              options={[...new Map([...(run ? [run] : []), ...runs].map(item => [String(item.id), item])).values()].map((item) => ({ label: `${item.runNumber} — ${item.channelCode}`, value: item.id }))}
               required
               value={form.dispatchPlanningRunId}
               onChange={(value) => void selectRun(value)}
             />
+            <div className="mt-2 flex items-center gap-3 text-xs"><AppButton variant="secondary" disabled={loading || runPage <= 1} onClick={() => setRunPage(page => page - 1)}>Previous runs</AppButton><span>Page {runPage}</span><AppButton variant="secondary" disabled={loading || !hasMoreRuns} onClick={() => setRunPage(page => page + 1)}>More runs</AppButton></div>
           </div>
           <AppSelect disabled={!run || loading || saving} error={errors.warehouseId} label="Warehouse" options={warehouseOptions} required value={form.warehouseId} onChange={chooseWarehouse} />
           <AppInput
@@ -234,8 +259,8 @@ const DispatchPlanShipmentFormPage = () => {
             onChange={(event) => setForm((current) => ({ ...current, expectedDeliveryDate: event.target.value }))}
           />
           <AppSelect
-            disabled={saving}
-            error={errors.transporterPartyId}
+            disabled={saving || transporterState.loading || Boolean(transporterState.error)}
+            error={errors.transporterPartyId || transporterState.error}
             label="Transporter"
             options={[
               { label: "Not assigned", value: "" },
@@ -244,6 +269,7 @@ const DispatchPlanShipmentFormPage = () => {
             value={form.transporterPartyId}
             onChange={(value) => setForm((current) => ({ ...current, transporterPartyId: String(value) }))}
           />
+          {transporterState.error ? <AppButton variant="secondary" disabled={transporterState.loading} onClick={loadTransporters}>Retry transporters</AppButton> : !transporterState.loading && transporters.length === 0 ? <Link className="text-sm text-brand" to="/shipments/transporters">Assign the Transporter role to an existing Party</Link> : null}
           <AppInput
             disabled={saving}
             error={errors.invoiceNumber}
@@ -290,7 +316,7 @@ const DispatchPlanShipmentFormPage = () => {
                     <div>
                       <p className="text-sm font-medium text-slate-900">{recommendation.itemName}</p>
                       <p className="text-xs text-slate-500">
-                        {recommendation.itemCode} · {recommendation.channelSku} · allocated {formatShipmentNumber(recommendation.allocatedQuantity, "0")}
+                        {recommendation.itemCode} · {recommendation.channelSku} · remaining {formatShipmentNumber(recommendation.remainingQuantity, "0")} of {formatShipmentNumber(recommendation.allocatedQuantity, "0")} · already in shipments {formatShipmentNumber(recommendation.convertedQuantity, "0")}
                       </p>
                     </div>
                     <AppInput

@@ -1,18 +1,10 @@
-const EMPTY_VALUE = "-";
+import { decimalText } from "./productionValues";
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  currency: "INR",
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2,
-  style: "currency",
-});
+const EMPTY_VALUE = "-";
+const integerFormatter = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 
 const numberFormatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 2,
-});
-
-const quantityFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 3,
 });
 
 const percentFormatter = new Intl.NumberFormat("en-IN", {
@@ -31,9 +23,14 @@ export const toReportNumber = (value) => {
 };
 
 export const formatCurrency = (value) => {
-  const numericValue = toReportNumber(value);
-
-  return numericValue === null ? EMPTY_VALUE : currencyFormatter.format(numericValue);
+  try {
+    const text = decimalText(value);
+    if (!text) return EMPTY_VALUE;
+    const [whole, fraction = ""] = text.replace(/^-/, "").split(".");
+    // Currency display uses the existing two-decimal rule; it never rewrites inputs.
+    const minor = BigInt(whole) * 100n + BigInt(fraction.slice(0, 2).padEnd(2, "0")) + (Number(fraction[2] ?? 0) >= 5 ? 1n : 0n);
+    return `${text.startsWith("-") && minor > 0n ? "-" : ""}₹${integerFormatter.format(minor / 100n)}.${String(minor % 100n).padStart(2, "0")}`;
+  } catch { return EMPTY_VALUE; }
 };
 
 export const formatNumber = (value) => {
@@ -43,9 +40,12 @@ export const formatNumber = (value) => {
 };
 
 export const formatQty = (value) => {
-  const numericValue = toReportNumber(value);
-
-  return numericValue === null ? EMPTY_VALUE : quantityFormatter.format(numericValue);
+  try {
+    const text = decimalText(value);
+    if (!text) return EMPTY_VALUE;
+    const [whole, fraction] = text.replace(/^-/, "").split(".");
+    return (text.startsWith("-") ? "-" : "") + integerFormatter.format(BigInt(whole)) + (fraction ? `.${fraction}` : "");
+  } catch { return EMPTY_VALUE; }
 };
 
 export const formatDate = (value) => {

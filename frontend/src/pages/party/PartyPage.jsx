@@ -9,7 +9,7 @@ import {
   Settings,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -17,6 +17,7 @@ import AppSelect from "../../components/common/AppSelect";
 import AppTooltip from "../../components/common/AppTooltip";
 import useCapabilities from "../../hooks/useCapabilities";
 import useLatestRequest from "../../hooks/useLatestRequest";
+import useListReturnContext from "../../hooks/useListReturnContext";
 import { getApiStatus } from "../../utils/apiError";
 import { downloadCsv } from "../../utils/csv";
 import {
@@ -51,6 +52,7 @@ import PartyGroups from "./PartyGroups";
 import PartyStats from "./PartyStats";
 import PartyTable from "./PartyTable";
 import { partyService } from "./partyService";
+import usePartySettings, { partySettingEnabled } from "./usePartySettings";
 
 const DEFAULT_FILTERS = {
   Search: "",
@@ -168,7 +170,13 @@ const PartyPage = () => {
   const [parties, setParties] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.Search);
+  const committedSearch = useRef(DEFAULT_FILTERS.Search);
   const [activeGroup, setActiveGroup] = useState("all");
+  const partySettings = usePartySettings();
+  const refreshPartySettings = partySettings.refresh;
+  const groupingEnabled = partySettingEnabled(partySettings.settings, "enablePartyGrouping");
+  const statusEditingEnabled = partySettingEnabled(partySettings.settings, "enablePartyStatus");
+  const effectiveGroup = groupingEnabled ? activeGroup : "all";
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
   const [paginationMeta, setPaginationMeta] = useState({
@@ -234,6 +242,15 @@ const PartyPage = () => {
     resource: "party",
     route: "/party",
   });
+  const restoreList = useCallback(saved => {
+    const restored={...DEFAULT_FILTERS,...saved.filters};
+    const search=String(saved.searchInput??restored.Search??"");
+    committedSearch.current=search;
+    setFilters(restored);setSearchInput(search);
+    setActiveGroup(["all","customers","suppliers","both"].includes(saved.activeGroup)?saved.activeGroup:"all");
+    setPage(Math.max(1,Number(saved.page)||1));setPageSize(PAGE_SIZE_OPTIONS.includes(Number(saved.pageSize))?Number(saved.pageSize):PAGE_SIZE_OPTIONS[0]);
+  },[]);
+  const {capture,highlightId}=useListReturnContext({key:"party",filters:{filters,searchInput,activeGroup,page,pageSize},setFilters:restoreList,ready:!isLoading&&!errorMessage,enabled:capabilities.canView});
 
   const baseQueryKey = useMemo(
     () => JSON.stringify([filters.Search.trim(), filters.IsActive]),
@@ -285,7 +302,7 @@ const PartyPage = () => {
         const response = await partyService.getParties(
           buildPartyQueryParams({
             filters,
-            group: activeGroup,
+            group: effectiveGroup,
             page,
             pageSize,
             sort: DEFAULT_SORT,
@@ -373,7 +390,7 @@ const PartyPage = () => {
       }
     },
     [
-      activeGroup,
+      effectiveGroup,
       baseQueryKey,
       beginListRequest,
       dataMode,
@@ -390,7 +407,10 @@ const PartyPage = () => {
   }, [loadParties]);
 
   useEffect(() => {
+    if(committedSearch.current===searchInput)return;
     const timeoutId = window.setTimeout(() => {
+      if(committedSearch.current===searchInput)return;
+      committedSearch.current=searchInput;
       setFilters((current) => {
         if (current.Search === searchInput) {
           return current;
@@ -411,13 +431,13 @@ const PartyPage = () => {
     () =>
       buildClientPartyView({
         creditFilter: filters.creditLimit,
-        group: activeGroup,
+        group: effectiveGroup,
         gstFilter: filters.gst,
         page,
         pageSize,
         parties,
       }),
-    [activeGroup, filters.creditLimit, filters.gst, page, pageSize, parties],
+    [effectiveGroup, filters.creditLimit, filters.gst, page, pageSize, parties],
   );
   const displayParties = dataMode === "client" ? clientView.items : parties;
   const effectivePage = dataMode === "client" ? clientView.page : page;
@@ -529,8 +549,8 @@ const PartyPage = () => {
       return;
     }
 
-    navigate("/party/new");
-  }, [capabilities.canCreate, navigate]);
+    navigate("/party/new",{state:capture()});
+  }, [capabilities.canCreate, capture, navigate]);
 
   const openEditModal = useCallback(
     (party) => {
@@ -539,9 +559,9 @@ const PartyPage = () => {
         return;
       }
 
-      navigate(`/party/${party.id}/edit`);
+      navigate(`/party/${party.id}/edit`,{state:capture()});
     },
-    [capabilities.canUpdate, navigate],
+    [capabilities.canUpdate, capture, navigate],
   );
 
   const openDetailsModal = useCallback(
@@ -639,13 +659,14 @@ const PartyPage = () => {
           settings: response.data,
         }));
         toast.success("Party settings updated successfully");
+        refreshPartySettings();
         closeSettingsModal();
       } catch (error) {
         toast.error(getErrorMessage(error, "Unable to update party settings."));
         throw error;
       }
     },
-    [capabilities.canSettings, closeSettingsModal],
+    [capabilities.canSettings, closeSettingsModal, refreshPartySettings],
   );
 
   const updatePartyStatus = useCallback(
@@ -654,7 +675,7 @@ const PartyPage = () => {
         ? capabilities.canActivate
         : capabilities.canDeactivate;
 
-      if (!allowed) {
+      if (!allowed || !statusEditingEnabled) {
         toast.error("You don't have permission to change party status.");
         return;
       }
@@ -690,6 +711,7 @@ const PartyPage = () => {
       capabilities.canDeactivate,
       loadParties,
       parties,
+      statusEditingEnabled,
     ],
   );
 
@@ -796,7 +818,7 @@ const PartyPage = () => {
     const { requestId, signal } = beginExportRequest();
     const exportParams = buildPartyQueryParams({
       filters,
-      group: activeGroup,
+      group: effectiveGroup,
       page: undefined,
       pageSize: undefined,
       sort: DEFAULT_SORT,
@@ -827,7 +849,7 @@ const PartyPage = () => {
         if (dataMode === "client") {
           exportRows = filterPartiesForBusinessView({
             creditFilter: filters.creditLimit,
-            group: activeGroup,
+            group: effectiveGroup,
             gstFilter: filters.gst,
             parties,
           });
@@ -837,7 +859,7 @@ const PartyPage = () => {
               const pageResponse = await partyService.getParties(
                 buildPartyQueryParams({
                   filters,
-                  group: activeGroup,
+                  group: effectiveGroup,
                   page: pageNumber,
                   pageSize: fallbackPageSize,
                   sort: DEFAULT_SORT,
@@ -879,7 +901,7 @@ const PartyPage = () => {
       if (isLatestExportRequest(requestId)) setIsExporting(false);
     }
   }, [
-    activeGroup,
+    effectiveGroup,
     beginExportRequest,
     capabilities.canExport,
     dataMode,
@@ -890,8 +912,8 @@ const PartyPage = () => {
 
   const tableActions = useMemo(
     () => ({
-      canActivate: capabilities.canActivate,
-      canDeactivate: capabilities.canDeactivate,
+      canActivate: capabilities.canActivate && statusEditingEnabled,
+      canDeactivate: capabilities.canDeactivate && statusEditingEnabled,
       canDelete: capabilities.canDelete,
       canEdit: capabilities.canUpdate,
       canView: capabilities.canView,
@@ -911,6 +933,7 @@ const PartyPage = () => {
       openDetailsModal,
       openEditModal,
       updatePartyStatus,
+      statusEditingEnabled,
     ],
   );
 
@@ -1007,12 +1030,15 @@ const PartyPage = () => {
       />
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <PartyGroups
+        {highlightId&&<p role="status" className="bg-emerald-50 px-4 py-3 text-sm text-emerald-900">Party saved. {displayParties.some(party=>String(party.id)===String(highlightId))?"The saved Party is highlighted below.":"It is outside the current filtered page; your filters and position were retained."}</p>}
+        {groupingEnabled && <PartyGroups
           embedded
           activeGroup={activeGroup}
           counts={groupCounts}
           onChange={handleGroupChange}
-        />
+        />}
+
+        {partySettings.error && <p role="alert" className="bg-amber-50 px-4 py-3 text-sm text-amber-900">{partySettings.error} <button type="button" className="underline" onClick={partySettings.refresh}>Retry settings</button></p>}
 
         <PartyFilters
           embedded
@@ -1029,6 +1055,7 @@ const PartyPage = () => {
         )}
 
         <PartyTable
+          highlightId={highlightId}
           embedded
           actions={tableActions}
           currentPage={effectivePage}

@@ -1,0 +1,93 @@
+{
+  "title": "Cosmos complete implementation brief",
+  "preparedOn": "2026-10-28",
+  "baselineCommit": "da46203",
+  "type": "Execution brief and audit evidence, not application source",
+  "applicationChanged": false,
+  "databaseChanged": false,
+  "checks": {
+    "findingSections": 56,
+    "scenarios": 44,
+    "coverageSections": 125,
+    "findingTrackerCount": 56,
+    "coverageTrackerCount": 125,
+    "allFindings": true,
+    "allCoverage": true,
+    "includesSqlGate": true,
+    "includesScopedFixturePermission": true,
+    "includesBusinessRuleBoundary": true,
+    "noUnexpectedReplacementCharacters": true
+  },
+  "files": [
+    {
+      "path": "PROMPT_COSMOS_COMPLETE_IMPLEMENTATION.txt",
+      "bytes": 261953,
+      "sha256": "742c3cb8616adf71adbb01dc242d6a0d2daf469944ec3c3acb3bf2e0c049cf4f"
+    },
+    {
+      "path": "START_HERE.txt",
+      "bytes": 1956,
+      "sha256": "96a0e4c6f05c0709281ac5f76517e2433c6acbea5cd2421b1cf3d8b8b0b20e94"
+    },
+    {
+      "path": "README.txt",
+      "bytes": 2393,
+      "sha256": "7c185e0308ee7ae905ffe6811af0c37c2bb84c429babafbbf295cfc986f95a6b"
+    },
+    {
+      "path": "finding-tracker-template.json",
+      "bytes": 41518,
+      "sha256": "ae8070eb80683779c84cc5a72d00624e3d49a02a991c7b2407a7bf33fef668b1"
+    },
+    {
+      "path": "coverage-tracker-template.json",
+      "bytes": 125649,
+      "sha256": "05b0a266cfb9f649f74dabc99e5e976629ab474be975e23476f4ea898be3e257"
+    },
+    {
+      "path": "prompt-validation.json",
+      "bytes": 338,
+      "sha256": "f59211c65a0e435039e88863665587dc249fef64c35245c120c4157e3fb7a8ca"
+    },
+    {
+      "path": "audits/COSMOS_UX_REVIEW.html",
+      "bytes": 291883,
+      "sha256": "8e0ebcdfee85242a3763859ac63c9fe336d5bcb9555ab294c19a4cbb9b729b95"
+    },
+    {
+      "path": "audits/COSMOS_UX_AUDIT.json",
+      "bytes": 385932,
+      "sha256": "81bb70b9e2f1c5b381eef2611401a445ac9c6e096dceddaa1cf416691dd8a978"
+    },
+    {
+      "path": "audits/root-audit.json",
+      "bytes": 16040,
+      "sha256": "50e14e5a538786eafabc86fa600a8ca0c285141cf68eb65133bb74653aef6228"
+    },
+    {
+      "path": "audits/commerce-audit.json",
+      "bytes": 84819,
+      "sha256": "7fe90208ab9d24c02e37f8483a9f1f2acda5b3f08cfde060eb38a63e12792399"
+    },
+    {
+      "path": "audits/operations-audit.json",
+      "bytes": 92810,
+      "sha256": "65dd88db3fa611d02928314f122f2576cf2cf045e6d2a4d4fd7ac9e3a92ea5f9"
+    },
+    {
+      "path": "audits/people-admin-content-audit.json",
+      "bytes": 54692,
+      "sha256": "7db6d7fc503f201b1112c063a366467d4ed9f789f538299a0dc43b17b1220733"
+    },
+    {
+      "path": "audits/navigation-inventory.json",
+      "bytes": 43048,
+      "sha256": "d61a6f3bb633e3875c3340e44e8e11b54948c581a469240c594d6887795f2bcf"
+    },
+    {
+      "path": "audits/source-evidence.json",
+      "bytes": 8491,
+      "sha256": "915077fceee59e297baed97b864528114635bbf6194f4d5a15a9d3349f7f8b1f"
+    }
+  ]
+}

@@ -46,6 +46,9 @@ public sealed class PhysicalInventoryService(IProductionWorkspaceRepository repo
         return ApiResponse<ProductionCommandResult>.Success(await repository.ExecuteAsync<ProductionCommandResult>("sp_ProcurementPlanning_PurchaseDraft", scope.CompanyKey,
             user.UserId ?? throw new UnauthorizedCosmosException(), new { Id = runId, Request = r }, ct));
     }
+    public async Task<ApiResponse<ProcurementPurchaseSourceContext>> PurchaseSourcesAsync(long runId, CancellationToken ct) =>
+        ApiResponse<ProcurementPurchaseSourceContext>.Success(await repository.ExecuteAsync<ProcurementPurchaseSourceContext>("sp_ProcurementContinuity_PurchaseSources", scope.CompanyKey,
+            user.UserId ?? throw new UnauthorizedCosmosException(), new { Id = runId }, ct));
     public async Task<ApiResponse<ProcurementSupplierPolicyDto>> SupplierPolicyAsync(long itemId, ProcurementSupplierPolicyRequest? r, CancellationToken ct)
     {
         if (r is not null && (r.Version.Length != 18 || !r.Version.StartsWith("0x",StringComparison.Ordinal) || string.IsNullOrWhiteSpace(r.IdempotencyKey) || r.IdempotencyKey.Length > 100 || r.LeadTime < 0 || decimal.Round(r.LeadTime,3) != r.LeadTime || !Enum.IsDefined(r.LeadTimeUnit) || string.IsNullOrWhiteSpace(r.SourceReference) || r.SourceReference.Length > 200))

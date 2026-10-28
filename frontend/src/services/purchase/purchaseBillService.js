@@ -1,4 +1,5 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireDocumentQuantities } from "../../utils/documentPrecision";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
@@ -6,24 +7,26 @@ import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
 const SORT_FIELDS = ["billDate", "dueDate", "supplierName", "grandTotal"];
 
 export const purchaseBillService = {
-  getPurchaseBills: async (params) => {
+  getPurchaseBills: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILLS, {
+      signal,
       params: sanitizePurchaseListParams(params, SORT_FIELDS),
     });
 
     return unwrapResponse(response);
   },
 
-  getPurchaseBillById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILL_BY_ID(id));
+  getPurchaseBillById: async (id, { signal } = {}) => {
+    const response = await axiosInstance.get(ENDPOINTS.PURCHASE_BILL_BY_ID(id), { signal });
 
     return unwrapResponse(response);
   },
 
-  getPurchaseBillsBySupplier: async (supplierId, params) => {
+  getPurchaseBillsBySupplier: async (supplierId, params, { signal } = {}) => {
     const response = await axiosInstance.get(
       ENDPOINTS.PURCHASE_BILL_BY_SUPPLIER(supplierId),
       {
+        signal,
         params: sanitizePurchaseListParams(params, SORT_FIELDS),
       },
     );
@@ -34,7 +37,7 @@ export const purchaseBillService = {
   createPurchaseBill: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.PURCHASE_BILLS,
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);
@@ -43,7 +46,7 @@ export const purchaseBillService = {
   updatePurchaseBill: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.PURCHASE_BILL_BY_ID(id),
-      payload,
+      wireDocumentQuantities(payload),
     );
 
     return unwrapResponse(response);

@@ -191,8 +191,19 @@ public sealed class UpdateWebsiteSettingsRequestValidator : AbstractValidator<Up
         {
             setting.RuleFor(x => x.SettingKey).Must(x => AllowedKeys.Contains(x)).WithMessage("SettingKey is not allowed.");
             setting.RuleFor(x => x.Value).MaximumLength(2000);
+            setting.RuleFor(x => x).Must(IsValidSettingValue).WithMessage("Use a valid email, HTTP(S) URL, or true/false value for this setting.");
         });
         RuleFor(x => x.Settings).Must(x => x.Select(s => s.SettingKey).Distinct(StringComparer.Ordinal).Count() == x.Count).WithMessage("Setting keys must be unique.");
+    }
+    private static bool IsValidSettingValue(WebsiteSettingValueRequest setting)
+    {
+        var value = setting.Value?.Trim() ?? "";
+        if (setting.SettingKey is "PublicCountersEnabled" or "WarrantyStatisticsVisible") return bool.TryParse(value, out _);
+        if (value.Length == 0) return true;
+        if (setting.SettingKey == "SupportEmail") return System.Net.Mail.MailAddress.TryCreate(value, out var address) && address.Address == value;
+        if (setting.SettingKey.EndsWith("Url", StringComparison.Ordinal) || setting.SettingKey == "DefaultSeoImage")
+            return Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+        return true;
     }
 }
 

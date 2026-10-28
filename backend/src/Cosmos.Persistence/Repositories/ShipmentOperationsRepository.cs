@@ -53,6 +53,9 @@ public sealed class ShipmentOperationsRepository : IShipmentOperationsRepository
             freightCharges);
     }
 
+    public Task<IReadOnlyCollection<ShipmentDispatchAllocationDto>> GetDispatchAllocationsAsync(long runId, CancellationToken ct) =>
+        QueryAsync<ShipmentDispatchAllocationDto>("usp_ShipmentOperations_DispatchAllocations", new { RunId = runId }, ct);
+
     public Task<long> CreateManualShipmentAsync(CreateManualShipmentRequest request, long? userId, CancellationToken ct) =>
         ExecuteIdAsync("usp_ShipmentOperations_Shipment_CreateManual", new
         {
@@ -86,6 +89,12 @@ public sealed class ShipmentOperationsRepository : IShipmentOperationsRepository
             request.Length, request.Width, request.Height, request.DimensionUnit, request.GrossWeight, request.NetWeight,
             request.WeightUnit, request.VolumetricDivisor, request.TrackingLabel, request.Barcode, request.SealNumber,
             request.IsMixedPackage, request.Notes, ItemsJson = JsonSerializer.Serialize(request.Items, JsonOptions), UserId = userId
+        }, ct);
+
+    public Task RemovePackageAsync(long shipmentId, long packageId, RemoveShipmentPackageRequest request, long? userId, CancellationToken ct) =>
+        ExecuteStatusOrThrowAsync("usp_ShipmentOperations_Package_Remove", new
+        {
+            ShipmentId = shipmentId, PackageId = packageId, request.Version, request.CommandKey, request.Reason, UserId = userId
         }, ct);
 
     public Task SaveDocketAsync(long shipmentId, SaveShipmentDocketRequest request, long? userId, CancellationToken ct) =>
@@ -242,7 +251,7 @@ public sealed class ShipmentOperationsRepository : IShipmentOperationsRepository
         int TotalPackages, decimal TotalGrossWeight, decimal TotalVolumetricWeight, decimal TotalChargeableWeight,
         DateTime CreatedAtUtc, long? CreatedBy, DateTime? UpdatedAtUtc, long? UpdatedBy, DateTime? PackedAtUtc, long? PackedBy,
         DateTime? DispatchedAtUtc, long? DispatchedBy, DateTime? DeliveredAtUtc, long? DeliveredBy, DateTime? ClosedAtUtc,
-        long? ClosedBy, DateTime? CancelledAtUtc, long? CancelledBy, string? CancellationReason)
+        long? ClosedBy, DateTime? CancelledAtUtc, long? CancelledBy, string? CancellationReason, string? Version)
     {
         public ShipmentDto ToDto(IReadOnlyCollection<ShipmentItemDto> items, IReadOnlyCollection<ShipmentPackageDto> packages,
             IReadOnlyCollection<ShipmentDocketDto> dockets, IReadOnlyCollection<ShipmentAppointmentDto> appointments,
@@ -256,7 +265,7 @@ public sealed class ShipmentOperationsRepository : IShipmentOperationsRepository
                 TotalPackages, TotalGrossWeight, TotalVolumetricWeight, TotalChargeableWeight, CreatedAtUtc, CreatedBy, UpdatedAtUtc,
                 UpdatedBy, PackedAtUtc, PackedBy, DispatchedAtUtc, DispatchedBy, DeliveredAtUtc, DeliveredBy, ClosedAtUtc, ClosedBy,
                 CancelledAtUtc, CancelledBy, CancellationReason, items, packages, dockets, appointments, trackingEvents, deliveryAttempts,
-                receipts, returns, freightCharges);
+                receipts, returns, freightCharges, Version);
     }
 
     private sealed record ShipmentPackageRow(long Id, long ShipmentId, string PackageNumber, string PackageType, long? PackagingProfileId,

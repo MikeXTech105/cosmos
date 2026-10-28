@@ -1,9 +1,10 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireShipmentPayload } from "./shipmentWire";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 
 const post = async (endpoint, payload) => {
-  const response = await axiosInstance.post(endpoint, payload);
+  const response = await axiosInstance.post(endpoint, wireShipmentPayload(payload));
   return unwrapResponse(response);
 };
 

@@ -1,4 +1,6 @@
 import { getApiErrorMessage } from "../../../utils/apiError";
+import { decimalText } from "../../../utils/productionValues";
+import { documentIdText, documentQuantityText, optionalDocumentIdText } from "../../../utils/documentPrecision";
 
 export const SALES_INVOICE_STATUS = {
   DRAFT: 1,
@@ -136,9 +138,7 @@ export const normalizeNumberBlurValue = (value, fallback = "0") => {
   const completedValue = normalized.endsWith(".")
     ? normalized.slice(0, -1)
     : normalized;
-  const numericValue = Number(completedValue);
-
-  return Number.isFinite(numericValue) ? String(numericValue) : fallback;
+  try { return decimalText(completedValue); } catch { return fallback; }
 };
 
 export const getTodayInputValue = () => {
@@ -337,7 +337,7 @@ export const getDefaultInvoiceLine = () => ({
 });
 
 export const getInvoiceDefaultValues = (invoice) => {
-  const today = getTodayInputValue();
+  const today = "";
 
   return {
     customerPartyId: invoice?.customerPartyId ?? "",
@@ -347,7 +347,7 @@ export const getInvoiceDefaultValues = (invoice) => {
     priceBasis: invoice?.priceBasis ?? "",
     invoiceNumber: invoice?.invoiceNumber ?? "",
     invoiceDate: toInputDate(invoice?.invoiceDate) || today,
-    dueDate: toInputDate(invoice?.dueDate) || addDaysToInputDate(today, 15),
+    dueDate: toInputDate(invoice?.dueDate),
     discountAmount:
       invoice?.discountAmount === undefined ||
       invoice?.discountAmount === null
@@ -390,19 +390,19 @@ export const getInvoiceDefaultValues = (invoice) => {
 export const buildInvoicePayload = (values) => {
   const payload = {
     customerPartyId: values.customerPartyId,
-    companyGstRegistrationId: values.companyGstRegistrationId ? Math.trunc(toNumber(values.companyGstRegistrationId)) : null,
+    companyGstRegistrationId: optionalDocumentIdText(values.companyGstRegistrationId),
     placeOfSupplyStateCode: values.placeOfSupplyStateCode?.trim() || null,
     placeOfSupplySource: values.placeOfSupplySource?.trim() || null,
     priceBasis: values.priceBasis === "" || values.priceBasis === null || values.priceBasis === undefined ? null : Math.trunc(toNumber(values.priceBasis)),
     invoiceDate: values.invoiceDate,
     dueDate: values.dueDate || null,
     items: values.items.map((item) => ({
-      itemId: Math.trunc(toNumber(item.itemId)),
-      quantity: toPositiveNumber(item.quantity),
+      itemId: documentIdText(item.itemId),
+      quantity: documentQuantityText(item.quantity),
       rate: toNumber(item.rate),
       discountPercentage: toNumber(item.discountPercentage),
       discountAmount: toNumber(item.discountAmount),
-      taxRateId: item.taxRateId ? Math.trunc(toNumber(item.taxRateId)) : null,
+      taxRateId: optionalDocumentIdText(item.taxRateId),
       taxPercentage: toNumber(item.taxPercentage),
     })),
     discountAmount: toNumber(values.discountAmount),
@@ -561,7 +561,7 @@ export const amountToWords = (amount) => {
   return `Rupees ${words} Only`;
 };
 
-export const buildTemplateInvoice = (invoice, customer = null) => {
+export const buildTemplateInvoice = (invoice, customer = null, partySettings = null) => {
   const items = Array.isArray(invoice?.items) ? invoice.items : [];
   const normalizedItems = items.map((item, index) => ({
     id: item.id ?? `${item.itemId}-${index}`,
@@ -570,7 +570,7 @@ export const buildTemplateInvoice = (invoice, customer = null) => {
     name: item.itemNameSnapshot ?? item.itemName ?? `Item ${index + 1}`,
     hsn: item.hsnSacCodeSnapshot ?? item.hsnCode ?? "",
     unit: item.unitNameSnapshot ?? item.unitName ?? "",
-    quantity: toNumber(item.quantity),
+    quantity: item.quantity == null ? null : decimalText(item.quantity),
     rate: toNumber(item.rate),
     taxableAmount: Math.max(0, toNumber(item.quantity) * toNumber(item.rate) *
       (1 - toNumber(item.discountPercentage) / 100) - toNumber(item.discountAmount)),
@@ -596,7 +596,8 @@ export const buildTemplateInvoice = (invoice, customer = null) => {
     numberOfBoxes: invoice?.numberOfBoxes,
     purposeOfTransfer: invoice?.purposeOfTransfer,
     irn: invoice?.irn,
-    shipTo: customer?.shippingAddressLine1 ? {
+    printShippingAddress: partySettings?.printShippingAddress === true,
+    shipTo: partySettings?.printShippingAddress === true && customer?.shippingAddressLine1 ? {
       name: invoice?.customerName ?? getCustomerName(customer),
       address: [customer.shippingAddressLine1, customer.shippingAddressLine2,
         customer.shippingCity, customer.shippingState, customer.shippingPincode].filter(Boolean).join(", "),
