@@ -1,4 +1,5 @@
 const en = {
+  "Daily entry": "Daily entry", "Kanban board": "Kanban board",
   "First data row in original tab": "First data row in original tab", "Retry identical staging request": "Retry identical staging request", "The staging outcome is unknown. Retry the identical source and cutover to recover its saved batch; source changes stay locked until recovery.": "The staging outcome is unknown. Retry the identical source and cutover to recover its saved batch; source changes stay locked until recovery.",
   ". Mapping records evidence; validation, reconciliation, approval and posting follow separately.": ". Mapping records evidence; validation, reconciliation, approval and posting follow separately.",
   "1 · Select and stage source": "1 · Select and stage source",
@@ -104,6 +105,7 @@ const en = {
   "· Snapshot": "· Snapshot"
 };
 const hinglish = {
+  "Daily entry": "Daily entry", "Kanban board": "Kanban board",
   "First data row in original tab": "Original tab mein pehli data row", "Retry identical staging request": "Wahi staging request phir bhejo", "The staging outcome is unknown. Retry the identical source and cutover to recover its saved batch; source changes stay locked until recovery.": "Staging ka result clear nahi hai. Wahi source aur cutover phir bhejkar saved batch dekho; tab tak source badalna locked rahega.",
   ...en,
   ". Mapping records evidence; validation, reconciliation, approval and posting follow separately.": ". Mapping evidence ko rakhti hai; validation, reconciliation, approval aur posting alag steps hain.",

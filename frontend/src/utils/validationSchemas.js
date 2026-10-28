@@ -174,7 +174,7 @@ export const hrEmployeeSchema = z.object({
       (value) => value === "" || /^\+?[0-9]{7,15}$/.test(value),
       "Enter a valid mobile number with 7 to 15 digits; + is allowed only at the start",
     ),
-  email: z.string().trim().email("Enter a valid email address").or(z.literal("")),
+  email: z.string().trim().max(200).pipe(z.union([z.literal(""), z.string().email("Enter a valid email address")])).default(""),
   departmentId: z.coerce.number().int().positive("Department is required"),
   designationId: z.coerce.number().int().positive("Designation is required"),
   reportingManagerId: optionalPositiveId,

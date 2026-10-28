@@ -12,6 +12,7 @@ import { DEEP_PAGES } from "../pages/deepDive/deepDiveConfig";
 const DeepDivePage = lazy(() => import("../pages/deepDive/DeepDivePage.jsx"));
 const ProductionConfiguration = lazy(() => import("../pages/manufacturing/configuration/ConfigurationPage.jsx"));
 const ProductionOrders = lazy(() => import("../pages/manufacturing/orders/OrdersPage.jsx"));
+const ProductionDesk = lazy(() => import("../pages/manufacturing/desk/ProductionDeskPage.jsx"));
 const ProductionOrderForm = lazy(() => import("../pages/manufacturing/orders/OrderFormPage.jsx"));
 const ProductionOrderDetail = lazy(() => import("../pages/manufacturing/orders/OrderDetailPage.jsx"));
 const ProductionPlanning = lazy(() => import("../pages/manufacturing/planning/PlanningPage.jsx"));
@@ -280,7 +281,9 @@ const AppRoutes = () => {
             path="/gst"
             element={<Navigate to="/gst/configuration" replace />}
           />
-          <Route path="/manufacturing" element={<Navigate to="/manufacturing/orders" replace />} />
+          <Route path="/manufacturing" element={<Navigate to="/manufacturing/daily" replace />} />
+          <Route path="/manufacturing/daily" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionDesk /></PermissionGuard>} />
+          <Route path="/manufacturing/board" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionDesk /></PermissionGuard>} />
           <Route path="/manufacturing/configuration" element={<PermissionGuard pageName="Manufacturing.Configuration" route="/manufacturing/configuration"><ProductionConfiguration /></PermissionGuard>} />
           <Route path="/manufacturing/orders" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrders /></PermissionGuard>} />
           <Route path="/manufacturing/orders/new" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionOrderForm /></PermissionGuard>} />

@@ -269,7 +269,7 @@ export const mapFormToBankDetails = (values) => ({
 
 export const mapFormToPayload = (
   values,
-  { includeBankDetails = true } = {},
+  { includeBankDetails = true, preserveExistingAddresses = false } = {},
 ) => {
   const addresses = Array.isArray(values.addresses)
     ? values.addresses.filter(hasAddress).map(mapAddressToPayload)
@@ -300,12 +300,17 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // Addresses are optional in the API contract. Omit an empty collection so an
-  // edit does not turn "unchanged" into an explicit address replacement.
-  if (payloadAddresses) payload.addresses = payloadAddresses;
+  // Create sends explicit empty values; updates preserve an omitted replacement.
+  if (payloadAddresses) {
+    payload.addresses = payloadAddresses;
+  } else if (!preserveExistingAddresses) {
+    payload.addresses = [];
+  }
 
-  if (includeBankDetails) {
-    if (hasBankDetails(values)) payload.bankDetails = mapFormToBankDetails(values);
+  if (includeBankDetails && hasBankDetails(values)) {
+    payload.bankDetails = mapFormToBankDetails(values);
+  } else if (includeBankDetails) {
+    payload.bankDetails = null;
   }
 
   return payload;

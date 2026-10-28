@@ -5,7 +5,10 @@ import { unwrapResponse } from "../services/apiServiceUtils";
 export default function useProductionRuntime() {
   const [state, setState] = useState({ runtime: null, loading: true, error: "" });
   const [revision, setRevision] = useState(0);
-  const reload = useCallback(() => setRevision(value => value + 1), []);
+  const reload = useCallback(() => {
+    setState({ runtime: null, loading: true, error: "" });
+    setRevision(value => value + 1);
+  }, []);
   useEffect(() => {
     const controller = new AbortController();
     productionApi.get("/api/v1/manufacturing/runtime", { signal: controller.signal }).then(response => {

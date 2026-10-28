@@ -233,6 +233,18 @@
   "The order changed while this command was open. Reload and review before entering a new command.": "The order changed while this command was open. Reload and review before entering a new command.",
   "Manufacturing Orders Approve permission is required for this command.": "Manufacturing Orders Approve permission is required for this command.",
   "No common effective HR shift is configured for every work centre at the planned start date. Maintain Work Centre capacity before saving.": "No common effective HR shift is configured for every work centre at the planned start date. Maintain Work Centre capacity before saving.",
+  "Your daily quantities and company time are filled in. Review the actual materials below before saving.": "Your daily quantities and company time are filled in. Review the actual materials below before saving.",
+  "Actual consumption matches expected": "Actual consumption matches expected",
+  "Accepted output increases finished stock. Actual consumption plus scrap reduces material stock.": "Accepted output increases finished stock. Actual consumption plus scrap reduces material stock.",
+  "Time, resources & reference": "Time, resources & reference",
+  "Review production entry": "Review production entry",
+  "Save production": "Save production",
+  "Material / unit": "Material / unit",
+  "Expected": "Expected",
+  "Explain extra material usage when actual consumption plus scrap exceeds expected.": "Explain extra material usage when actual consumption plus scrap exceeds expected.",
+  "Use only when measured consumption matches the preview. Existing actual entries are preserved; scrap and returns remain separate.": "Use only when measured consumption matches the preview. Existing actual entries are preserved; scrap and returns remain separate.",
+  "Orders could not be loaded": "Orders could not be loaded",
+  "Resolve the error above, then retry. Existing orders and quantities are unavailable until the read succeeds.": "Resolve the error above, then retry. Existing orders and quantities are unavailable until the read succeeds.",
   "No orders on this page": "No orders on this page",
   "Matching orders still exist. Return to a previous page or apply the filters again.": "Matching orders still exist. Return to a previous page or apply the filters again."
 }
