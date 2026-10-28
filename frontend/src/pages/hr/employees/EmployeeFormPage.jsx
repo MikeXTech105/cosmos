@@ -258,7 +258,7 @@ const EmployeeFormPage = () => {
       return;
     }
 
-    const payload = mapFormToPayload(values, { includeBankDetails: !isEdit });
+    const payload = mapFormToPayload(values, { includeBankDetails: !isEdit, preserveExistingAddresses: isEdit });
     const bankDetails = mapFormToBankDetails(values);
     const shouldSaveBankDetails = isEdit && (hasBankDetails(values) || hasBankDetails(detailBankDetails));
 
@@ -369,7 +369,7 @@ const EmployeeFormPage = () => {
           <Section title="Contact">
             <div className="grid gap-4 md:grid-cols-2">
               <AppInput id="mobile" label="Mobile" error={errors.mobile?.message} {...register("mobile")} />
-              <AppInput id="email" label="Email" type="email" required error={errors.email?.message} {...register("email")} />
+              <AppInput id="email" label="Email" type="email" error={errors.email?.message} {...register("email")} />
             </div>
           </Section>
 
