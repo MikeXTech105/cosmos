@@ -117,3 +117,12 @@ Not run / incomplete:
 ## Required next controlled step
 
 Before staging deployment, complete the missing master administration/API/UI and expanded SQL/API coverage. The current retained staging migration would add three empty masters/assignment tables, nullable Sales ownership columns, foreign keys, indexes, the scope procedure, and guarded Sales procedure changes. Its two existing invoices stay untouched and unscoped. Apply it only after separate approval; do not run lifecycle tests against `CosmosERP_Staging`.
+
+## Final code-review evidence (2026-10-28)
+
+- Frontend regression coverage completed through twelve sequential, non-overlapping Vitest batches: **116 files, 730 tests passed, zero failed, skipped, or timed out**. The normal monolithic Vitest invocation remains scale-sensitive in this local host and is not represented as passed. Batch evidence is retained under `tmp/vitest-batches-20261028-163802/`.
+- Frontend ESLint and production build passed. The mounted Organization Administration and Sales ownership suites are included in the completed batch coverage.
+- `dotnet build backend/src/Cosmos.API/Cosmos.API.csproj --no-restore` completed with zero errors (existing package warnings remain).
+- Guarded disposable SQL regression completed with **5 passed, 0 failed, 0 skipped**: Company/Branch master rules and rollback; scope authorization including legacy and System Owner behavior; assignment lifecycle, audit rollback, and concurrency; and Sales GST draft/confirm/cancel context. Log: `tmp/phase4-scoped-sql-regression.log`.
+- The SQL fixtures enforce the `CosmosSalesGstIntegrationTests_*` catalog guard and clean only owned fixture prefixes: `ITP43%` assignment fixtures and `ITP4A`/`ITP4B` scope fixtures joined by their owned Company/Branch identities. A separate post-run residue count has not yet been captured; it remains a release-evidence follow-up, not a reason to delete retained audit history.
+- Staging remains unchanged. Deployment requires an approved, restorable backup; the forward-only migration sequence `20261027_30` through `20261028_36`; post-deployment schema/RBAC smoke checks; and authenticated browser acceptance. GSTZen, E-Invoice, and E-Way Bill generation remain disabled.
