@@ -1,0 +1,3 @@
+using Cosmos.Contracts.Organization;
+namespace Cosmos.Application.Abstractions.Persistence;
+public interface ICompanyBranchMasterRepository { Task<IReadOnlyCollection<CompanyDto>> CompaniesAsync(string? search,bool activeOnly,CancellationToken ct); Task<CompanyDto?> CompanyAsync(long id,CancellationToken ct); Task<CompanyDto> SaveCompanyAsync(long? id,string code,string name,bool active,long? userId,CancellationToken ct); Task<IReadOnlyCollection<BranchDto>> BranchesAsync(long? companyId,string? search,bool activeOnly,CancellationToken ct); Task<BranchDto?> BranchAsync(long id,CancellationToken ct); Task<BranchDto> SaveBranchAsync(long? id,long companyId,string code,string name,bool active,long? userId,CancellationToken ct); }

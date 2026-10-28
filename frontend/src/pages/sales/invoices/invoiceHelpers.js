@@ -340,6 +340,8 @@ export const getInvoiceDefaultValues = (invoice) => {
 
   return {
     customerPartyId: invoice?.customerPartyId ?? "",
+    companyId: invoice?.companyId ?? "",
+    branchId: invoice?.branchId ?? null,
     companyGstRegistrationId: invoice?.companyGstRegistrationId ?? null,
     placeOfSupplyStateCode: invoice?.placeOfSupplyStateCode ?? "",
     placeOfSupplySource: invoice?.placeOfSupplySource ?? "",
@@ -386,6 +388,8 @@ export const getInvoiceDefaultValues = (invoice) => {
 export const buildInvoicePayload = (values) => {
   const payload = {
     customerPartyId: values.customerPartyId,
+    companyId: documentIdText(values.companyId),
+    branchId: optionalDocumentIdText(values.branchId),
     companyGstRegistrationId: optionalDocumentIdText(values.companyGstRegistrationId),
     placeOfSupplyStateCode: values.placeOfSupplyStateCode?.trim() || null,
     placeOfSupplySource: values.placeOfSupplySource?.trim() || null,

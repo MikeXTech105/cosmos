@@ -78,6 +78,7 @@ export const enabledModules = [
   "dataBook",
   "activityLogs",
   "settings",
+  "companyBranches",
   ...GST_PAGES.map(page => `gst_${page.key}`),
 ];
 
@@ -937,6 +938,15 @@ export const sidebarModules = {
     icon: "settings",
     categoryId: "system",
     sortOrder: 10,
+  },
+  companyBranches: {
+    id: "companyBranches",
+    label: "Company & Branches",
+    route: "/settings/company-branches",
+    permissionPageName: "System.CompanyBranchScope",
+    icon: "business",
+    categoryId: "system",
+    sortOrder: 20,
   },
   activityLogs: {
     id: "activityLogs",

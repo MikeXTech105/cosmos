@@ -46,6 +46,8 @@ const initialPaymentSchema = z
 export const invoiceSchema = z.object({
   // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
   customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
+  companyId: documentIdSchema("Company"),
+  branchId: optionalDocumentIdSchema,
   companyGstRegistrationId: optionalDocumentIdSchema,
   placeOfSupplyStateCode: z.string().trim().regex(/^$|^[0-9]{2}$/, "Use a two-digit GST state code"),
   placeOfSupplySource: z.string().trim().max(50, "Source is too long"),

@@ -22,8 +22,8 @@ describe("frontend API validation alignment", () => {
     const parsed = hrEmployeeSchema.parse(employee());
     const payload = mapFormToPayload(parsed);
     expect(payload.dateOfBirth).toBeNull();
-    expect(payload.bankDetails).toBeNull();
-    expect(payload.addresses).toEqual([]);
+    expect(payload).not.toHaveProperty("bankDetails");
+    expect(payload).not.toHaveProperty("addresses");
   });
   it("requires complete bank details only when supplied", () => {
     expect(hrEmployeeSchema.safeParse({ ...employee(), accountNumber: "123" }).success).toBe(false);
@@ -33,7 +33,7 @@ describe("frontend API validation alignment", () => {
   });
   it("validates partially populated addresses without requiring an empty address", () => {
     expect(hrEmployeeSchema.safeParse({ ...employee(), addresses: [{ city: "Surat", addressLine1: "" }] }).success).toBe(false);
-    expect(mapFormToPayload(employee()).addresses).toEqual([]);
+    expect(mapFormToPayload(employee())).not.toHaveProperty("addresses");
   });
   it("preserves saved addresses and bank details when the update form supplies no replacement", () => {
     const payload = mapFormToPayload(employee(), { includeBankDetails: false, preserveExistingAddresses: true });

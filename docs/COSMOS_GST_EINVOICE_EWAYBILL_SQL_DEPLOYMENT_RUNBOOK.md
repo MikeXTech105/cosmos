@@ -27,3 +27,9 @@ For subsequent GST work, Codex must directly inspect current SQL objects on this
 `CosmosERP_Staging` contains retained business data: do **not** run the `SalesInvoiceGstSqlIntegrationTests` suite against it, bypass its disposable-database name guard, or create/confirm/cancel test invoices or stock adjustments without a separately approved isolated plan. The disposable suite still requires a separate `CosmosSalesGstIntegrationTests_*` database and `COSMOS_SALES_GST_INTEGRATION_CONNECTION_STRING`.
 
 The presence of GST columns/indexes in user-run SSMS verification is not evidence that the full SQL Sales lifecycle was tested. Tax policy approval, immutable compliance snapshots and GSTZen reconciliation remain outstanding; legal E-Invoice/E-Way Bill generation remains blocked. Rotate the committed SQL credential before granting broader automation privileges.
+
+## Phase 4 Company/Branch master safety migrations (2026-10-28)
+
+Apply `20261027_30_company_branch_scope.sql`, `20261027_31_company_branch_scope_permission.sql`, `20261027_32_company_branch_master_procedures.sql`, `20261027_33_company_branch_master_scope_authorization.sql`, and `20261028_34_company_branch_safe_deactivation.sql` in order to an approved target after standard preflight and recovery checks. Each is forward-only and rerunnable. The final migration blocks unsafe deactivation where active branches, registrations, scope assignments, or draft Sales invoices would otherwise leave an operationally inconsistent master.
+
+These migrations have been applied and rerun only on `CosmosSalesGstIntegrationTests_Local`. They have **not** been applied to `CosmosERP_Staging`. Do not run the disposable lifecycle suite on staging. No migration here enables tax calculation, immutable statutory snapshots, E-Invoice, E-Way Bill, or GSTZen generation.

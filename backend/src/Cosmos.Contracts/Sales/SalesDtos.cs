@@ -21,6 +21,10 @@ public class SalesInvoiceDto
     public int PaymentStatus { get; set; }
     public string? Notes { get; set; }
     public string? TermsAndConditions { get; set; }
+    /// <summary>Canonical legal entity selected when the invoice was drafted; null only for legacy invoices.</summary>
+    public long? CompanyId { get; set; }
+    /// <summary>Optional operating-branch scope. Null represents company-level ownership.</summary>
+    public long? BranchId { get; set; }
     /// <summary>Explicit issuing registration chosen for this invoice; null is retained for historical invoices.</summary>
     public long? CompanyGstRegistrationId { get; set; }
     public string? CompanyGstin { get; set; }

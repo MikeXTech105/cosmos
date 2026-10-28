@@ -71,6 +71,15 @@ export const ENDPOINTS = {
 
   GST_RATE_VERSIONS: "/api/v1/gst/rate-versions",
 
+  ORGANIZATION_COMPANIES: "/api/v1/organization/companies",
+  ORGANIZATION_COMPANY_BY_ID: (id) => `/api/v1/organization/companies/${id}`,
+  ORGANIZATION_BRANCHES: "/api/v1/organization/branches",
+  ORGANIZATION_BRANCH_BY_ID: (id) => `/api/v1/organization/branches/${id}`,
+  ORGANIZATION_SCOPE_ASSIGNMENTS: "/api/v1/organization/scope-assignments",
+  ORGANIZATION_SCOPE_ASSIGNMENTS_ME: "/api/v1/organization/scope-assignments/me",
+  ORGANIZATION_SCOPE_ASSIGNMENTS_USER: (id) => `/api/v1/organization/scope-assignments/users/${id}`,
+  ORGANIZATION_SCOPE_ASSIGNMENT_BY_ID: (id) => `/api/v1/organization/scope-assignments/${id}`,
+
   SALES_INVOICES: "/api/v1/sales/invoices",
 
   SALES_INVOICE_BY_ID: (id) => `/api/v1/sales/invoices/${id}`,

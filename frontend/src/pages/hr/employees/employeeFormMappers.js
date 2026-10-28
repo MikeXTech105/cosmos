@@ -300,8 +300,7 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // Create sends an empty collection. On PUT, omission preserves saved addresses
-  // when this form did not supply an actual address replacement.
+  // Create sends explicit empty values; updates preserve an omitted replacement.
   if (payloadAddresses) {
     payload.addresses = payloadAddresses;
   } else if (!preserveExistingAddresses) {

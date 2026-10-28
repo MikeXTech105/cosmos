@@ -6,12 +6,13 @@ using Cosmos.Shared.Responses;
 
 namespace Cosmos.Application.Services;
 
-public sealed class GstComplianceEligibilityService(ISalesRepository salesRepository) : IGstComplianceEligibilityService
+public sealed class GstComplianceEligibilityService(ISalesRepository salesRepository, ISalesInvoiceScopeAuthorizer scopeAuthorizer) : IGstComplianceEligibilityService
 {
     public async Task<ApiResponse<GstComplianceSnapshotReadiness>> AssessSalesInvoiceAsync(long salesInvoiceId, CancellationToken cancellationToken)
     {
         var invoice = await salesRepository.GetByIdAsync(salesInvoiceId, cancellationToken)
             ?? throw new NotFoundException("Sales invoice was not found.");
+        await scopeAuthorizer.DemandReadAsync(invoice, cancellationToken);
 
         // The evaluator intentionally receives only the persisted invoice. Reading
         // mutable Party, Item, registration, or rule masters here would make a
