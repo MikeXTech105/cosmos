@@ -73,6 +73,7 @@ describe("sales invoice enum contract", () => {
     for (const paymentMode of Object.values(SALES_PAYMENT_MODE)) {
       const payload = buildInvoicePayload({
         customerPartyId: "customer-id",
+        companyId: "1",
         invoiceDate: "2026-10-09",
         dueDate: "",
         discountAmount: "0",

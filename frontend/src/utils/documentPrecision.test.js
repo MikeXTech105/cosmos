@@ -9,7 +9,7 @@ import { buildInvoicePayload, getInvoiceDefaultValues, normalizeNumberBlurValue 
 const id = "9223372036854775807", maximum = "9999999999999999.999999";
 const line = { itemId: id, quantity: maximum, unitId: id, purchaseBillItemId: id, purchasePrice: "0", rate: "0", discountPercentage: "0", discountAmount: "0", taxPercentage: "0", taxRateId: id };
 const bill = { supplierId: "11111111-1111-4111-8111-111111111111", billDate: "2026-10-27", dueDate: "", paymentType: 1, discountAmount: "0", roundOff: "0", paidAmount: "0", items: [line] };
-const invoice = { customerPartyId: "11111111-1111-1111-1111-111111111111", companyGstRegistrationId: id, placeOfSupplyStateCode: "", placeOfSupplySource: "", invoiceDate: "2026-10-27", dueDate: "", discountAmount: "0", items: [line] };
+const invoice = { customerPartyId: "11111111-1111-1111-1111-111111111111", companyId: id, companyGstRegistrationId: id, placeOfSupplyStateCode: "", placeOfSupplySource: "", invoiceDate: "2026-10-27", dueDate: "", discountAmount: "0", items: [line] };
 
 describe("document editor quantity and identity boundary", () => {
   it("keeps the upper posting bound and tiny quantity intact through real form schemas, payload helpers and numeric JSON", () => {
