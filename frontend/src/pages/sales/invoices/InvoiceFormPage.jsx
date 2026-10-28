@@ -30,6 +30,7 @@ import UnitFormModal from "../../inventory/units/UnitFormModal";
 import { PartyFormModal } from "../../party";
 import { getPartyDisplayName, getPartyType } from "../../party/partyHelpers";
 import { partyService } from "../../party/partyService";
+import { organizationService } from "../../../services/organization/organizationService";
 import {
   createInvoice,
   fetchInvoiceById,
@@ -131,6 +132,7 @@ const InvoiceFormPage = () => {
     customers: [], customersError: null, customersLoading: true,
     items: [], itemsError: null, itemsLoading: true,
     registrations: [], registrationsError: null, registrationsLoading: true,
+    companies: [], branches: [], scopeLoading: true, scopeError: null,
   });
   const [lookupCreateModal, setLookupCreateModal] = useState({ category: false, customer: false, item: false, unit: false });
   const [itemCreateLookups, setItemCreateLookups] = useState({
@@ -153,6 +155,8 @@ const InvoiceFormPage = () => {
   });
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
+  const selectedCompanyId = useWatch({ control, name: "companyId" });
+  const selectedBranchId = useWatch({ control, name: "branchId" });
   const invoiceDiscountAmount = useWatch({ control, name: "discountAmount" }) ?? "0";
   const totals = getInvoiceTotals(watchedItems, invoiceDiscountAmount);
 
@@ -200,10 +204,11 @@ const InvoiceFormPage = () => {
   const loadLookups = useCallback(() => {
     return Promise.all([loadLookup("customers"), loadLookup("items"), loadRegistrations()]);
   }, [loadLookup, loadRegistrations]);
+  const loadOwnership = useCallback(() => Promise.all([organizationService.companies({ activeOnly: true }), organizationService.branches({ activeOnly: true })]).then(([companies, branches]) => setLookups((current) => ({ ...current, companies: getLookupList(companies), branches: getLookupList(branches), scopeLoading: false }))).catch((error) => { const message = getActionError(error, "Unable to load authorized company scope."); setLookups((current) => ({ ...current, scopeLoading: false, scopeError: message })); toast.error(message); }), []);
 
   useEffect(() => {
-    void Promise.resolve().then(loadLookups);
-  }, [loadLookups]);
+    void Promise.resolve().then(() => Promise.all([loadLookups(), loadOwnership()]));
+  }, [loadLookups, loadOwnership]);
 
   useEffect(() => {
     if (!isEdit) {
@@ -237,10 +242,12 @@ const InvoiceFormPage = () => {
     () => lookups.items.map((item) => ({ value: String(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
     [lookups.items],
   );
-  const registrationOptions = useMemo(() => lookups.registrations.map((registration) => ({
+  const companyOptions = useMemo(() => lookups.companies.filter((company) => company.isActive).map((company) => ({ value: String(company.id), label: `${company.code} — ${company.name}` })), [lookups.companies]);
+  const branchOptions = useMemo(() => lookups.branches.filter((branch) => branch.isActive && String(branch.companyId) === String(selectedCompanyId)).map((branch) => ({ value: String(branch.id), label: `${branch.code} — ${branch.name}` })), [lookups.branches, selectedCompanyId]);
+  const registrationOptions = useMemo(() => lookups.registrations.filter((registration) => String(registration.companyId) === String(selectedCompanyId) && (!registration.branchId || String(registration.branchId) === String(selectedBranchId))).map((registration) => ({
     value: String(registration.id),
     label: [registration.gstin, registration.legalName, registration.branchName || registration.city].filter(Boolean).join(" — "),
-  })), [lookups.registrations]);
+  })), [lookups.registrations, selectedBranchId, selectedCompanyId]);
   const priceBasisOptions = [{ value: 0, label: "Tax Exclusive — entered price excludes GST" }, { value: 1, label: "Tax Inclusive — entered price includes GST" }];
   const placeSourceOptions = [
     { value: "CustomerBillingReviewed", label: "Customer billing state reviewed" },
@@ -446,6 +453,9 @@ const InvoiceFormPage = () => {
                 )}
               />
 
+              <Controller control={control} name="companyId" render={({ field }) => <AppSelect label="Company" required value={field.value ?? ""} onChange={(value) => { field.onChange(value); setValue("branchId", null); setValue("companyGstRegistrationId", null); }} options={companyOptions} placeholder={lookups.scopeLoading ? "Loading authorized companies..." : "Select company"} disabled={lookups.scopeLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)} emptyMessage={lookups.scopeError || "No authorized companies available."} error={errors.companyId?.message} />} />
+              <Controller control={control} name="branchId" render={({ field }) => <AppSelect label="Branch (optional)" value={field.value ?? ""} onChange={(value) => { field.onChange(value || null); setValue("companyGstRegistrationId", null); }} options={[{ value: "", label: "Company-level invoice" }, ...branchOptions]} placeholder="Company-level invoice" disabled={!selectedCompanyId || lookups.scopeLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)} error={errors.branchId?.message} />} />
+
               <AppInput id="invoiceNumber" label="Invoice Number" placeholder="Assigned by backend" disabled {...register("invoiceNumber")} />
               <AppInput id="invoiceDate" label="Invoice Date" type="date" required error={errors.invoiceDate?.message} {...register("invoiceDate")} />
               <AppInput id="dueDate" label="Due Date" type="date" error={errors.dueDate?.message} {...register("dueDate")} />
@@ -644,7 +654,7 @@ const InvoiceFormPage = () => {
               onBlur={field.onBlur}
               options={registrationOptions}
               placeholder={lookups.registrationsLoading ? "Loading GST registrations..." : "Select issuing GSTIN"}
-              disabled={lookups.registrationsLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)}
+              disabled={!selectedCompanyId || lookups.registrationsLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)}
               emptyMessage={lookups.registrationsError || "No active GST registrations are available."}
               error={errors.companyGstRegistrationId?.message}
             />

@@ -300,12 +300,12 @@ export const mapFormToPayload = (
       ? [mapAddressToPayload(values)]
       : null;
 
-  // An empty collection is explicit on create and avoids manufacturing an empty
-  // address row; the API distinguishes it from an omitted update field upstream.
-  payload.addresses = payloadAddresses ?? [];
+  // Addresses are optional in the API contract. Omit an empty collection so an
+  // edit does not turn "unchanged" into an explicit address replacement.
+  if (payloadAddresses) payload.addresses = payloadAddresses;
 
   if (includeBankDetails) {
-    payload.bankDetails = hasBankDetails(values) ? mapFormToBankDetails(values) : null;
+    if (hasBankDetails(values)) payload.bankDetails = mapFormToBankDetails(values);
   }
 
   return payload;
