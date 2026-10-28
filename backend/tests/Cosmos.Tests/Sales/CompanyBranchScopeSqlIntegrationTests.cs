@@ -73,6 +73,8 @@ public sealed class CompanyBranchScopeSqlIntegrationTests
     }
 
     private static Task CleanupAsync(SqlConnection connection) => connection.ExecuteAsync($"""
+        DELETE al FROM dbo.AuditLogs al JOIN dbo.Companies c ON al.EntityType=N'Companies' AND al.RecordId=CONVERT(NVARCHAR(100),c.Id) WHERE c.Code IN(N'ITP4A',N'ITP4B');
+        DELETE al FROM dbo.AuditLogs al JOIN dbo.Branches b ON al.EntityType=N'Branches' AND al.RecordId=CONVERT(NVARCHAR(100),b.Id) JOIN dbo.Companies c ON c.Id=b.CompanyId WHERE c.Code IN(N'ITP4A',N'ITP4B') AND b.Code IN(N'A1',N'A2',N'B1');
         DELETE FROM dbo.UserCompanyBranchScopes WHERE UserId IN (SELECT Id FROM dbo.Users WHERE Username LIKE N'{Prefix}%');
         DELETE ur FROM dbo.UserRoles ur JOIN dbo.Users u ON u.Id=ur.UserId WHERE u.Username LIKE N'{Prefix}%';
         DELETE ur FROM dbo.UserRoles ur JOIN dbo.Roles r ON r.Id=ur.RoleId WHERE r.Name=N'ITP4SCOPE-SystemOwner';
