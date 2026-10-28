@@ -109,7 +109,9 @@ The assignment HTTP-host suite now passes for all four routes. The prior run was
 
 Not run / incomplete:
 
-- Company/Branch and user-scope assignment frontend administration/selectors remain later Increment 1 work.
+- **Checkpoint 2 UI:** `/settings/company-branches` now provides Company, Branch, and User Access tabs via `frontend/src/pages/organization/OrganizationAdministrationPage.jsx`. It uses the real versioned organization APIs, client-side pagination because the API collections are unpaged, capability-driven write controls, active Company filtering for Branches, fixed Branch Company ownership while editing, dependent assignment branch selection, duplicate-submit prevention, and revoke confirmation. Backend authorization remains authoritative.
+- The existing manifest and lockfile already pinned `lossless-json@4.3.3`; `npm ci` restored the previously incomplete local installation without changing precision-sensitive parsing. `npm run lint` and `npm run build` passed. The focused organization API-contract suite passed 2/2. The full frontend suite has an unrelated existing failure in `src/utils/validationSchemas.test.js`: it expects employee `addresses` to be omitted, but current code returns `addresses: []`.
+- Browser verification was not run because no authenticated local API/browser session is configured; retained staging was not changed for UI testing.
 - The scope test does not yet cover direct stored-procedure registration mismatch, draft reassignment, payment/confirm/cancel service interception, cross-session revocation timing, or frontend behavior.
 
 ## Required next controlled step
