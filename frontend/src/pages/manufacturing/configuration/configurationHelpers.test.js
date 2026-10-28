@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import { isDecimal, loadAllLookupPages, lookupOptions, moveStep, validDateRange, validateIntervals, validateRouting, validateRoutingReferences } from "./configurationHelpers";
+import { describe, expect, it } from "vitest";
+import { isDecimal, lookupOptions, moveStep, validDateRange, validateIntervals, validateRouting, validateRoutingReferences } from "./configurationHelpers";
 
 const validRoute = () => ({ revision: "R2", effectiveFrom: "2026-10-27", effectiveTo: "", steps: [{ operationId: "12", workCentreId: "18", rateBasis: 1, rate: "0.000001", setupMinutes: "0", quantityBasis: "100" }] });
 describe("production configuration evidence and sequence validation", () => {
@@ -43,10 +43,8 @@ describe("production configuration evidence and sequence validation", () => {
     expect(validateIntervals([interval, { from: "2026-10-27T18:20:00Z", to: "2026-10-27T19:00:00Z", reason: "Downtime" }])).toContain("overlap");
     expect(validateIntervals([{ ...interval, reason: " " }])).not.toBe("");
   });
-  it("loads all actual source pages so a resource outside page one is selectable", async () => {
-    const fetch = vi.fn().mockResolvedValueOnce({ data: { items: [{ id: 1 }], totalPages: 2 } }).mockResolvedValueOnce({ data: { items: [{ id: 250 }], totalPages: 2 } });
-    expect(await loadAllLookupPages(fetch)).toEqual([{ id: 1 }, { id: 250 }]);
-    expect(fetch.mock.calls[1][0]).toEqual({ PageNumber: 2, PageSize: 200 });
-    expect(lookupOptions([{ id: 1, name: "Inactive", isActive: false }, { id: 250, name: "Verified", isActive: true }])).toEqual([{ value: 250, label: "Verified", disabled: false }]);
+  it("excludes inactive choices while retaining an inactive historical selection", () => {
+    expect(lookupOptions([{ id: 1, name: "Inactive", isActive: false }, { id: 250, name: "Verified", isActive: true }])).toEqual([{ id: 250, name: "Verified", isActive: true, value: 250, label: "Verified", disabled: false }]);
+    expect(lookupOptions([{ id: 1, name: "Inactive", isActive: false }], "1")).toEqual([{ id: 1, name: "Inactive", isActive: false, value: 1, label: "Inactive (inactive)", disabled: true }]);
   });
 });

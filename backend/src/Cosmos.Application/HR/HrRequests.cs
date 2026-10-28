@@ -82,7 +82,9 @@ public sealed record AttendanceCheckInCommand(long EmployeeId, DateTime? CheckIn
 public sealed record AttendanceCheckOutCommand(long EmployeeId, DateTime? CheckOutTime = null);
 public sealed record AttendanceManualEntryCommand(long EmployeeId, DateOnly AttendanceDate, DateTime? CheckInTime, DateTime? CheckOutTime, int AttendanceStatus);
 public sealed record GetAttendanceQuery(long? EmployeeId = null, long? DepartmentId = null, DateOnly? FromDate = null, DateOnly? ToDate = null, int? Status = null, int PageNumber = 1, int PageSize = 20);
-public sealed record AttendanceAdjustmentRequestCommand(long EmployeeId, long AttendanceId, string Reason);
+public sealed record AttendanceAdjustmentRequestCommand(long EmployeeId, long AttendanceId, string Reason,
+    int? ProposedAttendanceStatus = null, DateTime? ProposedCheckInTime = null, DateTime? ProposedCheckOutTime = null,
+    int? ExpectedAttendanceStatus = null, DateTime? ExpectedCheckInTime = null, DateTime? ExpectedCheckOutTime = null);
 public sealed record AttendanceAdjustmentDecisionCommand(long AdjustmentId, string? Remarks = null);
 public sealed record AttendanceMonthlyReportQuery(long? EmployeeId, int Month, int Year);
 public sealed record AttendanceDepartmentReportQuery(long? DepartmentId, DateOnly AttendanceDate);
@@ -93,7 +95,8 @@ public sealed record GetLeavesQuery(long? EmployeeId = null, long? LeaveTypeId =
 public sealed record GetLeaveBalanceQuery(long EmployeeId);
 public sealed record GetPendingLeaveApprovalsQuery(long? ReportingManagerId = null, int PageNumber = 1, int PageSize = 20);
 
-public sealed record ProcessPayrollCommand(int PayrollMonth, int PayrollYear);
+public sealed record PayrollRateSelectionRequest(long EmployeeId, long SalaryAssignmentId, byte[] RowVersion, bool Reviewed);
+public sealed record ProcessPayrollCommand(int PayrollMonth, int PayrollYear, IReadOnlyCollection<PayrollRateSelectionRequest>? RateSelections = null);
 public sealed record ApprovePayrollCommand(long PayrollRunId);
 public sealed record GetPayrollHistoryQuery(long EmployeeId);
 public sealed record GetPayslipQuery(long EmployeeId, int? PayrollMonth = null, int? PayrollYear = null);

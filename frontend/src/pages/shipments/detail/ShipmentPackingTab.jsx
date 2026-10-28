@@ -6,6 +6,8 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { shipmentPackingService } from "../../../services/shipments";
 import { supplyChainPackagingProfileService } from "../../../services/supplyChain/packagingProfileService";
@@ -172,19 +174,14 @@ const PackageBuilderModal = ({
           value={form.packageType}
           onChange={(event) => setField("packageType", event.target.value)}
         />
-        <AppSelect
+        <AppLookup
           disabled={saving}
           error={errors.packagingProfileId}
           label="Packaging profile"
-          options={[
-            { label: "No profile", value: "" },
-            ...packagingProfiles.map((profile) => ({
-              label:
-                profile.profileName ||
-                `${profile.itemCode || "Item"} profile ${profile.id}`,
-              value: profile.id,
-            })),
-          ]}
+          initialOptions={packagingProfiles}
+          loadPage={async ({ search, page, pageSize }) => lookupPage(await supplyChainPackagingProfileService.list({ IsActive: true, Search: search, PageNumber: page, PageSize: pageSize }), page, pageSize)}
+          loadById={async id => (await supplyChainPackagingProfileService.getById(id)).data}
+          getOptionLabel={profile => `${profile.packagingCode ?? ""} — ${profile.packagingName ?? ""}`}
           value={form.packagingProfileId}
           onChange={(value) => setField("packagingProfileId", value)}
         />
@@ -418,6 +415,35 @@ const ShipmentPackingTab = ({ action, onWritten, shipment }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [removing, setRemoving] = useState(null);
+  const [removeReason, setRemoveReason] = useState("");
+  const [removeIntent, setRemoveIntent] = useState(null);
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const [removeError, setRemoveError] = useState("");
+  const canRemove = action.canRepack ?? action.enabled;
+
+  const removePackage = async () => {
+    if (removeBusy || !removing || !canRemove) return;
+    if (!removeReason.trim() || !shipment.version) {
+      setRemoveError("Enter a reason and reload the current shipment version before removal.");
+      return;
+    }
+    const intent = removeIntent ?? { version: shipment.version, commandKey: crypto.randomUUID(), reason: removeReason.trim() };
+    setRemoveIntent(intent);
+    setRemoveBusy(true);
+    setRemoveError("");
+    try {
+      await shipmentPackingService.removePackage(shipment.id, removing.id, intent);
+      // Keep the supported command identity if authoritative readback fails.
+      await onWritten();
+      await loadSuggestions();
+      setRemoving(null);
+      setRemoveIntent(null);
+      toast.success("Draft package removed. Verify units and conversion, then build the replacement package. Stock is unchanged.");
+    } catch (failure) {
+      setRemoveError(getShipmentMutationMessage(failure, "Removal could not be confirmed. Retry the same removal, or reload before another change."));
+    } finally { setRemoveBusy(false); }
+  };
 
   const loadSuggestions = useCallback(async () => {
     setLoading(true);
@@ -676,6 +702,13 @@ const ShipmentPackingTab = ({ action, onWritten, shipment }) => {
                       </strong>
                     </span>
                   </div>
+                  {canRemove && <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <AppButton variant="secondary" disabled={!shipment.version} onClick={() => {
+                      setRemoving(shipmentPackage); setRemoveReason(""); setRemoveError(""); setRemoveIntent(null);
+                    }}>Remove / repack</AppButton>
+                    <span className="text-xs text-slate-500">{shipment.version ? "Unpack this draft allocation, verify conversion, then review a replacement." : "Reload after the packing recovery database upgrade to enable removal."}</span>
+                  </div>}
+                  {!canRemove && action.repackReason && <p className="mt-2 text-xs text-amber-700">{action.repackReason}</p>}
                 </div>
               ))
             )}
@@ -691,6 +724,21 @@ const ShipmentPackingTab = ({ action, onWritten, shipment }) => {
         onClose={() => setBuilderOpen(false)}
         onSaved={saved}
       />
+      <AppModal isOpen={Boolean(removing)} title={`Remove draft package ${removing?.packageNumber ?? ""}`} isBusy={removeBusy} onClose={removeBusy ? undefined : () => setRemoving(null)}>
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">This removes the package from active packing and returns its allocations to unpacked quantities. Packed or ready shipments reopen for packing; the original completion remains in Timeline. Original package lines and the reason remain in history. Submitted or approved freight must be resolved first. Verify the invoice and unit conversion before rebuilding; no stock is posted.</p>
+          <AppInput label="Reason for removal / repack" required maxLength={700} disabled={removeBusy || Boolean(removeIntent)} value={removeReason} onChange={event => setRemoveReason(event.target.value)} />
+          {removeError && <p role="alert" className="text-sm text-red-700">{removeError}</p>}
+          {removeIntent && <p className="text-xs text-amber-700">Retry uses the same reviewed removal. Reload the shipment before changing the reason or choosing another package.</p>}
+          <div className="flex flex-wrap justify-end gap-2">
+            <AppButton variant="secondary" disabled={removeBusy} onClick={async () => {
+              try { await onWritten(); setRemoving(null); setRemoveIntent(null); }
+              catch (failure) { setRemoveError(getShipmentMutationMessage(failure, "Unable to reload shipment.")); }
+            }}>Reload shipment</AppButton>
+            <AppButton disabled={removeBusy || !removeReason.trim() || !shipment.version || !canRemove} onClick={removePackage}>{removeBusy ? "Removing…" : removeIntent ? "Retry same removal" : "Confirm removal"}</AppButton>
+          </div>
+        </div>
+      </AppModal>
     </div>
   );
 };

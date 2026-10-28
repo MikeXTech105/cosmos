@@ -37,6 +37,13 @@ public sealed class ShipmentsController(IShipmentOperationsService service) : Ap
     [ProducesResponseType(typeof(ApiResponse<ShipmentDto>), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateManual([FromBody] CreateManualShipmentRequest request, CancellationToken ct) => FromResponse(await service.CreateManualShipmentAsync(request, ct), StatusCodes.Status201Created);
 
+    [HttpGet("dispatch-planning/{runId:long}/allocations")]
+    [RequirePermission(ShipmentOperationsPermissions.Shipments, PermissionAction.Create)]
+    [RequirePermission(DispatchPlanningPermissions.PlanningRuns, PermissionAction.View)]
+    [SwaggerOperation(Summary = "Read true allocation IDs and quantities remaining after active partial shipments")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyCollection<ShipmentDispatchAllocationDto>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DispatchAllocations(long runId, CancellationToken ct) => FromResponse(await service.GetDispatchAllocationsAsync(runId, ct));
+
     [HttpPost("from-dispatch-planning")]
     [RequirePermission(ShipmentOperationsPermissions.Shipments, PermissionAction.Create)]
     [SwaggerOperation(Summary = "Create a shipment from remaining finalized Dispatch Planning allocation")]
@@ -69,6 +76,14 @@ public sealed class ShipmentExecutionController(IShipmentOperationsService servi
     [RequirePermission(ShipmentOperationsPermissions.Packing, PermissionAction.Edit)]
     [ProducesResponseType(typeof(ApiResponse<ShipmentDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> SavePackage(long shipmentId, [FromBody] SaveShipmentPackageRequest request, CancellationToken ct) => FromResponse(await service.SavePackageAsync(shipmentId, request, ct));
+
+    [HttpPost("packages/{packageId:long}/remove")]
+    [RequirePermission(ShipmentOperationsPermissions.Packing, PermissionAction.Edit)]
+    [SwaggerOperation(Summary = "Remove an undispatched draft package and reconcile allocations with version and repeat-intent protection")]
+    [ProducesResponseType(typeof(ApiResponse<ShipmentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RemovePackage(long shipmentId, long packageId, [FromBody] RemoveShipmentPackageRequest request, CancellationToken ct) =>
+        FromResponse(await service.RemovePackageAsync(shipmentId, packageId, request, ct));
 
     [HttpPost("dockets")]
     [RequirePermission(ShipmentOperationsPermissions.Dockets, PermissionAction.Create)]
@@ -186,8 +201,9 @@ public sealed class ShipmentReportsController(IShipmentOperationsService service
     [Produces("text/csv")]
     public async Task<IActionResult> Export([FromQuery] ShipmentReportQuery query, CancellationToken ct)
     {
-        var response = await service.GetReportAsync(query with { PageNumber = 1, PageSize = 500 }, ct);
-        return CsvExport.Create(response.Data?.Items ?? Array.Empty<ShipmentReportRowDto>(), $"shipment-operations-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
+        var rows = await CompleteReportExport.ReadAsync<ShipmentReportRowDto>((page, token) =>
+            service.GetReportAsync(query with { PageNumber = page, PageSize = CompleteReportExport.PageSize }, token), ct);
+        return CsvExport.Create(rows, $"shipment-operations-{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
     }
 }
 

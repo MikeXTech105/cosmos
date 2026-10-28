@@ -557,7 +557,7 @@ export const amountToWords = (amount) => {
   return `Rupees ${words} Only`;
 };
 
-export const buildTemplateInvoice = (invoice, customer = null) => {
+export const buildTemplateInvoice = (invoice, customer = null, partySettings = null) => {
   const items = Array.isArray(invoice?.items) ? invoice.items : [];
   const normalizedItems = items.map((item, index) => ({
     id: item.id ?? `${item.itemId}-${index}`,
@@ -592,7 +592,8 @@ export const buildTemplateInvoice = (invoice, customer = null) => {
     numberOfBoxes: invoice?.numberOfBoxes,
     purposeOfTransfer: invoice?.purposeOfTransfer,
     irn: invoice?.irn,
-    shipTo: customer?.shippingAddressLine1 ? {
+    printShippingAddress: partySettings?.printShippingAddress === true,
+    shipTo: partySettings?.printShippingAddress === true && customer?.shippingAddressLine1 ? {
       name: invoice?.customerName ?? getCustomerName(customer),
       address: [customer.shippingAddressLine1, customer.shippingAddressLine2,
         customer.shippingCity, customer.shippingState, customer.shippingPincode].filter(Boolean).join(", "),

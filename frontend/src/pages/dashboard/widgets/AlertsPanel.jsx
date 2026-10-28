@@ -1,5 +1,8 @@
 import { AlertTriangle, Boxes, FileWarning, ReceiptText, WalletCards } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { isRouteAuthorized } from "../../../utils/authorizedRoute";
+import { getAlertLink } from "../alertLinks";
 
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
@@ -21,7 +24,7 @@ const bucketMeta = {
     className: "bg-sky-50 text-sky-700 ring-sky-200",
     icon: FileWarning,
     label: "GST",
-    route: "/settings",
+    route: "/gst/configuration",
   },
   inventory: {
     className: "bg-amber-50 text-amber-700 ring-amber-200",
@@ -61,6 +64,8 @@ const AlertsPanel = ({
   onChange,
   onRetry,
 }) => {
+  const auth = useSelector((state) => state.auth);
+  const allowedLink = (link) => link && isRouteAuthorized({ ...auth, route: link.split("?")[0] });
   const buckets = getBuckets(alerts);
 
   return (
@@ -149,9 +154,7 @@ const AlertsPanel = ({
                         className="flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-slate-700">
-                            {row.title ?? row.referenceNumber ?? "Alert item"}
-                          </p>
+                          {allowedLink(getAlertLink(key, row, filters)) ? <Link to={getAlertLink(key, row, filters)} className="block truncate font-medium text-brand hover:underline">{row.title ?? row.referenceNumber ?? "Alert item"}</Link> : <p className="truncate font-medium text-slate-700">{row.title ?? row.referenceNumber ?? "Alert item"}</p>}
                           <p className="mt-0.5 truncate text-slate-400">
                             {[row.referenceNumber, row.severity]
                               .filter(Boolean)
@@ -166,12 +169,12 @@ const AlertsPanel = ({
                   </div>
                 )}
 
-                <Link
-                  to={meta.route}
+                {allowedLink(getAlertLink(key, null, filters)) && <Link
+                  to={getAlertLink(key, null, filters)}
                   className="mt-3 inline-flex text-xs font-semibold text-brand hover:text-brand-dark"
                 >
                   View all
-                </Link>
+                </Link>}
               </div>
             );
           })}

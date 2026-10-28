@@ -18,6 +18,7 @@ import {
 const ItemTable = ({
   actions,
   error,
+  highlightId,
   isLoading,
   items,
   onCreate,
@@ -104,6 +105,8 @@ const ItemTable = ({
                   return (
                     <tr
                       key={item.id}
+                      data-record-id={String(item.id)}
+                      data-saved-highlight={String(highlightId ?? "") === String(item.id) || undefined}
                       tabIndex={0}
                       onClick={() => onSelect(item)}
                       onKeyDown={(event) => {
@@ -115,6 +118,7 @@ const ItemTable = ({
                       className={[
                         "cursor-pointer transition-colors hover:bg-slate-50",
                         isSelected ? "bg-brand-light/60" : "",
+                        String(highlightId ?? "") === String(item.id) ? "bg-emerald-50 ring-2 ring-inset ring-emerald-400" : "",
                       ].join(" ")}
                     >
                       <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">

@@ -26,4 +26,4 @@ public sealed record UpdatePartyCommand(
     decimal CreditLimit,
     int CreditPeriodDays,
     bool IsActive,
-    string PartyType = "Both");
+    string? PartyType = null);

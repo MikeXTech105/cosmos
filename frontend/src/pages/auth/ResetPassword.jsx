@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { KeyRound, Lock, Mail } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ const ResetPassword = () => {
   const classes = getAuthFormClasses(authTheme);
   const resetToken =
     searchParams.get("resetToken") ?? searchParams.get("token") ?? "";
+  const [submitError, setSubmitError] = useState("");
 
   const {
     register,
@@ -33,13 +35,14 @@ const ResetPassword = () => {
   });
 
   const onSubmit = async (payload) => {
+    setSubmitError("");
     try {
       const data = await resetPassword(payload);
 
       toast.success(data.message ?? "Password reset successfully");
       navigate("/login", { replace: true });
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Unable to reset password."));
+      setSubmitError(getApiErrorMessage(error, "This reset link could not be used. Request a fresh link and try again."));
     }
   };
 
@@ -60,6 +63,9 @@ const ResetPassword = () => {
       </div>
 
       <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        {!resetToken && <p role="alert" className={classes.error}>Open the complete reset link from your email. <Link to="/forgot-password" className="underline">Request a new link</Link>.</p>}
+        {submitError && <p role="alert" className={classes.error}>{submitError}</p>}
+        <input type="hidden" {...register("resetToken")} />
         <div>
           <label
             htmlFor="email"
@@ -90,38 +96,6 @@ const ResetPassword = () => {
           {errors.email && (
             <p className={["mt-1 text-xs", classes.error].join(" ")}>
               {errors.email.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label
-            htmlFor="resetToken"
-            className={[
-              "mb-1.5 block text-xs font-medium",
-              classes.label,
-            ].join(" ")}
-          >
-            Reset Token
-          </label>
-
-          <div className="relative flex items-center">
-            <KeyRound className={["absolute left-3 h-4 w-4", classes.icon].join(" ")} />
-
-            <input
-              id="resetToken"
-              className={[
-                "w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:ring-2",
-                classes.input,
-                errors.resetToken ? classes.inputError : "",
-              ].join(" ")}
-              {...register("resetToken")}
-            />
-          </div>
-
-          {errors.resetToken && (
-            <p className={["mt-1 text-xs", classes.error].join(" ")}>
-              {errors.resetToken.message}
             </p>
           )}
         </div>
@@ -196,7 +170,7 @@ const ResetPassword = () => {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !resetToken}
           className={[
             "w-full rounded-lg py-2.5 text-sm font-medium transition-colors",
             classes.button,

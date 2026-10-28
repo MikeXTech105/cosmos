@@ -1,4 +1,5 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
+import { wireFinancialEntry } from "../../utils/financialEntry";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
 import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
@@ -25,7 +26,7 @@ export const supplierPaymentService = {
   createSupplierPayment: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.SUPPLIER_PAYMENTS,
-      payload,
+      wireFinancialEntry(payload),
     );
 
     return unwrapResponse(response);
@@ -34,7 +35,7 @@ export const supplierPaymentService = {
   updateSupplierPayment: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.SUPPLIER_PAYMENT_BY_ID(id),
-      payload,
+      wireFinancialEntry(payload),
     );
 
     return unwrapResponse(response);

@@ -5,7 +5,8 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
-import AppSelect from "../../../components/common/AppSelect";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 import PageHeader from "../../../components/common/PageHeader";
 import { itemService } from "../../../services/inventory/itemService";
 import {
@@ -243,7 +244,7 @@ const PurchaseReportsPage = () => {
   const itemOptions = useMemo(
     () =>
       items.map((item) => ({
-        value: Number(item.id),
+        value: String(item.id),
         label: [item.name, item.itemCode].filter(Boolean).join(" - "),
       })),
     [items],
@@ -322,12 +323,16 @@ const PurchaseReportsPage = () => {
             </>
           )}
           {activeTab === "itemPurchaseHistory" ? (
-            <AppSelect
+            <AppLookup
+              label="Item for purchase history"
               value={reports.filters.itemId}
               onChange={(value) =>
                 dispatch(setPurchaseReportFilters({ itemId: value }))
               }
-              options={itemOptions}
+              initialOptions={itemOptions}
+              loadPage={async({search,page,pageSize,signal})=>lookupPage(await itemService.getItems({Search:search,PageNumber:page,PageSize:pageSize},{signal}),page,pageSize)}
+              loadById={async(id,options)=>{const response=await itemService.getItemById(id,options);return response.data?.item??response.data;}}
+              getOptionLabel={row=>row.label??[row.name,row.itemCode].filter(Boolean).join(" · ")}
               placeholder="Select item"
               aria-label="Select item"
             />

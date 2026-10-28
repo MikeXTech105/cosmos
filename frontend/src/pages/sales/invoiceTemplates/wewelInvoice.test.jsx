@@ -19,6 +19,18 @@ describe("WEWEL billing documents", () => {
   it("keeps both line discounts in the printed taxable value", () => {
     expect(invoice.items[0].taxableAmount).toBe(175);
   });
+  it("honors the shipping-print flag in every template without inventing a billing-address fallback", () => {
+    const source={ id: 3, items: [] };
+    const customer={ partyName: "Buyer", billingAddressLine1: "Billing road", shippingAddressLine1: "Delivery warehouse" };
+    for (const { Component } of invoiceTemplates) {
+      expect(renderToStaticMarkup(<Component invoice={buildTemplateInvoice(source,customer,{printShippingAddress:false})}/>)).not.toContain("Delivery warehouse");
+      const visible=renderToStaticMarkup(<Component invoice={buildTemplateInvoice(source,customer,{printShippingAddress:true})}/>);
+      expect(visible).toContain("Delivery warehouse");
+      expect(visible).toContain("Ship To");
+      const absent=renderToStaticMarkup(<Component invoice={buildTemplateInvoice(source,{...customer,shippingAddressLine1:null},{printShippingAddress:true})}/>);
+      expect(absent).not.toContain("Ship To");
+    }
+  });
   it("keeps exact six-place quantities in every existing invoice template instead of rounding the printed source", () => {
     const precise = buildTemplateInvoice({ id: 2, grandTotal: 0, items: [
       { id: 1, itemId: 1, itemName: "Large", quantity: "9999999999999999.999999", rate: 0 },

@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a489af32-62a9-4086-88e6-529c6e770f5f" name="Sahil@LUCIFER 2026-10-28 16:30:35" runUser="LUCIFER\Sahil" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-28T16:30:35.3093023+05:30" queuing="2026-10-28T16:30:35.3093027+05:30" start="2026-10-28T16:30:29.7500232+05:30" finish="2026-10-28T16:30:35.3382370+05:30" />
+  <TestSettings name="default" id="09f1046f-5ea8-4b79-9dca-0bc5700b880c">
+    <Deployment runDeploymentRoot="Sahil_LUCIFER_2026-10-28_16_30_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="dd1f0337-6953-4b40-aa9d-54b66cdb2f12" testId="516271ce-969e-7745-a8fd-183d6f0097f1" testName="Cosmos.Tests.Manufacturing.ProductionOperationalCsvTests.Csv_exports_all_pages_exact_quantities_filter_basis_quality_flags_and_unit_totals" computerName="LUCIFER" duration="00:00:00.8564256" startTime="2026-10-28T16:30:34.1852586+05:30" endTime="2026-10-28T16:30:34.9464981+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dd1f0337-6953-4b40-aa9d-54b66cdb2f12" />
+    <UnitTestResult executionId="8c7e3bbd-02d7-4e6d-b316-fe532985bf7e" testId="03d800d9-93a1-7d02-ca39-b76fe9be14d4" testName="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Additive_acknowledgement_batches_parse_as_SQL_Server" computerName="LUCIFER" duration="00:00:00.5024069" startTime="2026-10-28T16:30:34.2240648+05:30" endTime="2026-10-28T16:30:34.5908297+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c7e3bbd-02d7-4e6d-b316-fe532985bf7e" />
+    <UnitTestResult executionId="2c435a67-eeaf-4a8d-9b43-92bc7928f43a" testId="2d3e94d7-a24e-5695-5449-60d997ac8776" testName="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Procurement_example_preserves_zero_shortage_moq_multiples_and_effective_lead_precedence" computerName="LUCIFER" duration="00:00:00.3730627" startTime="2026-10-28T16:30:34.1808865+05:30" endTime="2026-10-28T16:30:34.4688908+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c435a67-eeaf-4a8d-9b43-92bc7928f43a" />
+    <UnitTestResult executionId="7d08072c-5397-496e-af9c-fd2caef393e1" testId="6df34a9d-b1ca-bac5-1406-7131db9728cb" testName="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_reconciles_exact_allocations_once_retains_history_and_rejects_stale_or_dispatched_work" computerName="LUCIFER" duration="00:00:00.0010000" startTime="2026-10-28T16:30:34.1853169+05:30" endTime="2026-10-28T16:30:34.2009355+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7d08072c-5397-496e-af9c-fd2caef393e1">
+      <Output>
+        <ErrorInfo>
+          <Message>No disposable SQL runtime: set COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING to an explicitly prepared CosmosProductionIntegrationTests_* catalog.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cae7e752-c884-4495-a70f-367ced3f8f75" testId="faf33fc2-cba1-bc07-da8c-5faa84eed1d7" testName="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Labels_and_packaging_readiness_migrations_parse_as_SQL_Server" computerName="LUCIFER" duration="00:00:00.0772284" startTime="2026-10-28T16:30:34.5207768+05:30" endTime="2026-10-28T16:30:34.5977505+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cae7e752-c884-4495-a70f-367ced3f8f75" />
+    <UnitTestResult executionId="2cea2aae-c126-41eb-a4b5-03bd0d6adff6" testId="64b6fe78-c9fd-34f8-55ca-267684f51cf9" testName="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Packing_recovery_migration_parses_as_SQL_Server" computerName="LUCIFER" duration="00:00:00.1280185" startTime="2026-10-28T16:30:34.4728072+05:30" endTime="2026-10-28T16:30:34.5963622+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2cea2aae-c126-41eb-a4b5-03bd0d6adff6" />
+    <UnitTestResult executionId="c13d9529-7364-493a-b25f-3732b54d9504" testId="39d53c2d-c0ad-aa86-f719-05913a97424b" testName="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Stopped_day_is_append_only_idempotent_and_never_creates_a_reading_or_stock_event" computerName="LUCIFER" duration="00:00:00.0010000" startTime="2026-10-28T16:30:34.1850717+05:30" endTime="2026-10-28T16:30:34.1886664+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c13d9529-7364-493a-b25f-3732b54d9504">
+      <Output>
+        <ErrorInfo>
+          <Message>No disposable SQL runtime: set COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING to an explicitly prepared CosmosProductionIntegrationTests_* catalog.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="79f2c19d-c9b1-4676-93af-db98aed4a18f" testId="59540407-f32a-bba1-1dbb-99925bc0e207" testName="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_requires_a_reviewed_version_command_identity_and_reason" computerName="LUCIFER" duration="00:00:00.3797824" startTime="2026-10-28T16:30:34.2239740+05:30" endTime="2026-10-28T16:30:34.4717429+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79f2c19d-c9b1-4676-93af-db98aed4a18f" />
+    <UnitTestResult executionId="99dba681-d31e-4b60-b8b7-ac002e0ed1ba" testId="7caccff6-c0b8-340f-ed59-0d173576c0fe" testName="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Dispatch_example_uses_actual_box_rounding_loose_and_minimum_dispatch_contracts" computerName="LUCIFER" duration="00:00:00.0519786" startTime="2026-10-28T16:30:34.4728638+05:30" endTime="2026-10-28T16:30:34.5203532+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99dba681-d31e-4b60-b8b7-ac002e0ed1ba" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Cosmos.Tests.Manufacturing.ProductionOperationalCsvTests.Csv_exports_all_pages_exact_quantities_filter_basis_quality_flags_and_unit_totals" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="516271ce-969e-7745-a8fd-183d6f0097f1">
+      <Execution id="dd1f0337-6953-4b40-aa9d-54b66cdb2f12" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Manufacturing.ProductionOperationalCsvTests" name="Csv_exports_all_pages_exact_quantities_filter_basis_quality_flags_and_unit_totals" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Labels_and_packaging_readiness_migrations_parse_as_SQL_Server" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="faf33fc2-cba1-bc07-da8c-5faa84eed1d7">
+      <Execution id="cae7e752-c884-4495-a70f-367ced3f8f75" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests" name="Labels_and_packaging_readiness_migrations_parse_as_SQL_Server" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Packing_recovery_migration_parses_as_SQL_Server" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="64b6fe78-c9fd-34f8-55ca-267684f51cf9">
+      <Execution id="2cea2aae-c126-41eb-a4b5-03bd0d6adff6" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests" name="Packing_recovery_migration_parses_as_SQL_Server" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Procurement_example_preserves_zero_shortage_moq_multiples_and_effective_lead_precedence" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="2d3e94d7-a24e-5695-5449-60d997ac8776">
+      <Execution id="2c435a67-eeaf-4a8d-9b43-92bc7928f43a" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests" name="Procurement_example_preserves_zero_shortage_moq_multiples_and_effective_lead_precedence" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_requires_a_reviewed_version_command_identity_and_reason" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="59540407-f32a-bba1-1dbb-99925bc0e207">
+      <Execution id="79f2c19d-c9b1-4676-93af-db98aed4a18f" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests" name="Removal_requires_a_reviewed_version_command_identity_and_reason" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Stopped_day_is_append_only_idempotent_and_never_creates_a_reading_or_stock_event" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="39d53c2d-c0ad-aa86-f719-05913a97424b">
+      <Execution id="c13d9529-7364-493a-b25f-3732b54d9504" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests" name="Stopped_day_is_append_only_idempotent_and_never_creates_a_reading_or_stock_event" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Additive_acknowledgement_batches_parse_as_SQL_Server" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="03d800d9-93a1-7d02-ca39-b76fe9be14d4">
+      <Execution id="8c7e3bbd-02d7-4e6d-b316-fe532985bf7e" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests" name="Additive_acknowledgement_batches_parse_as_SQL_Server" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_reconciles_exact_allocations_once_retains_history_and_rejects_stale_or_dispatched_work" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="6df34a9d-b1ca-bac5-1406-7131db9728cb">
+      <Execution id="7d08072c-5397-496e-af9c-fd2caef393e1" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests" name="Removal_reconciles_exact_allocations_once_retains_history_and_rejects_stale_or_dispatched_work" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests.Dispatch_example_uses_actual_box_rounding_loose_and_minimum_dispatch_contracts" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="7caccff6-c0b8-340f-ed59-0d173576c0fe">
+      <Execution id="99dba681-d31e-4b60-b8b7-ac002e0ed1ba" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.Manufacturing.PlanningPolicyExampleTests" name="Dispatch_example_uses_actual_box_rounding_loose_and_minimum_dispatch_contracts" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="516271ce-969e-7745-a8fd-183d6f0097f1" executionId="dd1f0337-6953-4b40-aa9d-54b66cdb2f12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="03d800d9-93a1-7d02-ca39-b76fe9be14d4" executionId="8c7e3bbd-02d7-4e6d-b316-fe532985bf7e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2d3e94d7-a24e-5695-5449-60d997ac8776" executionId="2c435a67-eeaf-4a8d-9b43-92bc7928f43a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6df34a9d-b1ca-bac5-1406-7131db9728cb" executionId="7d08072c-5397-496e-af9c-fd2caef393e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="faf33fc2-cba1-bc07-da8c-5faa84eed1d7" executionId="cae7e752-c884-4495-a70f-367ced3f8f75" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="64b6fe78-c9fd-34f8-55ca-267684f51cf9" executionId="2cea2aae-c126-41eb-a4b5-03bd0d6adff6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="39d53c2d-c0ad-aa86-f719-05913a97424b" executionId="c13d9529-7364-493a-b25f-3732b54d9504" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="59540407-f32a-bba1-1dbb-99925bc0e207" executionId="79f2c19d-c9b1-4676-93af-db98aed4a18f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7caccff6-c0b8-340f-ed59-0d173576c0fe" executionId="99dba681-d31e-4b60-b8b7-ac002e0ed1ba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="9" executed="7" passed="7" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.14)&#xD;
+[xUnit.net 00:00:00.44]   Discovering: Cosmos.Tests&#xD;
+[xUnit.net 00:00:01.09]   Discovered:  Cosmos.Tests&#xD;
+[xUnit.net 00:00:01.32]   Starting:    Cosmos.Tests&#xD;
+[xUnit.net 00:00:01.50]       No disposable SQL runtime: set COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING to an explicitly prepared CosmosProductionIntegrationTests_* catalog.&#xD;
+[xUnit.net 00:00:01.51]       No disposable SQL runtime: set COSMOS_PRODUCTION_INTEGRATION_CONNECTION_STRING to an explicitly prepared CosmosProductionIntegrationTests_* catalog.&#xD;
+[xUnit.net 00:00:02.27]   Finished:    Cosmos.Tests&#xD;
+Test 'Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_reconciles_exact_allocations_once_retains_history_and_rejects_stale_or_dispatched_work' was skipped in the test run.&#xD;
+Test 'Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Stopped_day_is_append_only_idempotent_and_never_creates_a_reading_or_stock_event' was skipped in the test run.&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="LUCIFER" outcome="Warning" timestamp="2026-10-28T16:30:34.2144295+05:30">
+        <Text>[xUnit.net 00:00:01.50]     Cosmos.Tests.Oee.OeeDayAcknowledgementSqlTests.Stopped_day_is_append_only_idempotent_and_never_creates_a_reading_or_stock_event [SKIP]</Text>
+      </RunInfo>
+      <RunInfo computerName="LUCIFER" outcome="Warning" timestamp="2026-10-28T16:30:34.2153622+05:30">
+        <Text>[xUnit.net 00:00:01.51]     Cosmos.Tests.ShipmentOperations.ShipmentPackingRecoveryTests.Removal_reconciles_exact_allocations_once_retains_history_and_rejects_stale_or_dispatched_work [SKIP]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

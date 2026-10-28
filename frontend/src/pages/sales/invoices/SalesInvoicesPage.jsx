@@ -14,6 +14,7 @@ import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useListReturnContext from "../../../hooks/useListReturnContext";
 import {
   cancelInvoice,
   confirmInvoice,
@@ -77,6 +78,13 @@ const SalesInvoicesPage = () => {
   const [searchInput, setSearchInput] = useState(
     invoiceState.filters.Search,
   );
+  const restoreListFilters = useCallback(snapshot => {
+    dispatch(setInvoiceFilters(snapshot.filters));
+    dispatch(setInvoicePageSize(snapshot.pageSize));
+    dispatch(setInvoicePage(snapshot.pageNumber));
+    setSearchInput(snapshot.filters.Search ?? "");
+  }, [dispatch]);
+  const { capture, highlightId, clearHighlight } = useListReturnContext({ key: "sales-invoices", filters: { filters: invoiceState.filters, pageNumber: invoiceState.pageNumber, pageSize: invoiceState.pageSize }, setFilters: restoreListFilters, ready: !invoiceState.loading });
   const [lookups, setLookups] = useState({
     customers: [],
     customersError: null,
@@ -85,6 +93,7 @@ const SalesInvoicesPage = () => {
   const lookupCacheRef = useRef({
     customers: { loaded: false, promise: null },
   });
+  const lookupCreateResolution = useRef(null);
   const [lookupCreateModal, setLookupCreateModal] = useState({
     customer: false,
   });
@@ -196,13 +205,14 @@ const SalesInvoicesPage = () => {
   }, [loadLookups]);
 
   useEffect(() => {
+    if (searchInput === invoiceState.filters.Search) return undefined;
     const timeoutId = window.setTimeout(() => {
       dispatch(setInvoiceFilters({ Search: searchInput }));
       dispatch(setInvoicePage(1));
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [dispatch, searchInput]);
+  }, [dispatch, invoiceState.filters.Search, searchInput]);
 
   const customerOptions = useMemo(
     () =>
@@ -248,8 +258,8 @@ const SalesInvoicesPage = () => {
       return;
     }
 
-    navigate("/sales/invoices/new");
-  }, [capabilities.canCreate, navigate]);
+    navigate("/sales/invoices/new", { state: capture() });
+  }, [capabilities.canCreate, capture, navigate]);
 
   const openLookupCreate = useCallback(
     (type) => {
@@ -264,6 +274,8 @@ const SalesInvoicesPage = () => {
   );
 
   const closeLookupCreate = useCallback((type) => {
+    lookupCreateResolution.current?.(null);
+    lookupCreateResolution.current = null;
     setLookupCreateModal((current) => ({ ...current, [type]: false }));
   }, []);
 
@@ -275,17 +287,24 @@ const SalesInvoicesPage = () => {
       }
 
       try {
-        await partyService.createParty(payload);
+        const response = await partyService.createParty(payload);
+        const created = response.data?.party ?? response.data;
         toast.success("Customer created successfully");
-        lookupCacheRef.current.customers.loaded = false;
-        await loadLookup("customers", { force: true });
+        if (created?.id) {
+          setLookups(current => ({ ...current, customers: [...current.customers, created] }));
+          if (lookupCreateResolution.current) { lookupCreateResolution.current(created); lookupCreateResolution.current = null; }
+          else { dispatch(setInvoiceFilters({ CustomerPartyId: String(created.id) })); dispatch(setInvoicePage(1)); }
+        } else {
+          lookupCacheRef.current.customers.loaded = false;
+          await loadLookup("customers", { force: true });
+        }
         closeLookupCreate(type);
       } catch (error) {
         toast.error(getActionError(error, "Unable to create record."));
         throw error;
       }
     },
-    [canCreateCustomer, closeLookupCreate, loadLookup],
+    [canCreateCustomer, closeLookupCreate, dispatch, loadLookup],
   );
 
   const openEdit = useCallback(
@@ -295,9 +314,9 @@ const SalesInvoicesPage = () => {
         return;
       }
 
-      navigate(`/sales/invoices/${invoice.id}/edit`);
+      navigate(`/sales/invoices/${invoice.id}/edit`, { state: capture() });
     },
-    [capabilities.canUpdate, navigate],
+    [capabilities.canUpdate, capture, navigate],
   );
 
   const openConfirmation = useCallback((action, invoice) => {
@@ -450,13 +469,14 @@ const SalesInvoicesPage = () => {
       />
 
       <InvoiceStats {...stats} />
+      {highlightId && <p role="status" className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">Saved Invoice {highlightId}. Existing filters are retained.{!invoiceState.list.some(invoice => String(invoice.id) === String(highlightId)) && " It is outside the current filtered page."}<button type="button" className="underline" onClick={clearHighlight}>Dismiss</button></p>}
 
       <InvoiceFilters
         canCreateCustomer={canCreateCustomer}
         customerOptions={customerOptions}
         filters={filterControls}
         resultCount={invoiceState.list.length}
-        onCreateCustomer={() => openLookupCreate("customer")}
+        onCreateCustomer={() => new Promise(resolve => { lookupCreateResolution.current = resolve; openLookupCreate("customer"); })}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -486,6 +506,7 @@ const SalesInvoicesPage = () => {
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <InvoiceTable
+          highlightId={highlightId}
           actions={{
             canCancel: capabilities.canCancel,
             canConfirm: capabilities.canConfirm,
@@ -496,7 +517,7 @@ const SalesInvoicesPage = () => {
             onConfirm: (invoice) => openConfirmation("confirm", invoice),
             onDownloadPdf: downloadPdf,
             onEdit: openEdit,
-            onView: (invoice) => navigate(`/sales/invoices/${invoice.id}`),
+            onView: (invoice) => navigate(`/sales/invoices/${invoice.id}`, { state: capture() }),
           }}
           error={invoiceState.error}
           invoices={invoiceState.list}
@@ -505,7 +526,7 @@ const SalesInvoicesPage = () => {
           onPageChange={(value) => dispatch(setInvoicePage(value))}
           onPageSizeChange={(value) => dispatch(setInvoicePageSize(value))}
           onRetry={loadInvoices}
-          onSelect={(invoice) => navigate(`/sales/invoices/${invoice.id}`)}
+          onSelect={(invoice) => navigate(`/sales/invoices/${invoice.id}`, { state: capture() })}
           pageNumber={invoiceState.pageNumber}
           pageSize={invoiceState.pageSize}
           totalCount={invoiceState.totalCount}
@@ -517,6 +538,7 @@ const SalesInvoicesPage = () => {
         isLoading={false}
         isOpen={lookupCreateModal.customer}
         mode="create"
+        source={{partyType:"Customer"}}
         onClose={() => closeLookupCreate("customer")}
         onSubmit={(payload) => submitLookupCreate("customer", payload)}
         submitLabel="Create Customer"

@@ -12,6 +12,7 @@ public interface IProductionWorkspaceService
     Task<ApiResponse<StockBalanceDto>> StockAsync(long id,CancellationToken ct);
     Task<ApiResponse<ProductionCommandResult>> AdjustStockAsync(long id,StockAdjustmentRequest r,CancellationToken ct);
     Task<ApiResponse<PagedResult<ProductionMasterDto>>> MastersAsync(string kind, ProductionWorkspaceQuery q, CancellationToken ct);
+    Task<ApiResponse<ProductionMasterDto>> MasterByIdAsync(string kind, long id, CancellationToken ct);
     Task<ApiResponse<ProductionMasterDto>> WorkCentreAsync(long? id, WorkCentreRequest r, CancellationToken ct);
     Task<ApiResponse<ProductionMasterDto>> OperationAsync(long? id, OperationRequest r, CancellationToken ct);
     Task<ApiResponse<ProductionCommandResult>> RoutingAsync(long itemId, ItemRoutingRequest r, CancellationToken ct);
@@ -20,6 +21,7 @@ public interface IProductionWorkspaceService
     Task<ApiResponse<PagedResult<ProductionOrderDto>>> OrdersAsync(ProductionWorkspaceQuery q, CancellationToken ct);
     Task<ApiResponse<ProductionOrderDto>> OrderAsync(long id, CancellationToken ct);
     Task<ApiResponse<ProductionOrderContextDto>> ContextAsync(long id, CancellationToken ct);
+    Task<ApiResponse<ProductionOrderLabelsDto>> OrderLabelsAsync(long id, CancellationToken ct);
     Task<ApiResponse<ProductionConfigurationDto>> ConfigurationAsync(long id, string kind, CancellationToken ct);
     Task<ApiResponse<CapacityFeasibilityDto>> CapacityAsync(long id, DateOnly date, CancellationToken ct);
     Task<ApiResponse<ProductionCommandResult>> CalendarAsync(long shiftConfigurationId, CapacityCalendarRequest r, CancellationToken ct);

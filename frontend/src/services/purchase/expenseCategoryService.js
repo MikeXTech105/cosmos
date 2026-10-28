@@ -6,17 +6,19 @@ import { sanitizePurchaseListParams } from "./purchaseServiceUtils";
 const SORT_FIELDS = ["name", "createdAt", "createdOn"];
 
 export const expenseCategoryService = {
-  getExpenseCategories: async (params) => {
+  getExpenseCategories: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.EXPENSE_CATEGORIES, {
+      signal,
       params: sanitizePurchaseListParams(params, SORT_FIELDS),
     });
 
     return unwrapResponse(response);
   },
 
-  getExpenseCategoryById: async (id) => {
+  getExpenseCategoryById: async (id, { signal } = {}) => {
     const response = await axiosInstance.get(
       ENDPOINTS.EXPENSE_CATEGORY_BY_ID(id),
+      { signal },
     );
 
     return unwrapResponse(response);

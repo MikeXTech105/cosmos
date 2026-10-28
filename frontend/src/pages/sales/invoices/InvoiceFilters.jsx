@@ -4,6 +4,7 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
+import CommerceFilterLookup from "../../party/CommerceFilterLookup";
 import {
   INVOICE_STATUS_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
@@ -37,17 +38,13 @@ const InvoiceFilters = ({
           placeholder="Search invoice number or customer..."
         />
 
-        <AppSelect
+        <CommerceFilterLookup
+          kind="customer"
           value={filters.CustomerPartyId}
           onChange={(value) => onChange({ CustomerPartyId: value })}
-          options={[
-            { value: "all", label: "All customers" },
-            ...customerOptions,
-          ]}
+          initialOptions={customerOptions}
           aria-label="Filter invoices by customer"
-          creatable={canCreateCustomer}
-          createLabel="Create new customer"
-          onCreateClick={onCreateCustomer}
+          onCreate={canCreateCustomer ? onCreateCustomer : undefined}
         />
 
         <AppSelect

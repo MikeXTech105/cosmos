@@ -12,7 +12,7 @@ using Dapper;
 
 namespace Cosmos.Persistence.Repositories;
 
-public sealed class HrRepository : IHrRepository
+public sealed partial class HrRepository : IHrRepository
 {
     private readonly ISqlConnectionFactory _connectionFactory;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -83,7 +83,7 @@ public sealed class HrRepository : IHrRepository
     public Task<AttendanceDto> ManualAttendanceAsync(AttendanceManualEntryCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceDto>("sp_HR_Attendance_ManualEntry", new { command.EmployeeId, AttendanceDate = ToDateTime(command.AttendanceDate), command.CheckInTime, command.CheckOutTime, command.AttendanceStatus, UserId = userId }, ct);
     public Task<PagedResult<AttendanceDto>> GetAttendanceAsync(GetAttendanceQuery query, CancellationToken ct) => QueryPagedAsync<AttendanceDto>("sp_HR_Attendance_GetList", AttendanceParameters(query), query.PageNumber, query.PageSize, ct);
     public Task<IReadOnlyCollection<AttendanceDto>> GetEmployeeAttendanceAsync(long employeeId, DateOnly? fromDate, DateOnly? toDate, CancellationToken ct) => QueryAsync<AttendanceDto>("sp_HR_Attendance_GetByEmployee", new { EmployeeId = employeeId, FromDate = ToDateTime(fromDate), ToDate = ToDateTime(toDate) }, ct);
-    public Task<AttendanceAdjustmentDto> RequestAttendanceAdjustmentAsync(AttendanceAdjustmentRequestCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceAdjustmentDto>("sp_HR_AttendanceAdjustment_Create", new { command.EmployeeId, command.AttendanceId, command.Reason, UserId = userId }, ct);
+    public Task<AttendanceAdjustmentDto> RequestAttendanceAdjustmentAsync(AttendanceAdjustmentRequestCommand command, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceAdjustmentDto>("sp_HR_AttendanceAdjustment_Create", new { command.EmployeeId, command.AttendanceId, command.Reason, command.ProposedAttendanceStatus, command.ProposedCheckInTime, command.ProposedCheckOutTime, command.ExpectedAttendanceStatus, command.ExpectedCheckInTime, command.ExpectedCheckOutTime, UserId = userId }, ct);
     public Task<AttendanceAdjustmentDto> DecideAttendanceAdjustmentAsync(long adjustmentId, bool approve, string? remarks, long? userId, CancellationToken ct) => QueryWithStatusAsync<AttendanceAdjustmentDto>("sp_HR_AttendanceAdjustment_Decide", new { AdjustmentId = adjustmentId, Approve = approve, Remarks = remarks, UserId = userId }, ct);
     public Task<IReadOnlyCollection<AttendanceMonthlyReportDto>> GetMonthlyAttendanceReportAsync(AttendanceMonthlyReportQuery query, CancellationToken ct) => QueryAsync<AttendanceMonthlyReportDto>("sp_HR_Attendance_MonthlyReport", new { query.EmployeeId, query.Month, query.Year }, ct);
     public Task<IReadOnlyCollection<AttendanceDepartmentReportDto>> GetDepartmentAttendanceReportAsync(AttendanceDepartmentReportQuery query, CancellationToken ct) => QueryAsync<AttendanceDepartmentReportDto>("sp_HR_Attendance_DepartmentReport", new { query.DepartmentId, AttendanceDate = ToDateTime(query.AttendanceDate) }, ct);
@@ -96,7 +96,8 @@ public sealed class HrRepository : IHrRepository
 
     public async Task<PayrollRunDto> ProcessPayrollAsync(ProcessPayrollCommand command, long? userId, CancellationToken ct)
     {
-        var row = await QueryWithStatusAsync<PayrollRunRow>("sp_HR_Payroll_Process", new { command.PayrollMonth, command.PayrollYear, UserId = userId }, ct);
+        var rateSelections = command.RateSelections?.Select(selection => new { selection.EmployeeId, selection.SalaryAssignmentId, RowVersionHex = Convert.ToHexString(selection.RowVersion), selection.Reviewed }).ToArray();
+        var row = await QueryWithStatusAsync<PayrollRunRow>("sp_HR_Payroll_Process", new { command.PayrollMonth, command.PayrollYear, RateSelectionsJson = JsonSerializer.Serialize(rateSelections ?? [], JsonOptions), UserId = userId }, ct);
         var result = MapPayrollRun(row);
         return await GetPayrollRunAsync(result.Id, ct) ?? result;
     }

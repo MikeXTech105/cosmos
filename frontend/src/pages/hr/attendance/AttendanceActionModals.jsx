@@ -1,12 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileClock, LogIn, LogOut, ShieldCheck, ShieldX } from "lucide-react";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import { hrAttendanceService } from "../../../services/hr/attendanceService";
 import {
   HR_ATTENDANCE_STATUS,
   HR_ATTENDANCE_STATUS_OPTIONS,
@@ -17,8 +18,10 @@ import {
   hrAttendanceManualSchema,
   hrAttendanceQuickActionSchema,
 } from "../../../utils/validationSchemas";
-import { combineDateAndTime } from "../hrHelpers";
+import { combineDateAndTime, formatHrDate, getHrActionError } from "../hrHelpers";
 import { formatLocalDateKey } from "./attendanceHelpers";
+import useProductionRuntime from "../../../hooks/useProductionRuntime";
+import { attendanceCorrectionPayload, attendanceWallTime } from "./attendanceCorrectionValues";
 
 const today = () => formatLocalDateKey(new Date());
 const nowTime = () => new Date().toTimeString().slice(0, 5);
@@ -82,7 +85,7 @@ export const QuickActionModal = ({
 
   const submitForm = async (values) => {
     await onSubmit({
-      employeeId: Number(values.employeeId),
+      employeeId: values.employeeId,
       [`${action}Time`]: combineDateAndTime(today(), values.actionTime),
     });
   };
@@ -182,7 +185,7 @@ export const ManualEntryModal = ({
         values.attendanceDate,
         values.checkOutTime,
       ),
-      employeeId: Number(values.employeeId),
+      employeeId: values.employeeId,
     });
   };
 
@@ -263,6 +266,7 @@ export const ManualEntryModal = ({
 
 export const AdjustmentModal = ({
   employeeOptions,
+  attendanceRecord,
   isOpen,
   onClose,
   onSubmit,
@@ -273,14 +277,33 @@ export const AdjustmentModal = ({
     handleSubmit,
     register,
     reset,
+    setValue,
+    setError,
   } = useForm({
     resolver: zodResolver(hrAttendanceAdjustmentSchema),
     defaultValues: { attendanceId: "", employeeId: "", reason: "" },
   });
+  const [records, setRecords] = useState([]);
+  const [loadError, setLoadError] = useState("");
+  const [proposal, setProposal] = useState(null);
+  const { runtime } = useProductionRuntime();
+  const employeeId = useWatch({ control, name: "employeeId" });
+  const attendanceId = useWatch({ control, name: "attendanceId" });
+  const selected = records.find((record) => String(record.id) === String(attendanceId)) ?? (String(attendanceRecord?.id) === String(attendanceId) ? attendanceRecord : null);
+  const currentProposal = proposal?.recordId === String(attendanceId) ? proposal : { recordId: String(attendanceId), status: selected?.attendanceStatus ?? "", checkInTime: attendanceWallTime(selected?.checkInTime, runtime?.browserTimeZone), checkOutTime: attendanceWallTime(selected?.checkOutTime, runtime?.browserTimeZone) };
+  const patchProposal = (key, value) => setProposal({ ...currentProposal, [key]: value, timeEdited: currentProposal.timeEdited || key === "checkInTime" || key === "checkOutTime" });
 
   useEffect(() => {
-    if (isOpen) reset({ attendanceId: "", employeeId: "", reason: "" });
-  }, [isOpen, reset]);
+    if (isOpen) { reset({ attendanceId: attendanceRecord?.id ?? "", employeeId: attendanceRecord?.employeeId ?? "", reason: "" }); void Promise.resolve().then(() => setProposal(null)); }
+  }, [attendanceRecord, isOpen, reset]);
+  useEffect(() => {
+    if (!isOpen || !employeeId) return;
+    let active = true;
+    hrAttendanceService.getAttendanceByEmployee(employeeId).then((response) => {
+      if (active) { setRecords(Array.isArray(response.data) ? response.data : response.data?.items || []); setLoadError(""); }
+    }).catch((error) => { if (active) setLoadError(getHrActionError(error, "Unable to load this employee's attendance.")); });
+    return () => { active = false; };
+  }, [employeeId, isOpen]);
 
   return (
     <AppModal
@@ -296,13 +319,10 @@ export const AdjustmentModal = ({
       />
       <form
         className="space-y-5"
-        onSubmit={handleSubmit(async (values) =>
-          onSubmit({
-            attendanceId: Number(values.attendanceId),
-            employeeId: Number(values.employeeId),
-            reason: values.reason.trim(),
-          }),
-        )}
+        onSubmit={handleSubmit(async (values) => {
+          try { await onSubmit(attendanceCorrectionPayload(selected, currentProposal, values.reason, runtime?.browserTimeZone)); }
+          catch (error) { setError("root", { message: getHrActionError(error, "Unable to save this correction request.") }); }
+        })}
       >
         <Controller
           name="employeeId"
@@ -312,20 +332,18 @@ export const AdjustmentModal = ({
               label="Employee"
               required
               value={field.value}
-              onChange={field.onChange}
+              onChange={(value) => { field.onChange(value); setValue("attendanceId", ""); setRecords([]); }}
+              disabled={Boolean(attendanceRecord) || isSubmitting}
               options={employeeOptions}
               placeholder="Select employee"
               error={errors.employeeId?.message}
             />
           )}
         />
-        <AppInput
-          id="attendanceId"
-          label="Attendance Record ID"
-          required
-          error={errors.attendanceId?.message}
-          {...register("attendanceId")}
-        />
+        <Controller name="attendanceId" control={control} render={({ field }) => <AppSelect label="Attendance day to correct" required disabled={!employeeId || isSubmitting} value={field.value} onChange={field.onChange} options={records.map((record) => ({ value: String(record.id), label: `${formatHrDate(record.attendanceDate)} · ${HR_ATTENDANCE_STATUS_OPTIONS.find((option) => String(option.value) === String(record.attendanceStatus))?.label || "Recorded"}` }))} error={errors.attendanceId?.message} />} />
+        {loadError && <p role="alert" className="text-sm text-red-700">{loadError}</p>}
+        {selected && <div className="space-y-3 rounded-xl border border-slate-200 p-4"><p className="text-sm font-semibold">Proposed correction for {formatHrDate(selected.attendanceDate)}</p><AppSelect label="Proposed day status" required disabled={isSubmitting} value={currentProposal.status} options={HR_ATTENDANCE_STATUS_OPTIONS} onChange={(value) => patchProposal("status", value)} /><AppInput label={`Proposed check-in (${runtime?.browserTimeZone || "time retained"})`} type="datetime-local" disabled={isSubmitting || !runtime?.browserTimeZone} value={currentProposal.checkInTime} onChange={(event) => patchProposal("checkInTime", event.target.value)} /><AppInput label={`Proposed check-out (${runtime?.browserTimeZone || "time retained"})`} type="datetime-local" disabled={isSubmitting || !runtime?.browserTimeZone} value={currentProposal.checkOutTime} onChange={(event) => patchProposal("checkOutTime", event.target.value)} /><p className="text-xs text-slate-500">An approver reviews these values before attendance changes. Processed payroll periods are protected.</p></div>}
+        {errors.root && <p role="alert" className="text-sm text-red-700">{errors.root.message}</p>}
         <AppInput
           id="reason"
           label="Correction reason"
@@ -343,12 +361,13 @@ export const AdjustmentModal = ({
   );
 };
 
-export const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
+export const DecisionModal = ({ adjustment, isOpen, mode, onClose, onSubmit }) => {
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
     reset,
+    setError,
   } = useForm({
     resolver: zodResolver(hrAttendanceDecisionSchema),
     defaultValues: { adjustmentId: "", remarks: "" },
@@ -356,8 +375,8 @@ export const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
   const isApprove = mode === "approve";
 
   useEffect(() => {
-    if (isOpen) reset({ adjustmentId: "", remarks: "" });
-  }, [isOpen, reset]);
+    if (isOpen) reset({ adjustmentId: adjustment?.id ?? "", remarks: "" });
+  }, [adjustment, isOpen, reset]);
 
   return (
     <AppModal
@@ -374,20 +393,16 @@ export const DecisionModal = ({ isOpen, mode, onClose, onSubmit }) => {
       />
       <form
         className="space-y-5"
-        onSubmit={handleSubmit(async (values) =>
-          onSubmit({
-            adjustmentId: Number(values.adjustmentId),
+        onSubmit={handleSubmit(async (values) => {
+          try { await onSubmit({
+            adjustmentId: adjustment?.id ?? values.adjustmentId,
             remarks: values.remarks?.trim() ?? "",
-          }),
-        )}
+          }); } catch (error) { setError("root", { message: getHrActionError(error, "Unable to save this decision. Reload the inbox before retrying.") }); }
+        })}
       >
-        <AppInput
-          id="adjustmentId"
-          label="Adjustment ID"
-          required
-          error={errors.adjustmentId?.message}
-          {...register("adjustmentId")}
-        />
+        <input type="hidden" {...register("adjustmentId")} />
+        {errors.root && <p role="alert" className="text-sm text-red-700">{errors.root.message}</p>}
+        <div className="space-y-2 rounded-xl bg-slate-50 p-4 text-sm"><p className="font-semibold">{adjustment?.employeeName} · {adjustment?.employeeCode}</p><p>{formatHrDate(adjustment?.attendanceDate)}</p><p>Recorded: {HR_ATTENDANCE_STATUS_OPTIONS.find((option) => String(option.value) === String(adjustment?.attendanceStatus))?.label || "—"} · {adjustment?.checkInTime || "No check-in"} – {adjustment?.checkOutTime || "No check-out"}</p><p>Requested correction: {adjustment?.reason}</p><p className="font-semibold">Proposed: {HR_ATTENDANCE_STATUS_OPTIONS.find((option) => String(option.value) === String(adjustment?.proposedAttendanceStatus))?.label || "Legacy request — no proposed values"}</p>{adjustment?.proposedAttendanceStatus != null && <p>Check-in: {adjustment.proposedCheckInTime || "None"} · Check-out: {adjustment.proposedCheckOutTime || "None"}</p>}<p className="text-xs text-slate-500">{adjustment?.proposedAttendanceStatus != null ? "Approval applies these reviewed values atomically. Changed attendance and processed payroll periods are protected." : "This legacy request records a decision only. Request a new correction with proposed values to change attendance."}</p>{errors.adjustmentId && <p role="alert">Choose a request from the pending inbox.</p>}</div>
         <AppInput
           id="remarks"
           label="Remarks"

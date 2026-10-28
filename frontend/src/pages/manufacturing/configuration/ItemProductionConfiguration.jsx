@@ -7,10 +7,12 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import ConfigurationLookup, { ConfigurationReferenceLabel } from "./ConfigurationLookup";
 import { productionConfigurationService as service } from "../../../services/manufacturing/productionConfigurationService";
 import { ManufacturingCard } from "../ManufacturingShared";
-import { RATE_BASES, isDecimal, lookupOptions, moveStep, nameOf, validDateRange, validateRouting, validateRoutingReferences } from "./configurationHelpers";
+import { RATE_BASES, isDecimal, lookupOptions, moveStep, validDateRange, validateRouting, validateRoutingReferences } from "./configurationHelpers";
 import { CommandRecovery, ActiveField, DateFields, EffectiveDates, EffectivityDialog, EmptyRows, InlineMessage, RefreshButton, Version } from "./ConfigurationShared";
+import RoutingPolicyExample from "./RoutingPolicyExample";
 const emptyStep = () => ({
   operationId: "",
   workCentreId: "",
@@ -52,8 +54,8 @@ const RoutingEditor = ({
       [key]: value
     } : step)
   }));
-  const chooseOperation = (index, id) => {
-    const operation = lookups.operations.find(entry => String(entry.id) === String(id));
+  const chooseOperation = (index, id, selected) => {
+    const operation = selected ?? lookups.operations.find(entry => String(entry.id) === String(id));
     setForm(current => ({
       ...current,
       steps: current.steps.map((step, position) => position === index ? {
@@ -96,9 +98,9 @@ const RoutingEditor = ({
         defaultValue: "Revision"
       })} maxLength={50} disabled={command.busy || command.committed || command.conflict || command.uncertain} value={form.revision} onChange={event => setField("revision", event.target.value)} /><DateFields form={form} setField={setField} disabled={command.busy || command.committed || command.conflict || command.uncertain} />{form.steps.map((step, index) => <fieldset key={step.key} className="space-y-4 rounded-xl border border-slate-200 p-4"><legend className="px-2 text-sm font-semibold">{t("Step", {
             defaultValue: "Step"
-          })} {index + 1}</legend><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><AppSelect required label={t("Operation", {
+          })} {index + 1}</legend><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><ConfigurationLookup kind="operations" lookupContext={lookups} required label={t("Operation", {
             defaultValue: "Operation"
-          })} options={lookupOptions(lookups.operations, step.operationId)} value={step.operationId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={id => chooseOperation(index, id)} /><AppSelect required label={t("Work centre", {
+          })} options={lookupOptions(lookups.operations, step.operationId)} value={step.operationId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={(id, row) => chooseOperation(index, id, row)} /><ConfigurationLookup kind="workCentres" lookupContext={lookups} required label={t("Work centre", {
             defaultValue: "Work centre"
           })} options={lookupOptions(lookups.workCentres, step.workCentreId)} value={step.workCentreId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={value => update(index, "workCentreId", value)} /><AppSelect required label={t("Rate basis", {
             defaultValue: "Rate basis"
@@ -113,21 +115,21 @@ const RoutingEditor = ({
             defaultValue: "Setup minutes"
           })} inputMode="decimal" value={step.setupMinutes} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={event => update(index, "setupMinutes", event.target.value)} /><AppInput required label={t("Quantity basis (base units)", {
             defaultValue: "Quantity basis (base units)"
-          })} inputMode="decimal" value={step.quantityBasis} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={event => update(index, "quantityBasis", event.target.value)} /><AppSelect label={t("Machine (optional except shot rates)", {
+          })} inputMode="decimal" value={step.quantityBasis} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={event => update(index, "quantityBasis", event.target.value)} /><ConfigurationLookup kind="machines" lookupContext={lookups} label={t("Machine (optional except shot rates)", {
             defaultValue: "Machine (optional except shot rates)"
           })} options={[{
             value: "",
             label: t("No machine restriction", {
               defaultValue: "No machine restriction"
             })
-          }, ...lookupOptions(lookups.machines, step.machineId)]} value={step.machineId} disabled={command.busy || command.committed || command.conflict || command.uncertain || !lookups.canReadMachines} onChange={value => update(index, "machineId", value)} /><AppSelect label={t("Mould (optional except shot rates)", {
+          }, ...lookupOptions(lookups.machines, step.machineId)]} value={step.machineId} disabled={command.busy || command.committed || command.conflict || command.uncertain || !lookups.canReadMachines} onChange={value => update(index, "machineId", value)} /><ConfigurationLookup kind="moulds" lookupContext={lookups} label={t("Mould (optional except shot rates)", {
             defaultValue: "Mould (optional except shot rates)"
           })} options={[{
             value: "",
             label: t("No mould restriction", {
               defaultValue: "No mould restriction"
             })
-          }, ...lookupOptions(lookups.moulds, step.mouldId)]} value={step.mouldId} disabled={command.busy || command.committed || command.conflict || command.uncertain || !lookups.canReadMoulds} onChange={value => update(index, "mouldId", value)} /></div><div className="flex flex-wrap gap-2"><AppButton variant="secondary" aria-label={`Move step ${index + 1} up`} disabled={command.busy || index === 0} onClick={() => setField("steps", moveStep(form.steps, index, -1))}><ArrowUp className="h-4 w-4" />{t("Up", {
+          }, ...lookupOptions(lookups.moulds, step.mouldId)]} value={step.mouldId} disabled={command.busy || command.committed || command.conflict || command.uncertain || !lookups.canReadMoulds} onChange={value => update(index, "mouldId", value)} /></div><RoutingPolicyExample step={step} disabled={command.busy || command.committed || command.conflict || command.uncertain} /><div className="flex flex-wrap gap-2"><AppButton variant="secondary" aria-label={`Move step ${index + 1} up`} disabled={command.busy || index === 0} onClick={() => setField("steps", moveStep(form.steps, index, -1))}><ArrowUp className="h-4 w-4" />{t("Up", {
               defaultValue: "Up"
             })}</AppButton><AppButton variant="secondary" aria-label={`Move step ${index + 1} down`} disabled={command.busy || index === form.steps.length - 1} onClick={() => setField("steps", moveStep(form.steps, index, 1))}><ArrowDown className="h-4 w-4" />{t("Down", {
               defaultValue: "Down"
@@ -179,9 +181,9 @@ const EligibilityEditor = ({
   };
   return <AppModal isOpen title={t("Add machine\u2013mould eligibility", {
     defaultValue: "Add machine\u2013mould eligibility"
-  })} onClose={() => { if (!command.committed && !command.uncertain && !command.conflict) onClose(); }} isBusy={command.busy}><div className="space-y-4"><InlineMessage error>{lookups.error}</InlineMessage><AppSelect required label={t("OEE machine", {
+  })} onClose={() => { if (!command.committed && !command.uncertain && !command.conflict) onClose(); }} isBusy={command.busy}><div className="space-y-4"><InlineMessage error>{lookups.error}</InlineMessage><ConfigurationLookup kind="machines" lookupContext={lookups} required label={t("OEE machine", {
         defaultValue: "OEE machine"
-      })} options={lookupOptions(lookups.machines, form.machineId)} value={form.machineId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={value => setField("machineId", value)} /><AppSelect required label={t("OEE mould", {
+      })} options={lookupOptions(lookups.machines, form.machineId)} value={form.machineId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={value => setField("machineId", value)} /><ConfigurationLookup kind="moulds" lookupContext={lookups} required label={t("OEE mould", {
         defaultValue: "OEE mould"
       })} options={lookupOptions(lookups.moulds, form.mouldId)} value={form.mouldId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={value => setField("mouldId", value)} /><AppInput required label={t("Verified SKU output per shot (base units)", {
         defaultValue: "Verified SKU output per shot (base units)"
@@ -236,7 +238,7 @@ const ItemProductionConfigurationContent = ({
                 defaultValue: "Close effectivity"
               })}</AppButton>}</div><div className="overflow-x-auto"><table className="w-full min-w-[780px] text-left text-xs"><thead><tr>{["Sequence", "Operation / work centre", "Rate", "Setup minutes", "Quantity basis", "Machine / mould"].map(label => <th scope="col" className="p-3 text-slate-500" key={label}>{t(label, {
                       defaultValue: label
-                    })}</th>)}</tr></thead><tbody>{[...routing.steps].sort((a, b) => a.sequence - b.sequence).map(step => <tr key={step.sequence} className="border-t border-slate-100"><td className="p-3">{step.sequence}</td><td className="p-3">{nameOf(lookups.operations, step.operationId)}<br />{nameOf(lookups.workCentres, step.workCentreId)}</td><td className="p-3">{step.rate} {RATE_BASES.find(entry => entry.value === Number(step.rateBasis))?.label}</td><td className="p-3">{step.setupMinutes}</td><td className="p-3">{step.quantityBasis}</td><td className="p-3">{nameOf(lookups.machines, step.machineId)}<br />{nameOf(lookups.moulds, step.mouldId)}</td></tr>)}</tbody></table></div></article>)}</div></ManufacturingCard><ManufacturingCard title={t("Machine\u2013mould eligibility", {
+                    })}</th>)}</tr></thead><tbody>{[...routing.steps].sort((a, b) => a.sequence - b.sequence).map(step => <tr key={step.sequence} className="border-t border-slate-100"><td className="p-3">{step.sequence}</td><td className="p-3"><ConfigurationReferenceLabel kind="operations" id={step.operationId} lookupContext={lookups} /><br /><ConfigurationReferenceLabel kind="workCentres" id={step.workCentreId} lookupContext={lookups} /></td><td className="p-3">{step.rate} {RATE_BASES.find(entry => entry.value === Number(step.rateBasis))?.label}</td><td className="p-3">{step.setupMinutes}</td><td className="p-3">{step.quantityBasis}</td><td className="p-3"><ConfigurationReferenceLabel kind="machines" id={step.machineId} lookupContext={lookups} /><br /><ConfigurationReferenceLabel kind="moulds" id={step.mouldId} lookupContext={lookups} /></td></tr>)}</tbody></table></div></article>)}</div></ManufacturingCard><ManufacturingCard title={t("Machine\u2013mould eligibility", {
       defaultValue: "Machine\u2013mould eligibility"
     })} description={t("Verified SKU output per shot and effective resource combinations.", {
       defaultValue: "Verified SKU output per shot and effective resource combinations."
@@ -246,7 +248,7 @@ const ItemProductionConfigurationContent = ({
             defaultValue: "Loading eligibility\u2026"
           })}</EmptyRows> : !(configuration.eligibility ?? []).length ? <EmptyRows>{t("No verified resource combination.", {
             defaultValue: "No verified resource combination."
-          })}</EmptyRows> : configuration.eligibility.map(record => <div key={record.id} className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row"><div><h3 className="font-medium">{nameOf(lookups.machines, record.machineId)} / {nameOf(lookups.moulds, record.mouldId)}</h3><p className="text-sm text-slate-700">{t("SKU output per shot:", {
+          })}</EmptyRows> : configuration.eligibility.map(record => <div key={record.id} className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row"><div><h3 className="font-medium"><ConfigurationReferenceLabel kind="machines" id={record.machineId} lookupContext={lookups} /> / <ConfigurationReferenceLabel kind="moulds" id={record.mouldId} lookupContext={lookups} /></h3><p className="text-sm text-slate-700">{t("SKU output per shot:", {
                 defaultValue: "SKU output per shot:"
               })} {record.skuOutputPerShot} {t("base units", {
                 defaultValue: "base units"

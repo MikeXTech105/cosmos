@@ -17,6 +17,10 @@ import AppInput from "../../../components/common/AppInput";
 import PageHeader from "../../../components/common/PageHeader";
 import AppSelect from "../../../components/common/AppSelect";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
+import { withoutDirtyPrompt } from "../../../utils/dirtyWork";
+import { getApiFieldErrors } from "../../../utils/apiError";
 import { hrDepartmentService } from "../../../services/hr/departmentService";
 import { hrDesignationService } from "../../../services/hr/designationService";
 import { hrEmployeeService } from "../../../services/hr/employeeService";
@@ -28,11 +32,6 @@ import {
   saveHrEmployeeBankDetails,
   updateHrEmployee,
 } from "../../../store/slices/hr/employeeSlice";
-import {
-  clearFormDraft,
-  readFormDraft,
-  saveFormDraft,
-} from "../../../utils/formDraftStorage";
 import {
   HR_EMPLOYEE_STATUS_OPTIONS,
   HR_EMPLOYMENT_TYPE_OPTIONS,
@@ -57,6 +56,7 @@ import {
   mapFormToPayload,
 } from "./employeeFormMappers";
 import { exportEmployeeProfilePdf } from "./exportEmployeeProfilePdf";
+import { saveEmployeeBankSafely } from "./bankSaveRecovery";
 
 const extractList = (response) => {
   if (Array.isArray(response?.data?.items)) {
@@ -81,7 +81,9 @@ const toOption = (record, idResource, labelCandidates, metadata = {}) => {
   return label && value ? { label, value, ...metadata } : null;
 };
 
-const Section = ({ children, title }) => (
+const Section = ({ children, title, optional = false }) => optional ? (
+  <details className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><summary className="cursor-pointer text-base font-semibold text-slate-900">{title} — optional</summary><div className="mt-4 space-y-4">{children}</div></details>
+) : (
   <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
     <h2 className="mb-4 text-base font-semibold text-slate-900">{title}</h2>
     <div className="space-y-4">{children}</div>
@@ -108,10 +110,12 @@ const EmployeeFormPage = () => {
   const [shiftOptions, setShiftOptions] = useState([]);
   const [reportingManagerOptions, setReportingManagerOptions] = useState([]);
   const [lookupCreateModal, setLookupCreateModal] = useState({ department: false, designation: false, shift: false });
+  const [pendingBankUpdate, setPendingBankUpdate] = useState(null);
+  const [retryingBankUpdate, setRetryingBankUpdate] = useState(false);
 
   const {
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
     handleSubmit,
     getValues,
     register,
@@ -128,6 +132,10 @@ const EmployeeFormPage = () => {
     remove: removeAddress,
   } = useFieldArray({ control, name: "addresses" });
   const selectedDepartmentId = useWatch({ control, name: "departmentId" });
+  const allValues = useWatch({ control });
+  const safeDraftValues = { ...allValues, bankName: "", accountNumber: "", ifscCode: "", branchName: "", upiId: "" };
+  const scopedDraft = useScopedDraft({ entity: "employee-onboarding", context: "new", values: safeDraftValues, enabled: !isEdit && isDirty });
+  useUnsavedChanges({ when: isDirty || Boolean(pendingBankUpdate) });
   const selectedDesignationId = useWatch({ control, name: "designationId" });
   const filteredDesignationOptions = useMemo(() => {
     if (!selectedDepartmentId) return [];
@@ -185,20 +193,13 @@ const EmployeeFormPage = () => {
 
   useEffect(() => {
     if (isEdit) {
-      if (detailEmployee && String(getHrRecordId(detailEmployee, "employee")) === String(id)) {
+      if (!isDirty && detailEmployee && String(getHrRecordId(detailEmployee, "employee")) === String(id)) {
         reset(mapEmployeeToForm({ ...detailEmployee, bankDetails: detailBankDetails ?? detailEmployee.bankDetails }));
       }
       return;
     }
 
-    const savedDraft = readFormDraft("employee-create");
-
-    reset(savedDraft ?? mapEmployeeToForm(null));
-    if (savedDraft) {
-      toast.info("Your saved employee draft has been restored.");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [detailBankDetails, detailEmployee, id, isDirty, isEdit, reset]);
 
   useEffect(() => {
     if (!selectedDesignationId) return;
@@ -224,24 +225,35 @@ const EmployeeFormPage = () => {
   const closeLookupCreate = useCallback((type) => setLookupCreateModal((current) => ({ ...current, [type]: false })), []);
   const submitLookupCreate = useCallback(async (type, payload) => {
     try {
+      let response;
       if (type === "department") {
-        await hrDepartmentService.createDepartment(payload);
+        response = await hrDepartmentService.createDepartment(payload);
         toast.success("Department created successfully");
       } else if (type === "designation") {
-        await hrDesignationService.createDesignation(payload);
+        response = await hrDesignationService.createDesignation(payload);
         toast.success("Designation created successfully");
       } else {
-        await hrShiftService.createShift(payload);
+        response = await hrShiftService.createShift(payload);
         toast.success("Shift created successfully");
       }
 
       await loadLookups();
+      const created = extractHrEntity(response?.data, type);
+      const savedId = getHrRecordId(created, type);
+      if (savedId) {
+        const option = toOption(created, type, [`${type}Name`, "name"], type === "designation" ? { departmentId: created.departmentId ?? payload.departmentId } : {});
+        const setter = { department: setDepartmentOptions, designation: setDesignationOptions, shift: setShiftOptions }[type];
+        if (option) setter((current) => [...current.filter((item) => String(item.value) !== String(savedId)), option]);
+        if (type === "designation" && payload.departmentId) setValue("departmentId", payload.departmentId, { shouldDirty: true });
+        setValue(`${type}Id`, savedId, { shouldDirty: true, shouldValidate: true });
+      }
       closeLookupCreate(type);
+      window.setTimeout(() => document.getElementById(`employee-${type}`)?.focus(), 0);
     } catch (error) {
       toast.error(getHrActionError(error, "Unable to create record."));
       throw error;
     }
-  }, [closeLookupCreate, loadLookups]);
+  }, [closeLookupCreate, loadLookups, setValue]);
 
   const saveDisabledReason = (isEdit ? capabilities.canUpdate : capabilities.canCreate)
     ? ""
@@ -269,33 +281,37 @@ const EmployeeFormPage = () => {
       const employeeId = isEdit ? id : getHrRecordId(extractHrEntity(response?.data, "employee"), "employee");
 
       if (isEdit && employeeId && shouldSaveBankDetails) {
-        await dispatch(saveHrEmployeeBankDetails({ id: employeeId, payload: bankDetails })).unwrap();
+        try {
+          await saveEmployeeBankSafely(employeeId, bankDetails, { read: hrEmployeeService.getBankDetails, save: (savedId, savedPayload) => dispatch(saveHrEmployeeBankDetails({ id: savedId, payload: savedPayload })).unwrap() });
+          await dispatch(fetchHrEmployeeBankDetails(employeeId));
+          setPendingBankUpdate(null);
+        } catch (error) {
+          setPendingBankUpdate({ employeeId, payload: bankDetails, error: getHrActionError(error, "Bank details could not be saved.") });
+          await dispatch(fetchHrEmployeeById(employeeId));
+          return;
+        }
       }
 
       toast.success(getHrSuccessMessage(response, isEdit ? "Employee updated successfully" : "Employee created successfully"));
 
       if (!isEdit) {
-        clearFormDraft("employee-create");
+        scopedDraft.clearDraft();
 
-        const createdEmployee = { ...payload, ...extractHrEntity(response?.data, "employee"), bankDetails: payload.bankDetails ?? bankDetails };
-
-        try {
-          await exportEmployeeProfilePdf({ bankDetails: createdEmployee.bankDetails, departmentOptions, designationOptions, employee: createdEmployee, shiftOptions });
-        } catch (pdfError) {
-          toast.error(pdfError?.message ?? "Employee was saved, but the profile PDF could not be generated.");
-        }
-
-        navigate(employeeId ? `/hr/employees/${employeeId}/edit` : "/hr/employees", { replace: true });
+        withoutDirtyPrompt(() => navigate(employeeId ? `/hr/employees/${employeeId}/edit` : "/hr/employees", { replace: true }));
+      } else {
+        reset(values);
       }
     } catch (error) {
+      Object.entries(getApiFieldErrors(error)).forEach(([field, message]) => setError(field.charAt(0).toLowerCase() + field.slice(1), { type: "server", message }));
+      setError("root", { type: "server", message: getHrActionError(error, "Employee could not be saved. Review the highlighted fields.") });
       toast.error(getHrActionError(error, "Unable to save employee."));
     }
   };
 
   const saveDraft = () => {
-    saveFormDraft("employee-create", getValues());
-    toast.success("Employee draft saved on this device");
-    navigate("/hr/employees");
+    if (!scopedDraft.saveDraft()) { toast.error("Draft recovery needs your current user and company identity. Save the employee before leaving."); return; }
+    toast.success("Employee draft kept for this user and company. Bank details are excluded.");
+    withoutDirtyPrompt(() => navigate("/hr/employees"));
   };
 
   const title = isEdit ? "Edit employee" : "Add employee";
@@ -314,6 +330,14 @@ const EmployeeFormPage = () => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(submitForm)} noValidate>
+      {errors.root && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{errors.root.message}</div>}
+      {!isEdit && scopedDraft.recoveredDraft && !isDirty && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">A saved onboarding draft is available. <button className="mr-4 font-semibold underline" type="button" disabled={scopedDraft.stale} onClick={() => { reset(scopedDraft.recoveredDraft.values, { keepDefaultValues: true }); scopedDraft.acknowledgeRecovery(); }}>Restore draft</button><button className="underline" type="button" onClick={scopedDraft.clearDraft}>Discard draft</button></div>}
+      {pendingBankUpdate && <div role="alert" className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p><strong>Employee changes were saved.</strong> Bank details are still pending. {pendingBankUpdate.error}</p><AppButton variant="secondary" disabled={!capabilities.canUpdate} isLoading={retryingBankUpdate} onClick={async () => {
+        setRetryingBankUpdate(true);
+        try { await saveEmployeeBankSafely(pendingBankUpdate.employeeId, pendingBankUpdate.payload, { read: hrEmployeeService.getBankDetails, save: (savedId, savedPayload) => dispatch(saveHrEmployeeBankDetails({ id: savedId, payload: savedPayload })).unwrap() }); await dispatch(fetchHrEmployeeBankDetails(pendingBankUpdate.employeeId)); setPendingBankUpdate(null); reset(getValues()); toast.success("Bank details saved"); }
+        catch (error) { setPendingBankUpdate((current) => ({ ...current, error: getHrActionError(error, "Bank details could not be saved.") })); }
+        finally { setRetryingBankUpdate(false); }
+      }}>Retry bank update</AppButton></div>}
       <PageHeader
         badge={<><UserRound className="h-3.5 w-3.5" /> HR / Employees</>}
         title={title}
@@ -323,6 +347,7 @@ const EmployeeFormPage = () => {
             <AppButton variant="secondary" onClick={() => navigate("/hr/employees")}>
               <ArrowLeft className="h-4 w-4" /> Back
             </AppButton>
+            {isEdit && <AppButton variant="secondary" onClick={() => exportEmployeeProfilePdf({ employee: detailEmployee, bankDetails: detailBankDetails, departmentOptions, designationOptions, shiftOptions }).catch((error) => toast.error(error.message || "Unable to create profile PDF."))}>Download saved profile</AppButton>}
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
               <Save className="h-4 w-4" /> {isEdit ? "Save changes" : "Save employee"}
             </AppButton>
@@ -381,6 +406,7 @@ const EmployeeFormPage = () => {
                 render={({ field }) => (
                   <AppSelect
                     label="Department"
+                    id="employee-department"
                     required
                     value={field.value}
                     onChange={(value) => {
@@ -402,6 +428,7 @@ const EmployeeFormPage = () => {
                 render={({ field }) => (
                   <AppSelect
                     label="Designation"
+                    id="employee-designation"
                     required
                     value={field.value}
                     onChange={field.onChange}
@@ -435,6 +462,7 @@ const EmployeeFormPage = () => {
                 render={({ field }) => (
                   <AppSelect
                     label="Shift"
+                    id="employee-shift"
                     required
                     value={field.value}
                     onChange={field.onChange}
@@ -464,7 +492,7 @@ const EmployeeFormPage = () => {
             </div>
           </Section>
 
-          <Section title="Addresses">
+          <Section title="Addresses" optional>
             {addressFields.map((addressField, index) => {
               const addressErrors = errors.addresses?.[index] ?? {};
 
@@ -501,7 +529,7 @@ const EmployeeFormPage = () => {
             </AppButton>
           </Section>
 
-          <Section title="Bank Details">
+          <Section title="Bank Details" optional>
             <div className="grid gap-4 md:grid-cols-2">
               <AppInput id="bankName" label="Bank Name" error={errors.bankName?.message} {...register("bankName")} />
               <AppInput id="accountNumber" label="Account Number" error={errors.accountNumber?.message} {...register("accountNumber")} />

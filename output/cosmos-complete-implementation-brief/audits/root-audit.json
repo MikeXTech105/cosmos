@@ -1,0 +1,389 @@
+{
+  "scope": "Cross-cutting navigation, shared UI, dashboard, analytics, reports, auth and recovery; source review at da46203.",
+  "coverage": [
+    {
+      "module": "Navigation and shared UI",
+      "screens": [
+        "Desktop/mobile sidebar",
+        "Global command search",
+        "Header/breadcrumbs",
+        "Shared modal/select/input/table/button"
+      ],
+      "kind": "Shared experience",
+      "flow": "Sign in → authorized landing → menu/search → list → form/detail → next action",
+      "strengths": [
+        "Permission-aware menu and route guards already exist.",
+        "Ctrl/Cmd+K, keyboard navigation, focus trapping and focus restoration exist.",
+        "Brand tokens, shared controls, loading skeletons and empty states exist."
+      ],
+      "improvements": [
+        "Role-based Today workspace and pinned/recent tasks.",
+        "Correct ordinary-role alias labels/IDs.",
+        "Remote searchable selectors for large catalogs.",
+        "Consistent draft recovery and task-specific responsive layouts."
+      ],
+      "evidence": [
+        {
+          "path": "frontend/src/hooks/useSidebar.js",
+          "line": 87
+        },
+        {
+          "path": "frontend/src/components/layout/SearchCommand.jsx",
+          "line": 42
+        },
+        {
+          "path": "frontend/src/components/common/DataTableShell.jsx",
+          "line": 28
+        }
+      ]
+    },
+    {
+      "module": "Dashboard",
+      "screens": [
+        "Analytics overview",
+        "Overview KPIs",
+        "Sales/purchase trend",
+        "Revenue/expense trend",
+        "Top items/parties",
+        "Recent activity",
+        "Alerts",
+        "HR summary"
+      ],
+      "kind": "Overview",
+      "flow": "Date filter → KPI/alert → domain report → affected record/action",
+      "strengths": [
+        "URL-backed filters, debounced requests and individual widget retry.",
+        "Charts are lazy-loaded; loading/error/empty states are separate."
+      ],
+      "improvements": [
+        "Put today's pending work and primary role action above analytics.",
+        "Turn alert rows into permission-aware record links and preserve date/filter context.",
+        "Route GST alerts to the relevant GST screen instead of generic Settings."
+      ],
+      "evidence": [
+        {
+          "path": "frontend/src/pages/dashboard/DashboardPage.jsx",
+          "line": 107
+        },
+        {
+          "path": "frontend/src/pages/dashboard/widgets/AlertsPanel.jsx",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "module": "Reports",
+      "screens": [
+        "Report home/group search",
+        "Sales (7 definitions)",
+        "Purchase (7)",
+        "Inventory (11)",
+        "Manufacturing (2 registry reports)",
+        "Party (5)",
+        "Expense (4)",
+        "Rojmel (7)",
+        "Report filters/table/summary/export"
+      ],
+      "kind": "Reports",
+      "flow": "Domain/report → period/entity filters → server results/totals → drilldown/export",
+      "strengths": [
+        "43 registry definitions across seven groups; production operational reports are additional, outside this count.",
+        "Permission-aware discovery/export, URL filters, sort/pagination and generated timestamps.",
+        "Export progress and controlled full-result fallback exist."
+      ],
+      "improvements": [
+        "Remote search all lookup records instead of first 200.",
+        "Named saved views and favorites built on existing shareable filters.",
+        "User-selected columns and record drilldowns without losing filter context."
+      ],
+      "evidence": [
+        {
+          "path": "frontend/src/pages/reports/reportRegistry.js",
+          "line": 72
+        },
+        {
+          "path": "frontend/src/pages/reports/filters/ReportFilterBar.jsx",
+          "line": 96
+        },
+        {
+          "path": "frontend/src/pages/reports/ReportView.jsx",
+          "line": 348
+        }
+      ]
+    },
+    {
+      "module": "Deep Dive",
+      "screens": [
+        "Executive Command Center",
+        "OEE Manufacturing Telemetry",
+        "Rojmel Financial Hub",
+        "GST & Statutory Intelligence",
+        "Cross-Module Intelligence"
+      ],
+      "kind": "Analytics",
+      "flow": "Choose analysis period → read permitted source snapshots → inspect record tables → open source module",
+      "strengths": [
+        "Shows source access, partial availability, fetched timestamp and stale snapshot warning.",
+        "Bounds complete-list reads; does not turn a first page into a full executive total.",
+        "Search scope explains that record tables filter while period KPIs stay complete."
+      ],
+      "improvements": [
+        "Simpler business-facing names and a clear 'what should I do next' action.",
+        "Keep Dashboard for daily work and Deep Dive for optional analysis.",
+        "Preserve source period/filters when moving into operational screens."
+      ],
+      "evidence": [
+        {
+          "path": "frontend/src/pages/deepDive/deepDiveConfig.js",
+          "line": 45
+        },
+        {
+          "path": "frontend/src/pages/deepDive/DeepDivePage.jsx",
+          "line": 154
+        },
+        {
+          "path": "frontend/src/pages/deepDive/deepDiveData.js",
+          "line": 60
+        }
+      ]
+    },
+    {
+      "module": "Authentication and recovery",
+      "screens": [
+        "Login",
+        "Forgot password",
+        "Reset password",
+        "Change password",
+        "403 access denied",
+        "404 not found"
+      ],
+      "kind": "Support",
+      "flow": "Sign in / reset via email → authorized destination; denied/missing screen → permitted recovery destination",
+      "strengths": [
+        "Password visibility toggle, autocomplete, schema validation and submitting states.",
+        "Remembered/session-only login and authorized return-route handling.",
+        "403/404 recovery respects permitted routes."
+      ],
+      "improvements": [
+        "Normal reset link should carry the token without exposing an editable technical field.",
+        "Persistent contextual server errors, expired-link recovery and request-new-link action.",
+        "Associate validation messages with inputs consistently using aria-invalid/describedby."
+      ],
+      "evidence": [
+        {
+          "path": "frontend/src/pages/auth/Login.jsx",
+          "line": 49
+        },
+        {
+          "path": "frontend/src/pages/auth/ResetPassword.jsx",
+          "line": 20
+        },
+        {
+          "path": "frontend/src/pages/errors/AccessDeniedPage.jsx",
+          "line": 9
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "UX-NAV-01",
+      "priority": "P1",
+      "type": "Source-confirmed defect",
+      "title": "Ordinary-role production shortcuts reuse the same label and ID",
+      "problem": "With a normal user granted Manufacturing.Orders, Orders, Planning and Import & Reconciliation all render as Production Orders with ID 990 in a source-level reproduction. Daily and Kanban retain their distinct presentation.",
+      "impact": "Operator cannot reliably distinguish three destinations; duplicate sibling keys can also destabilize rendering.",
+      "recommendation": "Keep each alias module's label/ID/sort while reusing its permission target. Extend the existing menu test to cover all five destinations.",
+      "evidence": [
+        {
+          "path": "frontend/src/hooks/useSidebar.js",
+          "line": 87
+        },
+        {
+          "path": "frontend/src/config/sidebar.js",
+          "line": 900
+        }
+      ],
+      "verification": "Executed real buildMenuTree via Vite SSR with an AuthLoginPagePermissionDto-shaped synthetic grant; no API/DB call."
+    },
+    {
+      "id": "UX-LOOKUP-01",
+      "priority": "P1",
+      "type": "Source-confirmed limit",
+      "title": "Report entity selectors stop at the first 200 records",
+      "problem": "ReportFilterBar loads categories, expense categories, items, parties, units and admin wallets with PageNumber 1/PageSize 200; the common AppSelect displays only supplied options.",
+      "impact": "A valid record outside the loaded page cannot be selected by this filter UI.",
+      "recommendation": "Use searchable server-backed lookup controls, preserve selected values, show loading/retry and support all catalog pages.",
+      "evidence": [
+        {
+          "path": "frontend/src/pages/reports/filters/ReportFilterBar.jsx",
+          "line": 96
+        },
+        {
+          "path": "frontend/src/components/common/AppSelect.jsx",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "id": "UX-NAV-02",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Add a role-based Today workspace",
+      "problem": "The system exposes many domain pages and analytics views. Existing permission filtering controls access but does not prioritize the operator's most frequent tasks.",
+      "impact": "New users must learn module structure before completing routine work.",
+      "recommendation": "Offer role workspaces for Production, Purchase/Stores, Sales/Dispatch, Accounts and HR; show 4–6 frequent tasks, pending counts and pinned/recent destinations, with all authorized modules still reachable.",
+      "evidence": [
+        {
+          "path": "frontend/src/config/sidebar.js",
+          "line": 68
+        },
+        {
+          "path": "frontend/src/components/layout/Sidebar.jsx",
+          "line": 94
+        },
+        {
+          "path": "frontend/src/utils/searchCommand.js",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "UX-SELECT-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Extend the shared selector for large lists",
+      "problem": "AppSelect has keyboard/listbox behavior and inline-create support, but no searchable-input or remote-query contract; finding a record depends on navigating the supplied list.",
+      "impact": "Large item/party/employee catalogs slow daily entry.",
+      "recommendation": "Keep the simple selector for small enums; add a common searchable lookup with code+name, recent choices, remote pagination and permission-aware inline create.",
+      "evidence": [
+        {
+          "path": "frontend/src/components/common/AppSelect.jsx",
+          "line": 20
+        },
+        {
+          "path": "frontend/src/components/common/AppSelect.jsx",
+          "line": 227
+        }
+      ]
+    },
+    {
+      "id": "UX-DASH-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Make the dashboard action-first",
+      "problem": "Analytics Overview renders KPI cards and two chart rows before alerts. Alert preview rows are plain text with one View all link per bucket; the GST bucket points to /settings.",
+      "impact": "Daily operators scan analytics before seeing exceptions and then must find the affected record.",
+      "recommendation": "Prioritize pending/overdue/blocked work for the user's role; link each alert to the affected permitted record with the active period, and send GST alerts to the matching compliance page.",
+      "evidence": [
+        {
+          "path": "frontend/src/pages/dashboard/DashboardPage.jsx",
+          "line": 126
+        },
+        {
+          "path": "frontend/src/pages/dashboard/widgets/AlertsPanel.jsx",
+          "line": 23
+        },
+        {
+          "path": "frontend/src/pages/dashboard/widgets/AlertsPanel.jsx",
+          "line": 145
+        }
+      ]
+    },
+    {
+      "id": "UX-REPORT-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Add reusable report views on top of existing URL filters",
+      "problem": "Reports already support searching the catalog, period/entity filtering, URL sharing, sorting, pagination and exports. Named favorite views and user-selected columns are not exposed in the reviewed report shell.",
+      "impact": "Regular reporting requires repeating the same selections and navigating many report cards.",
+      "recommendation": "Add Save view, favorites, column choice and contextual document drilldown; distinguish full-period totals from page rows and keep existing export safeguards.",
+      "evidence": [
+        {
+          "path": "frontend/src/pages/reports/ReportsHome.jsx",
+          "line": 48
+        },
+        {
+          "path": "frontend/src/pages/reports/ReportView.jsx",
+          "line": 250
+        },
+        {
+          "path": "frontend/src/pages/reports/ReportTable.jsx",
+          "line": 106
+        }
+      ]
+    },
+    {
+      "id": "UX-TABLE-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Use task-specific table density and narrow-screen layouts",
+      "problem": "Shared tables default to a 760px minimum width and report tables to 920px; horizontal scrolling is the current fallback.",
+      "impact": "On small screens, primary identity/status/action can be separated by a long horizontal scroll.",
+      "recommendation": "Keep grids for rapid numeric entry; pin identity/actions, offer sensible columns and compact/comfortable spacing, and use mobile summary cards for approvals/work lists where helpful.",
+      "evidence": [
+        {
+          "path": "frontend/src/components/common/DataTableShell.jsx",
+          "line": 28
+        },
+        {
+          "path": "frontend/src/pages/reports/ReportTable.jsx",
+          "line": 139
+        }
+      ],
+      "verification": "Source layout review only; no claim of measured viewport overflow or accessibility compliance."
+    },
+    {
+      "id": "UX-AUTH-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Simplify password recovery and expose contextual errors",
+      "problem": "Reset password exposes an editable Reset Token field; API errors in auth forms are primarily transient toast messages. Login validation text is not explicitly associated by aria-describedby/aria-invalid.",
+      "impact": "Nontechnical users encounter an implementation field and can miss error context.",
+      "recommendation": "Read token from the email link, show a clear expired/invalid-link recovery action, retain server errors beside the form and connect field messages programmatically.",
+      "evidence": [
+        {
+          "path": "frontend/src/pages/auth/ResetPassword.jsx",
+          "line": 103
+        },
+        {
+          "path": "frontend/src/pages/auth/Login.jsx",
+          "line": 83
+        },
+        {
+          "path": "frontend/src/pages/auth/Login.jsx",
+          "line": 126
+        }
+      ]
+    },
+    {
+      "id": "UX-COPY-01",
+      "priority": "P2",
+      "type": "Design improvement",
+      "title": "Use business language and consistent next-step guidance",
+      "problem": "Navigation empty state says RBAC pages from the API will appear here, while analytics titles include Telemetry, Statutory Intelligence and Cross-Module Intelligence.",
+      "impact": "The interface asks ordinary operators to understand internal terminology.",
+      "recommendation": "Use client terms such as Today's Production, Pending Payments and GST Status; add optional concise Gujarati/Hinglish help where the client needs it, with one clear recovery/next action.",
+      "evidence": [
+        {
+          "path": "frontend/src/components/layout/Sidebar.jsx",
+          "line": 131
+        },
+        {
+          "path": "frontend/src/pages/deepDive/deepDiveConfig.js",
+          "line": 67
+        },
+        {
+          "path": "frontend/src/hooks/useProductionText.js",
+          "line": 4
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Source/configuration/route and selected pure-function review only; no live SQL or real user journey executed.",
+    "No new lint/build/test run was needed because application source was not changed; previous test counts are not current audit proof.",
+    "Not a security, tax/legal, performance load or accessibility certification.",
+    "Usability outcomes must be validated with representative client operators and realistic authorized data."
+  ]
+}

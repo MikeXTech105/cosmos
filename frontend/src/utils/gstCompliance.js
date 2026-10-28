@@ -1,4 +1,5 @@
 import { getApiCorrelationId, getApiErrorMessage } from "./apiError";
+import { idWire } from "./productionValues";
 
 export const GST_PAGES = [
   { key: "configuration", title: "GST overview", pageName: "GST.Configuration", route: "/gst/configuration" },
@@ -10,17 +11,19 @@ export const GST_PAGES = [
   { key: "sessions", title: "GST session status", pageName: "GST.Session", route: "/gst/sessions" },
   { key: "logs", title: "GST API logs", pageName: "GST.Logs", route: "/gst/api-logs" },
 ];
-export const GENERATION_DEPENDENCY = "Generation is unavailable: the server needs validated invoice GST details and duplicate protection for existing government documents. Contact your administrator.";
+export const GENERATION_DEPENDENCY = "Generation is unavailable while the issuance policy decision is pending. A validated immutable component-tax snapshot, reviewed transport where applicable, and government-document duplicate protection are required. Source preparation can be saved as PendingPolicy.";
 export const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 // Validators accept more fields, but these are the columns actually sorted by SQL.
 export const GST_REGISTRATION_SORTS = ["CreatedAt", "Gstin", "LegalName"];
 export const GST_LOG_SORTS = ["CreatedAt", "ApiType"];
+// Exact operation labels written by GstZenProviderService, with no operator spelling requirement.
+export const GST_OPERATION_OPTIONS = ["GSTIN Verification", "E-Invoice Generate", "E-Invoice Cancel", "E-Invoice Details", "E-Way Bill Generate", "E-Way Bill Cancel", "E-Way Bill Update Vehicle", "E-Way Bill Extend", "E-Way Bill Details", "GSTN Generate OTP", "GSTN Authenticate OTP"];
 
 const registrationStrings = ["gstin", "legalName", "tradeName", "stateCode", "stateName", "branchName", "addressLine1", "addressLine2", "city", "district", "pincode", "addressJson", "gstPortalUsername", "status"];
 export const registrationPayload = values => ({
   ...Object.fromEntries(registrationStrings.map(key => [key, key === "gstin" ? String(values[key] ?? "").trim().toUpperCase() : values[key] || null])),
-  companyId: values.companyId ? Number(values.companyId) : null,
-  branchId: values.branchId ? Number(values.branchId) : null,
+  companyId: values.companyId ? idWire(values.companyId) : null,
+  branchId: values.branchId ? idWire(values.branchId) : null,
   ...Object.fromEntries(["isEInvoiceEnabled", "isEWayBillEnabled", "isGstReturnEnabled", "isDefault"].map(key => [key, Boolean(values[key])])),
 });
 

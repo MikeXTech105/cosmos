@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { requiredDate, optionalDate as calendarDate, dateOrder } from "../../utils/validationRules";
+import { compareDecimal, decimalText, decimalWire, idWire } from "../../utils/productionValues";
 
 import {
   SHIPMENT_APPOINTMENT_STATUS,
@@ -19,18 +20,17 @@ const optionalText = z.preprocess(
   z.string().optional(),
 );
 
-const requiredId = (label) =>
-  z.preprocess(
-    emptyToUndefined,
-    z.coerce.number({
-      error: `${label} is required.`,
-    }).int(`${label} must be a whole number.`).positive(`${label} is required.`),
-  );
-
-const optionalId = z.preprocess(
-  emptyToUndefined,
-  z.coerce.number().int().positive().optional(),
-);
+const exactId = label => z.any().transform((value, context) => {
+  try { idWire(value); return String(value).trim(); }
+  catch { context.addIssue({ code: "custom", message: `${label} must be a valid selected record.` }); return z.NEVER; }
+});
+const requiredId = label => exactId(label);
+const optionalId = z.preprocess(emptyToUndefined, exactId("Selection").optional());
+const exactQuantity = label => z.any().transform((value, context) => {
+  try { const source = value == null || value === "" ? "0" : value; decimalWire(source, { integerDigits: 13, scale: 6 }); return decimalText(source); }
+  catch { context.addIssue({ code: "custom", message: `${label} needs a nonnegative quantity with at most six decimal places.` }); return z.NEVER; }
+});
+const positiveQuantity = label => exactQuantity(label).refine(value => compareDecimal(value, "0") > 0, `${label} must be positive.`);
 
 const transporterId = z.preprocess(
   emptyToUndefined,
@@ -43,14 +43,11 @@ const optionalDate = z.preprocess(emptyToUndefined, calendarDate);
 const nonNegative = (label) =>
   z.coerce.number().min(0, `${label} cannot be negative.`);
 
-const positive = (label) =>
-  z.coerce.number().positive(`${label} must be positive.`);
-
 const shipmentItem = z.object({
   itemId: requiredId("Item"),
   notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   packagingProfileId: optionalId,
-  plannedQuantity: positive("Planned quantity"),
+  plannedQuantity: positiveQuantity("Planned quantity"),
 });
 
 export const manualShipmentSchema = z.object({
@@ -76,7 +73,7 @@ export const dispatchShipmentSchema = z.object({
     .array(
       z.object({
         dispatchPlanningAllocationId: requiredId("Allocation"),
-        plannedQuantity: positive("Planned quantity"),
+        plannedQuantity: positiveQuantity("Planned quantity"),
       }),
     )
     .min(1, "Select at least one allocation."),
@@ -100,7 +97,7 @@ export const shipmentPackageSchema = z.object({
   items: z
     .array(
       z.object({
-        quantity: nonNegative("Quantity"),
+        quantity: exactQuantity("Quantity"),
         shipmentItemId: requiredId("Shipment item"),
       }),
     )
@@ -171,13 +168,13 @@ export const shipmentDeliveryAttemptSchema = z.object({
 });
 
 const receiptItem = z.object({
-  damagedQuantity: nonNegative("Damaged quantity"),
+  damagedQuantity: exactQuantity("Damaged quantity"),
   notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
   reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
-  receivedQuantity: nonNegative("Received quantity"),
-  rejectedQuantity: nonNegative("Rejected quantity"),
+  receivedQuantity: exactQuantity("Received quantity"),
+  rejectedQuantity: exactQuantity("Rejected quantity"),
   shipmentItemId: requiredId("Shipment item"),
-  shortQuantity: nonNegative("Short quantity"),
+  shortQuantity: exactQuantity("Short quantity"),
 });
 
 export const shipmentReceiptSchema = z.object({
@@ -197,7 +194,7 @@ export const shipmentReturnSchema = z.object({
       z.object({
         notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
         reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
-        returnQuantity: nonNegative("Return quantity"),
+        returnQuantity: exactQuantity("Return quantity"),
         shipmentItemId: requiredId("Shipment item"),
       }),
     )
@@ -214,12 +211,12 @@ export const shipmentReturnSchema = z.object({
 export const shipmentReturnReceiveSchema = z.object({
   items: z.array(
     z.object({
-      damagedQuantity: nonNegative("Damaged quantity"),
-      nonRestockableQuantity: nonNegative("Non-restockable quantity"),
+      damagedQuantity: exactQuantity("Damaged quantity"),
+      nonRestockableQuantity: exactQuantity("Non-restockable quantity"),
       notes: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(1000).optional()),
       reasonCode: z.preprocess(value => String(value ?? "").trim() || undefined, z.string().max(100).optional()),
-      receivedBackQuantity: nonNegative("Received-back quantity"),
-      restockableQuantity: nonNegative("Restockable quantity"),
+      receivedBackQuantity: exactQuantity("Received-back quantity"),
+      restockableQuantity: exactQuantity("Restockable quantity"),
       shipmentReturnItemId: requiredId("Shipment return item"),
     }),
   ),

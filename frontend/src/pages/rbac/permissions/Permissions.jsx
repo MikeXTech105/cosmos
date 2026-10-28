@@ -6,12 +6,16 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import AppSelect from "../../../components/common/AppSelect";
 import AppTooltip from "../../../components/common/AppTooltip";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
 import { pageService } from "../../../services/rbac/pageService";
 import { permissionService } from "../../../services/rbac/permissionService";
 import { roleService } from "../../../services/rbac/roleService";
@@ -248,6 +252,7 @@ const buildPermissionMatrix = (pages, permissions, grantAll = false) => {
 };
 
 const Permissions = () => {
+  const [searchParams] = useSearchParams();
   const capabilities = useCapabilities({
     actions: ["view", "update"],
     label: "Permissions",
@@ -257,13 +262,17 @@ const Permissions = () => {
   });
   const [roles, setRoles] = useState([]);
   const [pages, setPages] = useState([]);
-  const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [selectedRoleId, setSelectedRoleId] = useState(() => searchParams.get("roleId") || "");
+  const [templateRoleId, setTemplateRoleId] = useState("");
+  const [templateLoading, setTemplateLoading] = useState(false);
   const [matrix, setMatrix] = useState({});
   const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [isPagesLoading, setIsPagesLoading] = useState(true);
   const [isPermissionsLoading, setIsPermissionsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  const { confirmLeave } = useUnsavedChanges({ when: isDirty || isSaving, message: "This role has unsaved permission changes. Save or keep a draft before switching. Continue without applying them?" });
+  const draft = useScopedDraft({ entity: "role-permissions", context: selectedRoleId || "none", values: matrix, enabled: isDirty });
   const [rolesError, setRolesError] = useState(null);
   const [pagesError, setPagesError] = useState(null);
   const [permissionsError, setPermissionsError] = useState(null);
@@ -369,13 +378,17 @@ const Permissions = () => {
   }, [loadRolePermissions, selectedRoleId]);
 
   const selectRole = useCallback((roleId) => {
+    if (isSaving) return;
+    confirmLeave(() => {
+    if (isDirty) draft.saveDraft();
     permissionRequestId.current += 1;
     setSelectedRoleId(roleId);
     setMatrix(roleId ? buildPermissionMatrix(pages, []) : {});
     setPermissionsError(null);
     setIsPermissionsLoading(Boolean(roleId && pages.length > 0));
     setIsDirty(false);
-  }, [pages]);
+    });
+  }, [confirmLeave, draft, isDirty, isSaving, pages]);
 
   const isColumnSelected = useCallback((columnKey) => {
     return (
@@ -499,13 +512,14 @@ const Permissions = () => {
         permissions,
       );
       setIsDirty(false);
+      draft.clearDraft();
       toast.success("Permissions updated successfully");
     } catch (error) {
       toast.error(getErrorMessage(error, "Unable to update permissions."));
     } finally {
       setIsSaving(false);
     }
-  }, [capabilities.canUpdate, matrix, pages, selectedRoleId]);
+  }, [capabilities.canUpdate, draft, matrix, pages, selectedRoleId]);
 
   const matrixError = pagesError ?? permissionsError;
   const matrixLoading =
@@ -545,6 +559,9 @@ const Permissions = () => {
 
   return (
     <section className="min-w-0 space-y-5 pb-4">
+      {selectedRoleId && capabilities.canUpdate && !isSelectedRoleSuperAdmin && <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"><h2 className="font-semibold">Use an existing role as a template</h2><p className="text-sm text-slate-500">Copy an existing role into this draft, review every grant below, then Save. User assignments and the source role stay unchanged.</p><div className="flex flex-wrap items-end gap-3"><AppSelect label="Template role" className="min-w-64" options={roles.filter((role) => String(role.id) !== String(selectedRoleId) && !isSuperAdminAuth({ roles: [role] })).map((role) => ({ value: role.id, label: role.name }))} value={templateRoleId} onChange={setTemplateRoleId} /><AppButton variant="secondary" disabled={!templateRoleId || isSaving || isPermissionsLoading} isLoading={templateLoading} onClick={async () => { if (!confirmLeave(() => {})) return; const templateRequest = permissionRequestId.current; setTemplateLoading(true); try { const response = await permissionService.getRolePermissions(templateRoleId); if (templateRequest !== permissionRequestId.current) return; setMatrix(buildPermissionMatrix(pages, extractCollection(response.data))); setIsDirty(true); } catch (error) { toast.error(getErrorMessage(error, "Unable to load template permissions.")); } finally { setTemplateLoading(false); } }}>Copy for review</AppButton></div></div>}
+      {selectedRoleId && !isPermissionsLoading && <details className="rounded-xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer font-semibold">Access preview for {selectedRole?.name || "selected role"}{isDirty ? " — unsaved draft" : ""}</summary><p className="mt-2 text-sm text-slate-500">These are this role's grants. The server checks each action; users with multiple roles may have additional access.</p><ul className="mt-3 max-h-72 space-y-2 overflow-auto text-sm">{pages.map((page) => { const grants = permissionColumns.filter((column) => matrix[String(page.id)]?.[column.key]).map((column) => column.label); return grants.length ? <li key={String(page.id)}><strong>{page.displayName || page.name}</strong>: {grants.join(", ")}</li> : null; })}</ul></details>}
+      {draft.recoveredDraft && selectedRoleId && !isDirty && !isPermissionsLoading && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm"><p>A saved draft is available for this role. Permissions apply only after Save.</p><button type="button" className="mr-4 font-semibold underline" disabled={draft.stale || !capabilities.canUpdate || isSelectedRoleSuperAdmin} onClick={() => { setMatrix(draft.recoveredDraft.values); draft.acknowledgeRecovery(); setIsDirty(true); }}>Restore for review</button><button type="button" className="underline" onClick={draft.clearDraft}>Discard draft</button></div>}
       <PageHeader
         badge={
           <>

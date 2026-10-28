@@ -8,6 +8,7 @@ export const PARTY_QUERY_PARAMS = [
 ];
 
 export const PARTY_COMMAND_FIELDS = [
+  { name: "partyType", type: "string", section: "basic" },
   { name: "partyCode", type: "string", nullable: true, section: "basic" },
   { name: "partyName", type: "string", nullable: true, section: "basic" },
   { name: "mobileNo", type: "string", nullable: true, section: "basic" },

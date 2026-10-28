@@ -1,5 +1,5 @@
 # COSMOS — Documentation Register and Lifecycle
-**Reviewed:** 2026-10-26 · **Inventory:** 158 tracked Markdown files in `main` at review time.
+**Reviewed:** 2026-10-28 · **Inventory:** 158 tracked Markdown files in `main` at review time.
 
 ## One document of record per purpose
 | Purpose | Canonical entrypoint | Retained detailed evidence |
@@ -12,6 +12,8 @@
 | Deployment and operations | [OPERATIONS.md](OPERATIONS.md) | DB README, System Owner, staging clean, proxy, GST runbook |
 | QA and risk | [QUALITY_AND_RISKS.md](QUALITY_AND_RISKS.md) | `qa-reports/`, original historical technical debt and external provider decision records |
 | Folder policy | [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md) | Historical cleanup/audit PRs |
+| Complete-brief operator handoff | [Gujarati client flow guide](../handoff/COSMOS_CLIENT_FLOW_GUIDE_GU.md) | 28 October changes; approved rules and deferred GST policy |
+| Complete-brief verification | [Current status](PROJECT_STATUS.md) | `output/implementation-verification/` 56 findings, 125 coverage rows, 44 scenarios, logs and screenshots; SQL execution pending |
 
 ## Status legend
 - **Current/maintained:** Portal masters. Update in normal feature PRs.

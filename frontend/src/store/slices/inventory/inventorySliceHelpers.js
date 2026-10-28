@@ -3,6 +3,7 @@ import {
   DEFAULT_INVENTORY_PAGE_SIZE,
 } from "../../../utils/inventoryQuery";
 import { getApiErrorMessage } from "../../../utils/apiError";
+export { toSerializableFormError as getThunkFormError } from "../../../utils/thunkFormError";
 
 export const getThunkError = (error, fallback) => {
   return getApiErrorMessage(error, fallback);

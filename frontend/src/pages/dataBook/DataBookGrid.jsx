@@ -12,10 +12,11 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { Fragment, useCallback, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import AppButton from "../../components/common/AppButton";
+import useScopedDraft from "../../hooks/useScopedDraft";
 import AppTooltip from "../../components/common/AppTooltip";
 import {
   DATA_TABLE_ROW_ACTION_CLASS,
@@ -129,6 +130,7 @@ const conflictLine = (row) => [row.name, row.value, row.description]
 
 const DataBookGrid = ({
   activeSheet,
+  draftContext,
   capabilities,
   copyingId,
   entries,
@@ -138,6 +140,7 @@ const DataBookGrid = ({
   onCopy,
   onHistory,
   onNewSheet,
+  onPendingChange,
   onRetry,
 }) => {
   const [columns, setColumns] = useState(() => getDataBookColumns(activeSheet));
@@ -148,6 +151,15 @@ const DataBookGrid = ({
   const cellRefs = useRef(new Map());
   const rowRefs = useRef(new Map());
   const grid = useDataBookGrid({ activeSheet, entries, onCommitted });
+  const pendingRows = grid.rows.filter((row) => ((["dirty", "error"].includes(row.status) && !row.loadError) || row.conflict || row.status === "saving") && !row.removed);
+  const pendingCount = pendingRows.length;
+  const draft = useScopedDraft({ entity: "data-book-grid", context: draftContext ?? activeSheet ?? "none", values: pendingRows, enabled: pendingCount > 0 });
+  const hadDirtyRows = useRef(false);
+  useEffect(() => { onPendingChange?.(pendingCount + (grid.isSaving ? 1 : 0), draft.saveDraft); }, [draft.saveDraft, pendingCount, grid.isSaving, onPendingChange]);
+  useEffect(() => {
+    if (pendingCount > 0) hadDirtyRows.current = true;
+    else if (hadDirtyRows.current && !grid.isSaving) { draft.clearDraft(); hadDirtyRows.current = false; }
+  }, [draft, pendingCount, grid.isSaving]);
 
   const visibleRows = useMemo(() => grid.rows, [grid.rows]);
   const hasSavedRows = visibleRows.some((row) => row.id !== undefined && !row.removed);
@@ -332,6 +344,8 @@ const DataBookGrid = ({
 
   return (
     <div className="space-y-3">
+      {draft.recoveredDraft && pendingCount === 0 && <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm"><span>Unsaved rows were kept for this sheet. Restore and review before Save all.</span><AppButton variant="secondary" disabled={draft.stale} onClick={() => { grid.restoreDraft(draft.recoveredDraft.values || []); draft.acknowledgeRecovery(); }}>Restore draft</AppButton><AppButton variant="secondary" onClick={draft.clearDraft}>Discard draft</AppButton></div>}
+      {pendingCount > 0 && <p className="text-xs text-amber-800">{draft.available ? "Recovery is scoped to your user, company and sheet in this browser session." : "Draft recovery needs the current company identity. Save all before leaving."} {draft.storageError} <button type="button" className="font-semibold underline" disabled={!draft.available || grid.isSaving} onClick={() => draft.saveDraft() && toast.success("Sheet draft kept for review")}>Keep draft</button></p>}
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand">

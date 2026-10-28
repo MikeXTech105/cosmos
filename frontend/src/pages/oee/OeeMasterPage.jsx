@@ -154,6 +154,7 @@ const OeeMasterFormModal = ({
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth={config.modalWidth ?? "max-w-2xl"}
+      title={title}
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">
@@ -205,7 +206,7 @@ const OeeMasterFormModal = ({
                     </span>
                     <input
                       type="checkbox"
-                      disabled={isView}
+                      disabled={isView || isSubmitting}
                       checked={Boolean(values[field.name])}
                       className="h-4 w-4 accent-brand"
                       onChange={(event) =>
@@ -223,7 +224,7 @@ const OeeMasterFormModal = ({
                     id={field.name}
                     label={field.label}
                     required={field.required}
-                    disabled={isView}
+                    disabled={isView || isSubmitting}
                     allowDecimal={field.allowDecimal}
                     value={values[field.name]}
                     error={errors[field.name]}
@@ -238,7 +239,7 @@ const OeeMasterFormModal = ({
                   id={field.name}
                   label={field.label}
                   required={field.required}
-                  disabled={isView}
+                  disabled={isView || isSubmitting}
                   value={values[field.name] ?? ""}
                   error={errors[field.name]}
                   placeholder={field.placeholder}
@@ -251,7 +252,7 @@ const OeeMasterFormModal = ({
           </div>
 
           <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
-            <AppButton variant="secondary" onClick={onClose}>
+            <AppButton variant="secondary" disabled={isSubmitting} onClick={onClose}>
               {isView ? "Close" : "Cancel"}
             </AppButton>
             {!isView && (

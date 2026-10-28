@@ -1,3 +1,5 @@
+import { decimalWire, idWire } from "../../utils/productionValues";
+
 export const PRODUCTION_STATUS = {
   DRAFT: "Draft",
   POSTED: "Posted",
@@ -90,18 +92,18 @@ export const calculateRequiredQuantity = (line, producedQuantity = 1, outputBase
 };
 
 export const buildBomPayload = (form) => ({
-  finishedItemId: Number(form.finishedItem?.id ?? form.finishedItem?.itemId),
+  finishedItemId: idWire(form.finishedItem?.id ?? form.finishedItem?.itemId),
   version: String(form.version ?? "").trim(),
   effectiveFrom: form.effectiveFrom,
   effectiveTo: form.effectiveTo || null,
   notes: String(form.notes ?? "").trim() || null,
   isDefault: Boolean(form.isDefault),
-  ...(form.outputBaseQuantity !== undefined ? { outputBaseQuantity: Number(form.outputBaseQuantity) } : {}),
+  ...(form.outputBaseQuantity !== undefined ? { outputBaseQuantity: decimalWire(form.outputBaseQuantity, {positive:true}) } : {}),
   components: form.components.map((line, index) => ({
-    componentItemId: Number(line.item?.id ?? line.item?.itemId),
-    quantity: Number(line.quantity),
-    unitId: Number(line.unitId ?? line.item?.unitId ?? line.item?.unit?.id) || null,
-    wastagePercentage: Number(line.wastagePercentage || 0),
+    componentItemId: idWire(line.item?.id ?? line.item?.itemId),
+    quantity: decimalWire(line.quantity, {positive:true}),
+    unitId: (line.unitId ?? line.item?.unitId ?? line.item?.unit?.id) ? idWire(line.unitId ?? line.item?.unitId ?? line.item?.unit?.id) : null,
+    wastagePercentage: decimalWire(line.wastagePercentage || 0),
     notes: String(line.notes ?? "").trim() || null,
     sortOrder: index + 1,
   })),
@@ -120,10 +122,10 @@ export const buildBomUpdatePayload = (form) => {
 };
 
 export const buildProductionPayload = (form) => ({
-  finishedItemId: Number(form.finishedItem?.id ?? form.finishedItem?.itemId),
-  bomId: form.bomId ? Number(form.bomId) : null,
-  plannedQuantity: Number(form.plannedQuantity),
-  producedQuantity: Number(form.producedQuantity),
+  finishedItemId: idWire(form.finishedItem?.id ?? form.finishedItem?.itemId),
+  bomId: form.bomId ? idWire(form.bomId) : null,
+  plannedQuantity: decimalWire(form.plannedQuantity, {positive:true}),
+  producedQuantity: decimalWire(form.producedQuantity, {positive:true}),
   productionDate: form.productionDate,
   referenceNumber: String(form.referenceNumber ?? "").trim() || null,
   notes: String(form.notes ?? "").trim() || null,

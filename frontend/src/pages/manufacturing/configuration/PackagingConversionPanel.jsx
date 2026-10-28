@@ -4,11 +4,11 @@ import configurationMessages from "./configurationMessages";
 import { useCallback, useRef, useState } from "react";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
-import AppSelect from "../../../components/common/AppSelect";
+import ConfigurationLookup, { ConfigurationReferenceLabel } from "./ConfigurationLookup";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { productionConfigurationService as service } from "../../../services/manufacturing/productionConfigurationService";
 import { ManufacturingCard } from "../ManufacturingShared";
-import { isDecimal, loadAllLookupPages, nameOf } from "./configurationHelpers";
+import { isDecimal, nameOf } from "./configurationHelpers";
 import { CommandRecovery, InlineMessage, RefreshButton, Version } from "./ConfigurationShared";
 const actions = ["view", "approve"];
 const PackagingConversionEditor = ({
@@ -30,7 +30,9 @@ const PackagingConversionEditor = ({
   const [edits, setEdits] = useState(null);
   const attempt = useRef(null);
   const load = useCallback(async ({ signal }) => {
-    const [response, units] = await Promise.all([service.packagingConversion(profileId, { signal }), unitPermission.canView ? loadAllLookupPages(params => service.units(params, { signal }), signal) : Promise.resolve([])]);
+    const response = await service.packagingConversion(profileId, { signal });
+    const ids = [...new Set([response.data?.sourceUnitId, response.data?.baseUnitId].filter(Boolean).map(String))];
+    const units = unitPermission.canView ? await Promise.all(ids.map(async (id) => (await service.unit(id, { signal })).data)) : [];
     return { conversion: response.data, units };
   }, [profileId, unitPermission.canView]);
   const state = useConfigurationRead(load, JSON.stringify([profileId, unitPermission.canView]), permissions.canView && Boolean(profileId));
@@ -94,7 +96,7 @@ const PackagingConversionEditor = ({
             defaultValue: "No verified conversion is recorded. Resolve the source unit and evidence before using this profile in production, dispatch or import normalization."
           })}</InlineMessage>}{!unitPermission.canView && <InlineMessage>{t("Unit view permission is required to choose a source unit.", {
             defaultValue: "Unit view permission is required to choose a source unit."
-          })}</InlineMessage>}<div className="grid gap-4 sm:grid-cols-2"><AppSelect required label={t("Source unit", {
+          })}</InlineMessage>}<div className="grid gap-4 sm:grid-cols-2"><ConfigurationLookup kind="units" lookupContext={{ units, canReadUnits: unitPermission.canView }} required label={t("Source unit", {
             defaultValue: "Source unit"
           })} value={form.sourceUnitId} options={units.map(unit => ({
             value: unit.id,
@@ -110,7 +112,7 @@ const PackagingConversionEditor = ({
           defaultValue: "Verification source / reference"
         })} maxLength={200} value={form.sourceReference} disabled={disabled} onChange={event => setField("sourceReference", event.target.value)} /><p className="text-xs text-slate-500">{t("Verified relationship:", {
             defaultValue: "Verified relationship:"
-          })} {form.sourceQuantityBasis || "?"} {nameOf(units, form.sourceUnitId)} = {form.baseQuantityBasis || "?"} {nameOf(units, conversion.baseUnitId)} {t(". Dimension or identity conflicts are returned by the API.", {
+          })} {form.sourceQuantityBasis || "?"} <ConfigurationReferenceLabel kind="units" id={form.sourceUnitId} lookupContext={{ units, canReadUnits: unitPermission.canView }} /> = {form.baseQuantityBasis || "?"} {nameOf(units, conversion.baseUnitId)} {t(". Dimension or identity conflicts are returned by the API.", {
             defaultValue: ". Dimension or identity conflicts are returned by the API."
           })}</p>{!readOnly && (permissions.canApprove ? <AppButton disabled={readOnly || !permissions.canApprove || !unitPermission.canView || !conversion || state.loading || command.conflict || command.committed} isLoading={command.busy} onClick={submit}>{t("Verify and save conversion", {
             defaultValue: "Verify and save conversion"

@@ -237,7 +237,7 @@ const PackagingProfilesPage = () => {
           <tr key={row.id}>
             <td className="px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">{(state.pageNumber - 1) * state.pageSize + index + 1}</td>
             <td><p className="font-medium text-slate-800">{row.itemName}</p><p className="text-xs text-slate-500">{row.itemCode}</p></td>
-            <td><p className="font-semibold text-slate-900">{row.packagingCode}</p><p className="text-xs text-slate-500">{row.packagingName}</p></td>
+            <td><p className="font-semibold text-slate-900">{row.packagingCode}</p><p className="text-xs text-slate-500">{row.packagingName}</p><span className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${row.conversionReady === true ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>{row.conversionReady === true ? "Conversion verified" : row.conversionReady === false ? "Needs conversion" : "Readiness unavailable"}</span>{row.conversionReady === true && <p className="mt-1 text-[10px] text-slate-500">{row.sourceQuantityBasis} {row.sourceUnitName || "source units"} = {row.baseQuantityBasis} {row.baseUnitName || "base units"}</p>}<button className="mt-1 block text-xs font-medium text-brand underline" onClick={() => navigate(`/supply-chain/packaging-profiles/${row.id}/edit?step=conversion`)}>Verify / review conversion</button></td>
             <td>{row.channelCode || "All channels"}</td>
             <td className="text-right tabular-nums">{formatSupplyChainNumber(row.unitsPerBox)}</td>
             <td>{dimensions(row)}</td>

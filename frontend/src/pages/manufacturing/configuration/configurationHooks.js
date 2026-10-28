@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { CompanyDraftScopeContext } from "../../../hooks/companyDraftScopeContext";
 import useCapabilities from "../../../hooks/useCapabilities";
 import { getApiCorrelationId, getApiErrorMessage, getApiFieldErrors, isTimeoutError } from "../../../utils/apiError";
 import { productionConfigurationService as service } from "../../../services/manufacturing/productionConfigurationService";
-import { loadAllLookupPages } from "./configurationHelpers";
+import { rowsOf } from "./configurationHelpers";
 
 const actions = ["view", "create", "update", "approve"];
 export const useConfigurationCapabilities = () => useCapabilities({ actions, pageName: "Manufacturing.Configuration", resource: "Manufacturing.Configuration", route: "/manufacturing/configuration" });
@@ -14,7 +15,9 @@ export const errorText = error => {
 
 // Keys mask old entity/permission data before effect cleanup. Generations also
 // protect against adapters which resolve after cancellation.
-export const useConfigurationRead = (loader, scopeKey, enabled = true) => {
+export const useConfigurationRead = (loader, resourceKey, enabled = true) => {
+  const companyScope = useContext(CompanyDraftScopeContext);
+  const scopeKey = JSON.stringify([companyScope, resourceKey]);
   const generation = useRef(0);
   const [state, setState] = useState({ key: null, data: null, loading: false, error: "" });
   const reload = useCallback(async ({ signal } = {}) => {
@@ -44,22 +47,35 @@ export const useConfigurationRead = (loader, scopeKey, enabled = true) => {
 };
 
 export const useConfigurationLookups = ({ masters = false, resources = false, shifts = false } = {}) => {
+  const companyScope = useContext(CompanyDraftScopeContext);
   const config = useConfigurationCapabilities();
   const machine = useCapabilities({ pageName: "OEE.Machines", resource: "oeeMachines", route: "/oee/machines" });
   const mould = useCapabilities({ pageName: "OEE.Moulds", resource: "oeeMoulds", route: "/oee/moulds" });
   const shift = useCapabilities({ pageName: "HR.Shift", resource: "shifts", route: "/hr/shifts" });
-  const key = JSON.stringify([masters, resources, shifts, config.canView, machine.canView, mould.canView, shift.canView]);
+  const key = JSON.stringify([companyScope, masters, resources, shifts, config.canView, machine.canView, mould.canView, shift.canView]);
+  const [cached, setCached] = useState({ key, rows: {} });
+  const remember = useCallback((kind, row) => {
+    if (!row?.id) return;
+    setCached((previous) => ({ key, rows: { ...(previous.key === key ? previous.rows : {}), [kind]: [...new Map([...(previous.key === key ? previous.rows[kind] ?? [] : []), row].map((entry) => [String(entry.id), entry])).values()] } }));
+  }, [key]);
   const loader = useCallback(async ({ signal }) => {
     const requests = [];
     if (masters && config.canView) requests.push(["operations", params => service.listMasters("operations", params, { signal })], ["workCentres", params => service.listMasters("work-centres", params, { signal })]);
     if (resources && machine.canView) requests.push(["machines", params => service.machines(params, { signal })]);
     if (resources && mould.canView) requests.push(["moulds", params => service.moulds(params, { signal })]);
     if (shifts && shift.canView) requests.push(["shifts", params => service.hrShifts(params, { signal })]);
-    const result = await Promise.all(requests.map(async ([name, fetcher]) => [name, await loadAllLookupPages(fetcher, signal)]));
+    const result = await Promise.all(requests.map(async ([name, fetcher]) => {
+      const response = await fetcher({ PageNumber: 1, PageSize: 40 });
+      if (response?.data == null) throw new Error("Lookup response was empty. Reload the current references.");
+      return [name, rowsOf(response)];
+    }));
     return Object.fromEntries(result);
   }, [masters, resources, shifts, config.canView, machine.canView, mould.canView, shift.canView]);
   const resource = useConfigurationRead(loader, key, config.canView);
-  return { operations: resource.data?.operations ?? [], workCentres: resource.data?.workCentres ?? [], machines: resource.data?.machines ?? [], moulds: resource.data?.moulds ?? [], shifts: resource.data?.shifts ?? [], loading: resource.loading, error: resource.error, refresh: resource.reload, canReadMachines: machine.canView, canReadMoulds: mould.canView, canReadShifts: shift.canView };
+  const records = (kind) => resource.error ? [] : [...new Map([...(resource.data?.[kind] ?? []), ...(cached.key === key ? cached.rows[kind] ?? [] : [])].map((row) => [String(row.id), row])).values()];
+  const reload = resource.reload;
+  const refresh = useCallback(async () => { setCached({ key, rows: {} }); return reload(); }, [key, reload]);
+  return { scopeKey: key, operations: records("operations"), workCentres: records("workCentres"), machines: records("machines"), moulds: records("moulds"), shifts: records("shifts"), loading: resource.loading, error: resource.error, refresh, remember, canReadMachines: machine.canView, canReadMoulds: mould.canView, canReadShifts: shift.canView };
 };
 
 export const useCommand = onSaved => {

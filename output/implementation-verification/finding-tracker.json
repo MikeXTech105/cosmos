@@ -1,0 +1,1709 @@
+{
+  "baselineCommit": "da4620383e88f4831a2c0d719882befd497661d7",
+  "purpose": "Initialize and maintain all56 original finding outcomes; do not use initial status as evidence",
+  "findings": [
+    {
+      "id": "UX-NAV-01",
+      "priority": "P1",
+      "title": "Ordinary-role production shortcuts reuse the same label and ID",
+      "audit": "root-audit.json",
+      "acceptance": "Given only Manufacturing.Orders view access, Daily, Kanban, Orders, Planning and Imports have distinct stable labels/IDs, correct routes, no duplicate-key warnings and no additional unauthorized access.",
+      "scenarioIds": [
+        "SC-01",
+        "SC-02"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Ordinary-role production shortcuts reuse the same label and ID",
+      "implementationFiles": [
+        "frontend/src/config/sidebar.js",
+        "frontend/src/hooks/useSidebarMenu.test.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "useSidebarMenu.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Distinct stable labels/IDs for all five order-permission aliases; ordinary-role and revoked grant regression.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-LOOKUP-01",
+      "priority": "P1",
+      "title": "Report entity selectors stop at the first 200 records",
+      "audit": "root-audit.json",
+      "acceptance": "Every affected report entity can be selected beyond record200; selected by-ID/inactive values survive reload, filters and failed searches; no silent first-page cap.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-05"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Report entity selectors stop at the first 200 records",
+      "implementationFiles": [
+        "frontend/src/pages/reports/filters/ReportFilterBar.jsx",
+        "frontend/src/pages/reports/filters/reportLookups.js",
+        "frontend/src/services/documentLookupService.js",
+        "frontend/src/pages/manufacturing/configuration/ConfigurationLookup.jsx",
+        "frontend/src/pages/manufacturing/configuration/configurationHooks.js",
+        "backend/database/migrations/20261028_07_production_master_lookup.sql"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "AppLookup.test.jsx",
+        "reportFormat.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Report and configuration entity lookups now remote/debounced/paged, exact selected-ID hydration, inactive history, rate metadata retention, account/company masking and permission-aware reads.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-NAV-02",
+      "priority": "P2",
+      "title": "Add a role-based Today workspace",
+      "audit": "root-audit.json",
+      "acceptance": "Each real operator role sees relevant allowed actions/pending work, can reach all permitted modules, and has working scoped pinned/recent navigation; no fabricated pending counts.",
+      "scenarioIds": [
+        "SC-01",
+        "SC-02",
+        "SC-40",
+        "SC-42"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Add a role-based Today workspace",
+      "implementationFiles": [
+        "frontend/src/pages/today/TodayPage.jsx",
+        "frontend/src/pages/today/TodayQueues.jsx",
+        "frontend/src/pages/today/workspaces.js",
+        "frontend/src/components/layout/RecentDestinations.jsx",
+        "frontend/src/routes/DefaultRouteRedirect.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "workspaces.test.js",
+        "useUserPreferences.test.jsx"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Today route as authorized landing, five permission-filtered work areas, live source queues (unavailable is not zero), scoped pins/recent destinations.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-SELECT-01",
+      "priority": "P2",
+      "title": "Extend the shared selector for large lists",
+      "audit": "root-audit.json",
+      "acceptance": "Keyboard and pointer search can select remote late-page records; loading/error/empty/forbidden, stale requests, by-ID hydration and inline creation behave consistently.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-05",
+        "SC-07",
+        "SC-42"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Extend the shared selector for large lists",
+      "implementationFiles": [
+        "frontend/src/components/common/AppLookup.jsx",
+        "frontend/src/components/common/AppLookup.test.jsx",
+        "frontend/src/utils/lookupPage.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "AppLookup.test.jsx"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Accessible remote lookup with stale-response rejection, by-ID/inactive selection, portal positioning, keyboard pagination, inline-create select/focus, loading/empty/403/error/retry.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-DASH-01",
+      "priority": "P2",
+      "title": "Make the dashboard action-first",
+      "audit": "root-audit.json",
+      "acceptance": "Each pending-work/alert link opens the correct authorized contextual list/record; date/filter context and genuine unavailable-source state are preserved; GST links target GST context.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-40"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Make the dashboard action-first",
+      "implementationFiles": [
+        "frontend/src/pages/dashboard/DashboardPage.jsx",
+        "frontend/src/pages/dashboard/widgets/AlertsPanel.jsx",
+        "frontend/src/pages/dashboard/alertLinks.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "alertLinks.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Alerts precede analytics; authorized record/list links retain periods; GST leads to compliance. Unavailable sources retain existing errors.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-REPORT-01",
+      "priority": "P2",
+      "title": "Add reusable report views on top of existing URL filters",
+      "audit": "root-audit.json",
+      "acceptance": "Save/reopen/update/delete a named view; favorites and chosen columns persist with intended ownership; drilldowns/back retain context; full exports reconcile with authoritative totals.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-40"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Add reusable report views on top of existing URL filters",
+      "implementationFiles": [
+        "frontend/src/pages/reports/ReportView.jsx",
+        "frontend/src/pages/reports/ReportViewPreferences.jsx",
+        "frontend/src/pages/reports/useReportViewPreferences.js",
+        "frontend/src/pages/reports/reportDrilldown.js",
+        "frontend/src/components/layout/ReportReturnLink.jsx",
+        "frontend/src/utils/reportFormat.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "useUserPreferences.test.jsx",
+        "reportDrilldown.test.js",
+        "workReturnPath.test.js",
+        "reportFormat.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Named save/update/reopen/delete views, favorites, required column safeguards, account/company/API/browser ownership, density; authorized document drilldown with explicit return to filtered report. Existing full export path preserved.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-TABLE-01",
+      "priority": "P2",
+      "title": "Use task-specific table density and narrow-screen layouts",
+      "audit": "root-audit.json",
+      "acceptance": "Desktop numeric entry remains efficient; phone/tablet tasks keep record identity, quantities/totals and primary action visible; preferences and columns do not hide mandatory meaning.",
+      "scenarioIds": [
+        "SC-42"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Use task-specific table density and narrow-screen layouts",
+      "implementationFiles": [
+        "frontend/src/pages/reports/ReportTable.jsx",
+        "frontend/src/pages/reports/ReportView.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "browser-captures.json",
+        "reportFormat.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Reports have phone record cards retaining identity/quantity/amount/status and account-scoped compact/comfortable desktop spacing. Existing numeric entry grids retained; commerce adds ledger cards.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "UX-AUTH-01",
+      "priority": "P2",
+      "title": "Simplify password recovery and expose contextual errors",
+      "audit": "root-audit.json",
+      "acceptance": "Normal reset email link supplies token without editable token input; invalid/expired links offer recovery; API errors remain contextual and field errors are announced/associated.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-08",
+        "SC-40",
+        "SC-42"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Reset token comes from link, hidden from editing; missing-link recovery and persistent failure message.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "UX-COPY-01",
+      "priority": "P2",
+      "title": "Use business language and consistent next-step guidance",
+      "audit": "root-audit.json",
+      "acceptance": "Ordinary users see business-facing names, helpful next-step/empty/error copy and targeted help; support/API details remain discoverable without dominating daily tasks.",
+      "scenarioIds": [
+        "SC-01",
+        "SC-40",
+        "SC-42"
+      ],
+      "status": "Implemented; automated and synthetic component evidence available; authenticated release journey pending",
+      "currentConfirmation": "Current baseline source confirmed and changed in this working tree.",
+      "rootCause": "Use business language and consistent next-step guidance",
+      "implementationFiles": [
+        "frontend/src/components/layout/Sidebar.jsx",
+        "frontend/src/pages/deepDive/deepDiveConfig.js",
+        "frontend/src/pages/today/TodayPage.jsx",
+        "frontend/src/utils/workReturnPath.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "useSidebarMenu.test.js",
+        "workReturnPath.test.js"
+      ],
+      "evidence": [
+        "frontend-complete-tests.log",
+        "frontend-complete-lint.log",
+        "frontend-complete-build.log",
+        "backend-complete-unit.log",
+        "browser-captures.json"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Today/work overview, friendly no-access navigation guidance and Machine performance/GST status/Business overview labels; setup return context retained.",
+      "remaining": "Real authenticated role/API journey and user-run SQL/provider acceptance evidence; no SQL/provider pass claimed."
+    },
+    {
+      "id": "C01",
+      "priority": "P1",
+      "title": "Invoice effective HSN lookup calls a method absent from the frontend service and API routes",
+      "audit": "commerce-audit.json",
+      "acceptance": "Actual authorized classification API/client and maintenance surfaces work; cover override/default/effectivity/retire/fallback, source visibility, invoice date changes and stable-row stale-result rejection. Preserve the corrected current diagnosis.",
+      "scenarioIds": [
+        "SC-05",
+        "SC-11",
+        "SC-12",
+        "SC-21"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Effective classification service method and controller maintenance/read routes were absent despite existing application persistence.",
+      "implementationFiles": [
+        "backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+        "backend/src/Cosmos.Application/Services/HsnGstService.cs",
+        "frontend/src/services/gst/hsnGstService.js",
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/sales/invoices/invoiceLookupGuard.js"
+      ],
+      "apiChanges": [
+        "HsnGstController exposes GET/POST/PUT hsn-sacs; GET/PUT category dated default+retire; PUT Item override+retire; GET Item effective classification. Existing application persistence reused; exact View/Create/Edit permission metadata enforced."
+      ],
+      "migrations": [],
+      "testCases": [
+        "hsnGstService.test.js",
+        "invoiceLookupGuard.test.js",
+        "HsnMaintenanceContractTests"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Exposed actual catalogue/default/override/effective/retire APIs, validated date/identity inputs, exact client transport, catalogue/mapping maintenance panel, stable row+Item+date/request guard and date refresh, explicit source/failure.",
+      "remaining": "Real SQL effectivity/overlap/retirement/fallback execution and ordinary-role browser classification flow. Statutory snapshot stays PendingPolicy by human decision.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C02",
+      "priority": "P1",
+      "title": "First-200 static dropdowns hide valid masters and records",
+      "audit": "commerce-audit.json",
+      "acceptance": "All affected Item/Party/bill/category/unit selections can find records201+, retain inactive selected history and select a just-created object without first-page reload dependency.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-05",
+        "SC-07"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "First-page200 master caches were used as the entire option universe, with no search/paging or selected-ID hydration.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemMasterLookup.jsx",
+        "frontend/src/pages/party/CommerceFilterLookup.jsx",
+        "frontend/src/pages/party/CommerceFilterLookup.test.jsx",
+        "frontend/src/pages/party/CommerceListFilters.test.jsx",
+        "frontend/src/pages/inventory/items/ItemsPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFilters.jsx",
+        "frontend/src/pages/inventory/items/ItemTable.jsx",
+        "frontend/src/pages/sales/invoices/SalesInvoicesPage.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFilters.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceTable.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Remote paged lookup+selected-by-ID hydration in sales customer/items, purchase supplier/items/source bills, Item category/unit page and modal. Residual Item category, Sale customer, Purchase supplier list filters now use remote canonical paging/by-ID hydration, exact string IDs and explicit All. Historical inactive options are selectable for filter reads without changing mutation availability. Actual remote page2, role+Both merge, query page1 reset and inlinecreate focus proved.",
+      "remaining": "Ordinary-role authenticated browser journeys against real data201+, real SQL query/filter/upgrade fixtures and inactive historical records are pending; no implementation residual in the identified selectors.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C03",
+      "priority": "P1",
+      "title": "Supplier changes do not clear/revalidate existing allocations and bill requests can race",
+      "audit": "commerce-audit.json",
+      "acceptance": "Switch supplier A→B while requests complete in reverse order; no A bill/allocation survives in B's payment; totals and unallocated amount reconcile; API rejects cross-supplier IDs.",
+      "scenarioIds": [
+        "SC-05",
+        "SC-13",
+        "SC-14"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Supplier changes retained prior allocation rows and allowed older bill responses to repopulate another supplier context.",
+      "implementationFiles": [
+        "frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Supplier change clears allocations; request generation rejects old bill responses; correct-supplier filter, loading/error/retry, disabled stale allocations, existing unallocated totals retained.",
+      "remaining": "Real SQL cross-supplier allocation rejection/conservation and ordinary-role browser verification; root owns executed reverse-response component evidence.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C04",
+      "priority": "P1",
+      "title": "Return against bill asks operator to repeat supplier and line information",
+      "audit": "commerce-audit.json",
+      "acceptance": "Return initiated from source prefills supplier, exact original line IDs and units; remaining returnable quantity accounts for earlier returns; financial/physical effects are explicit and conserved.",
+      "scenarioIds": [
+        "SC-13",
+        "SC-17"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Return editor did not load immutable original bill line identity, returnable remainder or physical/financial inventory owner.",
+      "implementationFiles": [
+        "backend/src/Cosmos.Contracts/PurchaseExpense/PurchaseExpenseDtos.cs",
+        "backend/src/Cosmos.Persistence/Repositories/PurchaseExpenseRepository.cs",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/documents/purchaseReturnSource.js",
+        "frontend/src/pages/purchase/documents/purchaseDocumentSchema.js",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx"
+      ],
+      "apiChanges": [
+        "PurchaseLineDto readback now includes InventoryOwner, ReturnedQuantity, RemainingReturnableQuantity; PurchaseReturnDto includes PhysicalReceiptReturnId. Bill readback derives nondeleted original-linked return remainder server-side."
+      ],
+      "migrations": [],
+      "testCases": [
+        "purchaseReturnSource.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Bill detail reads inventory ownership and authoritative prior-return/remaining quantities; source action prefills supplier, exact original line and unit IDs and remaining quantities; source Item cannot change; quantity limit and proportional currency discount; receipt-owned goods direct to existing physical return and separate credit.",
+      "remaining": "Real SQL concurrent/excess/rollback tests and normal UI physical-return journey; verify per-receipt allocations and financial source details.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C05",
+      "priority": "P1",
+      "title": "Purchase detail actions ignore document state",
+      "audit": "commerce-audit.json",
+      "acceptance": "For every real purchase state, UI offers only valid permitted actions with blocked reasons; direct API calls independently reject invalid transitions and retain authoritative detail on failure.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-15"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Capability-only actions ignored persisted document state and stock ownership in detail/list/editor paths.",
+      "implementationFiles": [
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+        "frontend/src/pages/purchase/documents/purchaseLifecycle.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "purchaseLifecycle.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "State+capability gate for bill draft edit/confirm, valid cancel and confirmed return; unconverted orders edit/cancel; receipt-linked draft edit blocked; physical return credit edit blocked. Final list actions/handlers use the same lifecycle helper; fresh detail ownership is checked before edit navigation. List create/edit uses canonical full-page editor. Direct form save is blocked for nonmatching source/invalid lifecycle/receipt-owned immutable source.",
+      "remaining": "Real direct API lifecycle/concurrent state and physical ownership verification; new rendered list7 cases passed.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C06",
+      "priority": "P1",
+      "title": "Sales and purchase page forms collapse API validation into toast",
+      "audit": "commerce-audit.json",
+      "acceptance": "Server field/row/business errors persist after toast expiry, focus/jump to the affected input, retain all entry and distinguish failed from uncertain submission.",
+      "scenarioIds": [
+        "SC-08"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Server validation often surfaced as transient toast or unbound paths; indexed row paths needed normalization.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/formErrors.js",
+        "frontend/src/components/commerce/FormErrorSummary.test.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useUncertainSave.test.jsx",
+        "frontend/src/utils/thunkFormError.js",
+        "frontend/src/pages/inventory/items/ItemSaveRecovery.test.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.errors.test.jsx",
+        "frontend/src/pages/party/DocumentSaveRecovery.test.jsx",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "FormErrorSummary.test.jsx3",
+        "ItemFormModal.errors.test.jsx1",
+        "ItemSaveRecovery.test.jsx3 actualRedux",
+        "DocumentSaveRecovery.test.jsx10 actualRedux",
+        "useUncertainSave.test.jsx15",
+        "thunkFormErrorTransport.test.js actual create/update paths"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Actual create/update thunk unwrap now preserves safe serializable status/fieldErrors/correlation through getThunkFormError; reducer display errors remain strings. Sale/Purchase/Item main forms and Item modal render persistent labelled summary actions, mount hidden Stock tab before focus, resolve current line indices after removal, and scope focus to containing form. Immediate scoped save-outcome journals persist before requests regardless dirty; recovered marker blocks before optional draft restore; network/408/5xx lock edits/replay until explicit saved-history/readback review. Direct known-ID readback never repeats mutation or resets retained form values. Shared AppModal busy-focus lifecycle fixed by root.",
+      "remaining": "Real network/server failures, actual SQL response contracts and ordinary-role authenticated browser reconciliation need release verification. Local attempt journal is not server idempotency; no automatic mutation replay introduced.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C07",
+      "priority": "P1",
+      "title": "Long forms navigate away without unsaved-change protection",
+      "audit": "commerce-audit.json",
+      "acceptance": "Dirty page/modal changes survive or are explicitly discarded across Back/Cancel/route/refresh; successful save clears draft/guard; list filter/scroll return context is restored.",
+      "scenarioIds": [
+        "SC-06"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Unscoped automatic local drafts and missing dirty guards could restore wrong-context data or lose unsaved work.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/hooks/useListReturnContext.js",
+        "frontend/src/hooks/useFormReturnContext.js",
+        "frontend/src/hooks/useListReturnScope.js",
+        "frontend/src/utils/listReturnContext.js",
+        "frontend/src/hooks/useListReturnContext.test.jsx",
+        "frontend/src/pages/party/PartyPage.jsx",
+        "frontend/src/pages/party/PartyTable.jsx",
+        "frontend/src/pages/party/PartyFormPage.jsx",
+        "frontend/src/pages/party/PartyReturnFlow.test.jsx",
+        "frontend/src/pages/inventory/items/ItemDraftRecovery.jsx",
+        "frontend/src/pages/inventory/items/useItemDraft.js",
+        "frontend/src/pages/inventory/items/useItemDraft.test.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "useListReturnContext.test.jsx9",
+        "CommerceListFilters.test.jsx7",
+        "PartyReturnFlow.test.jsx4",
+        "DocumentSaveRecovery.test.jsx authoritative origin cases"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Shared route/unload guard, scoped session draft explicit recovery/stale-version review, clearing only after successful server save. Party modal uses scoped draft recovery with explicit restore, account/company key, dirty close and consumed/nested Escape guards. Item page/modal scoped recovery excludes live balances and file objects, restores explicitly, blocks dirty modal/route/unload exits and clears/bypasses only authoritative success. Party page guarded against stale source reuse. Item/Sale/Purchase/Party lists capture scoped filters/page/query/scroll before route exits; forms/details carry safe origin through authoritative save and edit, restore list on Back, and only mark known saved IDs after success. Visible rows highlight once; off-page saves preserve filters with an explicit notice. Party old-source404 returns captured origin and failed-save404 retains dirty draft. Purchase details use the canonical full-page editor instead of unreachable legacy modal/cache.",
+      "remaining": "Authenticated browser reload/Back/account/company switch and real network/persistence verification remain; identified list/form/detail restoration and once-only highlight source is implemented with component/hook evidence.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C08",
+      "priority": "P1",
+      "title": "GST issuance workflow is explicitly incomplete",
+      "audit": "commerce-audit.json",
+      "acceptance": "Required supported GST issuance/session/extension flows use real backend/provider contracts and sandbox evidence. Missing access is an explicit unexecuted gate, never a local fake success or completed disabled button.",
+      "scenarioIds": [
+        "SC-41"
+      ],
+      "status": "Source implemented with automated evidence; issuance policy deferred by human; SQL/provider verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Statutory generation lacked validated immutable source/policy consumers; extension/session adapters and unknown-outcome persistence lacked complete contract/safety handling.",
+      "implementationFiles": [
+        "backend/src/Cosmos.Shared/Options/GstZenOptions.cs",
+        "backend/src/Cosmos.Application/Gst/GstRequests.cs",
+        "backend/src/Cosmos.Application/Services/GstServices.cs",
+        "backend/src/Cosmos.Infrastructure/Gst/GstZenProviderService.cs",
+        "frontend/src/pages/gst/GstSessionPage.jsx",
+        "frontend/src/services/gst/gstService.js"
+      ],
+      "apiChanges": [
+        "POST eway-bills/extensions/{key}/reconcile reads provider status without extension replay. Extend request requires exact saved registration, source concurrencyVersion and unique reviewed command key; status response includes concurrencyVersion.",
+        "GET gst/invoices/{id}/snapshots/preparation; POST snapshots/prepare; GET snapshots/preparations/{requestKey}. Sales View plus GST EInvoice View/Create and verified actualcatalog CompanyKey; only immutable PendingPolicy created, source rowversion+fingerprint and policy proposals allowlisted.",
+        "OTP request payload derives GSTIN from saved active registration; session authentication requires actual successful future-expiry provider response. No raw credential/payload pass-through."
+      ],
+      "migrations": [
+        "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+        "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql"
+      ],
+      "testCases": [
+        "gstService.test.js",
+        "GstZenProviderServiceTests"
+      ],
+      "evidence": [
+        "GstSnapshotPreparationPanel.test.jsx3; GstSnapshotPreparationTests8; SQL integration suite guarded/skipped; strict mocked official provider contract tests"
+      ],
+      "externalDependencies": [
+        "Human2026-10-28: option rakh e apde pachi nakki karishu; proposals are not approved.",
+        "User will run guarded SQL scripts later.",
+        "Real provider sandbox/token/registration setup and official reason-code catalogue"
+      ],
+      "finalOutcome": "PendingPolicy preparation, session and durable extension source implemented/tested; actual statutory issuance intentionally remains unavailable until the user decides policy and approved validation is complete.",
+      "implemented": "Official-contract GSTN OTP/session adapter and operator UI; saved registration overrides untrusted GSTIN; separate Bearer credential; strict documented success+future Unix expiry; unconditional credential/OTP log redaction; no actual provider execution. Durable E-Way extension reserve/unknown/rejected/confirmed state, exact-registration and version gates, explicit reviewed transport, later-validity persistence and readback-only reconciliation implemented. New SQL scripts not executed. Serializable confirmed-source preparation API/repository and InvoiceDetail panel now freeze invoice, issuer, buyer/current master and dated effective classification evidence; replay-safe request keys with frozen-source readback. Policy selectors remain unapproved proposals and only PendingPolicy is inserted.",
+      "remaining": "Human explicitly deferred statutory rounding/discount/issuance policy: no policy activated and generation remains unavailable. Future validated component-tax snapshot/calculation/issuance requires that decision. Actual SQL migration/immutable/concurrency fixtures and live provider sandbox pending; authoritative extension reason-code catalogue not available in reviewed public docs.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C09",
+      "priority": "P1",
+      "title": "Item manufacturing uses UTC calendar date while newer workflows use company business date",
+      "audit": "commerce-audit.json",
+      "acceptance": "Legacy Item manufacture and new order flows use verified company business date consistently around local midnight, night shift, backdating and effective BOM boundaries.",
+      "scenarioIds": [
+        "SC-21",
+        "SC-23",
+        "SC-24"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "UTC/browser date was used for company production defaults and effective-BOM resolution could become stale on date changes.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Removed UTC calendar defaults; verified company runtime businessDate defaults BOM/new legacy production and applicable BOM lookup; missing runtime blocks new production with retry.",
+      "remaining": "Real midnight/night/backdate and company-zone SQL/browser checks; date-change stale-result and frozen snapshot DOM tests passed.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C10",
+      "priority": "P2",
+      "title": "Two production entry paths coexist inside and outside Item master",
+      "audit": "commerce-audit.json",
+      "acceptance": "All three production concepts have recognizable labels, stock-effect explanations, correct primary path and history access; an OEE reading never silently records stock output.",
+      "scenarioIds": [
+        "SC-18",
+        "SC-19",
+        "SC-23",
+        "SC-25"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Setup, legacy stock posting, order/daily production and OEE readings lacked clear workflow ownership.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Three production concepts explicitly described with primary Daily/Board and OEE links; legacy draft/post/reversal history retained.",
+      "remaining": "Operator/browser acceptance of primary path and ordinary-role destination grants; links now capability-aware.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C11",
+      "priority": "P2",
+      "title": "Document and cash ledgers require wide horizontal tables",
+      "audit": "commerce-audit.json",
+      "acceptance": "At phone width users can identify/edit invoice/purchase/cash line context and save with visible totals/actions; desktop grid and keyboard behavior remain intact.",
+      "scenarioIds": [
+        "SC-12",
+        "SC-13",
+        "SC-16",
+        "SC-42"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Wide min-width line/ledger tables required repeated mobile horizontal panning.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Responsive same-DOM line cards added to Sale/Purchase line editors and mobile record cards to wallet transfers/GST registrations; stable row IDs retained, visible numeric labels/context, desktop sheets preserved.",
+      "remaining": "Actual360px browser verification and keyboard/lookup overlay flow.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C12",
+      "priority": "P2",
+      "title": "Inline master creation reloads lists but does not select the newly created record",
+      "audit": "commerce-audit.json",
+      "acceptance": "Creating an Item/Party/Category/Unit/other supported inline master returns and selects its canonical ID/object in the originating field and restores focus without losing other values.",
+      "scenarioIds": [
+        "SC-07"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Inline created objects were discarded in favor of first-page reloads and row indices could lose the originating selection.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+        "frontend/src/pages/party/CommerceListFilters.test.jsx",
+        "frontend/src/services/inventory/categoryService.js",
+        "frontend/src/services/inventory/unitService.js",
+        "frontend/src/services/inventory/itemService.js",
+        "frontend/src/services/inventory/masterCreatePrecision.test.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [
+        "Root AppLookup shared create-close focus race fixed and regression added; lookup-list-final-tests.log17/17 passed with actualcreated label+aria-expandedfalse+focus assertions, no timeout increase."
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Created Item/Party selection in originating transaction, stable row target, created category/unit selection callbacks; append canonical object instead of first-page reload and restore focus. List-filter inline category/customer/supplier creation now returns canonical entity promises, immediately selects exact created ID and restores originating focus without first-page reload. Category/Unit JSON create responses and Item multipart response preserve BIGINT identities.",
+      "remaining": "Real authenticated nested create/permission/lookup network journeys remain pending; actual component tests cover listed create/filter continuity.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C13",
+      "priority": "P2",
+      "title": "GST setup/support asks operators to know internal IDs and exact strings",
+      "audit": "commerce-audit.json",
+      "acceptance": "Choose company/registration/GSTIN through authorized human-readable lookups; show enumerated operation/status meanings and contextual document/support links; raw IDs are optional details.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-41"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Operators were asked for opaque IDs and exact filter strings; optional integration metadata had no maintained company/branch master.",
+      "implementationFiles": [
+        "frontend/src/pages/gst/GstRegistrationLookup.jsx",
+        "frontend/src/pages/gst/GstSessionPage.jsx",
+        "frontend/src/pages/gst/GstLogsPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Searchable GSTIN/legal-name/branch registration selectors for session and logs; technical registration ID no longer typed there. Registration ordinary form now derives state from GSTIN, selects known status, preserves optional CompanyId/BranchId as read-only support integration metadata. Logs operation labels enumerated from provider service.",
+      "remaining": "Registration form browser validation, provider session sandbox. No general Company/Branch master exists, confirmed optional BIGINT columns without FKs in003 + nullable request fields.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C14",
+      "priority": "P2",
+      "title": "Item stock controls rewrite decimal strings via JavaScript Number",
+      "audit": "commerce-audit.json",
+      "acceptance": "Supported quantity boundary strings round-trip exactly; excess scale/range is rejected or explicitly rounded under documented rule; blur never silently rewrites high-precision/large values.",
+      "scenarioIds": [
+        "SC-20"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Number-based normalization/serialization rewrote long IDs and high-precision stock text before save.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/itemPrecision.js",
+        "frontend/src/pages/inventory/items/itemHelpers.js",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+        "frontend/src/services/inventory/itemService.js",
+        "frontend/src/utils/validationSchemas.js",
+        "frontend/src/services/inventory/masterCreatePrecision.test.js",
+        "frontend/src/services/inventory/categoryService.js",
+        "frontend/src/services/inventory/unitService.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "itemPrecision.test.js",
+        "validationRules.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Exact decimal strings retained through blur/schema/payload; stock22,6 versus money18,2 validation; exact JSON numeric-token update transport and multipart creation; exact master IDs. Created Item response parses exact JSON without overriding multipart request transform; Category/Unit create/update use canonical exact transport. New boundary tests preserve created9007199254740993 and16-digit6-place stock.",
+      "remaining": "Real SQL boundary round-trip and existing upgrade fixture test.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C15",
+      "priority": "P2",
+      "title": "Expense category and daily cash workflows are separate families without visible origin guidance",
+      "audit": "commerce-audit.json",
+      "acceptance": "Document the authoritative expense path and resulting source-linked cash effects; test manual versus automatic behavior and prove no duplicate expense/stock/wallet postings are introduced.",
+      "scenarioIds": [
+        "SC-13",
+        "SC-16",
+        "SC-17",
+        "SC-30"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Independent Expense and Rojmel cash models lacked visible source/posting ownership guidance.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Traced Expense service/repository/sp_Expense_Save: independent Expense document+audit only, no wallet posting. Rojmel/MyWallet guidance and explicit manual Expense-number reference explain reconciliation; root owns Expense guidance.",
+      "remaining": "Browser review of guidance and SQL save ownership evidence; no automatic cross-posting introduced.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C16",
+      "priority": "P1",
+      "title": "Rojmel transaction and wallet labels disagree with backend enums",
+      "audit": "commerce-audit.json",
+      "acceptance": "Assert actual backend contract values independently: transaction5 OpeningBalance/6 AdjustmentIn/7 AdjustmentOut; wallet4 PettyCash/5 BankCash; Posted status. Verify badges, filter payloads, creation and reports.",
+      "scenarioIds": [
+        "SC-16"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Frontend enum values5/6/7 and wallet4/5 disagreed with persisted backend contracts.",
+      "implementationFiles": [
+        "frontend/src/constants/rojmelEnums.js",
+        "frontend/src/pages/rojmel/rojmelHelpers.js",
+        "frontend/src/pages/rojmel/RojmelShared.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "rojmelEnums.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Canonical persisted transaction5=OpeningBalance6=AdjustmentIn7=AdjustmentOut, wallet4=PettyCash5=BankCash and status1=Posted; badges/options/filter values aligned.",
+      "remaining": "Real ledger creation/filter/report SQL/browser conservation journey.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C17",
+      "priority": "P1",
+      "title": "Party type is omitted from create/edit payload even though grouped customer/supplier flows depend on it",
+      "audit": "commerce-audit.json",
+      "acceptance": "Create Customer, Supplier and Both, including contextual quick-create; edit preserves existing type unless intentionally changed; backend persistence and lookup eligibility agree.",
+      "scenarioIds": [
+        "SC-07",
+        "SC-10"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "PartyType was absent from UI command fields and legacy API omission defaulted edits to Both.",
+      "implementationFiles": [
+        "frontend/src/pages/party/partyColumns.js",
+        "frontend/src/pages/party/partyHelpers.js",
+        "frontend/src/pages/party/PartyFormModal.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx"
+      ],
+      "apiChanges": [
+        "UpdatePartyCommand optional PartyType defaultsnull (omission only); PartyService resolves omission against persisted PartyType before validation. Explicit Customer/Supplier/Both changes still validated; frontend always sends reviewed role."
+      ],
+      "migrations": [],
+      "testCases": [
+        "partyHelpers.test.js",
+        "PartyTypeUpdateTests7 cases"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Party type in form allowlist/default/select and payload; contextual Customer/Supplier defaults; edit source retained. Older API client omission now resolves PartyType against persisted role before validation; explicit edits remain validated.",
+      "remaining": "DB role persistence/eligibility and contextual quick-create browser journeys. Legacy omission preservation now covered7 backend cases.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "C18",
+      "priority": "P2",
+      "title": "Party setting flags are persisted without a connected form or print behavior",
+      "audit": "commerce-audit.json",
+      "acceptance": "Each exposed Party setting has a specified, observable, persisted effect in its consuming UI/print/workflow; related external capability gaps stay explicit and cannot be closed by persisting a checkbox.",
+      "scenarioIds": [
+        "SC-10"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Saved settings flags had no supported consumer wiring and future functionality appeared enabled.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [
+        "Human via root2026-10-28: હાલ future options તરીકે unavailable રાખો",
+        "PartyFormModal.test.jsx4 DOM tests; wewelInvoice.test.jsx shipping all5 templates"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Supported grouping/shipping/status consumers wired, all5 invoice templates obey shipping-print flag. Reminder/loyalty/custom fields disabled with explanation, existing saved values preserved.",
+      "remaining": "Browser+SQL verification of supported settings. Future options intentionally unavailable per explicit human instruction, not an unfinished implementation promise.",
+      "implementationOwner": "commerce"
+    },
+    {
+      "id": "OPS-01",
+      "priority": "P1",
+      "title": "Daily typed quantities have no unsaved-work protection",
+      "audit": "operations-audit.json",
+      "acceptance": "Type/paste multiple orders, change route/reload and recover correct user/company/version-scoped draft; counts distinguish pending/reviewed/saved; recovered rows never auto-post.",
+      "scenarioIds": [
+        "SC-06",
+        "SC-22"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Scoped daily draft recovery, explicit restore/discard, counts, date/time protection and retained order versions.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-02",
+      "priority": "P1",
+      "title": "Several selectors and repair queues only load the first 200 records",
+      "audit": "operations-audit.json",
+      "acceptance": "Late-page resources/runs/packaging/BOM versions and legacy production history are discoverable with correct totals/errors; validate actual pagination per endpoint, including unpaged BOM Issues.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-05"
+      ],
+      "status": "Implemented; automated checks passed; user-run SQL and authenticated verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Remote bounded/paged Item/profile, OEE, production operation/work-centre/HR-shift/unit selectors; exact-ID inactive history, retained rate metadata, account/company cache isolation and revoked-View request suppression. Configuration initial references are now one page40 rather than unbounded preload.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "rootConfigurationEvidence": {
+        "files": [
+          "frontend/src/pages/manufacturing/configuration/ConfigurationLookup.jsx",
+          "frontend/src/pages/manufacturing/configuration/configurationHooks.js",
+          "frontend/src/pages/manufacturing/configuration/configurationHelpers.js",
+          "frontend/src/pages/manufacturing/configuration/ConfigurationLookup.test.jsx",
+          "backend/database/migrations/20261028_07_production_master_lookup.sql",
+          "backend/tests/Cosmos.Tests/Manufacturing/ProductionCommandValidationTests.cs",
+          "backend/tests/Cosmos.Tests/Manufacturing/ProductionSqlIntegrationTests.cs"
+        ],
+        "executed": [
+          "configuration-final-tests.log",
+          "configuration-final-lint.log",
+          "backend-complete-unit.log"
+        ],
+        "sql": "Prepared exact-ID/inactive/cross-company real SQL fixture, not run by user request"
+      },
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-03",
+      "priority": "P1",
+      "title": "Packaging creation says saved before the nested verification step is discoverable",
+      "audit": "operations-audit.json",
+      "acceptance": "Create a profile then immediately discover and complete conversion verification or handoff to approver; list/detail accurately shows readiness and a worked unit conversion.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-27"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Save-and-verify conversion handoff and API-projected verified conversion basis/readiness.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-04",
+      "priority": "P1",
+      "title": "Three production-entry concepts need an explicit business distinction",
+      "audit": "operations-audit.json",
+      "acceptance": "Order-based actuals, legacy Item stock production and OEE readings are explicitly differentiated; compatibility/history strategy is documented and duplicate physical posting is prevented.",
+      "scenarioIds": [
+        "SC-19",
+        "SC-23",
+        "SC-25"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "OEE runtime/shot and daily stock-effect wording; commerce owns legacy compatibility/history labels.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-05",
+      "priority": "P2",
+      "title": "OEE Off means skipped; deliberate no-production cannot be acknowledged in this grid",
+      "audit": "operations-audit.json",
+      "acceptance": "A no-production/planned-stop acknowledgement is distinguishable from an unentered/skipped reading in UI and reporting; all-off day can be intentionally completed where required without fabricated readings.",
+      "scenarioIds": [
+        "SC-25"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Persisted append-only NotRun/PlannedStop/Withdrawn evidence, command retries, independent permissions and reading exclusion; separate calendar audit.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-06",
+      "priority": "P2",
+      "title": "Production detail exposes resource IDs and technical evidence before business names",
+      "audit": "operations-audit.json",
+      "acceptance": "Workers identify Item, machine/mould/shift/work-centre/operation names, due date and remaining quantity before technical IDs; lookup failures and historical snapshots are truthful.",
+      "scenarioIds": [
+        "SC-18",
+        "SC-19",
+        "SC-42"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Company-scoped order-linked current resource label API; IDs/version moved into support details; explicit current-label source.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-07",
+      "priority": "P2",
+      "title": "Finalized dispatch planning does not guide users directly into linked shipment creation",
+      "audit": "operations-audit.json",
+      "acceptance": "Finalize a run then open linked shipment creation with correct run/warehouse/remaining allocation; existing partial shipments and permissions are reflected; no duplicate conversion.",
+      "scenarioIds": [
+        "SC-29",
+        "SC-30"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Finalized-run deep link; actual allocation identity/remaining quantity API replaces incorrect recommendation ID contract.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-08",
+      "priority": "P2",
+      "title": "Transporter request failures silently become an empty transporter list",
+      "audit": "operations-audit.json",
+      "acceptance": "Transporter network/403/server failures visibly differ from no configured transporters; retry preserves all other shipment input and links to the existing Party role.",
+      "scenarioIds": [
+        "SC-32"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Plan form/detail transporter loading/error/retry differs from genuinely empty setup.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-09",
+      "priority": "P2",
+      "title": "Operational production report primary export is NDJSON",
+      "audit": "operations-audit.json",
+      "acceptance": "Open a CSV/XLSX operational export in common spreadsheet tooling; human headings, dates, units and quality flags match all filtered authoritative rows/totals; NDJSON stays optional.",
+      "scenarioIds": [
+        "SC-26",
+        "SC-40"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Streaming server CSV with full pages, exact decimals, unit totals, filter basis and quality flags; NDJSON optional.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-10",
+      "priority": "P2",
+      "title": "Policy forms expose many mathematical and logistics fields without a worked outcome",
+      "audit": "operations-audit.json",
+      "acceptance": "Basic/Advanced policy forms and worked examples accurately explain effective precedence, rounding, lead duration and physical units using the same actual business calculations.",
+      "scenarioIds": [
+        "SC-18",
+        "SC-27",
+        "SC-28",
+        "SC-29"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Server-engine worked dispatch/procurement/routing examples, named rounding presets, Basic/Advanced setup, packaging/warehouse guidance; zero-output and unknown shot-output states explicit.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-11",
+      "priority": "P2",
+      "title": "OEE custom modal headings are not connected to the dialog name; editing stays enabled while saving",
+      "audit": "operations-audit.json",
+      "acceptance": "OEE dialogs announce their correct title and labels, trap/restore focus and follow deliberate busy-save/Cancel behavior; in-flight save cannot misleadingly apply after unacknowledged edits.",
+      "scenarioIds": [
+        "SC-25",
+        "SC-42"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "OEE modal titles and frozen fields/cancel while saving.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-12",
+      "priority": "P2",
+      "title": "Cross-module setup and shipment execution need a permission-aware next-action checklist",
+      "audit": "operations-audit.json",
+      "acceptance": "Readiness distinguishes missing data, missing permission, pending approval and failed load; each actionable blocker links to existing setup and returns to the original work.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-18",
+        "SC-30"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Permission/error-aware production/shipment readiness with safe return context; scoped recoverable production-order draft retains Item/form/version during setup handoff.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "OPS-13",
+      "priority": "P1",
+      "title": "Legacy Item production Post/Cancel checks Edit in UI but Approve in API",
+      "audit": "operations-audit.json",
+      "acceptance": "View/create/edit/approve-only and combined roles are tested against nested Item UI and real API; draft editing and stock post/reversal use their own canonical capabilities.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-23"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Legacy Post/Cancel actions incorrectly depended on Edit rather than their distinct Approve capability.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "summary": "Delegated by agreement to commerce agent: legacy Item Approve gate.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "commerce",
+      "implemented": "Legacy Post/Cancel requires Approve capability; Edit remains distinct, including Approve-only users.",
+      "remaining": "Ordinary-role UI/API permission fixture tests."
+    },
+    {
+      "id": "OPS-14",
+      "priority": "P2",
+      "title": "Approved BOM end-effectivity command has no dedicated frontend action",
+      "audit": "operations-audit.json",
+      "acceptance": "Approved End validity date uses the dedicated BOM endpoint, handles date/version conflicts, affects future applicability and preserves prior frozen orders/history.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-21",
+        "SC-24"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Approved BOM effectivity endpoint was not available from the legacy Item BOM history surface.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+        "frontend/src/services/manufacturing/productionConfigurationService.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "productionConfigurationService.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "summary": "Delegated by agreement to commerce agent: dedicated BOM effectivity.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "commerce",
+      "implemented": "Approved BOM End effectivity loads current concurrencyVersion then shared guarded idempotent EffectivityDialog calls dedicated /boms/{id}/effectivity route.",
+      "remaining": "Real SQL historical frozen-order/effectivity boundary and concurrent command verification."
+    },
+    {
+      "id": "OPS-15",
+      "priority": "P1",
+      "title": "Legacy packing recovery requires removing allocations but normal packing offers no removal",
+      "audit": "operations-audit.json",
+      "acceptance": "Reproduce legacy packing blocker and resolve it through normal draft edit/remove/repack UI/API; allocations reconcile atomically, stale/repeated requests are safe, dispatched/posted packages remain protected.",
+      "scenarioIds": [
+        "SC-17",
+        "SC-27",
+        "SC-30",
+        "SC-31"
+      ],
+      "status": "Implemented; automated/runtime verification not complete",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "summary": "Transactional undispatched package soft removal/reopen/repack, version+same-intent journal, exact packed/weight reconciliation, financial/dispatched guard and retained source/history.",
+      "sqlStatus": "Not run; user will execute guarded SQL scripts later",
+      "remainingEvidence": "Final targeted/full regression, authenticated ordinary-role browser journeys and user-run SQL migration/concurrency/rollback evidence.",
+      "implementationOwner": "operations"
+    },
+    {
+      "id": "PAC-01",
+      "priority": "P1",
+      "title": "Dirty daily work can be silently discarded by changing context",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Attendance date, Data Book sheet/view and permission role switches cannot silently reset unsaved work; paste remains explicitly reviewable; draft recovery and successful clearing are tested.",
+      "scenarioIds": [
+        "SC-06",
+        "SC-34",
+        "SC-37",
+        "SC-38"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Guarded attendance date/RBAC role/Data Book sheet, privacy tab, view and refresh changes; scoped explicit recovery, pending paste/conflict preservation and context draft snapshots.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-02",
+      "priority": "P1",
+      "title": "HR approvals and corrections expose internal IDs instead of business context",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Corrections/approvals begin from actual employee/date/leave/payroll context with internal IDs bound; approver sees values, reason, period and totals before decision.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-34",
+        "SC-35",
+        "SC-36"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Contextual employee/date correction selector and pending inbox; internal bound identities; proposed status/times; atomic versioned approval and attendance audit; contextual leave/payroll approvals and searchable payroll history.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-03",
+      "priority": "P1",
+      "title": "Core HR results remain raw JSON",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Balances show entitlement/used/remaining by leave type; payslip shows employee/period/earnings/deductions/net with usable print/download; raw JSON is not the normal result.",
+      "scenarioIds": [
+        "SC-35",
+        "SC-36",
+        "SC-42"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Readable leave entitlement/used/remaining table and exact-currency employee-period payslip with explicit print/save PDF.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-04",
+      "priority": "P1",
+      "title": "Multi-request saves can leave partly completed account or employee setup",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Force second-step role/bank failure; first saved entity is clearly retained and refreshed; retry completes only the missing step, without duplicate user/employee create or misleading generic failure.",
+      "scenarioIds": [
+        "SC-09",
+        "SC-33",
+        "SC-37"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Persisted user retained after role failure with role-only retry; employee bank pending step retained in memory with bank-only retry and authoritative uncertain-save readback.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-05",
+      "priority": "P2",
+      "title": "Employee onboarding has too much work in its first save",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Essential employee creation works with optional sections deferred; completion checklist and existing drafts/inline masters work; profile PDF only downloads when explicitly selected.",
+      "scenarioIds": [
+        "SC-06",
+        "SC-07",
+        "SC-33"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Essential onboarding first, optional address/bank sections, user/company scoped drafts excluding bank data, explicit profile download, created master selection/focus restoration and exact identities.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-06",
+      "priority": "P2",
+      "title": "Website content editors need a faithful public preview",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Draft post/product/announcement preview faithfully reflects public rendering, assets and responsive appearance, with safe content handling and no premature real publish.",
+      "scenarioIds": [
+        "SC-39",
+        "SC-42"
+      ],
+      "status": "Safe preview implemented and unit-tested; exact public-site parity requires missing public renderer",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Safe rendered article, product and announcement previews added. Public website renderer is not present in this repository, so exact production-site parity remains unverified.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-07",
+      "priority": "P2",
+      "title": "Website settings expose technical keys and untyped values",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Known website keys have friendly typed controls/examples, invalid values cannot save, dirty refresh is protected and public/private changes are clearly reviewed; backend key restrictions remain.",
+      "scenarioIds": [
+        "SC-06",
+        "SC-39"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Allow-listed friendly typed settings metadata, UI and server value validation, changed-only writes, dirty refresh guard and visibility-change review.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-08",
+      "priority": "P2",
+      "title": "Public scheduling asks Indian client staff to enter UTC manually",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "A chosen local publishing/start/end time round-trips through UTC storage and displays in the configured timezone; boundary, invalid interval and timezone-label cases are covered.",
+      "scenarioIds": [
+        "SC-21",
+        "SC-39"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Verified company timezone wall-clock scheduling converts to existing UTC contracts; missing timezone retains existing schedules. DST gap/ambiguity and suffixless SQL UTC timestamps tested.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-09",
+      "priority": "P2",
+      "title": "Personal/browser preferences and business configuration look similar",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Preferences clearly identify browser/account/company scope, apply/reload as advertised, and manufacturing display preference cannot be mistaken for actual backend company/runtime setup.",
+      "scenarioIds": [
+        "SC-01",
+        "SC-40"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Preferences and Item manufacturing visibility clearly labelled this browser; company/runtime setup distinguished.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-10",
+      "priority": "P2",
+      "title": "Several helpful summaries do not take the operator to the next task",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "HR pending cards open correct filtered work, created Role can continue to its matrix, and inline Blog Category create selects the new category and preserves the draft.",
+      "scenarioIds": [
+        "SC-07",
+        "SC-34",
+        "SC-37",
+        "SC-39"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Permission-aware HR pending links, persisted role-to-matrix handoff, role template/access preview and blog inline category save-select.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-11",
+      "priority": "P2",
+      "title": "Technical implementation messages appear in ordinary client UI",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Warranty/profile/blog messages explain available next action in client language; necessary technical diagnostics are available in support detail without replacing user guidance.",
+      "scenarioIds": [
+        "SC-39",
+        "SC-40",
+        "SC-42"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Warranty/profile/blog text changed to client next-action guidance; implementation details remain in support context.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-12",
+      "priority": "P2",
+      "title": "Payroll and leave side-panel queries need visible labels",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Employee/month/year/manager controls have explicit visible/accessible labels, logical focus order and named results; errors associate with the correct control.",
+      "scenarioIds": [
+        "SC-34",
+        "SC-35",
+        "SC-36",
+        "SC-42"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Visible employee/month/year/manager labels on HR query controls and named results.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-13",
+      "priority": "P1",
+      "title": "Payroll setup is a database foundation without an operator maintenance flow",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Salary and leave setup persist through real authorized APIs/UI; effective overlaps/amounts are validated; payroll preflight lists included/missing staff and processing cannot silently exclude or half-process them.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-21",
+        "SC-35",
+        "SC-36",
+        "SC-43"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Real DTO/validation/service/repository/API/SQL setup for salary components, amounts, versioned structures, effective assignments, maintained leave types and concurrency-safe entitlements. Atomic payroll preflight prevents omission. Human-confirmed calendar proration/fixed deductions, employed resigned portions, attendance+paid-leave overlap block and reviewed per-employee single period rate are implemented. Unknown/missing resign-rejoin boundary provenance blocks affected periods rather than inventing employment; selected rate basis is preserved with payroll details.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    },
+    {
+      "id": "PAC-14",
+      "priority": "P2",
+      "title": "Department attendance report has no discovered operator surface",
+      "audit": "people-admin-content-audit.json",
+      "acceptance": "Department summary reuses the actual reporting endpoint, supports date/department filters and contextual employee drilldown/back, and is permission-aware.",
+      "scenarioIds": [
+        "SC-34",
+        "SC-40"
+      ],
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "currentConfirmation": "",
+      "rootCause": "",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "",
+      "outcome": "Department report uses existing API with active date/department and daily-work drilldown.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed",
+      "implementationOwner": "people-admin-content"
+    }
+  ],
+  "preparedOn": "2026-10-28",
+  "updatedAt": "2026-10-28T12:51:25.721Z",
+  "userDecisions": {
+    "sql": "User will execute prepared guarded scripts later; no SQL integration executed by this session.",
+    "payroll": "Calendar-day earnings prorating, fixed deductions, block attendance/paid-leave overlap, include actually employed portion of resigned staff; one explicitly selected period rate when structures change.",
+    "party": "Reminders, loyalty, custom fields remain explicitly unavailable per human decision.",
+    "gstPolicy": "Keep policy options; user will decide tax/discount/rounding policy later. No proposed policy approval or activated default."
+  },
+  "releaseStatus": "Implementation delivered with automated and synthetic component evidence; user-run SQL/authenticated/provider acceptance gates remain open, no whole-release completion claimed"
+}

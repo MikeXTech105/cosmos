@@ -2,13 +2,11 @@ import {
   getApiCorrelationId,
   getApiErrorMessage,
 } from "../../utils/apiError";
+import { decimalText, quantityText } from "../../utils/productionValues";
 
 export const formatShipmentNumber = (value, fallback = "—") => {
-  const numeric = Number(value);
-
-  return Number.isFinite(numeric)
-    ? numeric.toLocaleString("en-IN", { maximumFractionDigits: 3 })
-    : fallback;
+  if (value == null || value === "") return fallback;
+  try { decimalText(value); return quantityText(value, { scale: 6 }); } catch { return fallback; }
 };
 
 export const formatShipmentCurrency = (value, currency = "INR") => {

@@ -1,7 +1,7 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
-import { sanitizeHrListParams } from "./hrServiceUtils";
+import { hrCommandIds, sanitizeHrListParams } from "./hrServiceUtils";
 
 export const hrLeaveService = {
   getLeaves: async (params) => {
@@ -15,7 +15,7 @@ export const hrLeaveService = {
   applyLeave: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_LEAVES_APPLY,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -24,7 +24,7 @@ export const hrLeaveService = {
   cancelLeave: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_LEAVES_CANCEL,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -33,7 +33,7 @@ export const hrLeaveService = {
   approveLeave: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_LEAVES_APPROVE,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -42,7 +42,7 @@ export const hrLeaveService = {
   rejectLeave: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_LEAVES_REJECT,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);

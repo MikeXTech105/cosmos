@@ -1,0 +1,16 @@
+/* A single set of controls retains stable field-array identity on both layouts. */
+.commerce-line-table td label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 767px) {
+  .commerce-line-table, .commerce-record-table { display: block; min-width: 0; width: 100%; }
+  .commerce-line-table thead, .commerce-record-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .commerce-line-table tbody, .commerce-record-table tbody { display: grid; gap: 12px; padding: 12px; }
+  .commerce-line-table tbody tr, .commerce-record-table tbody tr { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px; }
+  .commerce-line-table tbody td, .commerce-record-table tbody td { display: block; min-width: 0; width: auto; padding: 8px; text-align: left; overflow-wrap: anywhere; border: 0; }
+  .commerce-line-table tbody td:first-child, .commerce-record-table tbody td:first-child { grid-column: 1 / -1; }
+  .commerce-line-table tbody tr::before { content: attr(data-line-label); grid-column: 1 / -1; padding: 4px 8px; color: #475569; font-size: 12px; font-weight: 600; }
+  .commerce-line-table td label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .commerce-line-table td[data-label]::before, .commerce-record-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 6px; color: #64748b; font-size: 12px; font-weight: 600; }
+  .commerce-record-table tfoot, .commerce-record-table tfoot tr { display: block; width: 100%; }
+  .commerce-record-table tfoot th, .commerce-record-table tfoot td { display: block; text-align: left; }
+  .commerce-record-table [colspan] { grid-column: 1 / -1; }
+}

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="3a0b4a1b-bdf9-401d-9bad-4786b68a5f48" name="Sahil@LUCIFER 2026-10-28 17:01:58" runUser="LUCIFER\Sahil" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-28T17:01:58.5446337+05:30" queuing="2026-10-28T17:01:58.5446348+05:30" start="2026-10-28T17:01:51.0081472+05:30" finish="2026-10-28T17:01:58.5590614+05:30" />
+  <TestSettings name="default" id="bd6cd3aa-81e0-41a5-b41f-5c0267c33d33">
+    <Deployment runDeploymentRoot="Sahil_LUCIFER_2026-10-28_17_01_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="775f3cdd-89e7-44d0-b2ed-a7093be9b63e" testId="f1455f13-7c11-e4c8-d996-59aa8899dd68" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;changed&quot;)" computerName="LUCIFER" duration="00:00:00.0056229" startTime="2026-10-28T17:01:57.9564365+05:30" endTime="2026-10-28T17:01:57.9567677+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="775f3cdd-89e7-44d0-b2ed-a7093be9b63e" />
+    <UnitTestResult executionId="2b5b31ce-1309-4822-afc6-892ad614b64c" testId="7bcbeb7b-689e-5739-af4a-cf313a566f0c" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;failure&quot;)" computerName="LUCIFER" duration="00:00:00.4066326" startTime="2026-10-28T17:01:57.5760555+05:30" endTime="2026-10-28T17:01:57.9330197+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2b5b31ce-1309-4822-afc6-892ad614b64c" />
+    <UnitTestResult executionId="b9b990ae-9909-451d-bdb8-50950a85ce74" testId="ec6b2649-ff41-f0ab-42ca-156c645ab4f6" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;repeated&quot;)" computerName="LUCIFER" duration="00:00:00.0057909" startTime="2026-10-28T17:01:57.9596910+05:30" endTime="2026-10-28T17:01:57.9598519+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b9b990ae-9909-451d-bdb8-50950a85ce74" />
+    <UnitTestResult executionId="c54f1a2a-3539-455f-a41e-3050ce4132f8" testId="4e5f7a34-8594-0bf1-3e0e-b0f7c4d3e91b" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Dispatch_export_includes_all_601_rows_and_preserves_period_warehouse_status" computerName="LUCIFER" duration="00:00:00.2380340" startTime="2026-10-28T17:01:57.9627816+05:30" endTime="2026-10-28T17:01:58.1941878+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c54f1a2a-3539-455f-a41e-3050ce4132f8" />
+    <UnitTestResult executionId="93e35551-ef78-4704-b1b5-7b720b6748e9" testId="4c5e6e74-f05e-a8fb-f926-4367177c16f1" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Shipment_export_includes_last_row_beyond_500_with_exact_quantity_and_all_original_filters" computerName="LUCIFER" duration="00:00:00.0663410" startTime="2026-10-28T17:01:58.1949156+05:30" endTime="2026-10-28T17:01:58.2607865+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="93e35551-ef78-4704-b1b5-7b720b6748e9" />
+    <UnitTestResult executionId="1cb6861c-35fa-4ef9-8d1a-77a9d3f3099b" testId="54c95913-f835-009e-60fd-9de0aaee741d" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_observes_cancellation_before_requesting_another_page" computerName="LUCIFER" duration="00:00:00.0278711" startTime="2026-10-28T17:01:58.2613140+05:30" endTime="2026-10-28T17:01:58.2888662+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1cb6861c-35fa-4ef9-8d1a-77a9d3f3099b" />
+    <UnitTestResult executionId="e0368674-c1ab-4c7c-aa4d-fd32d2c54d3e" testId="519f2efd-eaa1-4060-c3aa-bc321900633b" testName="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;short&quot;)" computerName="LUCIFER" duration="00:00:00.0039420" startTime="2026-10-28T17:01:57.9590271+05:30" endTime="2026-10-28T17:01:57.9592366+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e0368674-c1ab-4c7c-aa4d-fd32d2c54d3e" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;repeated&quot;)" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="ec6b2649-ff41-f0ab-42ca-156c645ab4f6">
+      <Execution id="b9b990ae-9909-451d-bdb8-50950a85ce74" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Dispatch_export_includes_all_601_rows_and_preserves_period_warehouse_status" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="4e5f7a34-8594-0bf1-3e0e-b0f7c4d3e91b">
+      <Execution id="c54f1a2a-3539-455f-a41e-3050ce4132f8" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Dispatch_export_includes_all_601_rows_and_preserves_period_warehouse_status" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Shipment_export_includes_last_row_beyond_500_with_exact_quantity_and_all_original_filters" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="4c5e6e74-f05e-a8fb-f926-4367177c16f1">
+      <Execution id="93e35551-ef78-4704-b1b5-7b720b6748e9" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Shipment_export_includes_last_row_beyond_500_with_exact_quantity_and_all_original_filters" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;failure&quot;)" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="7bcbeb7b-689e-5739-af4a-cf313a566f0c">
+      <Execution id="2b5b31ce-1309-4822-afc6-892ad614b64c" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_observes_cancellation_before_requesting_another_page" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="54c95913-f835-009e-60fd-9de0aaee741d">
+      <Execution id="1cb6861c-35fa-4ef9-8d1a-77a9d3f3099b" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Export_observes_cancellation_before_requesting_another_page" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;short&quot;)" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="519f2efd-eaa1-4060-c3aa-bc321900633b">
+      <Execution id="e0368674-c1ab-4c7c-aa4d-fd32d2c54d3e" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file" />
+    </UnitTest>
+    <UnitTest name="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests.Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file(failure: &quot;changed&quot;)" storage="f:\fi\cosmos\backend\tests\cosmos.tests\bin\debug\net10.0\cosmos.tests.dll" id="f1455f13-7c11-e4c8-d996-59aa8899dd68">
+      <Execution id="775f3cdd-89e7-44d0-b2ed-a7093be9b63e" />
+      <TestMethod codeBase="F:\FI\cosmos\backend\tests\Cosmos.Tests\bin\Debug\net10.0\Cosmos.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Cosmos.Tests.ShipmentOperations.CompleteOperationsReportExportTests" name="Export_refuses_repeated_partial_changing_or_failed_source_without_returning_partial_file" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="f1455f13-7c11-e4c8-d996-59aa8899dd68" executionId="775f3cdd-89e7-44d0-b2ed-a7093be9b63e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7bcbeb7b-689e-5739-af4a-cf313a566f0c" executionId="2b5b31ce-1309-4822-afc6-892ad614b64c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ec6b2649-ff41-f0ab-42ca-156c645ab4f6" executionId="b9b990ae-9909-451d-bdb8-50950a85ce74" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4e5f7a34-8594-0bf1-3e0e-b0f7c4d3e91b" executionId="c54f1a2a-3539-455f-a41e-3050ce4132f8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4c5e6e74-f05e-a8fb-f926-4367177c16f1" executionId="93e35551-ef78-4704-b1b5-7b720b6748e9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="54c95913-f835-009e-60fd-9de0aaee741d" executionId="1cb6861c-35fa-4ef9-8d1a-77a9d3f3099b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="519f2efd-eaa1-4060-c3aa-bc321900633b" executionId="e0368674-c1ab-4c7c-aa4d-fd32d2c54d3e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="7" executed="7" passed="7" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.14)&#xD;
+[xUnit.net 00:00:02.51]   Discovering: Cosmos.Tests&#xD;
+[xUnit.net 00:00:03.05]   Discovered:  Cosmos.Tests&#xD;
+[xUnit.net 00:00:03.29]   Starting:    Cosmos.Tests&#xD;
+[xUnit.net 00:00:04.15]   Finished:    Cosmos.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

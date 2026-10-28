@@ -28,6 +28,23 @@ public sealed class ProductionCommandValidationTests
     private readonly Mock<IProductionWorkspaceRepository> repository=new(MockBehavior.Strict);
     private readonly Mock<IProductionCompanyScope> scope=new();
     private readonly Mock<ICurrentUser> user=new();
+    [Theory]
+    [InlineData("operations",0)]
+    [InlineData("unknown",1)]
+    public async Task Invalid_exact_master_lookup_never_reaches_the_database(string kind,long id)
+    {
+        await Assert.ThrowsAsync<CosmosException>(()=>Service().MasterByIdAsync(kind,id,default));
+        repository.VerifyNoOtherCalls();
+    }
+    [Fact]
+    public async Task Exact_master_lookup_uses_the_authenticated_catalog_and_actor()
+    {
+        var row = new ProductionMasterDto(9007199254740993,"OP","History",false,"v1");
+        repository.Setup(x=>x.ExecuteAsync<ProductionMasterDto>("sp_ProductionMaster_Read","catalog-a",7,It.IsAny<object>(),It.IsAny<CancellationToken>())).ReturnsAsync(row);
+        var result = await Service().MasterByIdAsync("operations",row.Id,default);
+        Assert.Equal(row,result.Data);
+        repository.VerifyAll();
+    }
     private ProductionWorkspaceService Service()
     {
         scope.SetupGet(x=>x.CurrentBusinessDate).Returns(new DateOnly(2026,10,27));

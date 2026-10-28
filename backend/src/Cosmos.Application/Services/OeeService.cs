@@ -62,6 +62,21 @@ public sealed class OeeService : IOeeService
     private long? UserId => _user.UserId;
     private int? AuditUserId => UserId is null ? null : checked((int)UserId.Value);
 
+    public async Task<ApiResponse<PagedResult<OeeDayAcknowledgementDto>>> GetDayAcknowledgementsAsync(OeeDayAcknowledgementQuery query, CancellationToken ct)
+    {
+        if (query.FromDate == default || query.ToDate < query.FromDate || query.ToDate.DayNumber - query.FromDate.DayNumber > 366 || query.PageNumber < 1 || query.PageSize is < 1 or > 200 || query.MachineId is <= 0)
+            throw new CosmosException("Choose a valid acknowledgement period of at most 366 days and a supported page.");
+        return ApiResponse<PagedResult<OeeDayAcknowledgementDto>>.Success(await _repository.GetDayAcknowledgementsAsync(query, ct));
+    }
+    public async Task<ApiResponse<OeeDayAcknowledgementDto>> SaveDayAcknowledgementAsync(SaveOeeDayAcknowledgementRequest request, CancellationToken ct)
+    {
+        if (request.ProductionDate == default || request.MachineId <= 0 || request.State is not ("NotRun" or "PlannedStop" or "Withdrawn") || string.IsNullOrWhiteSpace(request.Reason) || request.Reason.Length > 700 || request.PreviousId is <= 0 || request.CommandKey == Guid.Empty)
+            throw new CosmosException("Select a machine, operational date, stopped-day state and reason. Corrections must reference the latest acknowledgement.");
+        // SQL owns the append-only revision, matching command retry, conflicting
+        // reading and machine/date concurrency checks in one transaction.
+        return ApiResponse<OeeDayAcknowledgementDto>.Success(await _repository.SaveDayAcknowledgementAsync(request, UserId, ct), "Machine day acknowledged. No OEE reading or stock movement was created.");
+    }
+
     public async Task<ApiResponse<PagedResult<OeeMachineDto>>> GetMachinesAsync(OeeMasterListQuery query, CancellationToken ct)
     {
         await ValidationRunner.ValidateAsync(_masterListValidator, query, ct);

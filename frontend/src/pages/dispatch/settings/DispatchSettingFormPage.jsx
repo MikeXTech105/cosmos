@@ -24,6 +24,7 @@ import useSupplyChainChannels from "../../supplyChain/useSupplyChainChannels";
 import { getDispatchError } from "../dispatchDisplay";
 import { dispatchSettingSchema, getDispatchSchemaErrors } from "../dispatchSchemas";
 import useDispatchCapabilities from "../useDispatchCapabilities";
+import PlanningPolicyExample from "../../manufacturing/PlanningPolicyExample";
 
 const getItemId = (item) => item?.id ?? item?.itemId ?? "";
 
@@ -330,6 +331,7 @@ const DispatchSettingFormPage = () => {
               value={form.tier}
               onChange={(value) => setField("tier", value)}
             />
+            <details open={Boolean(errors.safetyStockFactor || errors.recurringDemandFactor || errors.minimumDispatchQuantity || errors.roundingMode || errors.allocationPriority) || undefined} className="sm:col-span-2 lg:col-span-3 rounded-xl border border-slate-200 p-4"><summary className="cursor-pointer text-sm font-semibold">Advanced demand, rounding and allocation policy</summary><p className="my-3 text-xs text-slate-500">Channel-specific settings take precedence over global settings. Allocation sorts by priority, tier, then warehouse priority. Review the worked example before saving factors.</p><div className="col-span-full flex flex-wrap gap-2"><AppButton variant="secondary" disabled={readOnly || saving} onClick={() => { setField("roundingMode", DISPATCH_ROUNDING_MODES.Exact); setField("allowLooseQuantity", false); }}>Exact quantity</AppButton><AppButton variant="secondary" disabled={readOnly || saving} onClick={() => { setField("roundingMode", DISPATCH_ROUNDING_MODES.RoundUpToBox); setField("allowLooseQuantity", false); }}>Complete boxes</AppButton><AppButton variant="secondary" disabled={readOnly || saving} onClick={() => { setField("roundingMode", DISPATCH_ROUNDING_MODES.ExactBelowOneBox); setField("allowLooseQuantity", false); }}>Exact small lots, then boxes</AppButton></div><div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {numeric("safetyStockFactor", "Safety stock factor", "0.000001", true)}
             {numeric("recurringDemandFactor", "Recurring demand factor", "0.000001", true)}
             {numeric("minimumDispatchQuantity", "Minimum dispatch quantity")}
@@ -345,6 +347,7 @@ const DispatchSettingFormPage = () => {
               <p className="mt-1 text-xs leading-5 text-slate-500">{DISPATCH_ROUNDING_MODE_HELP[form.roundingMode]}</p>
             </div>
             {numeric("allocationPriority", "Allocation priority")}
+            </div></details>
             <AppInput
               disabled={readOnly || saving}
               error={errors.effectiveFrom}
@@ -381,6 +384,7 @@ const DispatchSettingFormPage = () => {
           </div>
         </section>
       )}
+      <PlanningPolicyExample kind="dispatch" disabled={saving || detail.loading} policy={{ safetyStockFactor: form.safetyStockFactor, recurringDemandFactor: form.recurringDemandFactor, minimumDispatchQuantity: form.minimumDispatchQuantity, roundingMode: Number(form.roundingMode), allowLooseQuantity: form.allowLooseQuantity }} />
 
       {!readOnly && (
         <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">

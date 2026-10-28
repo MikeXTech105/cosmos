@@ -60,21 +60,5 @@ export const moveStep = (steps, index, direction) => {
 };
 
 export const lookupLabel = (record) => [record.code ?? record.machineCode ?? record.shiftCode ?? record.itemCode, record.name ?? record.machineName ?? record.mouldName ?? record.shiftName].filter(Boolean).join(" · ") || String(record.id);
-export const lookupOptions = (records, selected) => records.filter((entry) => entry.isActive !== false || String(entry.id) === String(selected)).map((entry) => ({ value: entry.id, label: `${lookupLabel(entry)}${entry.isActive === false ? " (inactive)" : ""}`, disabled: entry.isActive === false }));
+export const lookupOptions = (records, selected) => records.filter((entry) => entry.isActive !== false || String(entry.id) === String(selected)).map((entry) => ({ ...entry, value: entry.id, label: `${lookupLabel(entry)}${entry.isActive === false ? " (inactive)" : ""}`, disabled: entry.isActive === false }));
 export const nameOf = (records, id) => records.find((entry) => String(entry.id) === String(id)) ? lookupLabel(records.find((entry) => String(entry.id) === String(id))) : id ? `#${id}` : "—";
-
-// Lookup services have different paging parameter names; each existing service normalizes PageNumber.
-export const loadAllLookupPages = async (fetchPage, signal) => {
-  const result = [];
-  for (let pageNumber = 1; pageNumber <= 1000; pageNumber += 1) {
-    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-    const response = await fetchPage({ PageNumber: pageNumber, PageSize: 200 });
-    if (response && Object.hasOwn(response, "data") && response.data == null) throw new Error("Lookup response was empty. Reload the current references.");
-    const data = response?.data ?? response;
-    const rows = rowsOf(response);
-    result.push(...rows);
-    const total = Number(data?.totalPages ?? Math.ceil(Number(data?.totalCount ?? 0) / 200));
-    if (Array.isArray(data) || rows.length === 0 || (total > 0 ? pageNumber >= total : rows.length < 200)) return result;
-  }
-  throw new Error("Lookup result exceeds the supported page limit. Narrow the source data.");
-};

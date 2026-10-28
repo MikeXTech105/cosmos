@@ -1,9 +1,17 @@
+import { invoiceService } from "../../../services/sales/invoiceService";
+import useUncertainSave from "../../../hooks/useUncertainSave";
+import UncertainSaveNotice from "../../../components/commerce/UncertainSaveNotice";
+import useFormReturnContext from "../../../hooks/useFormReturnContext";
+import "../../purchase/commerceTables.css";
+import GstRegistrationLookup from "../../gst/GstRegistrationLookup";
+import FormErrorSummary from "../../../components/commerce/FormErrorSummary";
 import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
 import { documentLookupService } from "../../../services/documentLookupService";
 import { invoiceSchema } from "./invoiceSchema";
+import { invoiceLookupTarget } from "./invoiceLookupGuard";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Controller,
   useFieldArray,
@@ -17,9 +25,15 @@ import { toast } from "sonner";
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
+import useScopedDraft from "../../../hooks/useScopedDraft";
+import { withoutDirtyPrompt } from "../../../utils/dirtyWork";
+import { applyApiErrorsToForm } from "../../../utils/formApiErrors";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
 import { hsnGstService } from "../../../services/gst/hsnGstService";
@@ -111,6 +125,7 @@ const InvoiceFormPage = () => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { returnTo, returnState, savedState, returnToList } = useFormReturnContext("/sales/invoices");
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
     label: "Sale Invoices",
@@ -133,6 +148,7 @@ const InvoiceFormPage = () => {
     registrations: [], registrationsError: null, registrationsLoading: true,
   });
   const [lookupCreateModal, setLookupCreateModal] = useState({ category: false, customer: false, item: false, unit: false });
+  const inlineTarget = useRef(null);
   const [itemCreateLookups, setItemCreateLookups] = useState({
     categories: [], categoriesLoading: false,
     units: [], unitsLoading: false,
@@ -146,13 +162,23 @@ const InvoiceFormPage = () => {
     setValue,
     getValues,
     getFieldState,
-    formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
+    formState: { errors, isDirty, isSubmitting },
   } = useForm({
     resolver: zodResolver(invoiceSchema),
     defaultValues: getInvoiceDefaultValues(null),
   });
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
+  const currentFields = useRef(fields);
+  const itemRequests = useRef(new Map());
+  useEffect(() => { currentFields.current = fields; }, [fields]);
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
+  const draftValues = useWatch({ control });
+  const recovery=useUncertainSave({entity:"sales-invoice",context:id ?? "new",recordId:isEdit?id:null});
+  const draft = useScopedDraft({ entity: "sales-invoice", context: id ?? "new", version: detailInvoice?.rowVersion ?? 1, values: draftValues, enabled: isDirty && !recovery.blocked });
+  const { confirmLeave } = useUnsavedChanges({ when: isDirty && !isSubmitting });
+  const invoiceDate = useWatch({ control, name: "invoiceDate" });
   const invoiceDiscountAmount = useWatch({ control, name: "discountAmount" }) ?? "0";
   const totals = getInvoiceTotals(watchedItems, invoiceDiscountAmount);
 
@@ -249,34 +275,55 @@ const InvoiceFormPage = () => {
   ];
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
 
-  const applyItemDetails = async (index, itemId) => {
+  const applyItemDetails = useCallback(async (index, itemId, classificationOnly = false) => {
+    const rowId = currentFields.current[index]?.id;
+    if (!rowId) return;
+    const onDate = getValues("invoiceDate");
+    const requestToken = Symbol(rowId);
+    itemRequests.current.set(rowId, requestToken);
+    const currentIndex = () => invoiceLookupTarget({ rows: currentFields.current, rowId, itemId, invoiceDate: onDate, getValues, latest: itemRequests.current.get(rowId) === requestToken });
     const lookupItem = itemsById.get(String(itemId));
     const applyItem = (item) => {
-      if (!item) return;
+      const liveIndex = currentIndex();
+      if (!item || liveIndex < 0 || classificationOnly) return;
 
-      setValue(`items.${index}.itemName`, item.name ?? "", { shouldDirty: true });
-      setValue(`items.${index}.rate`, String(item.salesPrice ?? 0), { shouldDirty: true, shouldValidate: true });
-      setValue(`items.${index}.taxPercentage`, String(item.gstRate ?? 0), { shouldDirty: true, shouldValidate: true });
+      setValue(`items.${liveIndex}.itemName`, item.name ?? "", { shouldDirty: true });
+      setValue(`items.${liveIndex}.rate`, String(item.salesPrice ?? 0), { shouldDirty: true, shouldValidate: true });
+      setValue(`items.${liveIndex}.taxPercentage`, String(item.gstRate ?? 0), { shouldDirty: true, shouldValidate: true });
     };
 
     applyItem(lookupItem);
 
     try {
       const [itemResult, classificationResult] = await Promise.allSettled([
-        documentLookupService.item(itemId),
-        hsnGstService.getEffectiveClassification(itemId, getValues("invoiceDate") || undefined),
+        classificationOnly ? Promise.resolve(null) : documentLookupService.item(itemId),
+        onDate ? hsnGstService.getEffectiveClassification(itemId, onDate) : Promise.reject(new Error("Choose the invoice date first.")),
       ]);
       const itemResponse = itemResult.status === "fulfilled" ? itemResult.value : null;
       const classificationResponse = classificationResult.status === "fulfilled" ? classificationResult.value : null;
       applyItem(getResponseItem(itemResponse) ?? lookupItem);
       const classification = classificationResponse?.data ?? classificationResponse;
-      setValue(`items.${index}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, classification?.source ?? "", { shouldDirty: true });
+      const liveIndex = currentIndex();
+      if (liveIndex < 0) return;
+      setValue(`items.${liveIndex}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "");
+      setValue(`items.${liveIndex}.hsnSource`, classification ? [classification.source, classification.effectiveFrom ? `from ${classification.effectiveFrom}` : ""].filter(Boolean).join(" · ") : "Classification unavailable — retry by selecting the item after checking the invoice date and access.");
     } catch {
-      setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Item master" : "", { shouldDirty: true });
+      const liveIndex = currentIndex();
+      if (liveIndex < 0) return;
+      setValue(`items.${liveIndex}.hsnSacCode`, "");
+      setValue(`items.${liveIndex}.hsnSource`, "Classification unavailable — check the date and retry the item selection.");
     }
-  };
+  }, [getValues, itemsById, setValue]);
+
+  const previousInvoiceDate = useRef(invoiceDate);
+  useEffect(() => {
+    if (previousInvoiceDate.current === invoiceDate) return;
+    previousInvoiceDate.current = invoiceDate;
+    currentFields.current.forEach((_, index) => {
+      const itemId = getValues(`items.${index}.itemId`);
+      if (itemId) void applyItemDetails(index, itemId, true);
+    });
+  }, [applyItemDetails, getValues, invoiceDate]);
 
   const loadItemCreateLookups = useCallback(async () => {
     setItemCreateLookups((current) => ({ ...current, categoriesLoading: true, unitsLoading: true }));
@@ -297,7 +344,7 @@ const InvoiceFormPage = () => {
     }
   }, []);
 
-  const openLookupCreate = useCallback((type) => {
+  const openLookupCreate = useCallback((type, rowId = null, selectMaster = null) => {
     const allowed = { category: canCreateCategory, customer: canCreateCustomer, item: canCreateItem, unit: canCreateUnit }[type];
 
     if (!allowed) {
@@ -309,40 +356,39 @@ const InvoiceFormPage = () => {
       void loadItemCreateLookups();
     }
 
+    inlineTarget.current = { type, rowId: rowId ?? inlineTarget.current?.rowId, selectMaster, element: document.activeElement };
     setLookupCreateModal((current) => ({ ...current, [type]: true }));
   }, [canCreateCategory, canCreateCustomer, canCreateItem, canCreateUnit, loadItemCreateLookups]);
 
-  const closeLookupCreate = useCallback((type) => setLookupCreateModal((current) => ({ ...current, [type]: false })), []);
+  const closeLookupCreate = useCallback((type) => { setLookupCreateModal((current) => ({ ...current, [type]: false })); requestAnimationFrame(() => inlineTarget.current?.element?.focus?.()); }, []);
 
-  const refreshItemCreateLookup = useCallback(async (type) => {
-    if (type === "category") {
-      const response = await categoryService.getCategories({ IsActive: true, PageNumber: 1, PageSize: 200 });
-      setItemCreateLookups((current) => ({ ...current, categories: getLookupList(response) }));
-      return;
-    }
-
-    const response = await unitService.getUnits({ IsActive: true, PageNumber: 1, PageSize: 200 });
-    setItemCreateLookups((current) => ({ ...current, units: getLookupList(response) }));
-  }, []);
 
   const submitLookupCreate = useCallback(async (type, payload, saveAndNew = false) => {
     try {
       if (type === "customer") {
-        await partyService.createParty(payload);
+        const response = await partyService.createParty(payload);
+        const created = response?.data?.party ?? response?.data;
+        if (created?.id) { setLookups(current => ({ ...current, customers: [...current.customers.filter(row => String(row.id) !== String(created.id)), created] })); setValue("customerPartyId", created.id, { shouldDirty: true, shouldValidate: true }); }
         toast.success("Customer created successfully");
-        await loadLookup("customers");
       } else if (type === "item") {
-        await itemService.createItem(payload);
+        const response = await itemService.createItem(payload);
+        const created = getResponseItem(response);
+        if (created?.id) {
+          setLookups(current => ({ ...current, items: [...current.items.filter(row => String(row.id) !== String(created.id)), created] }));
+          const rowIndex = currentFields.current.findIndex(row => row.id === inlineTarget.current?.rowId);
+          if (rowIndex >= 0) { setValue(`items.${rowIndex}.itemId`, String(created.id), { shouldDirty: true, shouldValidate: true }); void applyItemDetails(rowIndex, created.id); }
+        }
         toast.success("Item created successfully");
-        await loadLookup("items");
       } else if (type === "category") {
-        await categoryService.createCategory(payload);
+        const response = await categoryService.createCategory(payload);
+        const created = response.data?.category ?? response.data;
+        if (created?.id) { setItemCreateLookups(current => ({ ...current, categories: [...current.categories, created] })); inlineTarget.current?.selectMaster?.(created); }
         toast.success("Category created successfully");
-        await refreshItemCreateLookup("category");
       } else {
-        await unitService.createUnit(payload);
+        const response = await unitService.createUnit(payload);
+        const created = response.data?.unit ?? response.data;
+        if (created?.id) { setItemCreateLookups(current => ({ ...current, units: [...current.units, created] })); inlineTarget.current?.selectMaster?.(created); }
         toast.success("Unit created successfully");
-        await refreshItemCreateLookup("unit");
       }
 
       if (!saveAndNew) {
@@ -352,34 +398,46 @@ const InvoiceFormPage = () => {
       toast.error(getActionError(error, "Unable to create record."));
       throw error;
     }
-  }, [closeLookupCreate, loadLookup, refreshItemCreateLookup]);
+  }, [applyItemDetails, closeLookupCreate, setValue]);
 
   const saveDisabledReason = (isEdit ? capabilities.canUpdate : capabilities.canCreate)
     ? ""
     : `You need ${isEdit ? "edit" : "create"} permission for sale invoices.`;
 
   const submitForm = async (values) => {
+    clearErrors("root.server");
     if (saveDisabledReason) {
       toast.error(saveDisabledReason);
       return;
     }
 
     const payload = buildInvoicePayload(values);
+    draft.saveDraft(values);
+    if(!recovery.begin())return;
 
     try {
       const response = isEdit
         ? await dispatch(updateInvoice({ id, payload })).unwrap()
         : await dispatch(createInvoice(payload)).unwrap();
       const savedInvoice = getResponseInvoice(response);
+      recovery.succeed();
 
       toast.success(getSuccessMessage(response, isEdit ? "Invoice updated successfully" : "Invoice created successfully"));
-      navigate(savedInvoice?.id ? `/sales/invoices/${savedInvoice.id}` : "/sales/invoices");
+      draft.clearDraft();
+      reset(values);
+      withoutDirtyPrompt(() => savedInvoice?.id ? navigate(`/sales/invoices/${savedInvoice.id}`,{state:savedState(savedInvoice.id)}) : returnToList());
     } catch (error) {
-      toast.error(getActionError(error, "Unable to save invoice."));
-    }
+      if(recovery.fail(error)){draft.saveDraft(values);setError("root.server",{type:"server",message:"Save result is unconfirmed. Review saved history or readback before a retry; your values are retained."});toast.error("Save result needs review before retrying.");}
+      else {
+        const fieldNames = Object.keys(values).concat(values.items.flatMap((line,index)=>Object.keys(line).map(name=>`items.${index}.${name}`)));
+        applyApiErrorsToForm({error,formFieldNames:fieldNames,setError});
+        setError("root.server",{type:"server",message:getActionError(error,"The request was rejected. Review the highlighted fields; your entries are retained.")});
+        toast.error(getActionError(error,"Unable to save invoice."));
+      }
+    } finally {recovery.finish();}
   };
 
-  const backRoute = isEdit ? `/sales/invoices/${id}` : "/sales/invoices";
+  const backRoute = returnTo;
   const title = isEdit ? "Edit sale invoice" : "New sale invoice";
 
   if (isEdit && detailError) {
@@ -387,7 +445,7 @@ const InvoiceFormPage = () => {
       <div className="space-y-5">
         <PageHeader title={title} />
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{detailError}</div>
-        <AppButton variant="secondary" onClick={() => navigate("/sales/invoices")}>
+        <AppButton variant="secondary" onClick={() => returnToList()}>
           <ArrowLeft className="h-4 w-4" /> Back to invoices
         </AppButton>
       </div>
@@ -396,6 +454,11 @@ const InvoiceFormPage = () => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(submitForm)} noValidate>
+      <UncertainSaveNotice key={recovery.marker?.attemptId??"idle"} recovery={recovery} onReviewHistory={()=>{draft.saveDraft(getValues());returnToList();}} readRecord={isEdit?async()=>{const response=await invoiceService.getInvoiceById(id);const saved=getResponseInvoice(response);return `Saved invoice ${saved.invoiceNumber}. Total ${formatCurrency(saved.grandTotal)}. Compare all retained line and header values before deciding whether to retry.`;}:undefined}/>
+      <fieldset disabled={recovery.blocked} className="contents">
+      {draft.recoveredDraft && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{draft.stale ? "A draft from an earlier record version is available. Reload current details and review it before saving." : "An unsaved draft from this account and company is available."}<div className="mt-2 flex gap-3"><button type="button" className="font-semibold underline" onClick={() => { reset(draft.recoveredDraft.values, { keepDefaultValues: true }); draft.acknowledgeRecovery(); }}>Restore for review</button><button type="button" className="underline" onClick={draft.clearDraft}>Discard draft</button></div></div>}
+      {draft.storageError && <p role="alert">{draft.storageError}</p>}
+      <FormErrorSummary errors={errors}/>
       {!businessContext.runtime && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter invoice and payment dates explicitly."}</p>}
       <PageHeader
         badge="Sales / Invoices"
@@ -403,7 +466,7 @@ const InvoiceFormPage = () => {
         description="Create a draft invoice with live line totals and backend-ready tax fields."
         actions={
           <>
-            <AppButton variant="secondary" onClick={() => navigate(backRoute)}>
+            <AppButton variant="secondary" onClick={() => confirmLeave(() => navigate(backRoute,{state:returnState()}))}>
               <ArrowLeft className="h-4 w-4" /> Back
             </AppButton>
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
@@ -428,20 +491,21 @@ const InvoiceFormPage = () => {
                 control={control}
                 name="customerPartyId"
                 render={({ field }) => (
-                  <AppSelect
+                  <AppLookup
+                          label="Item"
                     label="Customer"
                     required
-                    value={field.value}
+                    name={field.name} value={field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
-                    options={customerOptions}
-                    emptyMessage={lookups.customersError ? "Unable to load customers. Try refreshing the page." : "No customers found in Party Master."}
-                    placeholder={lookups.customersLoading ? "Loading customers..." : "Select customer"}
-                    disabled={lookups.customersLoading}
+                    initialOptions={customerOptions}
+                    loadPage={async ({ search, page, pageSize, signal }) => lookupPage(await partyService.getParties({ Search: search, PartyType: "Customer", PageNumber: page, PageSize: pageSize, IsActive: true }, { signal }), page, pageSize)}
+                    loadById={async (value, options) => { const response = await partyService.getPartyById(value, options); return response.data?.party ?? response.data; }}
+                    getOptionLabel={row => row.label ?? getPartyDisplayName(row)}
+                    placeholder="Search customer name or code"
                     error={errors.customerPartyId?.message}
-                    creatable={canCreateCustomer}
                     createLabel="Create new customer"
-                    onCreateClick={() => openLookupCreate("customer")}
+                    onCreate={canCreateCustomer ? () => openLookupCreate("customer") : undefined}
                   />
                 )}
               />
@@ -464,7 +528,7 @@ const InvoiceFormPage = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1170px] table-fixed text-left">
+              <table className="commerce-line-table w-full min-w-[1170px] table-fixed text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-white">
                     <th className="w-[27%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Item<span className="ml-0.5 text-red-500">*</span></th>
@@ -484,52 +548,52 @@ const InvoiceFormPage = () => {
                     const lineTotal = getLineCalculations(line).lineTotal;
 
                     return (
-                      <tr key={field.id} className="border-b border-slate-100">
+                      <tr key={field.id} data-line-label={`Line ${index + 1}`} className="border-b border-slate-100">
                         <td className="px-3 py-3 align-top">
                           <Controller
                             control={control}
                             name={`items.${index}.itemId`}
                             render={({ field: itemField }) => (
-                              <AppSelect
-                                value={itemField.value}
+                              <AppLookup
+                                name={itemField.name} value={itemField.value}
                                 onChange={(value) => {
                                   itemField.onChange(String(value ?? ""));
                                   void applyItemDetails(index, value);
                                 }}
                                 onBlur={itemField.onBlur}
-                                options={itemOptions}
-                                emptyMessage={lookups.itemsError ? "Unable to load items. Try refreshing the page." : "No items found in inventory."}
-                                placeholder={lookups.itemsLoading ? "Loading items..." : "Select item"}
-                                disabled={lookups.itemsLoading}
+                                initialOptions={itemOptions}
+                                loadPage={async ({ search, page, pageSize, signal }) => lookupPage(await documentLookupService.items({ Search: search, PageNumber: page, PageSize: pageSize, IsActive: true }, { signal }), page, pageSize)}
+                                loadById={async (value, options) => getResponseItem(await documentLookupService.item(value, options))}
+                                getOptionLabel={row => row.label ?? [row.name, row.itemCode].filter(Boolean).join(" · ")}
+                                placeholder="Search item name or code"
                                 required
                                 error={errors.items?.[index]?.itemId?.message}
-                                creatable={canCreateItem}
                                 createLabel="Create new item"
-                                onCreateClick={() => openLookupCreate("item")}
+                                onCreate={canCreateItem ? () => openLookupCreate("item", field.id) : undefined}
                               />
                             )}
                           />
                         </td>
-                        <td className="px-3 py-3 align-top text-xs text-slate-600">
+                        <td data-label="HSN / SAC" className="px-3 py-3 align-top text-xs text-slate-600">
                           <p className="font-semibold text-slate-800">{line.hsnSacCode || "—"}</p>
                           {line.hsnSource && <p className="mt-1 text-[11px] text-slate-500">{line.hsnSource}</p>}
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} required error={errors.items?.[index]?.quantity?.message} />
+                          <NumberInput control={control} id={`quantity-${index}`} name={`items.${index}.quantity`} label="Quantity" required error={errors.items?.[index]?.quantity?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`rate-${index}`} name={`items.${index}.rate`} error={errors.items?.[index]?.rate?.message} />
+                          <NumberInput control={control} id={`rate-${index}`} name={`items.${index}.rate`} label="Rate" error={errors.items?.[index]?.rate?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`discount-percentage-${index}`} name={`items.${index}.discountPercentage`} error={errors.items?.[index]?.discountPercentage?.message} />
+                          <NumberInput control={control} id={`discount-percentage-${index}`} name={`items.${index}.discountPercentage`} label="Discount %" error={errors.items?.[index]?.discountPercentage?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`discount-amount-${index}`} name={`items.${index}.discountAmount`} error={errors.items?.[index]?.discountAmount?.message} />
+                          <NumberInput control={control} id={`discount-amount-${index}`} name={`items.${index}.discountAmount`} label="Discount amount" error={errors.items?.[index]?.discountAmount?.message} />
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <NumberInput control={control} id={`tax-${index}`} name={`items.${index}.taxPercentage`} error={errors.items?.[index]?.taxPercentage?.message} />
+                          <NumberInput control={control} id={`tax-${index}`} name={`items.${index}.taxPercentage`} label="Tax %" error={errors.items?.[index]?.taxPercentage?.message} />
                         </td>
-                        <td className="px-3 py-3 text-right align-middle text-sm font-semibold text-slate-900">{formatCurrency(lineTotal)}</td>
+                        <td data-label="Line total" className="px-3 py-3 text-right align-middle text-sm font-semibold text-slate-900">{formatCurrency(lineTotal)}</td>
                         <td className="px-2 py-3 text-right align-middle">
                           <button
                             type="button"
@@ -610,7 +674,7 @@ const InvoiceFormPage = () => {
                       name="initialPayment.paymentMode"
                       defaultValue={SALES_PAYMENT_MODE.CASH}
                       render={({ field }) => (
-                        <AppSelect label="Mode" value={field.value} onChange={(value) => field.onChange(Number(value))} onBlur={field.onBlur} options={PAYMENT_MODE_OPTIONS} error={errors.initialPayment?.paymentMode?.message} />
+                        <AppSelect label="Mode" name={field.name} value={field.value} onChange={(value) => field.onChange(Number(value))} onBlur={field.onBlur} options={PAYMENT_MODE_OPTIONS} error={errors.initialPayment?.paymentMode?.message} />
                       )}
                     />
                     <AppInput id="initialPaymentReference" label="Reference" error={errors.initialPayment?.referenceNumber?.message} {...register("initialPayment.referenceNumber")} />
@@ -637,20 +701,19 @@ const InvoiceFormPage = () => {
         <p className="mt-1 text-xs text-slate-500">Select the GSTIN that issues this draft. This choice is never inferred from the default registration.</p>
         <div className="mt-4 max-w-2xl">
           <Controller control={control} name="companyGstRegistrationId" render={({ field }) => (
-            <AppSelect
+            <GstRegistrationLookup
               label="Seller GST registration"
-              value={field.value ?? ""}
+              activeOnly
+              name={field.name} value={field.value ?? ""}
               onChange={(value) => field.onChange(value ? String(value) : null)}
               onBlur={field.onBlur}
-              options={registrationOptions}
-              placeholder={lookups.registrationsLoading ? "Loading GST registrations..." : "Select issuing GSTIN"}
-              disabled={lookups.registrationsLoading || (isEdit && detailInvoice && Number(detailInvoice.status) !== 1)}
-              emptyMessage={lookups.registrationsError || "No active GST registrations are available."}
+              initialOptions={lookups.registrations}
+              disabled={Boolean(isEdit && detailInvoice && Number(detailInvoice.status) !== 1)}
               error={errors.companyGstRegistrationId?.message}
             />
           )} />
           {isEdit && detailInvoice && Number(detailInvoice.status) !== 1 && <p className="mt-2 text-xs text-slate-500">Confirmed invoices retain their issuing registration. Use an approved correction workflow for changes.</p>}
-          {!lookups.registrationsLoading && registrationOptions.length === 0 && <p className="mt-2 text-xs font-medium text-amber-700">No usable registration is available; this invoice cannot become GST snapshot-ready.</p>}
+          {!lookups.registrationsLoading && registrationOptions.length === 0 && <p className="mt-2 text-xs text-slate-500">Search the full registration catalogue by GSTIN, legal name or branch. An active issuing registration is required for GST preparation.</p>}
         </div>
       </section>
 
@@ -658,15 +721,15 @@ const InvoiceFormPage = () => {
         <h2 className="text-sm font-semibold text-slate-900">GST draft context</h2>
         <p className="mt-1 text-xs text-slate-500">These explicit choices are retained for GST readiness. They do not replace the current Sales tax calculation or authorize statutory generation.</p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Controller control={control} name="priceBasis" render={({ field }) => <AppSelect label="Pricing mode" value={field.value ?? ""} onChange={(value) => field.onChange(value === "" ? null : Number(value))} onBlur={field.onBlur} options={priceBasisOptions} placeholder="Select pricing mode" error={errors.priceBasis?.message} />} />
+          <Controller control={control} name="priceBasis" render={({ field }) => <AppSelect label="Pricing mode" name={field.name} value={field.value ?? ""} onChange={(value) => field.onChange(value === "" ? null : Number(value))} onBlur={field.onBlur} options={priceBasisOptions} placeholder="Select pricing mode" error={errors.priceBasis?.message} />} />
           <AppInput label="Place of supply code" maxLength={2} placeholder="e.g. 24" error={errors.placeOfSupplyStateCode?.message} {...register("placeOfSupplyStateCode")} />
-          <Controller control={control} name="placeOfSupplySource" render={({ field }) => <AppSelect label="Reviewed basis" value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} options={placeSourceOptions} placeholder="Select reviewed basis" error={errors.placeOfSupplySource?.message} />} />
+          <Controller control={control} name="placeOfSupplySource" render={({ field }) => <AppSelect label="Reviewed basis" name={field.name} value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} options={placeSourceOptions} placeholder="Select reviewed basis" error={errors.placeOfSupplySource?.message} />} />
         </div>
         <p className="mt-3 text-xs text-amber-700">A billing or shipping address can inform review, but this form never infers a statutory place of supply or changes GST components automatically.</p>
       </section>
 
       <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">
-        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => navigate(backRoute)}>
+        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => navigate(backRoute,{state:returnState()})}>
           Cancel
         </AppButton>
         <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
@@ -678,6 +741,7 @@ const InvoiceFormPage = () => {
         isLoading={false}
         isOpen={lookupCreateModal.customer}
         mode="create"
+        source={{ partyType: "Customer" }}
         onClose={() => closeLookupCreate("customer")}
         onSubmit={(payload) => submitLookupCreate("customer", payload)}
         submitLabel="Create Customer"
@@ -695,8 +759,8 @@ const InvoiceFormPage = () => {
         item={null}
         mode="create"
         onClose={() => closeLookupCreate("item")}
-        onCreateCategory={() => openLookupCreate("category")}
-        onCreateUnit={() => openLookupCreate("unit")}
+        onCreateCategory={(selectMaster) => openLookupCreate("category", null, selectMaster)}
+        onCreateUnit={(selectMaster) => openLookupCreate("unit", null, selectMaster)}
         onSubmit={(payload, saveAndNew) => submitLookupCreate("item", payload, saveAndNew)}
         unitOptions={itemCreateLookups.units.map((unit) => ({ value: Number(unit.id), label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name }))}
         unitEmptyMessage="No units yet - add one in Units."
@@ -720,6 +784,7 @@ const InvoiceFormPage = () => {
         onSubmit={(payload, saveAndNew) => submitLookupCreate("unit", payload, saveAndNew)}
         unit={null}
       />
+    </fieldset>
     </form>
   );
 };

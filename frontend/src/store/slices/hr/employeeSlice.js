@@ -37,6 +37,7 @@ const initialState = {
 
 const extractEmployeeBankDetails = (payload) => {
   const data = payload?.data ?? payload;
+  if (Array.isArray(data)) return data[0] ?? null;
 
   return (
     data?.bankDetails ??

@@ -1,4 +1,5 @@
 import { WARRANTY_RESOLUTION_TYPE } from "../constants/websiteEnums";
+import { websiteUtcDate } from "./websiteTime";
 
 export const slugifyWebsiteTitle = (value) =>
   String(value ?? "")
@@ -37,10 +38,9 @@ export const getAnnouncementLiveState = (announcement, now = new Date()) => {
   }
 
   const current = now instanceof Date ? now : new Date(now);
-  const starts = announcement?.startsAtUtc
-    ? new Date(announcement.startsAtUtc)
-    : null;
-  const ends = announcement?.endsAtUtc ? new Date(announcement.endsAtUtc) : null;
+  const starts = websiteUtcDate(announcement?.startsAtUtc);
+  const ends = websiteUtcDate(announcement?.endsAtUtc);
+  if ((announcement?.startsAtUtc && !starts) || (announcement?.endsAtUtc && !ends)) return { isLive: false, reason: "Schedule unavailable; review the saved time window" };
 
   if (starts && starts > current) {
     const days = Math.max(1, Math.ceil((starts - current) / 86400000));

@@ -18,6 +18,8 @@ import {
 import { downloadCsv } from "../../../utils/csv";
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import { oeeDayAcknowledgementService } from "../../../services/oee/oeeDayAcknowledgementService";
+import { getApiErrorMessage } from "../../../utils/apiError";
 import MetricCard from "../../../components/common/MetricCard";
 import { hasRecordedProblem, readingRatio } from "./productionAnalytics";
 import {
@@ -53,6 +55,7 @@ const states = {
   pending: { text: "Within window", tone: "blue" },
   open: { text: "Day in progress", tone: "neutral" },
   unknown: { text: "Check timestamp", tone: "neutral" },
+  acknowledged: { text: "Stopped machines acknowledged", tone: "blue" },
 };
 function Status({ day }) {
   const state = states[day.status] || states.unknown;
@@ -134,6 +137,7 @@ export function DayDrawer({
             <strong>{pct(day.value)}</strong>
           </div>
         </div>
+        {day.acknowledgements?.length > 0 && <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm"><strong>Stopped-day evidence · {day.acknowledgements.length} machines</strong><ul>{day.acknowledgements.map(row => <li key={row.id}>{row.machineCode} · {row.machineName} — {row.state === "PlannedStop" ? "Planned stop" : "Not run"}: {row.reason}</li>)}</ul><p className="mt-2 text-xs">Acknowledgements do not contribute runtime, shots, targets or OEE. Other machines may remain unentered; a shift calendar is required to assess complete expected coverage.</p></div>}
         {day.rows.length ? (
           <>
             <div className="submission-timeline">
@@ -291,6 +295,8 @@ export default function DailySubmissionAudit({
   canCreate,
   initialReason = "",
   onClearReason,
+  machineId = "",
+  mouldId = "",
 }) {
   const [view, setView] = useState("ledger");
   const [search, setSearch] = useState("");
@@ -299,9 +305,21 @@ export default function DailySubmissionAudit({
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
   const [now] = useState(() => Date.now());
+  const [ackState, setAckState] = useState({ key: "", records: [], error: "" });
+  const ackKey = JSON.stringify([from, to, machineId, mouldId, mode]);
+  const ackEnabled = mode === "calendar" && from && to && !mouldId;
+  const acknowledgements = useMemo(() => ackState.key === ackKey ? ackState.records : [], [ackState, ackKey]);
+  useEffect(() => {
+    if (!ackEnabled) return;
+    const controller = new AbortController();
+    oeeDayAcknowledgementService.all({ fromDate: from, toDate: to }, { signal: controller.signal }).then(records => {
+      if (!controller.signal.aborted) setAckState({ key: ackKey, records: machineId ? records.filter(row => String(row.machineId) === String(machineId)) : records, error: "" });
+    }).catch(failure => { if (!controller.signal.aborted) setAckState({ key: ackKey, records: [], error: getApiErrorMessage(failure, "Stopped-day evidence is unavailable. A missing acknowledgement read is not proof of an unentered day.") }); });
+    return () => controller.abort();
+  }, [ackEnabled, ackKey, from, to, machineId]);
   const groups = useMemo(
-    () => groupSubmissionDays(entries, basis, 3, now),
-    [entries, basis, now],
+    () => groupSubmissionDays(entries, basis, 3, now, acknowledgements),
+    [entries, basis, now, acknowledgements],
   );
   const days = useMemo(
     () =>
@@ -343,6 +361,7 @@ export default function DailySubmissionAudit({
           row.downtimeReasonName,
           row.remarks,
         ]),
+        ...(day.acknowledgements ?? []).flatMap(row => [row.machineCode, row.machineName, row.reason]),
       ]
         .join(" ")
         .toLowerCase()
@@ -498,6 +517,9 @@ export default function DailySubmissionAudit({
         The 3-day rule is a review guide, measured from midnight IST after the
         production date to the last saved machine entry.
       </p>
+      {ackEnabled && ackState.key !== ackKey && <p role="status" className="submission-explanation">Loading stopped-day evidence. Gap review is provisional until it is available.</p>}
+      {ackEnabled && ackState.key === ackKey && ackState.error && <p role="alert" className="submission-alert">{ackState.error} Gap review is incomplete; retry by refreshing this period.</p>}
+      {!ackEnabled && <p className="submission-explanation">Stopped-day evidence is included in Calendar period with an explicit date range up to 366 days and no mould filter. A stopped machine has no mould reading.</p>}
       {view === "calendar" && gaps.length > 0 && (
         <div className="submission-alert">
           <AlertTriangle size={18} />
@@ -641,6 +663,7 @@ export default function DailySubmissionAudit({
                             {day.problems} readings with a recorded problem
                           </small>
                         )}
+                        {day.acknowledgedMachines > 0 && <small>{day.acknowledgedMachines} stopped machines acknowledged · no OEE readings added</small>}
                       </td>
                       <td>
                         <button

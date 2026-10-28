@@ -96,16 +96,16 @@ export default function OperationalReportsPage() {
       } : {})
     });
   };
-  const download = async () => {
+  const download = async (format = "csv") => {
     if (!applied || !access.canExport) return;
     try {
       setExporting(true);
       setError("");
-      const response = await service.exportReport(applied.kind, applied.query);
+      const response = await service.exportReport(applied.kind, applied.query, format);
       const url = URL.createObjectURL(response.data),
         anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `production-${applied.kind}${applied.query.asOfDate ? `-${applied.query.asOfDate}` : ""}.ndjson`;
+      anchor.download = `production-${applied.kind}${applied.query.asOfDate ? `-${applied.query.asOfDate}` : ""}.${format}`;
       anchor.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (cause) {
@@ -174,7 +174,7 @@ export default function OperationalReportsPage() {
           setRefresh(value => value + 1);
         }}>{t("Reload", {
             defaultValue: "Reload"
-          })}</AppButton>{access.canExport && <AppButton variant="secondary" isLoading={exporting} disabled={!applied || busy} onClick={download}>{t("reports.export")}</AppButton>}<Link className="self-center text-sm font-medium text-brand" to="/reports/manufacturing">{t("Actual production / material reports and CSV", {
+          })}</AppButton>{access.canExport && <AppButton variant="secondary" isLoading={exporting} disabled={!applied || busy} onClick={() => download("csv")}>Export CSV</AppButton>}{access.canExport && <details className="self-center"><summary className="cursor-pointer text-sm text-slate-500">Advanced export</summary><AppButton variant="secondary" disabled={!applied || busy || exporting} onClick={() => download("ndjson")}>NDJSON</AppButton></details>}<Link className="self-center text-sm font-medium text-brand" to="/reports/manufacturing">{t("Actual production / material reports and CSV", {
             defaultValue: "Actual production / material reports and CSV"
           })}</Link></div></Card>
   <Notice>{t("Missing historical ledger or reservation evidence remains unavailable and carries a quality flag. This export reads all matching pages; concurrent changes may affect it. It is not an immutable historical snapshot. Supplier delivery performance is available in Purchase follow-ups.", {

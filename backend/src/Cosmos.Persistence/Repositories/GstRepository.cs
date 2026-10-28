@@ -186,6 +186,24 @@ public sealed class GstRepository : IGstRepository
             cancellationToken);
     }
 
+    public async Task<GstEWayExtensionOperation> ReserveEWayExtensionAsync(ExtendEWayBillRequest request, byte[] fingerprint, DateTime? priorValidity, long? userId, CancellationToken cancellationToken)
+    {
+        using var connection=await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return await StoredProcedureExecutor.QueryWithStatusAsync<GstEWayExtensionOperation>(connection,"sp_GstEWayExtension_Reserve",new { request.CompanyGstRegistrationId,request.EWayBillNumber,request.IdempotencyKey,request.Version,PayloadFingerprint=fingerprint,PriorValidUpTo=priorValidity,UserId=userId },cancellationToken);
+    }
+
+    public async Task<GstEWayExtensionOperation?> GetEWayExtensionAsync(Guid idempotencyKey,CancellationToken cancellationToken)
+    {
+        using var connection=await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return await StoredProcedureExecutor.QuerySingleOrDefaultAsync<GstEWayExtensionOperation>(connection,"sp_GstEWayExtension_Get",new { IdempotencyKey=idempotencyKey },cancellationToken);
+    }
+
+    public async Task<EWayBillResponse> CompleteEWayExtensionAsync(Guid idempotencyKey,EWayBillResponse? response,bool confirmed,long? userId,CancellationToken cancellationToken,bool rejected=false)
+    {
+        using var connection=await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);
+        return await StoredProcedureExecutor.QueryWithStatusAsync<EWayBillResponse>(connection,"sp_GstEWayExtension_Complete",new { IdempotencyKey=idempotencyKey,Confirmed=confirmed,Rejected=rejected,ValidUpTo=response?.ValidUpTo,VehicleNumber=response?.VehicleNumber,TransportMode=response?.TransportMode,ResponseJson=response?.GeneratedResponseJson,UserId=userId },cancellationToken);
+    }
+
     public async Task<EWayBillResponse> UpdateEWayBillStatusAsync(CancelEWayBillRequest request, EWayBillResponse providerResponse, long? userId, CancellationToken cancellationToken)
     {
         using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken);

@@ -1,0 +1,1275 @@
+{
+  "baseline": "da4620383e88f4831a2c0d719882befd497661d7",
+  "branch": "lucifer-dev",
+  "updatedAt": "2026-10-28T17:18:49.407002+05:30",
+  "status": "Source frozen; focused checks passed; user-run SQL and real-auth release gates pending",
+  "findings": [
+    {
+      "id": "UX-AUTH-01",
+      "priority": "P2",
+      "title": "Simplify password recovery and expose contextual errors",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Reset token comes from link, hidden from editing; missing-link recovery and persistent failure message.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-01",
+      "priority": "P1",
+      "title": "Dirty daily work can be silently discarded by changing context",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Guarded attendance date/RBAC role/Data Book sheet, privacy tab, view and refresh changes; scoped explicit recovery, pending paste/conflict preservation and context draft snapshots.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-02",
+      "priority": "P1",
+      "title": "HR approvals and corrections expose internal IDs instead of business context",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Contextual employee/date correction selector and pending inbox; internal bound identities; proposed status/times; atomic versioned approval and attendance audit; contextual leave/payroll approvals and searchable payroll history.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-03",
+      "priority": "P1",
+      "title": "Core HR results remain raw JSON",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Readable leave entitlement/used/remaining table and exact-currency employee-period payslip with explicit print/save PDF.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-04",
+      "priority": "P1",
+      "title": "Multi-request saves can leave partly completed account or employee setup",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Persisted user retained after role failure with role-only retry; employee bank pending step retained in memory with bank-only retry and authoritative uncertain-save readback.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-05",
+      "priority": "P2",
+      "title": "Employee onboarding has too much work in its first save",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Essential onboarding first, optional address/bank sections, user/company scoped drafts excluding bank data, explicit profile download, created master selection/focus restoration and exact identities.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-06",
+      "priority": "P2",
+      "title": "Website content editors need a faithful public preview",
+      "status": "Safe preview implemented and unit-tested; exact public-site parity requires missing public renderer",
+      "outcome": "Safe rendered article, product and announcement previews added. Public website renderer is not present in this repository, so exact production-site parity remains unverified.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-07",
+      "priority": "P2",
+      "title": "Website settings expose technical keys and untyped values",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Allow-listed friendly typed settings metadata, UI and server value validation, changed-only writes, dirty refresh guard and visibility-change review.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-08",
+      "priority": "P2",
+      "title": "Public scheduling asks Indian client staff to enter UTC manually",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Verified company timezone wall-clock scheduling converts to existing UTC contracts; missing timezone retains existing schedules. DST gap/ambiguity and suffixless SQL UTC timestamps tested.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-09",
+      "priority": "P2",
+      "title": "Personal/browser preferences and business configuration look similar",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Preferences and Item manufacturing visibility clearly labelled this browser; company/runtime setup distinguished.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-10",
+      "priority": "P2",
+      "title": "Several helpful summaries do not take the operator to the next task",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Permission-aware HR pending links, persisted role-to-matrix handoff, role template/access preview and blog inline category save-select.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-11",
+      "priority": "P2",
+      "title": "Technical implementation messages appear in ordinary client UI",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Warranty/profile/blog text changed to client next-action guidance; implementation details remain in support context.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-12",
+      "priority": "P2",
+      "title": "Payroll and leave side-panel queries need visible labels",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Visible employee/month/year/manager labels on HR query controls and named results.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-13",
+      "priority": "P1",
+      "title": "Payroll setup is a database foundation without an operator maintenance flow",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Real DTO/validation/service/repository/API/SQL setup for salary components, amounts, versioned structures, effective assignments, maintained leave types and concurrency-safe entitlements. Atomic payroll preflight prevents omission. Human-confirmed calendar proration/fixed deductions, employed resigned portions, attendance+paid-leave overlap block and reviewed per-employee single period rate are implemented. Unknown/missing resign-rejoin boundary provenance blocks affected periods rather than inventing employment; selected rate basis is preserved with payroll details.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    },
+    {
+      "id": "PAC-14",
+      "priority": "P2",
+      "title": "Department attendance report has no discovered operator surface",
+      "status": "Implemented; focused checks passed, authenticated SQL/browser verification pending",
+      "outcome": "Department report uses existing API with active date/department and daily-work drilldown.",
+      "SQL": "Not executed; user will run guarded scripts",
+      "runtime": "No real authenticated SQL-backed browser pass claimed"
+    }
+  ],
+  "coverage": [
+    {
+      "coverageId": "COV-102",
+      "name": "HR dashboard",
+      "route": "/hr/dashboard",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/dashboard/HrDashboardPage.jsx",
+        "frontend/src/services/hr/employeeService.js",
+        "frontend/src/services/hr/attendanceService.js",
+        "frontend/src/services/hr/leaveService.js"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Employee.View",
+        "create": "N/A: derived dashboard, no create command",
+        "edit": "N/A: underlying domains own writes",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: use underlying permitted reports"
+      },
+      "routes": [
+        "/hr/dashboard"
+      ],
+      "parentChildRelation": "No dashboard master; each source retains its HR ownership",
+      "serviceApiDependencies": [
+        "GET /api/hr/employees; GET /api/hr/attendance; GET /api/hr/leaves; GET /api/hr/leaves/pending-approvals"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "HR_Employees; HR_Departments; HR_Attendance; HR_LeaveApplications"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/dashboard/HrDashboardPage.jsx",
+        "frontend/src/services/hr/employeeService.js",
+        "frontend/src/services/hr/attendanceService.js",
+        "frontend/src/services/hr/leaveService.js"
+      ],
+      "canonicalEntity": "Derived HR workspace over canonical Employees/Attendance/Leave",
+      "parentChild": "No dashboard master; each source retains its HR ownership",
+      "serviceApi": [
+        "GET /api/hr/employees; GET /api/hr/attendance; GET /api/hr/leaves; GET /api/hr/leaves/pending-approvals"
+      ],
+      "database": [
+        "HR_Employees; HR_Departments; HR_Attendance; HR_LeaveApplications"
+      ]
+    },
+    {
+      "coverageId": "COV-103",
+      "name": "HR departments",
+      "route": "/hr/departments",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/departments/DepartmentsPage.jsx",
+        "frontend/src/services/hr/departmentService.js"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Department.View",
+        "create": "HR.Department.Create",
+        "edit": "HR.Department.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/departments"
+      ],
+      "parentChildRelation": "Department parent of Designations and Employee department references",
+      "serviceApiDependencies": [
+        "/api/hr/departments CRUD"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "HR_Departments; HR_Designations; HR_Employees"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/departments/DepartmentsPage.jsx",
+        "frontend/src/services/hr/departmentService.js"
+      ],
+      "canonicalEntity": "HR Department",
+      "parentChild": "Department parent of Designations and Employee department references",
+      "serviceApi": [
+        "/api/hr/departments CRUD"
+      ],
+      "database": [
+        "HR_Departments; HR_Designations; HR_Employees"
+      ]
+    },
+    {
+      "coverageId": "COV-104",
+      "name": "HR designations",
+      "route": "/hr/designations",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/designations/DesignationFormModal.jsx",
+        "frontend/src/services/hr/designationService.js"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Designation.View",
+        "create": "HR.Designation.Create",
+        "edit": "HR.Designation.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/designations"
+      ],
+      "parentChildRelation": "Designation belongs to Department; Employee references it",
+      "serviceApiDependencies": [
+        "/api/hr/designations CRUD"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "HR_Designations; HR_Departments; HR_Employees"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/designations/DesignationFormModal.jsx",
+        "frontend/src/services/hr/designationService.js"
+      ],
+      "canonicalEntity": "HR Designation",
+      "parentChild": "Designation belongs to Department; Employee references it",
+      "serviceApi": [
+        "/api/hr/designations CRUD"
+      ],
+      "database": [
+        "HR_Designations; HR_Departments; HR_Employees"
+      ]
+    },
+    {
+      "coverageId": "COV-105",
+      "name": "HR shifts",
+      "route": "/hr/shifts",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/shifts/ShiftsPage.jsx",
+        "frontend/src/services/hr/shiftService.js"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Shift.View",
+        "create": "HR.Shift.Create",
+        "edit": "HR.Shift.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/shifts"
+      ],
+      "parentChildRelation": "Shared shift master referenced by Employees and production child scheduling",
+      "serviceApiDependencies": [
+        "/api/hr/shifts CRUD"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "HR_Shifts; HR_Employees; ProductionWorkCentreShifts"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/shifts/ShiftsPage.jsx",
+        "frontend/src/services/hr/shiftService.js"
+      ],
+      "canonicalEntity": "HR Shift",
+      "parentChild": "Shared shift master referenced by Employees and production child scheduling",
+      "serviceApi": [
+        "/api/hr/shifts CRUD"
+      ],
+      "database": [
+        "HR_Shifts; HR_Employees; ProductionWorkCentreShifts"
+      ]
+    },
+    {
+      "coverageId": "COV-106",
+      "name": "HR employees",
+      "route": "/hr/employees",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/employees/EmployeeFormPage.jsx",
+        "frontend/src/pages/hr/employees/bankSaveRecovery.js",
+        "frontend/src/services/hr/employeeService.js"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Employee.View",
+        "create": "HR.Employee.Create",
+        "edit": "HR.Employee.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/employees"
+      ],
+      "parentChildRelation": "Canonical employee owns address/document/bank history; references Department/Designation/Shift",
+      "serviceApiDependencies": [
+        "/api/hr/employees; per-employee documents/bank-details/resign/rejoin; exact JSON client"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/hr/employees/bankSaveRecovery.test.js — mock read/save/uncertain readback, passed",
+        "frontend/src/utils/hrIdentifiers.test.js — precision regression added; final run pending"
+      ],
+      "databaseDependencies": [
+        "HR_Employees; HR_EmployeeAddresses; HR_EmployeeDocuments; HR_EmployeeBankAccounts; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/employees/EmployeeFormPage.jsx",
+        "frontend/src/pages/hr/employees/bankSaveRecovery.js",
+        "frontend/src/services/hr/employeeService.js"
+      ],
+      "canonicalEntity": "HR Employee",
+      "parentChild": "Canonical employee owns address/document/bank history; references Department/Designation/Shift",
+      "serviceApi": [
+        "/api/hr/employees; per-employee documents/bank-details/resign/rejoin; exact JSON client"
+      ],
+      "database": [
+        "HR_Employees; HR_EmployeeAddresses; HR_EmployeeDocuments; HR_EmployeeBankAccounts; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-107",
+      "name": "HR attendance",
+      "route": "/hr/attendance",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx",
+        "frontend/src/pages/hr/attendance/AttendanceActionModals.jsx",
+        "frontend/src/pages/hr/attendance/DepartmentAttendancePanel.jsx",
+        "backend/src/Cosmos.API/Controllers/HR/HrSetupController.cs"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Attendance.View",
+        "create": "HR.Attendance.Create",
+        "edit": "HR.Attendance.Edit",
+        "approve": "HR.Attendance.Approve",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/attendance"
+      ],
+      "parentChildRelation": "Employee/day attendance parent; correction requests bind that attendance record; department/month summaries derived",
+      "serviceApiDependencies": [
+        "/api/hr/attendance; /api/hr/attendance/adjustment-request; approve-adjustment; reject-adjustment; monthly-report; department-report; GET /api/hr/setup/attendance-adjustments"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/hr/attendance/attendanceCorrectionValues.test.js — pure company-zone/snapshot/night-shift test, passed",
+        "frontend/src/pages/hr/attendance/DepartmentAttendancePanel.test.jsx — mocked endpoint/drilldown test added; final run pending",
+        "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupSqlIntegrationTests.cs — prepared real transaction/concurrency/period fixture, NOT RUN"
+      ],
+      "databaseDependencies": [
+        "HR_Attendance; HR_AttendanceAdjustments; HR_Employees; HR_Departments; HR_PayrollRuns; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx",
+        "frontend/src/pages/hr/attendance/AttendanceActionModals.jsx",
+        "frontend/src/pages/hr/attendance/DepartmentAttendancePanel.jsx"
+      ],
+      "canonicalEntity": "HR Attendance and Attendance Adjustment",
+      "parentChild": "Employee/day attendance parent; correction requests bind that attendance record; department/month summaries derived",
+      "serviceApi": [
+        "/api/hr/attendance; /api/hr/attendance/adjustment-request; approve-adjustment; reject-adjustment; monthly-report; department-report; GET /api/hr/setup/attendance-adjustments"
+      ],
+      "database": [
+        "HR_Attendance; HR_AttendanceAdjustments; HR_Employees; HR_Departments; HR_PayrollRuns; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-108",
+      "name": "HR leave",
+      "route": "/hr/leaves",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/leaves/LeavesPage.jsx",
+        "frontend/src/pages/hr/HrSetupPanels.jsx",
+        "backend/src/Cosmos.API/Controllers/HR/HrSetupController.cs"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Leave.View",
+        "create": "HR.Leave.Create",
+        "edit": "HR.Leave.Edit",
+        "approve": "HR.Leave.Approve",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/leaves"
+      ],
+      "parentChildRelation": "Employee and maintained LeaveType own balances; application references original employee/type; decisions preserve used balances",
+      "serviceApiDependencies": [
+        "/api/hr/leaves apply/cancel/approve/reject/balance/pending-approvals; /api/hr/setup/leave-types; /api/hr/setup/leave-entitlements"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/hr/HrResults.test.jsx — rendered balance fields, passed",
+        "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupTests.cs — validators/permissions/parser, passed",
+        "HR SQL balance conservation/stale version fixture prepared, NOT RUN"
+      ],
+      "databaseDependencies": [
+        "HR_LeaveTypes; HR_LeaveBalances; HR_LeaveApplications; HR_Employees; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/leaves/LeavesPage.jsx",
+        "frontend/src/pages/hr/HrSetupPanels.jsx"
+      ],
+      "canonicalEntity": "HR Leave Application and Balance",
+      "parentChild": "Employee and maintained LeaveType own balances; application references original employee/type; decisions preserve used balances",
+      "serviceApi": [
+        "/api/hr/leaves apply/cancel/approve/reject/balance/pending-approvals; /api/hr/setup/leave-types; /api/hr/setup/leave-entitlements"
+      ],
+      "database": [
+        "HR_LeaveTypes; HR_LeaveBalances; HR_LeaveApplications; HR_Employees; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-109",
+      "name": "HR payroll",
+      "route": "/hr/payroll",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/payroll/PayrollPage.jsx",
+        "frontend/src/pages/hr/HrSetupPanels.jsx",
+        "backend/src/Cosmos.API/Controllers/HR/HrSetupController.cs",
+        "backend/database/migrations/20261028_02_hr_operator_setup.sql"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Payroll.View",
+        "create": "HR.Payroll.Create",
+        "edit": "HR.Payroll.Edit",
+        "approve": "HR.Payroll.Approve",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/payroll"
+      ],
+      "parentChildRelation": "Payroll Run owns frozen employee Details/payslips; salary assignment and its rowversion/structure/monthly basis are retained as the reviewed period-rate provenance",
+      "serviceApiDependencies": [
+        "/api/hr/payroll process/approve/run/history/payslip; /api/hr/setup/payroll-runs; payroll-preflight",
+        "GET /api/hr/setup/payroll-rates; POST process with reviewed per-employee salary assignment/version selection"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/hr/HrResults.test.jsx — mocked component: readable payslip and exact currency, passed",
+        "frontend/src/pages/hr/payroll/PayrollRateReview.test.jsx — mocked component: no automatic mixed-rate choice, per-employee review and stale-version state, 2 tests passed in integrated scoped run",
+        "frontend/src/services/hr/setupService.test.js — mocked HTTP transport: exact decimal/identity tokens and nested reviewed assignment/version selection, 3 tests passed",
+        "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupTests.cs — unit/metadata/parser: reviewed unique per-employee selection, 8-byte version, independent permissions and full migration T-SQL syntax, passed",
+        "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupSqlIntegrationTests.cs — guarded real SQL fixture PREPARED, NOT RUN: omissions, atomic rollback, fixed deductions/calendar proration, resigned portions, clipped cross-month leave, overlap block, missing-middle and unknown-rejoin payload history, explicit mixed-rate selection, absent/unreviewed/wrong employee/off-period/stale rejection and selected-rate provenance",
+        "Independent operations agent source review: final employment-history and selected-rate paths had no further verified implementation issue; source review is not SQL execution"
+      ],
+      "databaseDependencies": [
+        "HR_PayrollRuns; HR_PayrollDetails; HR_EmployeeSalaryStructures; HR_SalaryStructures; HR_SalaryStructureComponents; HR_SalaryComponents; HR_Attendance; HR_LeaveApplications; AuditLogs",
+        "HR_PayrollDetails selected SalaryAssignmentId/SalaryStructureId/SalaryAssignmentVersion/MonthlyEarnings/FixedDeductions; v_HR_PayrollEmploymentSnapshots; v_HR_PayrollRejoins; v_HR_PayrollRejoinMarkers; v_HR_PayrollEmploymentPeriods; fn_HR_PayrollEmploymentDates; fn_HR_PayrollApplicableRates"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/payroll/PayrollPage.jsx",
+        "frontend/src/pages/hr/HrSetupPanels.jsx",
+        "frontend/src/pages/hr/payroll/PayrollRateReview.jsx"
+      ],
+      "canonicalEntity": "HR Payroll Run and immutable Details",
+      "parentChild": "Payroll Run owns frozen employee Details/payslips; salary assignment and its rowversion/structure/monthly basis are retained as the reviewed period-rate provenance",
+      "serviceApi": [
+        "/api/hr/payroll process/approve/run/history/payslip; /api/hr/setup/payroll-runs; payroll-preflight",
+        "GET /api/hr/setup/payroll-rates; POST process with reviewed per-employee salary assignment/version selection"
+      ],
+      "database": [
+        "HR_PayrollRuns; HR_PayrollDetails; HR_EmployeeSalaryStructures; HR_SalaryStructures; HR_SalaryStructureComponents; HR_SalaryComponents; HR_Attendance; HR_LeaveApplications; AuditLogs",
+        "HR_PayrollDetails selected SalaryAssignmentId/SalaryStructureId/SalaryAssignmentVersion/MonthlyEarnings/FixedDeductions; v_HR_PayrollEmploymentSnapshots; v_HR_PayrollRejoins; v_HR_PayrollRejoinMarkers; v_HR_PayrollEmploymentPeriods; fn_HR_PayrollEmploymentDates; fn_HR_PayrollApplicableRates"
+      ]
+    },
+    {
+      "coverageId": "COV-110",
+      "name": "HR embedded policies and enum configuration",
+      "route": "/hr/payroll",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/hr/HrSetupPanels.jsx",
+        "backend/src/Cosmos.Contracts/HR/HrSetupDtos.cs",
+        "backend/src/Cosmos.Application/HR/HrSetupRequests.cs",
+        "backend/src/Cosmos.Application/Validators/HrSetupValidators.cs",
+        "backend/src/Cosmos.Application/Services/HrSetupService.cs",
+        "backend/src/Cosmos.Persistence/Repositories/HrSetupRepository.cs"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "HR.Payroll.View / HR.Leave.View",
+        "create": "HR.Payroll.Create / HR.Leave.Create",
+        "edit": "HR.Payroll.Edit / HR.Leave.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/hr/payroll",
+        "/hr/leaves"
+      ],
+      "parentChildRelation": "LeaveTypes and balances; SalaryStructure owns component amounts; Employee effective assignments reference structures; no duplicate enum master",
+      "serviceApiDependencies": [
+        "/api/hr/setup/salary-components; salary-structures; salary-assignments; leave-types; leave-entitlements"
+      ],
+      "journeyEvidence": [
+        "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupTests.cs — validator/permission/parser tests passed; SQL NOT RUN"
+      ],
+      "databaseDependencies": [
+        "HR_LeaveTypes; HR_LeaveBalances; HR_SalaryComponents; HR_SalaryStructures; HR_SalaryStructureComponents; HR_EmployeeSalaryStructures"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/hr/HrSetupPanels.jsx"
+      ],
+      "canonicalEntity": "Canonical HR salary and leave policy child setup",
+      "parentChild": "LeaveTypes and balances; SalaryStructure owns component amounts; Employee effective assignments reference structures; no duplicate enum master",
+      "serviceApi": [
+        "/api/hr/setup/salary-components; salary-structures; salary-assignments; leave-types; leave-entitlements"
+      ],
+      "database": [
+        "HR_LeaveTypes; HR_LeaveBalances; HR_SalaryComponents; HR_SalaryStructures; HR_SalaryStructureComponents; HR_EmployeeSalaryStructures"
+      ]
+    },
+    {
+      "coverageId": "COV-111",
+      "name": "Administration users",
+      "route": "/users",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/rbac/users/Users.jsx",
+        "frontend/src/pages/rbac/users/Users.partialSave.test.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Users.View",
+        "create": "Users.Create",
+        "edit": "Users.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "Users.Export"
+      },
+      "routes": [
+        "/users"
+      ],
+      "parentChildRelation": "Users separate from Employee; UserRoles bridge canonical Roles",
+      "serviceApiDependencies": [
+        "/api/users CRUD/export; /api/users/{id}/roles assignment"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/rbac/users/Users.partialSave.test.jsx — component mocked second-step failure/retry, passed"
+      ],
+      "databaseDependencies": [
+        "Users; UserRoles; Roles; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/rbac/users/Users.jsx",
+        "frontend/src/pages/rbac/users/Users.partialSave.test.jsx"
+      ],
+      "canonicalEntity": "Access User",
+      "parentChild": "Users separate from Employee; UserRoles bridge canonical Roles",
+      "serviceApi": [
+        "/api/users CRUD/export; /api/users/{id}/roles assignment"
+      ],
+      "database": [
+        "Users; UserRoles; Roles; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-112",
+      "name": "Administration roles",
+      "route": "/roles",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/rbac/roles/Roles.jsx",
+        "frontend/src/pages/rbac/permissions/Permissions.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Roles.View",
+        "create": "Roles.Create",
+        "edit": "Roles.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "Roles.Export"
+      },
+      "routes": [
+        "/roles"
+      ],
+      "parentChildRelation": "Role parent of RolePermissions; UserRoles assigns Users; template copies grants into reviewed target matrix",
+      "serviceApiDependencies": [
+        "/api/roles CRUD/export; permission template read /api/permissions/role/{roleId}"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "Roles; RolePermissions; UserRoles; Pages; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/rbac/roles/Roles.jsx",
+        "frontend/src/pages/rbac/permissions/Permissions.jsx"
+      ],
+      "canonicalEntity": "Access Role",
+      "parentChild": "Role parent of RolePermissions; UserRoles assigns Users; template copies grants into reviewed target matrix",
+      "serviceApi": [
+        "/api/roles CRUD/export; permission template read /api/permissions/role/{roleId}"
+      ],
+      "database": [
+        "Roles; RolePermissions; UserRoles; Pages; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-113",
+      "name": "Administration permissions",
+      "route": "/permissions",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/rbac/permissions/Permissions.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Permissions.View",
+        "create": "N/A: save replaces RolePermissions; Permissions.Edit required",
+        "edit": "Permissions.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/permissions"
+      ],
+      "parentChildRelation": "Role x Page action grants; template and access preview are drafts over this canonical bridge",
+      "serviceApiDependencies": [
+        "GET/PUT /api/permissions/role/{roleId}"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "RolePermissions; Roles; Pages; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/rbac/permissions/Permissions.jsx"
+      ],
+      "canonicalEntity": "Role Permission matrix",
+      "parentChild": "Role x Page action grants; template and access preview are drafts over this canonical bridge",
+      "serviceApi": [
+        "GET/PUT /api/permissions/role/{roleId}"
+      ],
+      "database": [
+        "RolePermissions; Roles; Pages; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-114",
+      "name": "Administration pages",
+      "route": "/pages",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/rbac/pages/Pages.jsx"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Pages.View",
+        "create": "Pages.Create",
+        "edit": "Pages.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/pages"
+      ],
+      "parentChildRelation": "Page hierarchy and children remain one canonical Pages family; RolePermissions references Pages",
+      "serviceApiDependencies": [
+        "/api/pages list/detail/create/update/delete"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "Pages; RolePermissions"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/rbac/pages/Pages.jsx"
+      ],
+      "canonicalEntity": "Authorization Page",
+      "parentChild": "Page hierarchy and children remain one canonical Pages family; RolePermissions references Pages",
+      "serviceApi": [
+        "/api/pages list/detail/create/update/delete"
+      ],
+      "database": [
+        "Pages; RolePermissions"
+      ]
+    },
+    {
+      "coverageId": "COV-115",
+      "name": "Website dashboard",
+      "route": "/website/dashboard",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/dashboard/WebsiteDashboardPage.jsx"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Dashboard.View",
+        "create": "N/A: derived dashboard, no create command",
+        "edit": "N/A: underlying domains own writes",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: use underlying permitted reports"
+      },
+      "routes": [
+        "/website/dashboard"
+      ],
+      "parentChildRelation": "Aggregates canonical public content and service cases; no dashboard master",
+      "serviceApiDependencies": [
+        "GET /api/v1/website-management/dashboard"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "WebsiteProducts; WebsiteBlogPosts; WebsiteAnnouncements; WebsiteWarrantyClaims"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/dashboard/WebsiteDashboardPage.jsx"
+      ],
+      "canonicalEntity": "Derived Website dashboard",
+      "parentChild": "Aggregates canonical public content and service cases; no dashboard master",
+      "serviceApi": [
+        "GET /api/v1/website-management/dashboard"
+      ],
+      "database": [
+        "WebsiteProducts; WebsiteBlogPosts; WebsiteAnnouncements; WebsiteWarrantyClaims"
+      ]
+    },
+    {
+      "coverageId": "COV-116",
+      "name": "Website products",
+      "route": "/website/products",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/products/WebsiteProductFormPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Products.View",
+        "create": "WebsiteManagement.Products.Create",
+        "edit": "WebsiteManagement.Products.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/products"
+      ],
+      "parentChildRelation": "Public catalogue entity separate from Inventory Item; Product owns benefit and media children",
+      "serviceApiDependencies": [
+        "/api/v1/website-management/products CRUD; media upload through WebsiteManagement.Media; safe local preview"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/website/WebsiteContentPreview.test.jsx — rendered product preview/safe content, passed"
+      ],
+      "databaseDependencies": [
+        "WebsiteProducts; WebsiteProductBenefits; WebsiteProductMedia; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/products/WebsiteProductFormPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx"
+      ],
+      "canonicalEntity": "Website Product",
+      "parentChild": "Public catalogue entity separate from Inventory Item; Product owns benefit and media children",
+      "serviceApi": [
+        "/api/v1/website-management/products CRUD; media upload through WebsiteManagement.Media; safe local preview"
+      ],
+      "database": [
+        "WebsiteProducts; WebsiteProductBenefits; WebsiteProductMedia; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-117",
+      "name": "Website blog categories",
+      "route": "/website/blog",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx",
+        "frontend/src/services/website/websiteService.js"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Blogs.View",
+        "create": "WebsiteManagement.Blogs.Create",
+        "edit": "WebsiteManagement.Blogs.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/blog"
+      ],
+      "parentChildRelation": "Category parent for Posts; same canonical category reused by inline creation",
+      "serviceApiDependencies": [
+        "/api/v1/website-management/blog-categories CRUD"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "WebsiteBlogCategories; WebsiteBlogPosts; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx",
+        "frontend/src/services/website/websiteService.js"
+      ],
+      "canonicalEntity": "Website Blog Category",
+      "parentChild": "Category parent for Posts; same canonical category reused by inline creation",
+      "serviceApi": [
+        "/api/v1/website-management/blog-categories CRUD"
+      ],
+      "database": [
+        "WebsiteBlogCategories; WebsiteBlogPosts; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-118",
+      "name": "Website blog posts",
+      "route": "/website/blog",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx",
+        "frontend/src/pages/website/websiteScheduling.js"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Blogs.View",
+        "create": "WebsiteManagement.Blogs.Create",
+        "edit": "WebsiteManagement.Blogs.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/blog"
+      ],
+      "parentChildRelation": "Post references BlogCategory; media and publication/version fields remain the stored content contract",
+      "serviceApiDependencies": [
+        "/api/v1/website-management/blog-posts CRUD; blog-categories; authenticated /api/v1/manufacturing/runtime supplies real company timezone"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/website/WebsiteContentPreview.test.jsx — safe supported Markdown, passed",
+        "frontend/src/pages/website/websiteScheduling.test.js — company-time/UTC/DST unit checks, passed"
+      ],
+      "databaseDependencies": [
+        "WebsiteBlogPosts; WebsiteBlogCategories; AuditLogs; configured Manufacturing:BusinessTimeZone"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx",
+        "frontend/src/pages/website/websiteScheduling.js"
+      ],
+      "canonicalEntity": "Website Blog Post",
+      "parentChild": "Post references BlogCategory; media and publication/version fields remain the stored content contract",
+      "serviceApi": [
+        "/api/v1/website-management/blog-posts CRUD; blog-categories; authenticated /api/v1/manufacturing/runtime supplies real company timezone"
+      ],
+      "database": [
+        "WebsiteBlogPosts; WebsiteBlogCategories; AuditLogs; configured Manufacturing:BusinessTimeZone"
+      ]
+    },
+    {
+      "coverageId": "COV-119",
+      "name": "Website announcements",
+      "route": "/website/announcements",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx",
+        "frontend/src/pages/website/websiteScheduling.js"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Announcements.View",
+        "create": "WebsiteManagement.Announcements.Create",
+        "edit": "WebsiteManagement.Announcements.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/announcements"
+      ],
+      "parentChildRelation": "Standalone public content with placement, CTA, dismissal version and UTC schedule; no additional master",
+      "serviceApiDependencies": [
+        "/api/v1/website-management/announcements CRUD; authenticated runtime timezone; safe local preview"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/website/WebsiteContentPreview.test.jsx — safe CTA/announcement preview, passed",
+        "frontend/src/pages/website/websiteScheduling.test.js — UTC conversion unit checks, passed"
+      ],
+      "databaseDependencies": [
+        "WebsiteAnnouncements; AuditLogs; configured Manufacturing:BusinessTimeZone"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx",
+        "frontend/src/pages/website/WebsiteContentPreview.jsx",
+        "frontend/src/pages/website/websiteScheduling.js"
+      ],
+      "canonicalEntity": "Website Announcement",
+      "parentChild": "Standalone public content with placement, CTA, dismissal version and UTC schedule; no additional master",
+      "serviceApi": [
+        "/api/v1/website-management/announcements CRUD; authenticated runtime timezone; safe local preview"
+      ],
+      "database": [
+        "WebsiteAnnouncements; AuditLogs; configured Manufacturing:BusinessTimeZone"
+      ]
+    },
+    {
+      "coverageId": "COV-120",
+      "name": "Website warranty claims",
+      "route": "/website/warranty",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx",
+        "frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.WarrantyClaims.View",
+        "create": "WebsiteManagement.WarrantyClaims.Create",
+        "edit": "WebsiteManagement.WarrantyClaims.Edit",
+        "approve": "WebsiteManagement.WarrantyClaims.Approve",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/warranty"
+      ],
+      "parentChildRelation": "Case owns attachments/history/internal notes/customer messages; assignment and resolution remain case lifecycle",
+      "serviceApiDependencies": [
+        "/api/v1/website-management/warranty-claims list/detail/assign/start-review/request-information/approve/reject/resolve/complete/attachments/notes/customer-messages/reports/summary"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "WebsiteWarrantyClaims; WebsiteWarrantyClaimAttachments; WebsiteWarrantyClaimHistory; WebsiteWarrantyClaimNotes; WebsiteWarrantyClaimCustomerMessages; WebsiteWarrantyClaimSequences; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx",
+        "frontend/src/pages/website/warranty/WebsiteWarrantyDetailPage.jsx"
+      ],
+      "canonicalEntity": "Website Warranty Claim",
+      "parentChild": "Case owns attachments/history/internal notes/customer messages; assignment and resolution remain case lifecycle",
+      "serviceApi": [
+        "/api/v1/website-management/warranty-claims list/detail/assign/start-review/request-information/approve/reject/resolve/complete/attachments/notes/customer-messages/reports/summary"
+      ],
+      "database": [
+        "WebsiteWarrantyClaims; WebsiteWarrantyClaimAttachments; WebsiteWarrantyClaimHistory; WebsiteWarrantyClaimNotes; WebsiteWarrantyClaimCustomerMessages; WebsiteWarrantyClaimSequences; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-121",
+      "name": "Website settings",
+      "route": "/website/settings",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/website/settings/WebsiteSettingsPage.jsx",
+        "frontend/src/pages/website/settings/websiteSettingMetadata.js",
+        "backend/src/Cosmos.Application/Validators/WebsiteManagementValidators.cs"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "WebsiteManagement.Settings.View",
+        "create": "N/A: keys are backend allow-listed; operator cannot create keys",
+        "edit": "WebsiteManagement.Settings.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/website/settings"
+      ],
+      "parentChildRelation": "Backend-approved key/value configuration; metadata is presentation only and creates no new settings storage",
+      "serviceApiDependencies": [
+        "GET/PUT /api/v1/website-management/settings; backend allow-list and typed value validator"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/website/settings/websiteSettingMetadata.test.js — typed values, passed",
+        "backend/tests/Cosmos.Tests/Hr/WebsiteOperatorSettingsValidationTests.cs — server key/type tests added; final run pending"
+      ],
+      "databaseDependencies": [
+        "WebsiteSettings; AuditLogs"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/website/settings/WebsiteSettingsPage.jsx",
+        "frontend/src/pages/website/settings/websiteSettingMetadata.js"
+      ],
+      "canonicalEntity": "Website Setting",
+      "parentChild": "Backend-approved key/value configuration; metadata is presentation only and creates no new settings storage",
+      "serviceApi": [
+        "GET/PUT /api/v1/website-management/settings; backend allow-list and typed value validator"
+      ],
+      "database": [
+        "WebsiteSettings; AuditLogs"
+      ]
+    },
+    {
+      "coverageId": "COV-122",
+      "name": "Data Book",
+      "route": "/data-book",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/dataBook/DataBookPage.jsx",
+        "frontend/src/pages/dataBook/DataBookGrid.jsx",
+        "frontend/src/pages/dataBook/useDataBookGrid.js",
+        "frontend/src/pages/dataBook/DataBookGridRecovery.test.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "DataBook.Entries.View",
+        "create": "DataBook.Entries.Create",
+        "edit": "DataBook.Entries.Edit",
+        "approve": "N/A: this family has no approval command",
+        "export": "DataBook.Entries.Export"
+      },
+      "routes": [
+        "/data-book"
+      ],
+      "parentChildRelation": "Category string defines a sheet; entry owns append-only history; public/private is per entry; column aliases remain preferences",
+      "serviceApiDependencies": [
+        "/api/v1/data-book/entries list/detail/create/update/delete/history/export; privacy/conflict/version contracts retained"
+      ],
+      "journeyEvidence": [
+        "frontend/src/pages/dataBook/DataBookGridRecovery.test.jsx — mocked hook refresh/paste conservation, passed",
+        "frontend/src/pages/dataBook/useDataBookGrid.test.js — existing meaningful save/conflict logic, passed"
+      ],
+      "databaseDependencies": [
+        "DataBookEntries; DataBookEntryHistory; scoped browser drafts; browser column aliases"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/dataBook/DataBookPage.jsx",
+        "frontend/src/pages/dataBook/DataBookGrid.jsx",
+        "frontend/src/pages/dataBook/useDataBookGrid.js",
+        "frontend/src/pages/dataBook/DataBookGridRecovery.test.jsx"
+      ],
+      "canonicalEntity": "Data Book Entry",
+      "parentChild": "Category string defines a sheet; entry owns append-only history; public/private is per entry; column aliases remain preferences",
+      "serviceApi": [
+        "/api/v1/data-book/entries list/detail/create/update/delete/history/export; privacy/conflict/version contracts retained"
+      ],
+      "database": [
+        "DataBookEntries; DataBookEntryHistory; scoped browser drafts; browser column aliases"
+      ]
+    },
+    {
+      "coverageId": "COV-123",
+      "name": "Account profile",
+      "route": "/profile",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/profile/ProfilePage.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Authenticated self via /api/auth/me",
+        "create": "N/A: self-profile does not create accounts",
+        "edit": "Authenticated self via PUT /api/auth/me",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/profile"
+      ],
+      "parentChildRelation": "Self account profile references Users and read-only role labels; separate from HR Employee and browser preferences",
+      "serviceApiDependencies": [
+        "GET/PUT /api/auth/me; auth change-password links; self scope"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "Users; UserRoles; Roles; account auth storage cache"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/profile/ProfilePage.jsx"
+      ],
+      "canonicalEntity": "Current authenticated Access User profile",
+      "parentChild": "Self account profile references Users and read-only role labels; separate from HR Employee and browser preferences",
+      "serviceApi": [
+        "GET/PUT /api/auth/me; auth change-password links; self scope"
+      ],
+      "database": [
+        "Users; UserRoles; Roles; account auth storage cache"
+      ]
+    },
+    {
+      "coverageId": "COV-124",
+      "name": "Preferences and Settings",
+      "route": "/preferences",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/preferences/PreferencesPage.jsx",
+        "frontend/src/pages/settings/sections/ItemSettingsSection.jsx"
+      ],
+      "status": "Implementation linked; authenticated SQL/browser verification pending",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "Authenticated browser preference surface",
+        "create": "N/A: browser preferences, no business creation",
+        "edit": "Current browser preference owner",
+        "approve": "N/A: this family has no approval command",
+        "export": "N/A: no dedicated server export command in this family"
+      },
+      "routes": [
+        "/preferences",
+        "/settings"
+      ],
+      "parentChildRelation": "No company master: table size/manufacturing visibility/theme/template choices are this-browser preferences",
+      "serviceApiDependencies": [
+        "preferencesStorage and existing theme/template storage; no company configuration write API"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "Browser localStorage cosmos_preferences; existing appearance and invoice-template storage"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/preferences/PreferencesPage.jsx",
+        "frontend/src/pages/settings/sections/ItemSettingsSection.jsx"
+      ],
+      "canonicalEntity": "Browser display preferences",
+      "parentChild": "No company master: table size/manufacturing visibility/theme/template choices are this-browser preferences",
+      "serviceApi": [
+        "preferencesStorage and existing theme/template storage; no company configuration write API"
+      ],
+      "database": [
+        "Browser localStorage cosmos_preferences; existing appearance and invoice-template storage"
+      ]
+    },
+    {
+      "coverageId": "COV-125",
+      "name": "Activity logs",
+      "route": "/activity-logs",
+      "frontendAndContractFiles": [
+        "frontend/src/pages/activityLogs/ActivityLogsPage.jsx"
+      ],
+      "status": "Existing flow source reviewed or limited changes; full journey unverified",
+      "notes": "Source and focused automated checks are not a real authentication, SQL write, approval, public publication or user-task pass.",
+      "permissions": {
+        "view": "ActivityLogs.View",
+        "create": "N/A: audit append belongs to trusted server actions",
+        "edit": "N/A: append-only audit history",
+        "approve": "N/A: this family has no approval command",
+        "export": "ActivityLogs.Export"
+      },
+      "routes": [
+        "/activity-logs"
+      ],
+      "parentChildRelation": "Append-only service-generated audit refers to source record; operator surface is read/export only",
+      "serviceApiDependencies": [
+        "GET /api/v1/activity-logs list/detail/export"
+      ],
+      "journeyEvidence": [
+        "Current source references recorded; no real authenticated full-journey pass claimed"
+      ],
+      "databaseDependencies": [
+        "AuditLogs; source operational record links"
+      ],
+      "frontendFiles": [
+        "frontend/src/pages/activityLogs/ActivityLogsPage.jsx"
+      ],
+      "canonicalEntity": "Activity audit log",
+      "parentChild": "Append-only service-generated audit refers to source record; operator surface is read/export only",
+      "serviceApi": [
+        "GET /api/v1/activity-logs list/detail/export"
+      ],
+      "database": [
+        "AuditLogs; source operational record links"
+      ]
+    }
+  ],
+  "migration": "backend/database/migrations/20261028_02_hr_operator_setup.sql",
+  "sqlGate": {
+    "executed": false,
+    "reason": "Human instructed creation of scripts; user will execute later.",
+    "variable": "COSMOS_HR_INTEGRATION_CONNECTION_STRING",
+    "allowedCatalogPrefix": "CosmosHrIntegrationTests_",
+    "test": "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupSqlIntegrationTests.cs",
+    "category": "SqlIntegration"
+  },
+  "verification": [
+    {
+      "command": "npx vitest run src/pages/hr src/pages/rbac/users/Users.partialSave.test.jsx src/pages/dataBook/useDataBookGrid.test.js src/pages/dataBook/DataBookGridRecovery.test.jsx src/pages/auth/ResetPassword.context.test.jsx src/pages/website/WebsiteContentPreview.test.jsx src/pages/website/websiteScheduling.test.js src/pages/website/settings/websiteSettingMetadata.test.js src/services/hr/setupService.test.js src/utils/hrIdentifiers.test.js src/utils/validationSchemas.test.js src/utils/validationRules.test.js src/utils/websiteContent.test.js --reporter=json --outputFile=../output/implementation-verification/people-focused-vitest.json",
+      "files": 18,
+      "passed": 80,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "evidence": "output/implementation-verification/people-focused-vitest.json",
+      "scope": "Final source scoped run; mocked HTTP/component/pure logic only, no live authentication or SQL"
+    },
+    {
+      "command": "dotnet test backend/tests/Cosmos.Tests/Cosmos.Tests.csproj --no-restore --filter FullyQualifiedName~Cosmos.Tests.Hr --logger trx;LogFileName=hr-operator-unit.trx --results-directory output/implementation-verification/hr-tests --nologo -v:q",
+      "passed": 37,
+      "failed": 0,
+      "skipped": 1,
+      "evidence": "output/implementation-verification/hr-tests/hr-operator-unit.trx",
+      "scope": "Final HR validators, website settings validators, permission metadata, T-SQL parser; guarded SQL integration suite skipped because no explicit test connection was supplied"
+    },
+    {
+      "command": "npx eslint src/pages/hr src/pages/rbac src/pages/dataBook src/pages/auth/ResetPassword.jsx src/pages/auth/ResetPassword.context.test.jsx src/pages/preferences/PreferencesPage.jsx src/pages/settings/sections/ItemSettingsSection.jsx src/services/hr src/pages/website src/pages/profile/ProfilePage.jsx src/store/slices/hr/employeeSlice.js src/utils/websiteTime.js src/utils/hrIdentifiers.js src/utils/hrIdentifiers.test.js src/utils/validationSchemas.js",
+      "exitCode": 0,
+      "scope": "Final source across owned files; no lint output"
+    },
+    {
+      "command": "Independent operations source review of HR employment reconstruction, selected-rate validation and attendance transaction",
+      "scope": "Source-only review; conservative proof blockers and period-rate validation reviewed after fixes; no SQL runtime pass"
+    }
+  ],
+  "externalOrUnverified": [
+    "SQL execution and fresh/populated migration lifecycle; scripts prepared, not executed",
+    "Authenticated ordinary-role UI/API journeys and responsive screenshots are not yet verified",
+    "Exact public renderer parity requires the public website renderer/source, which is absent here",
+    "End-to-end warranty, department/designation/shift/pages/master CRUD regression remains unexecuted",
+    "Pre-existing payroll population includes current Active/Resigned only; current Inactive/Terminated historical payroll inclusion was not changed by the confirmed rules"
+  ],
+  "nextWork": [
+    "User runs unified guarded Fresh/Upgrade SQL handoff against disposable HR catalog; validate retained-history and mixed-rate fixtures before company deployment",
+    "Real authenticated ordinary-role HR/admin/website journeys, responsive verification and public-renderer parity remain release gates"
+  ],
+  "sourceFreeze": {
+    "frozen": true,
+    "time": "2026-10-28T17:18:49.4966332+05:30",
+    "scope": "HR/admin/content source; only documentation and this manifest edited after17:17 root whole-suite start"
+  },
+  "clientGuide": "output/implementation-verification/people-admin-content-client-guide-gu.md",
+  "technicalGuide": "backend/docs/HR_OPERATOR_SETUP.md",
+  "confirmedPayrollRules": [
+    "Calendar-day earnings proration; selected configured deductions remain fixed",
+    "Any attendance plus approved paid leave on same employed date blocks payroll for HR correction",
+    "Resigned employees included for actual employed portion; clip paid leave to period/employment",
+    "One reviewed actual applicable salary assignment per employee/period when multiple structures; validate version and preserve selected basis",
+    "Unknown or missing resign/rejoin boundary provenance blocks affected period; no invented continuous employment"
+  ]
+}

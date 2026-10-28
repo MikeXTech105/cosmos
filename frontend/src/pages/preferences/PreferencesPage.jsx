@@ -26,8 +26,8 @@ const PreferencesPage = () => {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Preferences"
-        description="Personalize your COSMOS ERP appearance and table defaults."
+        title="My display preferences — this browser"
+        description="Appearance and table defaults are saved in this browser. They do not change company setup or follow your account to another device."
       />
 
       <AppearanceSection />
