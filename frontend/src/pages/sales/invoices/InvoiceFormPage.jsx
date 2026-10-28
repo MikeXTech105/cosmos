@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Controller,
   useFieldArray,
@@ -48,6 +48,7 @@ import {
   PAYMENT_MODE_OPTIONS,
   SALES_PAYMENT_MODE,
 } from "./invoiceHelpers";
+import { canApplyItemDetails, getInvoiceItemDefaults } from "./invoiceItemDefaults";
 
 const invoiceLineSchema = z.object({
   itemId: z.coerce.number().int().positive("Item is required"),
@@ -65,7 +66,19 @@ const invoiceLineSchema = z.object({
   taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
   hsnSacCode: z.string().optional(),
   hsnSource: z.string().optional(),
-}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" });
+  itemDetailsStatus: z.enum(["idle", "loading", "ready", "missing", "error", "saved"]).optional(),
+}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" })
+  .superRefine((line, context) => {
+    if (["loading", "missing", "error"].includes(line.itemDetailsStatus ?? "idle")) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["itemId"],
+        message: line.itemDetailsStatus === "error"
+          ? "Item defaults could not be loaded; select the item again before saving."
+          : "Item Master price and GST data must load before saving this line.",
+      });
+    }
+  });
 
 const initialPaymentSchema = z
   .object({
@@ -201,6 +214,7 @@ const InvoiceFormPage = () => {
   const {
     control,
     handleSubmit,
+    getValues,
     register,
     reset,
     setValue,
@@ -210,6 +224,10 @@ const InvoiceFormPage = () => {
     defaultValues: getInvoiceDefaultValues(null),
   });
   const { append, fields, remove } = useFieldArray({ control, name: "items" });
+  const itemDetailsCache = useRef(new Map());
+  const itemSelectionVersions = useRef(new Map());
+  const rowIndexes = useRef(new Map());
+  rowIndexes.current = new Map(fields.map((field, index) => [field.id, index]));
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
   const invoiceDiscountAmount = useWatch({ control, name: "discountAmount" }) ?? "0";
   const totals = getInvoiceTotals(watchedItems, invoiceDiscountAmount);
@@ -305,27 +323,77 @@ const InvoiceFormPage = () => {
   ];
   const itemsById = useMemo(() => new Map(lookups.items.map((item) => [String(item.id), item])), [lookups.items]);
 
-  const applyItemDetails = async (index, itemId) => {
-    const lookupItem = itemsById.get(String(itemId));
-    const applyItem = (item) => {
-      if (!item) return;
+  const applyItemDetails = async (rowId, itemId) => {
+    const index = rowIndexes.current.get(rowId);
+    if (index === undefined) return;
 
-      setValue(`items.${index}.itemName`, item.name ?? "", { shouldDirty: true });
-      setValue(`items.${index}.rate`, String(item.salesPrice ?? 0), { shouldDirty: true, shouldValidate: true });
-      setValue(`items.${index}.taxPercentage`, String(item.gstRate ?? 0), { shouldDirty: true, shouldValidate: true });
+    const version = (itemSelectionVersions.current.get(rowId) ?? 0) + 1;
+    itemSelectionVersions.current.set(rowId, version);
+
+    const setLineValue = (name, value, options = {}) => {
+      const currentIndex = rowIndexes.current.get(rowId);
+      if (currentIndex !== undefined) {
+        setValue(`items.${currentIndex}.${name}`, value, { shouldDirty: true, ...options });
+      }
     };
 
-    applyItem(lookupItem);
+    if (!itemId) {
+      setLineValue("itemName", "");
+      setLineValue("rate", "0", { shouldValidate: true });
+      setLineValue("taxPercentage", "0", { shouldValidate: true });
+      setLineValue("hsnSacCode", "");
+      setLineValue("hsnSource", "");
+      setLineValue("itemDetailsStatus", "idle");
+      return;
+    }
+
+    const lookupItem = itemsById.get(String(itemId));
+    const applyItem = (item, status) => {
+      const defaults = getInvoiceItemDefaults(item);
+      setLineValue("itemName", defaults.itemName);
+      if (defaults.hasSalesPrice) setLineValue("rate", String(defaults.salesPrice), { shouldValidate: true });
+      if (defaults.hasGstRate) setLineValue("taxPercentage", String(defaults.gstRate), { shouldValidate: true });
+      setLineValue("hsnSacCode", defaults.hsnSacCode);
+      setLineValue("hsnSource", defaults.hsnSacCode ? "Item master" : "Not configured in Item Master");
+      setLineValue("itemDetailsStatus", status);
+    };
+
+    // Reset every item-owned value before loading details so a previously
+    // selected item's values can never be submitted for this row.
+    setLineValue("itemName", lookupItem?.name ?? "");
+    setLineValue("rate", "0", { shouldValidate: true });
+    setLineValue("taxPercentage", "0", { shouldValidate: true });
+    setLineValue("hsnSacCode", "");
+    setLineValue("hsnSource", "Loading item defaults…");
+    setLineValue("itemDetailsStatus", "loading");
+
+    if (lookupItem && Object.prototype.hasOwnProperty.call(lookupItem, "salesPrice")) {
+      const listDefaults = getInvoiceItemDefaults(lookupItem);
+      if (listDefaults.hasSalesPrice) setLineValue("rate", String(listDefaults.salesPrice), { shouldValidate: true });
+    }
 
     try {
-      const itemResponse = await itemService.getItemById(itemId);
-      const item = getResponseItem(itemResponse) ?? lookupItem;
-      applyItem(item);
-      setValue(`items.${index}.hsnSacCode`, item?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, item?.hsnCode ? "Item master" : "", { shouldDirty: true });
+      const item = itemDetailsCache.current.has(String(itemId))
+        ? itemDetailsCache.current.get(String(itemId))
+        : getResponseItem(await itemService.getItemById(itemId));
+      itemDetailsCache.current.set(String(itemId), item);
+
+      const currentIndex = rowIndexes.current.get(rowId);
+      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
+      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+
+      const defaults = getInvoiceItemDefaults(item);
+      applyItem(item, defaults.hasSalesPrice && defaults.hasGstRate ? "ready" : "missing");
     } catch {
-      setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Item master" : "", { shouldDirty: true });
+      const currentIndex = rowIndexes.current.get(rowId);
+      const currentItemId = currentIndex === undefined ? null : getValues(`items.${currentIndex}.itemId`);
+      if (!canApplyItemDetails({ currentItemId, requestItemId: itemId, currentVersion: itemSelectionVersions.current.get(rowId), requestVersion: version })) return;
+
+      setLineValue("rate", "0", { shouldValidate: true });
+      setLineValue("taxPercentage", "0", { shouldValidate: true });
+      setLineValue("hsnSacCode", "");
+      setLineValue("hsnSource", "Unable to load item defaults");
+      setLineValue("itemDetailsStatus", "error");
     }
   };
 
@@ -450,7 +518,7 @@ const InvoiceFormPage = () => {
       <PageHeader
         badge="Sales / Invoices"
         title={title}
-        description="Create a draft invoice with live line totals and backend-ready tax fields."
+        description="Select an item to apply its Item Master price and GST defaults; saved invoice lines retain their own values."
         actions={
           <>
             <AppButton variant="secondary" onClick={() => navigate(backRoute)}>
@@ -543,8 +611,9 @@ const InvoiceFormPage = () => {
                               <AppSelect
                                 value={itemField.value}
                                 onChange={(value) => {
-                                  itemField.onChange(Number(value));
-                                  void applyItemDetails(index, value);
+                                  const itemId = value ? Number(value) : "";
+                                  itemField.onChange(itemId);
+                                  void applyItemDetails(field.id, itemId);
                                 }}
                                 onBlur={itemField.onBlur}
                                 options={itemOptions}
@@ -578,6 +647,9 @@ const InvoiceFormPage = () => {
                         </td>
                         <td className="px-3 py-3 align-top">
                           <NumberInput control={control} id={`tax-${index}`} name={`items.${index}.taxPercentage`} error={errors.items?.[index]?.taxPercentage?.message} />
+                          {line.itemDetailsStatus === "loading" && <p className="mt-1 text-[11px] text-slate-500">Loading item GST…</p>}
+                          {line.itemDetailsStatus === "missing" && <p className="mt-1 text-[11px] text-amber-700">Item Master is missing a price or GST rate. GST has not been defaulted.</p>}
+                          {line.itemDetailsStatus === "error" && <p className="mt-1 text-[11px] text-red-700">Item defaults could not be loaded. Choose the item again or retry after resolving the lookup error.</p>}
                         </td>
                         <td className="px-3 py-3 text-right align-middle text-sm font-semibold text-slate-900">{formatCurrency(lineTotal)}</td>
                         <td className="px-2 py-3 text-right align-middle">

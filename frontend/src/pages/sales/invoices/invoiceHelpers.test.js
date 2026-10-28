@@ -4,6 +4,7 @@ import {
   buildInvoicePayload,
   buildInvoiceQueryParams,
   getInvoiceDefaultValues,
+  getInvoiceTotals,
   getInvoiceStatusMeta,
   getPaymentModeLabel,
   getPaymentStatusMeta,
@@ -109,6 +110,27 @@ describe("sales invoice enum contract", () => {
       itemId: 41,
       itemName: "Mapped item",
       hsnSacCode: "847130",
+    });
+  });
+
+  it("serializes the backend taxPercentage field and calculates a tax-exclusive 18% line", () => {
+    const values = {
+      customerPartyId: "customer-id",
+      invoiceDate: "2026-10-28",
+      dueDate: null,
+      discountAmount: 0,
+      items: [{ itemId: 41, quantity: 2, rate: 100, discountPercentage: 0, discountAmount: 0, taxPercentage: 18 }],
+    };
+
+    expect(getInvoiceTotals(values.items, 0)).toMatchObject({
+      subTotal: 200,
+      taxAmount: 36,
+      grandTotal: 236,
+    });
+    expect(buildInvoicePayload(values).items[0]).toMatchObject({
+      itemId: 41,
+      rate: 100,
+      taxPercentage: 18,
     });
   });
 });
