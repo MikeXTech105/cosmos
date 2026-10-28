@@ -1,9 +1,9 @@
+import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
+import { purchaseDocumentSchema as documentSchema } from "./purchaseDocumentSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
-import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -13,64 +13,28 @@ import PurchaseLineItems, {
   PurchaseNumberInput,
 } from "../PurchaseLineItems";
 import {
-  addDaysToInputDate,
   buildPurchaseDocumentPayload,
   extractItems,
   formatCurrency,
   getDefaultLine,
   getDocumentTotals,
-  getTodayInputValue,
   PAYMENT_TYPE,
   PAYMENT_TYPE_OPTIONS,
   toInputDate,
 } from "../purchaseHelpers";
 
-const lineSchema = z.object({
-  itemId: z.coerce.number().int().positive("Item is required"),
-  itemName: z.string().optional(),
-  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
-  purchasePrice: z.coerce.number().min(0, "Price cannot be negative"),
-  discountPercentage: z.coerce.number().min(0).max(100),
-  discountAmount: z.coerce.number().min(0),
-  taxPercentage: z.coerce.number().min(0),
-  unitId: z.union([z.number(), z.string(), z.null()]).optional(),
-  purchaseBillItemId: z.union([z.number(), z.string(), z.null()]).optional(),
-});
-
-const documentSchema = (dateField) => z.object({
-  supplierId: z.string().uuid("Supplier is required"),
-  supplierInvoiceNo: z.string().optional(),
-  purchaseBillId: z.union([z.number(), z.string(), z.null()]).optional(),
-  billDate: dateField === "billDate" ? requiredDate("Document date") : optionalDate,
-  dueDate: optionalDate,
-  orderDate: dateField === "orderDate" ? requiredDate("Document date") : optionalDate,
-  expectedDeliveryDate: optionalDate,
-  returnDate: dateField === "returnDate" ? requiredDate("Document date") : optionalDate,
-  paymentType: dateField === "billDate" ? enumNumber(PAYMENT_TYPE, "Payment type") : z.coerce.number().optional(),
-  discountAmount: z.coerce.number().min(0),
-  roundOff: z.coerce.number(),
-  paidAmount: z.coerce.number().min(0),
-  reason: z.string().optional(),
-  termsAndConditions: z.string().optional(),
-  notes: z.string().max(1000, "Notes are too long").optional(),
-  items: z.array(lineSchema).min(1, "Add at least one line item"),
-}).superRefine((values, context) => {
-  if (dateField === "billDate") dateOrder(values, context, "billDate", "dueDate", "Due date cannot be before bill date");
-  if (dateField === "orderDate") dateOrder(values, context, "orderDate", "expectedDeliveryDate", "Expected delivery cannot be before order date");
-});
-
 const getDefaultValues = (record, config) => {
-  const today = getTodayInputValue();
+  const today = "";
 
   return {
     supplierId: record?.supplierId ?? "",
     supplierInvoiceNo: record?.supplierInvoiceNo ?? "",
     purchaseBillId: record?.purchaseBillId ?? "",
     billDate: toInputDate(record?.billDate) || today,
-    dueDate: toInputDate(record?.dueDate) || addDaysToInputDate(today, 15),
+    dueDate: toInputDate(record?.dueDate),
     orderDate: toInputDate(record?.orderDate) || today,
     expectedDeliveryDate:
-      toInputDate(record?.expectedDeliveryDate) || addDaysToInputDate(today, 7),
+      toInputDate(record?.expectedDeliveryDate),
     returnDate: toInputDate(record?.returnDate) || today,
     paymentType: record?.paymentType ?? PAYMENT_TYPE.CASH,
     discountAmount: String(record?.discountAmount ?? 0),
@@ -110,6 +74,8 @@ const PurchaseDocumentFormModal = ({
     register,
     reset,
     setValue,
+    getValues,
+    getFieldState,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(documentSchema(config.dateField)),
@@ -132,6 +98,8 @@ const PurchaseDocumentFormModal = ({
     }
   }, [config, isOpen, record, reset]);
 
+  const businessContext = useDocumentBusinessDefaults({ enabled: isOpen && mode !== "edit", fields: [config.dateField], getValues, getFieldState, setValue });
+
   return (
     <AppModal
       isBusy={isSubmitting}
@@ -139,6 +107,7 @@ const PurchaseDocumentFormModal = ({
       maxWidth="max-w-7xl"
       onClose={isSubmitting ? undefined : onClose}
     >
+      {!businessContext.runtime && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter the document date explicitly."}</p>}
       <h2 className="text-lg font-semibold text-slate-900">
         {mode === "edit" ? `Edit ${config.singularLabel}` : `New ${config.singularLabel}`}
       </h2>
@@ -191,7 +160,7 @@ const PurchaseDocumentFormModal = ({
                       <AppSelect
                         label="Purchase Bill"
                         value={field.value}
-                        onChange={(value) => field.onChange(Number(value))}
+                        onChange={(value) => field.onChange(String(value ?? ""))}
                         onBlur={field.onBlur}
                         options={billOptions}
                         placeholder="Select linked bill"

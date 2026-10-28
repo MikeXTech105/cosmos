@@ -13,6 +13,21 @@ Generated from actual controller metadata and tested application Swagger on 27 O
 - Production import dispositions: HistoricalProduction1, HistoricalDispatch2, DemandAggregate3, Opening4, MasterReference5, PendingPurchase6, EvidenceOnly7. Mapping is not posting authority. Flow: stage → preview/map → validate → reconcile → approve → post selected safe rows.
 - Existing CSV export root is `POST /api/v1/reports/export` with reportId `manufacturing-history` or `manufacturing-consumption`, format csv and matching filters. This route is outside the controller inventory below; its actual root is verified in ReportExportsV1Controller. Operational exports are NDJSON.
 
+## Frontend integration read additions
+
+Fresh verification adds capacity `capacityFactor`/`minimumBookingSeconds`, nullable amendment material baselines and purchase `pendingQuantity`, plus saved import cutover/file metadata. Object-valued SQL page summaries retain provider alias casing; frontend summary-only adapters handle it without changing row/source evidence. Migrations36/37 also enforce source-channel and staged-cutover continuity. See the fresh verification report; actual database execution remains gated.
+
+The generated documents now include85 controller/action entries. The later frontend implementation adds these actual reads and nullable context fields; the older inventory table below retains the original backend delivery for reference. The generated inventory/OpenAPI documents are authoritative.
+
+| Method / route | Actual response / permission |
+|---|---|
+| `GET /api/v1/manufacturing/runtime` | Verified company business date/timezone/browser zone/closed-through date. Authenticated catalog company match; no client company override or SQL access. |
+| `GET /api/v1/manufacturing/shift-capacity/{id}/calendar?businessDate=...` | `CapacityCalendarContextDto`: dated break/downtime offsets and current version. Configuration View. |
+| `GET /api/v1/shipment-operations/shipments/{id}/packing-verification` | Shipment-only base-unit/pack context and version. Shipment View; no invoice visibility granted. |
+| `GET /api/v1/procurement-planning/plans/runs/{id}/purchase-orders` | Persisted recommendation-line→PO document links for review/unknown-result recovery. Both Planning History View and PO View. |
+
+Order reads expose persisted resource/source fields, actual reservations and completion material history. Purchase contexts expose receipt header IDs/versions, canonical PO line units, returns, actual bill links/statuses/numbers and promise history. Ownership lines expose actual invoice parent IDs. Operational event rows preserve event IDs and add separate parent document IDs/types for correct drilldown. Purchasing operational reads add real supplier/Item/unit labels. These changes follow the existing typed envelope/service/repository/SP conventions and require migrations29–37 after the original migration set, including the fresh capacity and source-integrity corrections. See the frontend implementation and verification handoff for actual screen and wire-precision behavior.
+
 ## Controller/DTO/permission inventory
 
 All listed permissions on an action are required. Common 400/401/403/404/409 responses are inherited by workspace controllers; successful payload types are below.

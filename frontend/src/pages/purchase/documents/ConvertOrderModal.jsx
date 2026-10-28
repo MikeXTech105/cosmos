@@ -3,6 +3,8 @@ import { ArrowRight } from "lucide-react";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
+import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -10,33 +12,33 @@ import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
 import { PurchaseNumberInput } from "../PurchaseLineItems";
 import {
-  addDaysToInputDate,
-  getTodayInputValue,
   PAYMENT_TYPE,
   PAYMENT_TYPE_OPTIONS,
 } from "../purchaseHelpers";
 
 const convertSchema = z.object({
-  billDate: z.string().min(1, "Bill date is required"),
-  dueDate: z.string().optional(),
-  paymentType: z.coerce.number().int().min(0),
+  billDate: requiredDate("Bill date"),
+  dueDate: optionalDate,
+  paymentType: enumNumber(PAYMENT_TYPE, "Payment type"),
   paidAmount: z.coerce.number().min(0, "Paid amount cannot be negative"),
   supplierInvoiceNo: z.string().optional(),
-});
+}).superRefine((values, context) => dateOrder(values, context, "billDate", "dueDate", "Due date cannot be before bill date"));
 
 const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
-  const today = getTodayInputValue();
   const {
     control,
     handleSubmit,
     register,
     reset,
+    setValue,
+    getValues,
+    getFieldState,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(convertSchema),
     defaultValues: {
-      billDate: today,
-      dueDate: addDaysToInputDate(today, 15),
+      billDate: "",
+      dueDate: "",
       paymentType: PAYMENT_TYPE.CASH,
       paidAmount: "0",
       supplierInvoiceNo: "",
@@ -46,14 +48,15 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
   useEffect(() => {
     if (isOpen) {
       reset({
-        billDate: today,
-        dueDate: addDaysToInputDate(today, 15),
+        billDate: "",
+        dueDate: "",
         paymentType: PAYMENT_TYPE.CASH,
         paidAmount: "0",
         supplierInvoiceNo: "",
       });
     }
-  }, [isOpen, reset, today]);
+  }, [isOpen, reset]);
+  const businessContext = useDocumentBusinessDefaults({ enabled: isOpen, fields: ["billDate"], getValues, getFieldState, setValue });
 
   return (
     <AppModal
@@ -62,6 +65,7 @@ const ConvertOrderModal = ({ isOpen, onClose, onSubmit, order }) => {
       maxWidth="max-w-lg"
       onClose={isSubmitting ? undefined : onClose}
     >
+      {!businessContext.runtime && <p role="status" className="mb-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter the bill date explicitly."}</p>}
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light text-brand">
           <ArrowRight className="h-5 w-5" />

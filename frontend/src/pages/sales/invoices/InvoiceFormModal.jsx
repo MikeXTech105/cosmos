@@ -1,3 +1,5 @@
+import { invoiceSchema } from "./invoiceSchema";
+import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Plus, ReceiptText, Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -7,14 +9,12 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import { z } from "zod";
-import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
-import { itemService } from "../../../services/inventory/itemService";
+import { documentLookupService } from "../../../services/documentLookupService";
 import {
   buildInvoicePayload,
   formatCurrency,
@@ -27,62 +27,6 @@ import {
   PAYMENT_MODE_OPTIONS,
   SALES_PAYMENT_MODE,
 } from "./invoiceHelpers";
-
-const invoiceLineSchema = z.object({
-  itemId: z.coerce.number().int().positive("Item is required"),
-  itemName: z.string().optional(),
-  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
-  rate: z.coerce.number().min(0, "Rate cannot be negative"),
-  discountPercentage: z.coerce
-    .number()
-    .min(0, "Discount cannot be negative")
-    .max(100, "Discount cannot exceed 100%"),
-  discountAmount: z.coerce
-    .number()
-    .min(0, "Discount amount cannot be negative"),
-  taxRateId: z.union([z.number(), z.string(), z.null()]).optional(),
-  taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
-}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" });
-
-const initialPaymentSchema = z
-  .object({
-    paymentDate: z.string().optional(),
-    amount: z.coerce
-      .number()
-      .min(0, "Payment amount cannot be negative")
-      .optional(),
-    paymentMode: enumNumber(SALES_PAYMENT_MODE, "Payment mode"),
-    referenceNumber: z.string().max(100, "Reference is too long").optional(),
-    notes: z.string().max(500, "Payment notes are too long").optional(),
-  })
-  .superRefine((payment, context) => {
-    if (Number(payment.amount) > 0 && !payment.paymentDate) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Payment date is required",
-        path: ["paymentDate"],
-      });
-    }
-  });
-
-const invoiceSchema = z.object({
-  // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
-  // Requiring a UUID here made a valid selected customer fail before submission.
-  customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
-  invoiceNumber: z.string().optional(),
-  invoiceDate: requiredDate("Invoice date"),
-  dueDate: optionalDate,
-  discountAmount: z.coerce
-    .number()
-    .min(0, "Invoice discount cannot be negative"),
-  notes: z.string().max(1000, "Notes are too long").optional(),
-  termsAndConditions: z
-    .string()
-    .max(2000, "Terms are too long")
-    .optional(),
-  initialPayment: initialPaymentSchema.optional(),
-  items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
-}).superRefine((values, context) => dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date"));
 
 const NumberInput = ({
   className,
@@ -164,6 +108,8 @@ const InvoiceFormModal = ({
     register,
     reset,
     setValue,
+    getValues,
+    getFieldState,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(invoiceSchema),
@@ -183,6 +129,8 @@ const InvoiceFormModal = ({
       reset(getInvoiceDefaultValues(invoice));
     }
   }, [invoice, isOpen, reset]);
+
+  const businessContext = useDocumentBusinessDefaults({ enabled: isOpen && !isEdit, fields: ["invoiceDate", "initialPayment.paymentDate"], getValues, getFieldState, setValue });
 
   const applyItemDetails = async (index, itemId) => {
     const lookupItem = itemsById.get(String(itemId));
@@ -207,7 +155,7 @@ const InvoiceFormModal = ({
     applyItem(lookupItem);
 
     try {
-      const response = await itemService.getItemById(itemId);
+      const response = await documentLookupService.item(itemId);
       applyItem(getResponseItem(response));
     } catch {
       applyItem(lookupItem);
@@ -230,7 +178,8 @@ const InvoiceFormModal = ({
           <ReceiptText className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">
+          {!businessContext.runtime && <p role="status" className="mb-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter invoice and payment dates explicitly."}</p>}
+      <h2 className="text-lg font-semibold text-slate-900">
             {isEdit ? "Edit Sale Invoice" : "New Sale Invoice"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -377,7 +326,7 @@ const InvoiceFormModal = ({
                                 <AppSelect
                                   value={itemField.value}
                                   onChange={(value) => {
-                                    itemField.onChange(Number(value));
+                                    itemField.onChange(String(value ?? ""));
                                     void applyItemDetails(index, value);
                                   }}
                                   onBlur={itemField.onBlur}

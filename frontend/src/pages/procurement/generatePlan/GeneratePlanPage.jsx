@@ -37,6 +37,7 @@ import {
 } from "../ProcurementShared";
 import {
   formatProcurementDecimal,
+  formatProcurementQuantity,
   getApiStatus,
   getCollection,
   getDefaultProcurementRange,
@@ -207,7 +208,7 @@ const Derivation = ({ line }) => (
       <div key={label}>
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
         <p className="mt-1 text-sm font-semibold tabular-nums text-slate-800">
-          {typeof value === "number" ? formatProcurementDecimal(value) : (value ?? "-")}
+          {["Demand during lead time", "Physical stock", "Inbound stock", "Projected available", "Safety stock", "Minimum order qty", "Order multiple", "To order"].includes(label) ? formatProcurementQuantity(value) : typeof value === "number" ? formatProcurementDecimal(value) : (value ?? "-")}
         </p>
       </div>
     ))}
@@ -271,15 +272,15 @@ const PreviewTable = ({ columns, lines, loading }) => {
                     </AppTooltip>
                   </td>
                   <td className="sticky left-10 z-10 border-b border-r border-slate-100 bg-white px-4 py-3 group-hover:bg-slate-50"><p className="text-sm font-semibold text-slate-900">{getItemCode(line.item) || line.itemCode || line.materialCode}</p><p className="mt-0.5 max-w-52 truncate text-xs text-slate-500">{getItemName(line.item) || line.itemName || line.materialName} · {line.unitName ?? line.unitCode ?? "-"}</p></td>
-                  {columns.materialRequirement && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.materialRequirement)}</td>}
-                  {columns.averageDailyUsage && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.averageDailyUsage)}</td>}
+                  {columns.materialRequirement && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementQuantity(line.materialRequirement)}</td>}
+                  {columns.averageDailyUsage && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementQuantity(line.averageDailyUsage)}</td>}
                   {columns.leadTimeDays && <td className="border-b border-slate-100 px-4 py-3 text-right"><p className="text-sm font-semibold tabular-nums">{formatProcurementDecimal(line.leadTimeDays)} days</p><ProcurementPill tone="brand">{line.leadTimeSource ?? "-"}</ProcurementPill><p className="mt-1 text-[10px] leading-4 text-slate-400">override → history average → configured</p></td>}
-                  {columns.reorderPoint && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.reorderPoint)}</td>}
-                  {columns.physicalStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.physicalStock)}</td>}
-                  {columns.inboundStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementDecimal(line.inboundStock)}</td>}
-                  {columns.projectedAvailableStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm font-medium tabular-nums text-slate-900">{formatProcurementDecimal(line.projectedAvailableStock)}</td>}
-                  {columns.shortage && <td className={`border-b border-slate-100 px-4 py-3 text-right text-sm font-semibold tabular-nums ${shortage > 0 ? "bg-red-50 text-red-700" : "text-slate-600"}`}>{formatProcurementDecimal(line.shortage)}</td>}
-                  {columns.calculatedSuggestedQuantity && <td className="border-b border-slate-100 bg-brand-light/40 px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">{formatProcurementDecimal(line.calculatedSuggestedQuantity)}</td>}
+                  {columns.reorderPoint && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementQuantity(line.reorderPoint)}</td>}
+                  {columns.physicalStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementQuantity(line.physicalStock)}</td>}
+                  {columns.inboundStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm tabular-nums">{formatProcurementQuantity(line.inboundStock)}</td>}
+                  {columns.projectedAvailableStock && <td className="border-b border-slate-100 px-4 py-3 text-right text-sm font-medium tabular-nums text-slate-900">{formatProcurementQuantity(line.projectedAvailableStock)}</td>}
+                  {columns.shortage && <td className={`border-b border-slate-100 px-4 py-3 text-right text-sm font-semibold tabular-nums ${shortage > 0 ? "bg-red-50 text-red-700" : "text-slate-600"}`}>{formatProcurementQuantity(line.shortage)}</td>}
+                  {columns.calculatedSuggestedQuantity && <td className="border-b border-slate-100 bg-brand-light/40 px-4 py-3 text-right text-sm font-semibold tabular-nums text-slate-900">{formatProcurementQuantity(line.calculatedSuggestedQuantity)}</td>}
                   <td className="border-b border-slate-100 px-4 py-3"><div className="flex flex-wrap gap-1">{warnings.length > 0 && <ProcurementPill tone="amber">{warnings.length} warning{warnings.length === 1 ? "" : "s"}</ProcurementPill>}{manual && <ProcurementPill tone="violet">Manual</ProcurementPill>}{purchaseNeeded && <ProcurementPill tone="emerald">Purchase needed</ProcurementPill>}</div></td>
                 </tr>
                 {isExpanded && <tr><td colSpan={visibleColumnCount} className="border-b border-slate-200 bg-white p-3"><Derivation line={line} /></td></tr>}

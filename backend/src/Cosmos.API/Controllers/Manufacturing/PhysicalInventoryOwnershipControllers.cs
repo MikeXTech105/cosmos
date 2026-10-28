@@ -22,6 +22,9 @@ public sealed class InvoiceInventoryOwnershipController(IPhysicalInventoryServic
 [Authorize, ApiExplorerSettings(GroupName = "shipment-operations"), Route("api/v1/shipment-operations/shipments")]
 public sealed class ShipmentInvoiceOwnershipController(IPhysicalInventoryService service) : ProductionWorkspaceApiControllerBase
 {
+    [HttpGet("{id:long}/packing-verification"),RequirePermission(ShipmentOperationsPermissions.Shipments,PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<PhysicalOwnershipSnapshot>),200)]
+    public async Task<IActionResult> PackingContext(long id,CancellationToken ct) => FromResponse(await service.ReadAsync(id,"packing",ct));
     [HttpPut("{id:long}/packing-verification"),RequirePermission(ShipmentOperationsPermissions.Shipments,PermissionAction.Approve)]
     [ProducesResponseType(typeof(ApiResponse<ProductionCommandResult>),200)]
     public async Task<IActionResult> VerifyPacking(long id,ShipmentPackingVerificationRequest r,CancellationToken ct) => FromResponse(await service.VerifyPackingAsync(id,r,ct));

@@ -75,10 +75,12 @@ import ShipmentFreightTab from "./ShipmentFreightTab";
 import ShipmentPackingTab from "./ShipmentPackingTab";
 import ShipmentReceiptsReturnsTab from "./ShipmentReceiptsReturnsTab";
 import ShipmentTransportTab from "./ShipmentTransportTab";
+import ShipmentPhysicalPanel from "../../manufacturing/integrations/ShipmentPhysicalPanel";
 
 const TABS = [
   { id: "items", label: "Items" },
   { id: "packing", label: "Packing" },
+  { id: "ownership", label: "Invoice & unit verification" },
   { id: "transport", label: "Transport" },
   { id: "receipts-returns", label: "Receipts & returns" },
   { id: "freight", label: "Freight" },
@@ -790,6 +792,7 @@ const ShipmentDetailPage = () => {
     try {
       const response = await shipmentService.getById(id);
       setShipment(response.data ?? null);
+      return Boolean(response.data);
     } catch (requestError) {
       setShipment(null);
       if (isNotFoundError(requestError)) {
@@ -802,6 +805,7 @@ const ShipmentDetailPage = () => {
           ),
         );
       }
+      return false;
     } finally {
       setLoading(false);
     }
@@ -981,6 +985,7 @@ const ShipmentDetailPage = () => {
         </div>
         <div className="min-w-0 p-4">
           {activeTab === "items" ? <ItemsTab shipment={shipment} /> : null}
+          {activeTab === "ownership" ? <ShipmentPhysicalPanel shipment={shipment} onSaved={load} /> : null}
           {activeTab === "packing" ? (
             <ShipmentPackingTab
               action={actions.pack}

@@ -1,6 +1,14 @@
 # Migration, verification and controlled cutover
 
-## Current execution evidence
+## Latest frontend integration evidence
+
+The frontend integration and fresh verification add migrations `20261027_29` through `20261027_37`; there are now39 ordered production scripts including the original precision/basis prerequisites. Apply the entire ordered set through the existing guarded disposable-catalog runner before authenticated integration testing. These context/validation additions are required by the current frontend; copying React files alone does not update database procedures.
+
+Current verification: backend421 passed/0 failed/14 SQL skipped; frontend716 passed/3 known pre-existing employee failures; production build passed. Whole-project lint retains one finding in unchanged `DispatchImportsPage.jsx:179`; changed production areas pass targeted lint. Six OpenAPI contracts and85 controller/action entries were regenerated with SQL access forbidden. Exact commands, browser fixture evidence, current counts and remaining boundaries are recorded in [frontend verification](PRODUCTION_FRONTEND_VERIFICATION.json), [fresh audit](PRODUCTION_FRONTEND_REVERIFICATION.md) and [frontend implementation](PRODUCTION_FRONTEND_IMPLEMENTATION.md).
+
+No production migration has been executed locally and no live catalog has been changed. The existing guarded SQL prerequisites and actual transaction journeys below remain mandatory; successful compiler/parser/mock tests do not remove them.
+
+## Previous backend-delivery execution evidence
 
 | Check | Actual result on 27 Oct2026 |
 |---|---|

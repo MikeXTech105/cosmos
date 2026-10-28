@@ -43,6 +43,13 @@ public sealed record ProductionOrderDto(long Id, string OrderNumber, ProductionO
     decimal RejectedQuantity, decimal RemainingQuantity, string Version, string? Notes)
 {
     public int Revision { get; init; } = 1;
+    public long MachineId { get; init; }
+    public long MouldId { get; init; }
+    public long ShiftId { get; init; }
+    public long? ChannelId { get; init; }
+    public string? Reference { get; init; }
+    public Guid? SourcePlanId { get; init; }
+    public string? SourceLineId { get; init; }
 }
 public sealed record ProductionCommandResult(long Id, string Version, string Status, long? CompletionId = null);
 public sealed record ProductionReportRow(long SourceId, string SourceType, DateOnly BusinessDate, long ItemId,
@@ -96,12 +103,26 @@ public sealed record ProductionImportResult(Guid BatchId, int Rows, int Exceptio
     public string? Version { get; init; }
 }
 public sealed record ProductionMaterialSnapshot(long Id, long ItemId, long UnitId, decimal QuantityPerOutput,
-    decimal WastePercent, decimal RequiredQuantity, decimal ConsumedQuantity, decimal SourceComponentQuantity, decimal OutputBaseQuantity);
+    decimal WastePercent, decimal RequiredQuantity, decimal ConsumedQuantity, decimal SourceComponentQuantity, decimal OutputBaseQuantity)
+{
+    public decimal? BaselineOutputQuantity { get; init; }
+    public decimal? BaselineExpectedQuantity { get; init; }
+}
 public sealed record ProductionCompletionDto(long Id, DateOnly BusinessDate, DateTimeOffset OccurredAt,
     decimal GoodOutput, decimal RejectedOutput, long MachineId, long MouldId, long ShiftId,
-    long? ReversalOfId, long? ReversedById, string? SourceReference, string? VarianceReason);
+    long? ReversalOfId, long? ReversedById, string? SourceReference, string? VarianceReason)
+{
+    public IReadOnlyCollection<ProductionCompletionMaterialDto> Materials { get; init; } = Array.Empty<ProductionCompletionMaterialDto>();
+}
+public sealed record ProductionCompletionMaterialDto(long ItemId, long UnitId, decimal ExpectedQuantity,
+    decimal ConsumedQuantity, decimal ScrapQuantity, decimal ReturnedQuantity);
+public sealed record ProductionReservationDto(long ItemId, long UnitId, decimal ReservedQuantity,
+    decimal ConsumedQuantity, decimal ReleasedQuantity, decimal RemainingQuantity, decimal OnHandQuantity, decimal FreeQuantity);
 public sealed record ProductionOrderContextDto(ProductionOrderDto Order, IReadOnlyCollection<ProductionMaterialSnapshot> Materials,
-    string? BomSnapshotJson, string? RouteSnapshotJson, IReadOnlyCollection<ProductionCompletionDto> Completions);
+    string? BomSnapshotJson, string? RouteSnapshotJson, IReadOnlyCollection<ProductionCompletionDto> Completions)
+{
+    public IReadOnlyCollection<ProductionReservationDto> Reservations { get; init; } = Array.Empty<ProductionReservationDto>();
+}
 public sealed record RoutingConfigurationDto(long Id, string Revision, DateOnly EffectiveFrom, DateOnly? EffectiveTo,
     bool IsActive, string Version, IReadOnlyCollection<RoutingStepRequest> Steps);
 public sealed record EligibilityConfigurationDto(long Id, long MachineId, long MouldId, decimal SkuOutputPerShot,

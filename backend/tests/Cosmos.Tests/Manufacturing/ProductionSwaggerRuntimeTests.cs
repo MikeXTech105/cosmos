@@ -74,10 +74,16 @@ public sealed class ProductionSwaggerRuntimeTests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Development");
+            // Minimal hosting captures JWT options during AddInfrastructure,
+            // before ConfigureAppConfiguration callbacks are replayed by the
+            // test host. A host setting makes this synthetic key available at
+            // that initial configuration read, without machine-wide env vars.
+            builder.UseSetting("Jwt:SigningKey", "Only_For_Local_Swagger_Contract_Tests_1234567890");
             builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["ConnectionStrings:CosmosDb"] = "Server=127.0.0.1,1;Database=CosmosProductionIntegrationTests_SwaggerOnly;Integrated Security=true;Connect Timeout=1;TrustServerCertificate=true",
                 ["Manufacturing:CatalogCompanyKey"] = "swagger-test", ["Manufacturing:BusinessTimeZone"] = "India Standard Time",
+                ["GSTZen:Environment"] = "Sandbox", ["GSTZen:SandboxToken"] = "synthetic-contract-test-token-never-sent", ["GSTZen:SandboxBaseUrl"] = "https://gst.invalid/",
                 ["Jwt:SigningKey"] = "Only_For_Local_Swagger_Contract_Tests_1234567890"
             }));
             builder.ConfigureTestServices(services =>
