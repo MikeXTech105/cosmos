@@ -1,3 +1,13 @@
+import useFormReturnContext from "../../../hooks/useFormReturnContext";
+import useUncertainSave from "../../../hooks/useUncertainSave";
+import UncertainSaveNotice from "../../../components/commerce/UncertainSaveNotice";
+import { itemService } from "../../../services/inventory/itemService";
+import ItemMasterLookup from "./ItemMasterLookup";
+import FormErrorSummary from "../../../components/commerce/FormErrorSummary";
+import ItemDraftRecovery from "./ItemDraftRecovery";
+import useItemDraft from "./useItemDraft";
+import { withoutDirtyPrompt } from "../../../utils/dirtyWork";
+import { completeItemDecimal } from "./itemPrecision";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -67,7 +77,7 @@ const getResponseItem = (response) => {
   return data?.item ?? data;
 };
 
-const ToggleRow = ({ checked, description, disabled, label, onChange }) => (
+const ToggleRow = ({ checked, description, disabled, label, name, onChange }) => (
   <label
     className={[
       "flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3",
@@ -80,6 +90,7 @@ const ToggleRow = ({ checked, description, disabled, label, onChange }) => (
     </span>
     <input
       type="checkbox"
+      name={name}
       checked={checked}
       disabled={disabled}
       onChange={(event) => onChange(event.target.checked)}
@@ -121,18 +132,7 @@ const normalizeItemNumberInput = (rawValue) => {
   return value.replace(/^0+(?=\d)/, "") || "0";
 };
 
-const normalizeItemNumberBlurValue = (value) => {
-  const normalized = normalizeItemNumberInput(value);
-
-  if (!normalized) {
-    return "0";
-  }
-
-  const completedValue = normalized.endsWith(".") ? normalized.slice(0, -1) : normalized;
-  const numericValue = Number(completedValue);
-
-  return Number.isFinite(numericValue) ? String(numericValue) : "0";
-};
+const normalizeItemNumberBlurValue = completeItemDecimal;
 
 const ItemNumberInput = ({ control, disabled, error, id, label, name }) => (
   <Controller
@@ -175,6 +175,7 @@ const ItemFormPage = () => {
   const isEdit = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { savedState, returnToList } = useFormReturnContext("/items");
   const [searchParams] = useSearchParams();
   const capabilities = useInventoryCapabilities({ label: "Items", resource: "items", route: "/items" });
   const { manufacturingEnabled } = useManufacturingPreference();
@@ -193,16 +194,19 @@ const ItemFormPage = () => {
 
   const {
     control,
+    getValues,
     handleSubmit,
     register,
     reset,
     setError,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({
     resolver: zodResolver(itemSchema),
     defaultValues: getItemDefaultValues(null),
   });
+  const recovery=useUncertainSave({entity:"item",context:isEdit?id:"new",recordId:isEdit?id:null});
+  const {draft}=useItemDraft({control,isDirty,context:isEdit?id:"new",persist:!recovery.blocked});
   const itemType = useWatch({ control, name: "itemType" });
   const trackInventory = useWatch({ control, name: "trackInventory" });
   const isManufactured = useWatch({ control, name: "isManufactured" });
@@ -267,11 +271,11 @@ const ItemFormPage = () => {
 
 
   const categoryOptions = useMemo(
-    () => lookups.categories.map((category) => ({ value: Number(category.id), label: category.name })),
+    () => lookups.categories.map((category) => ({ value: String(category.id), label: category.name })),
     [lookups.categories],
   );
   const unitOptions = useMemo(
-    () => lookups.units.map((unit) => ({ value: Number(unit.id), label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name })),
+    () => lookups.units.map((unit) => ({ value: String(unit.id), label: unit.shortName ? `${unit.name} (${unit.shortName})` : unit.name })),
     [lookups.units],
   );
 
@@ -300,14 +304,16 @@ const ItemFormPage = () => {
 
     try {
       if (type === "categories") {
-        await categoryService.createCategory(payload);
+        const response = await categoryService.createCategory(payload);
+        const created = response.data?.category ?? response.data;
+        if (created?.id) { setLookups(current => ({ ...current, categories: [...current.categories, created] })); setValue("categoryId", String(created.id), { shouldDirty: true, shouldValidate: true }); }
         toast.success("Category created successfully");
       } else {
-        await unitService.createUnit(payload);
+        const response = await unitService.createUnit(payload);
+        const created = response.data?.unit ?? response.data;
+        if (created?.id) { setLookups(current => ({ ...current, units: [...current.units, created] })); setValue("unitId", String(created.id), { shouldDirty: true, shouldValidate: true }); }
         toast.success("Unit created successfully");
       }
-
-      await loadLookup(type);
 
       if (!saveAndNew) {
         closeLookupCreate();
@@ -316,7 +322,7 @@ const ItemFormPage = () => {
       toast.error(getActionError(error, type === "categories" ? "Unable to create category." : "Unable to create unit."));
       throw error;
     }
-  }, [closeLookupCreate, loadLookup, lookupCreateModal.type]);
+  }, [closeLookupCreate, lookupCreateModal.type, setValue]);
 
   const submitForm = async (values, saveAndNew = false) => {
     if (saveDisabledReason) {
@@ -325,16 +331,23 @@ const ItemFormPage = () => {
     }
 
     const payload = buildItemPayload(values);
+    draft.saveDraft(values);
+    if(!recovery.begin())return;
 
     try {
       const response = isEdit
         ? await dispatch(updateItem({ id, payload })).unwrap()
         : await dispatch(createItem(payload)).unwrap();
       const responseItem = getResponseItem(response);
+      recovery.succeed();
 
       toast.success(getSuccessMessage(response, isEdit ? "Item updated successfully" : "Item created successfully"));
+      const savedId=responseItem?.id ?? (isEdit ? id : ["number","string"].includes(typeof responseItem) ? responseItem : undefined);
+      const returnNavigationState=savedState(savedId);
+      draft.clearDraft();
 
       if (isEdit) {
+        reset(responseItem && typeof responseItem === "object" ? getItemDefaultValues(responseItem) : values);
         return;
       }
 
@@ -344,13 +357,13 @@ const ItemFormPage = () => {
         return;
       }
 
-      const newId = responseItem?.id ?? (["number", "string"].includes(typeof responseItem) ? responseItem : undefined);
+      const newId = savedId;
 
-      navigate(newId !== undefined ? `/items/${newId}/edit` : "/items", { replace: true });
+      withoutDirtyPrompt(() => navigate(newId !== undefined ? `/items/${newId}/edit` : "/items", { replace: true,state:returnNavigationState }));
     } catch (error) {
-      applyApiErrorsToForm({ error, fieldAliases: { gstRate: "GSTRate", hsnCode: "HSNCode" }, formFieldNames: ITEM_FIELDS, setError });
-      toast.error(getActionError(error, "Unable to save item."));
-    }
+      if(recovery.fail(error)){draft.saveDraft(values);setError("root.server",{type:"server",message:"Save result is unconfirmed. Review Item history or readback before retrying; your values are retained."});toast.error("Save result needs review before retrying.");}
+      else {applyApiErrorsToForm({error,fieldAliases:{gstRate:"GSTRate",hsnCode:"HSNCode"},formFieldNames:ITEM_FIELDS,setError});toast.error(getActionError(error,"Unable to save item."));}
+    } finally {recovery.finish();}
   };
 
   const title = isEdit ? "Edit item" : "Add item";
@@ -360,7 +373,7 @@ const ItemFormPage = () => {
       <div className="space-y-5">
         <PageHeader badge="Inventory / Item Master" title={title} />
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{detailError}</div>
-        <AppButton variant="secondary" onClick={() => navigate("/items")}>
+        <AppButton variant="secondary" onClick={() => returnToList()}>
           <ArrowLeft className="h-4 w-4" /> Back to items
         </AppButton>
       </div>
@@ -369,13 +382,16 @@ const ItemFormPage = () => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit((values) => submitForm(values, false))} noValidate>
+      <UncertainSaveNotice key={recovery.marker?.attemptId??"idle"} recovery={recovery} onReviewHistory={()=>{draft.saveDraft(getValues());returnToList();}} readRecord={isEdit?async()=>{const response=await itemService.getItemById(id);const saved=getResponseItem(response);return `Saved Item ${saved.itemCode||saved.name}. Name: ${saved.name}. Minimum stock: ${saved.minimumStock}. Compare the retained changes before deciding whether to retry.`;}:undefined}/>
+      <fieldset disabled={recovery.blocked} className="contents">
+      <ItemDraftRecovery draft={draft} onRestore={values=>reset({...getValues(),...values,imageFile:null},{keepDefaultValues:true})}/>
       <PageHeader
         badge="Inventory / Item Master"
         title={title}
         description="Configure identity, pricing, tax, and stock in one place."
         actions={
           <>
-            <AppButton variant="secondary" onClick={() => navigate("/items")}>
+            <AppButton variant="secondary" onClick={() => returnToList()}>
               <ArrowLeft className="h-4 w-4" /> Back
             </AppButton>
             <AppButton type="submit" isLoading={isSubmitting} loadingText="Saving…" disabled={Boolean(saveDisabledReason)} title={saveDisabledReason || undefined}>
@@ -385,11 +401,7 @@ const ItemFormPage = () => {
         }
       />
 
-      {errors.root?.server?.message && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {errors.root.server.message}
-        </p>
-      )}
+      <FormErrorSummary errors={errors} onNavigate={field=>setActiveTab(["openingStock","openingStockValue","minimumStock","trackInventory"].includes(field)?"stock":field==="isManufactured"?"manufacturing":"pricing")}/>
 
       {isEdit && detailLoading ? (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -411,6 +423,7 @@ const ItemFormPage = () => {
                     return (
                       <button
                         key={type}
+                        name="itemType"
                         type="button"
                         onClick={() => {
                           setValue("itemType", type, { shouldDirty: true, shouldValidate: true });
@@ -438,7 +451,7 @@ const ItemFormPage = () => {
                     <AppSelect
                       id="itemMaterialType"
                       label="Material type"
-                      value={field.value}
+                      name={field.name} value={field.value}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       options={[{ value: "", label: "Not classified" }, ...ITEM_CLASSIFICATION_OPTIONS]}
@@ -477,21 +490,7 @@ const ItemFormPage = () => {
                 control={control}
                 name="categoryId"
                 render={({ field }) => (
-                  <AppSelect
-                    label="Category"
-                    required
-                    value={field.value}
-                    onChange={(value) => field.onChange(Number(value))}
-                    onBlur={field.onBlur}
-                    options={categoryOptions}
-                    emptyMessage={lookups.categoriesError ? "Unable to load categories. Try refreshing the page." : "No categories yet - add one in Categories."}
-                    placeholder={lookups.categoriesLoading ? "Loading categories..." : "Select category"}
-                    disabled={lookups.categoriesLoading}
-                    error={errors.categoryId?.message}
-                    creatable={canCreateCategory}
-                    createLabel="Create new category"
-                    onCreateClick={() => openLookupCreate("categories")}
-                  />
+                  <ItemMasterLookup kind="category" label="Category" required name={field.name} value={field.value} onChange={value => field.onChange(String(value))} onBlur={field.onBlur} initialOptions={categoryOptions} error={errors.categoryId?.message} placeholder="Search category name or code" createLabel="Create new category" onCreate={canCreateCategory ? () => openLookupCreate("categories") : undefined} />
                 )}
               />
 
@@ -499,21 +498,7 @@ const ItemFormPage = () => {
                 control={control}
                 name="unitId"
                 render={({ field }) => (
-                  <AppSelect
-                    label="Unit"
-                    required
-                    value={field.value}
-                    onChange={(value) => field.onChange(Number(value))}
-                    onBlur={field.onBlur}
-                    options={unitOptions}
-                    emptyMessage={lookups.unitsError ? "Unable to load units. Try refreshing the page." : "No units yet - add one in Units."}
-                    placeholder={lookups.unitsLoading ? "Loading units..." : "Select unit"}
-                    disabled={lookups.unitsLoading}
-                    error={errors.unitId?.message}
-                    creatable={canCreateUnit}
-                    createLabel="Create new unit"
-                    onCreateClick={() => openLookupCreate("units")}
-                  />
+                  <ItemMasterLookup kind="unit" label="Unit" required name={field.name} value={field.value} onChange={value => field.onChange(String(value))} onBlur={field.onBlur} initialOptions={unitOptions} error={errors.unitId?.message} placeholder="Search unit name or code" createLabel="Create new unit" onCreate={canCreateUnit ? () => openLookupCreate("units") : undefined} />
                 )}
               />
 
@@ -522,14 +507,14 @@ const ItemFormPage = () => {
                 control={control}
                 name="imageUrl"
                 render={({ field }) => (
-                  <AppImageUpload
+                  <div data-error-field="imageFile" tabIndex={-1}><AppImageUpload
                     label="Item Image"
                     value={field.value}
                     disabled={isSubmitting}
                     onChange={(url) => setValue("imageUrl", url, { shouldDirty: true, shouldValidate: true })}
                     onFileChange={isEdit ? undefined : (file) => setValue("imageFile", file, { shouldDirty: true })}
                     error={errors.imageUrl?.message}
-                  />
+                  /></div>
                 )}
               />
             </div>
@@ -575,7 +560,7 @@ const ItemFormPage = () => {
                       control={control}
                       name="gstRate"
                       render={({ field }) => (
-                        <AppSelect label="GST Rate" value={field.value} onChange={field.onChange} onBlur={field.onBlur} options={GST_RATE_OPTIONS} error={errors.gstRate?.message} />
+                        <AppSelect label="GST Rate" name={field.name} value={field.value} onChange={field.onChange} onBlur={field.onBlur} options={GST_RATE_OPTIONS} error={errors.gstRate?.message} />
                       )}
                     />
                   </div>
@@ -589,7 +574,7 @@ const ItemFormPage = () => {
                   control={control}
                   name="trackInventory"
                   render={({ field }) => (
-                    <ToggleRow checked={field.value} label="Track inventory" description="Opening stock is set during creation. Current and reserved balances follow inventory transactions." onChange={field.onChange} />
+                    <ToggleRow name={field.name} checked={field.value} label="Track inventory" description="Opening stock is set during creation. Current and reserved balances follow inventory transactions." onChange={field.onChange} />
                   )}
                 />
 
@@ -648,7 +633,7 @@ const ItemFormPage = () => {
       )}
 
       <div className="sticky bottom-4 flex flex-col-reverse gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex-row sm:justify-end">
-        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => navigate("/items")}>
+        <AppButton variant="secondary" disabled={isSubmitting} onClick={() => returnToList()}>
           Cancel
         </AppButton>
         {!isEdit && (
@@ -678,6 +663,7 @@ const ItemFormPage = () => {
         onSubmit={submitLookupCreate}
         unit={null}
       />
+      </fieldset>
     </form>
   );
 };

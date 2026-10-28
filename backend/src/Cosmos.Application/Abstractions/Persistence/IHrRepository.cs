@@ -6,6 +6,20 @@ namespace Cosmos.Application.Abstractions.Persistence;
 
 public interface IHrRepository
 {
+    Task<IReadOnlyCollection<HrPayrollRateOptionDto>> GetPayrollRateOptionsAsync(ProcessPayrollCommand query, CancellationToken ct);
+    Task<PagedResult<HrPayrollRunOptionDto>> GetPayrollRunsAsync(GetPayrollRunsQuery query, CancellationToken ct);
+    Task<IReadOnlyCollection<HrAdjustmentContextDto>> GetPendingAdjustmentsAsync(CancellationToken ct);
+    Task<IReadOnlyCollection<HrLeaveEntitlementDto>> GetLeaveEntitlementsAsync(long employeeId, CancellationToken ct);
+    Task<HrLeaveEntitlementDto> SaveLeaveEntitlementAsync(SaveEmployeeLeaveEntitlementCommand command, long? userId, CancellationToken ct);
+    Task<IReadOnlyCollection<HrLeaveTypeDto>> GetLeaveTypesAsync(CancellationToken ct);
+    Task<HrLeaveTypeDto> SaveLeaveTypeAsync(long? id, SaveLeaveTypeCommand command, long? userId, CancellationToken ct);
+    Task<IReadOnlyCollection<HrSalaryComponentDto>> GetSalaryComponentsAsync(CancellationToken ct);
+    Task<HrSalaryComponentDto> SaveSalaryComponentAsync(long? id, SaveSalaryComponentCommand command, long? userId, CancellationToken ct);
+    Task<IReadOnlyCollection<HrSalaryStructureDto>> GetSalaryStructuresAsync(CancellationToken ct);
+    Task<HrSalaryStructureDto> SaveSalaryStructureAsync(long? id, SaveSalaryStructureCommand command, long? userId, CancellationToken ct);
+    Task<IReadOnlyCollection<HrSalaryAssignmentDto>> GetSalaryAssignmentsAsync(long? employeeId, CancellationToken ct);
+    Task<HrSalaryAssignmentDto> AssignSalaryStructureAsync(AssignSalaryStructureCommand command, long? userId, CancellationToken ct);
+    Task<IReadOnlyCollection<HrPayrollPreflightDto>> GetPayrollPreflightAsync(ProcessPayrollCommand command, CancellationToken ct);
     Task<DepartmentDto?> GetDepartmentAsync(long id, CancellationToken cancellationToken);
     Task<PagedResult<DepartmentDto>> GetDepartmentsAsync(HrPagedQuery query, CancellationToken cancellationToken);
     Task<DepartmentDto> CreateDepartmentAsync(CreateDepartmentCommand command, long? userId, CancellationToken cancellationToken);

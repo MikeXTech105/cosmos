@@ -1,0 +1,100 @@
+{
+  "preparedOn": "2026-10-28",
+  "baselineCommit": "da4620383e88f4831a2c0d719882befd497661d7",
+  "updatedAt": "2026-10-28T12:51:25.721Z",
+  "userDecisions": {
+    "sql": "User will execute prepared guarded scripts later; no SQL integration executed by this session.",
+    "payroll": "Calendar-day earnings prorating, fixed deductions, block attendance/paid-leave overlap, include actually employed portion of resigned staff; one explicitly selected period rate when structures change.",
+    "party": "Reminders, loyalty, custom fields remain explicitly unavailable per human decision.",
+    "gstPolicy": "Keep policy options; user will decide tax/discount/rounding policy later. No proposed policy approval or activated default."
+  },
+  "releaseStatus": "Implementation delivered with automated and synthetic component evidence; user-run SQL/authenticated/provider acceptance gates remain open, no whole-release completion claimed",
+  "findings": 56,
+  "coverageRows": 125,
+  "inputPackage": [
+    {
+      "path": "PROMPT_COSMOS_COMPLETE_IMPLEMENTATION.txt",
+      "expectedSha256": "742c3cb8616adf71adbb01dc242d6a0d2daf469944ec3c3acb3bf2e0c049cf4f",
+      "actualSha256": "742c3cb8616adf71adbb01dc242d6a0d2daf469944ec3c3acb3bf2e0c049cf4f",
+      "valid": true
+    },
+    {
+      "path": "START_HERE.txt",
+      "expectedSha256": "96a0e4c6f05c0709281ac5f76517e2433c6acbea5cd2421b1cf3d8b8b0b20e94",
+      "actualSha256": "96a0e4c6f05c0709281ac5f76517e2433c6acbea5cd2421b1cf3d8b8b0b20e94",
+      "valid": true
+    },
+    {
+      "path": "README.txt",
+      "expectedSha256": "7c185e0308ee7ae905ffe6811af0c37c2bb84c429babafbbf295cfc986f95a6b",
+      "actualSha256": "7c185e0308ee7ae905ffe6811af0c37c2bb84c429babafbbf295cfc986f95a6b",
+      "valid": true
+    },
+    {
+      "path": "finding-tracker-template.json",
+      "expectedSha256": "ae8070eb80683779c84cc5a72d00624e3d49a02a991c7b2407a7bf33fef668b1",
+      "actualSha256": "ae8070eb80683779c84cc5a72d00624e3d49a02a991c7b2407a7bf33fef668b1",
+      "valid": true
+    },
+    {
+      "path": "coverage-tracker-template.json",
+      "expectedSha256": "05b0a266cfb9f649f74dabc99e5e976629ab474be975e23476f4ea898be3e257",
+      "actualSha256": "05b0a266cfb9f649f74dabc99e5e976629ab474be975e23476f4ea898be3e257",
+      "valid": true
+    },
+    {
+      "path": "prompt-validation.json",
+      "expectedSha256": "f59211c65a0e435039e88863665587dc249fef64c35245c120c4157e3fb7a8ca",
+      "actualSha256": "f59211c65a0e435039e88863665587dc249fef64c35245c120c4157e3fb7a8ca",
+      "valid": true
+    },
+    {
+      "path": "audits/COSMOS_UX_REVIEW.html",
+      "expectedSha256": "8e0ebcdfee85242a3763859ac63c9fe336d5bcb9555ab294c19a4cbb9b729b95",
+      "actualSha256": "8e0ebcdfee85242a3763859ac63c9fe336d5bcb9555ab294c19a4cbb9b729b95",
+      "valid": true
+    },
+    {
+      "path": "audits/COSMOS_UX_AUDIT.json",
+      "expectedSha256": "81bb70b9e2f1c5b381eef2611401a445ac9c6e096dceddaa1cf416691dd8a978",
+      "actualSha256": "81bb70b9e2f1c5b381eef2611401a445ac9c6e096dceddaa1cf416691dd8a978",
+      "valid": true
+    },
+    {
+      "path": "audits/root-audit.json",
+      "expectedSha256": "50e14e5a538786eafabc86fa600a8ca0c285141cf68eb65133bb74653aef6228",
+      "actualSha256": "50e14e5a538786eafabc86fa600a8ca0c285141cf68eb65133bb74653aef6228",
+      "valid": true
+    },
+    {
+      "path": "audits/commerce-audit.json",
+      "expectedSha256": "7fe90208ab9d24c02e37f8483a9f1f2acda5b3f08cfde060eb38a63e12792399",
+      "actualSha256": "7fe90208ab9d24c02e37f8483a9f1f2acda5b3f08cfde060eb38a63e12792399",
+      "valid": true
+    },
+    {
+      "path": "audits/operations-audit.json",
+      "expectedSha256": "65dd88db3fa611d02928314f122f2576cf2cf045e6d2a4d4fd7ac9e3a92ea5f9",
+      "actualSha256": "65dd88db3fa611d02928314f122f2576cf2cf045e6d2a4d4fd7ac9e3a92ea5f9",
+      "valid": true
+    },
+    {
+      "path": "audits/people-admin-content-audit.json",
+      "expectedSha256": "7db6d7fc503f201b1112c063a366467d4ed9f789f538299a0dc43b17b1220733",
+      "actualSha256": "7db6d7fc503f201b1112c063a366467d4ed9f789f538299a0dc43b17b1220733",
+      "valid": true
+    },
+    {
+      "path": "audits/navigation-inventory.json",
+      "expectedSha256": "d61a6f3bb633e3875c3340e44e8e11b54948c581a469240c594d6887795f2bcf",
+      "actualSha256": "d61a6f3bb633e3875c3340e44e8e11b54948c581a469240c594d6887795f2bcf",
+      "valid": true
+    },
+    {
+      "path": "audits/source-evidence.json",
+      "expectedSha256": "915077fceee59e297baed97b864528114635bbf6194f4d5a15a9d3349f7f8b1f",
+      "actualSha256": "915077fceee59e297baed97b864528114635bbf6194f4d5a15a9d3349f7f8b1f",
+      "valid": true
+    }
+  ]
+}

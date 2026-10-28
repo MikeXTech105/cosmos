@@ -1,4 +1,6 @@
 import axiosInstance from "../../api/axios";
+import exactApi, { parseProductionJson } from "../manufacturing/productionApi";
+import { decimalWire, idWire } from "../../utils/productionValues";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeItemClassification } from "../../utils/itemClassification";
 import { sanitizeInventoryListParams } from "../../utils/inventoryQuery";
@@ -74,6 +76,10 @@ const buildItemCommandBody = (payload) => {
   };
 
   delete commandBody.imageFile;
+  for (const key of ["categoryId", "unitId"]) if (commandBody[key] != null && commandBody[key] !== "") commandBody[key] = idWire(commandBody[key]);
+  for (const key of ["openingStock", "currentStock", "reservedStock", "minimumStock", "openingStockValue", "salesPrice", "purchasePrice"]) {
+    if (commandBody[key] !== undefined) commandBody[key] = decimalWire(commandBody[key], { scale: ["openingStockValue", "salesPrice", "purchasePrice"].includes(key) ? 2 : 6, integerDigits: 16 });
+  }
 
   return commandBody;
 };
@@ -91,8 +97,9 @@ const getItemListParams = (params = {}) => {
 };
 
 export const itemService = {
-  getItems: async (params) => {
-    const response = await axiosInstance.get(ENDPOINTS.ITEMS, {
+  getItems: async (params, { signal } = {}) => {
+    const response = await exactApi.get(ENDPOINTS.ITEMS, {
+      signal,
       params: normalizeParams(
         sanitizeInventoryListParams(
           getItemListParams(params),
@@ -104,8 +111,8 @@ export const itemService = {
     return unwrapResponse(response);
   },
 
-  getItemById: async (id) => {
-    const response = await axiosInstance.get(ENDPOINTS.ITEM_BY_ID(id));
+  getItemById: async (id, { signal } = {}) => {
+    const response = await exactApi.get(ENDPOINTS.ITEM_BY_ID(id), { signal });
 
     return unwrapResponse(response);
   },
@@ -115,6 +122,8 @@ export const itemService = {
       ENDPOINTS.ITEMS,
       buildItemCreateFormData(payload),
       {
+        // Preserve Axios' multipart request handling; only opt the create response into exact JSON.
+        transformResponse: [value=>typeof value==="string"&&value.length?parseProductionJson(value):value],
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -125,7 +134,7 @@ export const itemService = {
   },
 
   updateItem: async (id, payload) => {
-    const response = await axiosInstance.put(
+    const response = await exactApi.put(
       ENDPOINTS.ITEM_BY_ID(id),
       buildItemCommandBody(payload),
     );

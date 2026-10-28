@@ -9,6 +9,7 @@ import {
   getApiCorrelationId,
   getApiErrorMessage,
 } from "../../utils/apiError";
+import { decimalText, quantityText } from "../../utils/productionValues";
 
 const DISPATCH_IMPORT_TYPE_DATABASE_LABELS = Object.freeze({
   DispatchWarehouseSales: "Sales",
@@ -19,13 +20,10 @@ const DISPATCH_IMPORT_TYPE_DATABASE_LABELS = Object.freeze({
 export const formatDispatchNumber = (
   value,
   fallback = "—",
-  maximumFractionDigits = 2,
+  maximumFractionDigits = 6,
 ) => {
   if (value === "" || value === null || value === undefined) return fallback;
-  const number = Number(value);
-  return Number.isFinite(number)
-    ? number.toLocaleString("en-IN", { maximumFractionDigits })
-    : fallback;
+  try { decimalText(value); return quantityText(value, { scale: maximumFractionDigits }); } catch { return fallback; }
 };
 
 export const formatDispatchDate = (value, fallback = "—") => {

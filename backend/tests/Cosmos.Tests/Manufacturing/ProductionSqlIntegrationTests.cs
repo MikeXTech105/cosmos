@@ -17,6 +17,21 @@ public sealed class ProductionSqlIntegrationTests
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     [ProductionSqlFact, Trait("Category", "SqlIntegration")]
+    public async Task Exact_master_lookup_retains_inactive_history_and_isolates_company()
+    {
+        var f = await Fixture.Create();
+        var order = await f.Draft(1);
+        var operationId = await f.Scalar<long>("SELECT TOP(1) OperationId FROM dbo.ItemProductionRoutingSteps WHERE RoutingId=@Routing", new { Routing = order.RoutingId });
+        var current = await f.Command<ProductionMasterDto>("sp_ProductionMaster_Read", new { Kind = "operations", Id = operationId });
+        Assert.Equal(operationId, current.Id); Assert.Equal(10m, current.DefaultRate); Assert.True(current.IsActive);
+        await f.Scalar<int>("UPDATE dbo.ProductionOperations SET IsActive=0 WHERE Id=@Id; SELECT 1", new { Id = operationId });
+        var historic = await f.Command<ProductionMasterDto>("sp_ProductionMaster_Read", new { Kind = "operations", Id = operationId });
+        Assert.False(historic.IsActive); Assert.NotEqual(current.Version, historic.Version);
+        var otherCompany = await Assert.ThrowsAsync<CosmosException>(() => f.Repository.ExecuteAsync<ProductionMasterDto>("sp_ProductionMaster_Read", "other-company", 1, new { Kind = "operations", Id = operationId }, default));
+        Assert.Equal(404, otherCompany.StatusCode);
+    }
+
+    [ProductionSqlFact, Trait("Category", "SqlIntegration")]
     public async Task Release_is_reserve_only_and_competing_releases_cannot_oversell()
     {
         var f = await Fixture.Create();

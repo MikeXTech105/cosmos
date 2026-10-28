@@ -37,6 +37,8 @@ import ItemFilters from "./ItemFilters";
 import ItemStats from "./ItemStats";
 import ItemTable from "./ItemTable";
 import { getItemTypeLabel, isLowStock } from "./itemHelpers";
+import { documentIdText } from "../../../utils/documentPrecision";
+import useListReturnContext from "../../../hooks/useListReturnContext";
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -63,6 +65,13 @@ const ItemsPage = () => {
     route: "/categories",
   });
   const [searchInput, setSearchInput] = useState(itemsState.filters.Search);
+  const restoreListFilters = useCallback(snapshot => {
+    dispatch(setItemFilters(snapshot.filters));
+    dispatch(setItemPageSize(snapshot.pageSize));
+    dispatch(setItemPage(snapshot.pageNumber));
+    setSearchInput(snapshot.filters.Search ?? "");
+  }, [dispatch]);
+  const { capture, highlightId, clearHighlight } = useListReturnContext({ key: "items", filters: { filters: itemsState.filters, pageNumber: itemsState.pageNumber, pageSize: itemsState.pageSize }, setFilters: restoreListFilters, ready: !itemsState.loading });
   const [lookups, setLookups] = useState({
     categories: [],
     categoriesError: null,
@@ -71,6 +80,7 @@ const ItemsPage = () => {
   const lookupCacheRef = useRef({
     categories: { loaded: false, promise: null },
   });
+  const lookupCreateResolution = useRef(null);
   const [lookupCreateModal, setLookupCreateModal] = useState({
     isOpen: false,
     type: null,
@@ -93,7 +103,7 @@ const ItemsPage = () => {
           CategoryId:
             itemsState.filters.CategoryId === "all"
               ? undefined
-              : serializeId(itemsState.filters.CategoryId),
+              : documentIdText(itemsState.filters.CategoryId),
           ProcurementClassification:
             itemsState.filters.ProcurementClassification === "all"
               ? undefined
@@ -189,13 +199,14 @@ const ItemsPage = () => {
   }, [loadItems]);
 
   useEffect(() => {
+    if (searchInput === itemsState.filters.Search) return undefined;
     const timeoutId = window.setTimeout(() => {
       dispatch(setItemFilters({ Search: searchInput }));
       dispatch(setItemPage(1));
     }, 350);
 
     return () => window.clearTimeout(timeoutId);
-  }, [dispatch, searchInput]);
+  }, [dispatch, itemsState.filters.Search, searchInput]);
 
   useEffect(() => {
     void loadLookups();
@@ -204,7 +215,7 @@ const ItemsPage = () => {
   const categoryOptions = useMemo(
     () =>
       lookups.categories.map((category) => ({
-        value: Number(category.id),
+        value: String(category.id),
         label: category.name,
       })),
     [lookups.categories],
@@ -233,8 +244,8 @@ const ItemsPage = () => {
       return;
     }
 
-    navigate("/items/new");
-  }, [capabilities.canCreate, navigate]);
+    navigate("/items/new", { state: capture() });
+  }, [capabilities.canCreate, capture, navigate]);
 
   const openLookupCreate = useCallback(
     (type) => {
@@ -246,6 +257,8 @@ const ItemsPage = () => {
   );
 
   const closeLookupCreate = useCallback(() => {
+    lookupCreateResolution.current?.(null);
+    lookupCreateResolution.current = null;
     setLookupCreateModal({ isOpen: false, type: null });
   }, []);
 
@@ -256,11 +269,18 @@ const ItemsPage = () => {
       }
 
       try {
-        await categoryService.createCategory(payload);
+        const response = await categoryService.createCategory(payload);
+        const created = response.data?.category ?? response.data;
         toast.success("Category created successfully");
 
-        lookupCacheRef.current.categories.loaded = false;
-        await loadLookup("categories", { force: true });
+        if (created?.id) {
+          setLookups(current => ({ ...current, categories: [...current.categories, created] }));
+          if (lookupCreateResolution.current) { lookupCreateResolution.current(created); lookupCreateResolution.current = null; }
+          else { dispatch(setItemFilters({ CategoryId: String(created.id) })); dispatch(setItemPage(1)); }
+        } else {
+          lookupCacheRef.current.categories.loaded = false;
+          await loadLookup("categories", { force: true });
+        }
 
         if (!saveAndNew) {
           closeLookupCreate();
@@ -270,7 +290,7 @@ const ItemsPage = () => {
         throw error;
       }
     },
-    [canCreateCategory, closeLookupCreate, loadLookup, lookupCreateModal.type],
+    [canCreateCategory, closeLookupCreate, dispatch, loadLookup, lookupCreateModal.type],
   );
 
   const selectItem = useCallback(
@@ -296,9 +316,9 @@ const ItemsPage = () => {
         return;
       }
 
-      navigate(`/items/${item.id}/edit`);
+      navigate(`/items/${item.id}/edit`, { state: capture() });
     },
-    [capabilities.canUpdate, navigate],
+    [capabilities.canUpdate, capture, navigate],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -363,12 +383,13 @@ const ItemsPage = () => {
       />
 
       <ItemStats {...stats} />
+      {highlightId && <p role="status" className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">Saved Item {highlightId}. Existing filters are retained.{!itemsState.list.some(item => String(item.id) === String(highlightId)) && " It is outside the current filtered page."}<button type="button" className="underline" onClick={clearHighlight}>Dismiss</button></p>}
       <ItemFilters
         canCreateCategory={canCreateCategory}
         categoryOptions={categoryOptions}
         filters={filterControls}
         resultCount={itemsState.list.length}
-        onCreateCategory={() => openLookupCreate("categories")}
+        onCreateCategory={() => new Promise(resolve => { lookupCreateResolution.current = resolve; openLookupCreate("categories"); })}
         onChange={(patch) => {
           if (Object.hasOwn(patch, "Search")) {
             setSearchInput(patch.Search);
@@ -396,6 +417,7 @@ const ItemsPage = () => {
       <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <div className="h-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <ItemTable
+            highlightId={highlightId}
             actions={{
               ...capabilities,
               onDelete: (item) =>

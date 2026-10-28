@@ -41,6 +41,9 @@ import {
 } from "./reportRegistry";
 import ReportSummary from "./ReportSummary";
 import ReportTable from "./ReportTable";
+import ReportViewPreferences from "./ReportViewPreferences";
+import useReportViewPreferences, { isRequiredReportColumn } from "./useReportViewPreferences";
+import { reportDrilldown } from "./reportDrilldown";
 
 const toRows = (data) => {
   if (Array.isArray(data)) {
@@ -172,6 +175,8 @@ const DynamicIcon = ({ className, name }) => {
 const ReportView = ({ report }) => {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [preferences, setPreferences, preferencePersistence] = useReportViewPreferences(report);
+  const displayReport = { ...report, columns: (report.columns ?? []).filter((column, index) => isRequiredReportColumn(column, index) || !preferences.columns || preferences.columns.includes(String(column.key))) };
   const filters = useMemo(
     () => getReportFiltersFromSearchParams(report, searchParams),
     [report, searchParams],
@@ -392,6 +397,7 @@ const ReportView = ({ report }) => {
         }
       />
 
+      <ReportViewPreferences report={report} preferences={preferences} setPreferences={setPreferences} persistence={preferencePersistence} query={searchParams.toString()} onApply={(query) => setSearchParams(new URLSearchParams(query))} />
       <ReportFilterBar
         disabled={isLoading}
         filters={filters}
@@ -415,7 +421,7 @@ const ReportView = ({ report }) => {
           onRetry={handleRetry}
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className={`overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${preferences.density === "compact" ? "[&_td]:!py-2 [&_th]:!py-2" : ""}`}>
           {isMissingRequiredParam ? (
             <RequiredParamPrompt report={report} />
           ) : (
@@ -424,7 +430,9 @@ const ReportView = ({ report }) => {
               filters={filters}
               isLoading={isLoading}
               meta={reportState?.pagination ?? reportState?.meta}
-              report={report}
+              report={displayReport}
+              getCellLink={(column, row) => reportDrilldown({ report, column, row, auth })}
+              returnTo={`${report.route}?${searchParams}`}
               rows={rows}
               onPageChange={(PageNumber) => updateFilters({ PageNumber })}
               onPageSizeChange={(PageSize) =>

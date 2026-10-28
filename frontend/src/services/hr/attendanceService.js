@@ -1,7 +1,7 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
-import { sanitizeHrListParams } from "./hrServiceUtils";
+import { hrCommandIds, sanitizeHrListParams } from "./hrServiceUtils";
 
 export const hrAttendanceService = {
   getAttendance: async (params) => {
@@ -24,7 +24,7 @@ export const hrAttendanceService = {
   checkIn: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_CHECKIN,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -33,7 +33,7 @@ export const hrAttendanceService = {
   checkOut: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_CHECKOUT,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -42,7 +42,7 @@ export const hrAttendanceService = {
   createManualEntry: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_MANUAL,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -51,7 +51,7 @@ export const hrAttendanceService = {
   requestAdjustment: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_ADJUST_REQUEST,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -60,7 +60,7 @@ export const hrAttendanceService = {
   approveAdjustment: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_APPROVE_ADJUST,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -69,7 +69,7 @@ export const hrAttendanceService = {
   rejectAdjustment: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_ATTENDANCE_REJECT_ADJUST,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);

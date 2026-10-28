@@ -1,0 +1,2076 @@
+{
+  "scope": "Manufacturing/Production, OEE, Supply Chain, Procurement Planning, Dispatch Planning, Shipment Operations",
+  "date": "2026-10-28",
+  "revision": "da46203",
+  "method": "Read-only source audit of enabled sidebar definitions, literal routes, forms, state transitions, lookup calls, API services and selected SQL contracts. No application changes, backend start, database queries, mutations, or live browser testing were performed by this reviewer. A follow-up reconciliation checked grouped Manufacturing, ProductionWorkspace, BOM effectivity, PackagingConversion, SupplyChain, Procurement, Dispatch and Shipment controllers against nested UI/service calls.",
+  "classification": "Screens and routes are not master counts. Nested forms, child configuration, transactions, reports and role views are explicitly classified below.",
+  "coverage": [
+    {
+      "module": "Production",
+      "screen": "Daily Production",
+      "route": "/manufacturing/daily",
+      "type": "transaction workspace",
+      "children": [
+        "Accepted/rejected daily grid",
+        "Paste two spreadsheet columns",
+        "Sequential selected-entry reviews"
+      ],
+      "flow": "Find an existing order → type/paste actual accepted/rejected quantities → review actual material use → approve each entry → authoritative remainder reload.",
+      "strength": "Keyboard Enter/Arrow movement, exact quantity strings, row version mismatch lock, company timezone, view/approve separation, errors distinct from empty orders.",
+      "improve": "Protect unsaved typed rows; default to work needing entry; show remaining unsaved/reviewed count.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/ProductionDeskPage.jsx",
+          "line": 32
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/DailyProductionGrid.jsx",
+          "line": 8
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Kanban Board",
+      "route": "/manufacturing/board",
+      "type": "transaction workspace",
+      "children": [
+        "Six server-paged status columns",
+        "Drag review",
+        "Keyboard-select Move alternative",
+        "Jump-to-column chips"
+      ],
+      "flow": "Draft → release approval → actual completion → completed/short close/cancel with correct business commands.",
+      "strength": "Already implemented and directly exposed in sidebar. Per-lane totals/retries/load more. Drag never directly sets a stock-affecting status.",
+      "improve": "Add due/late highlighting, resource labels, open-work filters and compact mobile list; keep explicit reviews.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/config/sidebar.js",
+          "line": 898
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/ProductionKanban.jsx",
+          "line": 11
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Production Orders",
+      "route": "/manufacturing/orders",
+      "type": "transaction register",
+      "children": [
+        "Search/status/item/date filters",
+        "New draft",
+        "View/edit draft"
+      ],
+      "flow": "Filter register → create or open production order.",
+      "improve": "Saved open-work filters and context-preserving back navigation; no need for a second daily-entry screen.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/routes/AppRoutes.jsx",
+          "line": 287
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrdersPage.jsx",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Order create/edit",
+      "route": "/manufacturing/orders/new; /manufacturing/orders/:id/edit",
+      "type": "transaction form",
+      "children": [
+        "Item/quantity/dates",
+        "Effective BOM/routing/resources",
+        "BOM quantity preview",
+        "Planning source"
+      ],
+      "flow": "Active manufactured inventory Item + effective canonical BOM/routing + eligible machine/mould + common work-centre HR shift → save draft; release remains separate.",
+      "strength": "Resource and source identity revalidated; machine/mould choices filtered by eligibility; component requirement preview; unknown create outcome warns user.",
+      "improve": "Prerequisite checklist with direct repair links and return context; collapse source IDs/version into details; protect dirty form.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+          "line": 73
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+          "line": 204
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+          "line": 241
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Order detail / approval / completion / correction",
+      "route": "/manufacturing/orders/:id",
+      "type": "transaction detail",
+      "children": [
+        "Release",
+        "Partial completion",
+        "Released amendment",
+        "Short close",
+        "Cancel remainder",
+        "Linked reversal",
+        "Material reservation history",
+        "Frozen routing",
+        "Capacity feasibility/scheduling"
+      ],
+      "flow": "Inspect order/materials → release reserves materials → optional capacity review/schedule → actual completion consumes materials and posts good stock → linked correction preserves original evidence.",
+      "strength": "Read-back failure locks, optimistic versions, stable command identities, preservation of frozen snapshots/history, explicit stock/material review.",
+      "improve": "Put current remainder + next action first; resolve resource IDs into business names; move audit internals into expandable details.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderDetailPage.jsx",
+          "line": 50
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderCommandModal.jsx",
+          "line": 1
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderCapacity.jsx",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Production Planning",
+      "route": "/manufacturing/planning",
+      "type": "planning transaction",
+      "children": [
+        "Observed demand records",
+        "Saved planning snapshots",
+        "Shared material feasibility",
+        "Prefilled production draft links"
+      ],
+      "flow": "Record/refresh real demand periods → calculate saved stock/demand snapshot → select proposed outputs → shared material assessment → review prefilled production drafts.",
+      "strength": "Missing, stale and zero demand distinguished; shared material pool not double counted; feasibility explicitly does not reserve stock.",
+      "improve": "A guided default sequence and basic recommended columns; put raw snapshot/calculation flags in evidence drawer; offer table column presets.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/planning/PlanningPage.jsx",
+          "line": 112
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/planning/PlanningPage.jsx",
+          "line": 212
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/planning/PlanningPage.jsx",
+          "line": 244
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Work Centres & Operations",
+      "route": "/manufacturing/configuration",
+      "type": "two business masters",
+      "children": [
+        "Work Centre",
+        "Operation"
+      ],
+      "flow": "Create work-centre capacity basis/default existing shift → create rate-based operation → use those references in Item routing.",
+      "strength": "Reuses existing HR Shift; active/effective versioned configuration; no duplicate Machine/Mould/Shift master.",
+      "improve": "Basic fields first, sample rate calculation, setup completeness indicator, link to Item Manufacturing configuration.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 72
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 334
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Work Centre shift capacity / exceptions",
+      "route": "nested under /manufacturing/configuration",
+      "type": "master child configuration",
+      "children": [
+        "Effective work-centre shift capacity",
+        "Break minutes/capacity factor",
+        "Per-business-day break/downtime exceptions",
+        "Effective end date"
+      ],
+      "flow": "Select work centre → assign existing HR shift and effective capacity → configure calendar exceptions → order capacity checks use these values.",
+      "improve": "Calendar view showing working minutes and unavailable periods instead of requiring users to mentally combine factors/breaks/exceptions.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 106
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 229
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 274
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Item routing / machine-mould eligibility",
+      "route": "Item → Manufacturing tab",
+      "type": "existing Item master children",
+      "children": [
+        "Effective routing revision",
+        "Ordered operation/work-centre steps",
+        "Rate/setup/quantity basis",
+        "Effective machine-mould eligibility",
+        "Verified SKU output per shot"
+      ],
+      "flow": "Choose existing Item → add routing revision using shared operations/work centres → verify allowed existing OEE machine/mould and output-per-shot combination.",
+      "strength": "Correct shared master reuse; records effective dates and explicit permission dependencies.",
+      "improve": "A cross-module setup wizard with completion checks; show computed time/output example and distinguish mould cavity from verified SKU output per shot.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+          "line": 91
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+          "line": 170
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+          "line": 210
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Import & Reconciliation",
+      "route": "/manufacturing/imports",
+      "type": "controlled migration/import transaction",
+      "children": [
+        "22-source-tab evidence manifest",
+        "CSV/TSV positional preview",
+        "Stage/resume saved batch",
+        "Per-cell mapping/repair",
+        "Review/approve/post selected rows",
+        "Controlled signed stock adjustment"
+      ],
+      "flow": "Select real original source tab/cutover → preview preserved positions → stage → repair mappings → review → approve → post only selected reconciled evidence.",
+      "strength": "Preserves original evidence, distinguishes opening cutover vs subsequent adjustment, retries identical source on unknown stage outcome.",
+      "improve": "Keep this as an advanced migration/admin task with a business-language readiness summary and saved mapping templates; everyday users should enter from daily grid.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/imports/ImportsPage.jsx",
+          "line": 431
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/imports/ImportsPage.jsx",
+          "line": 494
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/imports/ImportsPage.jsx",
+          "line": 539
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Production Operations reports",
+      "route": "/reports/manufacturing/operations",
+      "type": "reports",
+      "children": [
+        "Stock as of",
+        "Signed ledger",
+        "Production/dispatch scorecard",
+        "Plan vs actual",
+        "Reserved capacity"
+      ],
+      "flow": "Choose business-date/range/item/channel → load report → inspect unit-separated totals/source links → export.",
+      "strength": "Historical evidence gaps shown; totals separated by units; source document links.",
+      "improve": "Human-readable CSV/XLSX primary export; retain NDJSON only as advanced output; basic report presets with company business date.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/reports/productionReportingHelpers.js",
+          "line": 1
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/reports/OperationalReportsPage.jsx",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Production Dashboard",
+      "route": "/oee/dashboard",
+      "type": "analytics",
+      "children": [
+        "Calendar period vs latest-readings sheet mode",
+        "ERP weighted vs sheet mean basis",
+        "Machine/mould analysis",
+        "Daily submission audit",
+        "Downtime reason frequency"
+      ],
+      "flow": "Choose scope/basis → compare shots and targets → inspect day/machine readings → review reporting coverage.",
+      "strength": "Explicit sheet/ERP calculation choice; denominator/basis explanations; date-level drilldown and missing-data visibility.",
+      "improve": "Use one sensible default, save personal basis, reduce terminology shown before business insight; name it Machine Performance to distinguish inventory posting.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/dashboard/OeeDashboardPage.jsx",
+          "line": 265
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/dashboard/OeeDashboardPage.jsx",
+          "line": 297
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/dashboard/OeeDashboardPage.jsx",
+          "line": 369
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Production Insights",
+      "route": "/oee/insights",
+      "type": "analytics",
+      "children": [
+        "Period comparison",
+        "Production against target",
+        "Machine comparison",
+        "Reporting coverage",
+        "Daily records drilldown"
+      ],
+      "flow": "Choose period/machine/mould → inspect comparisons/coverage → open underlying daily records.",
+      "improve": "Clarify relation to OEE dashboard and use shared date/machine presets; avoid redundant decision surfaces.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/insights/ProductionInsightsPage.jsx",
+          "line": 442
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/insights/InsightDailyRecords.jsx",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Production Entries",
+      "route": "/oee/production-entries",
+      "type": "machine reading transaction",
+      "children": [
+        "Bulk grid of active machines",
+        "On-time/mould/shots/reason/remarks",
+        "Quick-create mould/reason",
+        "Date-grouped history",
+        "Edit/delete reading"
+      ],
+      "flow": "Choose date → mark machines running → runtime/mould/shots/reason → Save Running Machines → review saved date ledger.",
+      "strength": "Fast row-per-machine entry, in-context permitted master creation, all history pages loaded before date grouping.",
+      "improve": "Rename to Machine Runtime & Shots; add explicit no-production acknowledgment; date changes must not silently carry a previous date's form; protect unsaved rows.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 570
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 596
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 865
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Machines",
+      "route": "/oee/machines",
+      "type": "business master",
+      "children": [
+        "Code/name/tonnage/location/display order/active"
+      ],
+      "flow": "Create active machine → daily OEE entry and Manufacturing eligibility reference it.",
+      "strength": "One shared master used by OEE and stock production.",
+      "improve": "Basic identity first; show usage/deactivate guidance, clarify tonnage unit and dashboard order.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/machines/OeeMachinesPage.jsx",
+          "line": 1
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/OeeMasterPage.jsx",
+          "line": 153
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Moulds",
+      "route": "/oee/moulds",
+      "type": "business master",
+      "children": [
+        "Name/target shots per day/cavity/cycle time/active"
+      ],
+      "flow": "Create mould target values → OEE readings and Item eligibility reuse it.",
+      "improve": "Show example target/shot/cavity calculation and do not imply cavity automatically equals Item output per shot.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/moulds/OeeMouldsPage.jsx",
+          "line": 1
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+          "line": 170
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "Downtime Reasons",
+      "route": "/oee/downtime-reasons",
+      "type": "business master",
+      "children": [
+        "Reason name/active"
+      ],
+      "flow": "Create active reason → OEE daily reading reason selection and reason-frequency report.",
+      "improve": "Common reason suggestions, deliberate no-reason option, explicit labels that reason frequency is not downtime duration.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/downtimeReasons/OeeDowntimeReasonsPage.jsx",
+          "line": 1
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/dashboard/OeeDashboardPage.jsx",
+          "line": 825
+        }
+      ]
+    },
+    {
+      "module": "OEE",
+      "screen": "OEE Reports",
+      "route": "/oee/reports",
+      "type": "reports",
+      "children": [
+        "Daily",
+        "Machine Performance",
+        "Mould Performance",
+        "Downtime"
+      ],
+      "flow": "Choose date/resource filters → report tab → export permission permitting.",
+      "improve": "Shared saved filters and source drilldown consistent with OEE dashboard.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/reports/OeeReportsPage.jsx",
+          "line": 39
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/reports/OeeReportsPage.jsx",
+          "line": 421
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Channels",
+      "route": "/supply-chain/channels",
+      "type": "business master",
+      "children": [
+        "Code/name/description/sort order/active",
+        "List/view/edit/status/delete/export"
+      ],
+      "flow": "Create channel → warehouses, SKU mappings, packaging scopes, sales/dispatch/shipment selection reuse it.",
+      "strength": "Server conflicts and permission-dependent actions; active/inactive lifecycle.",
+      "improve": "Keep sort order under Advanced; include usage and next setup links; Save & add next.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/channels/ChannelsPage.jsx",
+          "line": 132
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/config/sidebar.js",
+          "line": 431
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Warehouses",
+      "route": "/supply-chain/warehouses",
+      "type": "channel-owned business master",
+      "children": [
+        "Channel/code/name",
+        "Address/region/city/state/postal",
+        "Priority/sort order/active"
+      ],
+      "flow": "Create warehouse for existing channel → dispatch warehouse stock and shipment destination reuse it.",
+      "improve": "Group required identity vs optional address; explain allocation priority versus display sort; prefill channel and preserve source context.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/warehouses/WarehousesPage.jsx",
+          "line": 146
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/warehouses/WarehousesPage.jsx",
+          "line": 237
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Item Mappings",
+      "route": "/supply-chain/item-mappings",
+      "type": "shared mapping master",
+      "children": [
+        "Existing Item↔channel SKU",
+        "Product label/external ID",
+        "Primary/effectivity/active",
+        "Unmatched SKU repair tab"
+      ],
+      "flow": "Find unmapped channel SKU → select existing Item → save mapping → import/planning can resolve source identifiers.",
+      "strength": "Unmatched queue, conflict handling, no duplicate Item master; same underlying mapping master as Procurement.",
+      "improve": "One canonical editor with advanced effective/primary fields and per-import context-return links; explain channel SKU vs internal Item code.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/itemMappings/ItemMappingsPage.jsx",
+          "line": 224
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/itemMappings/ItemMappingsPage.jsx",
+          "line": 541
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Packaging Profiles list / create / edit",
+      "route": "/supply-chain/packaging-profiles; /new; /:id/edit",
+      "type": "Item/channel packaging master",
+      "children": [
+        "Units/box",
+        "Dimensions/weight/divisor",
+        "Global/channel scope",
+        "Effective/default/active",
+        "Read-only view"
+      ],
+      "flow": "Choose existing Item/scope → define pack geometry and quantity → save profile → verify source/base conversion where required.",
+      "strength": "Existing Item reuse, scope/effectivity/default control, sticky save actions.",
+      "improve": "Save-and-continue to verification; list readiness badge; basic Units/box first and logistics dimensions optional advanced section.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 150
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 225
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfilesPage.jsx",
+          "line": 232
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Verified source-to-base conversion",
+      "route": "nested on existing Packaging Profile edit/view",
+      "type": "master child verification",
+      "children": [
+        "Existing source unit",
+        "Positive source/base quantity bases",
+        "Provenance",
+        "Version/idempotent approval"
+      ],
+      "flow": "Save profile first → reopen edit → authorized user verifies source/base unit ratio → normalization/physical shipment uses verified evidence.",
+      "strength": "Explicit unresolved state and source evidence; does not invent one-unit conversion.",
+      "improve": "Expose verification as step 2 during create and show readiness in profile list; preview '1 source unit = X base units'.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 332
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/PackagingConversionPanel.jsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "module": "Supply Chain",
+      "screen": "Imports",
+      "route": "/supply-chain/imports",
+      "type": "shared import workspace",
+      "children": [
+        "New import",
+        "Validation issue counts",
+        "Duplicate correction reason",
+        "History/details/error download",
+        "Link to Procurement committed cancellation"
+      ],
+      "flow": "Choose common Procurement sales import type/channel → preview/validate → correct mappings/duplicates → commit → review audit history.",
+      "strength": "Validation separates unmatched item/channel/warehouse; staged vs committed cancellation rules explained.",
+      "improve": "Show a unified 'What are you importing?' entry point routing to the proper specialized workflow; preserve specific contracts and permissions.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/imports/ImportsPage.jsx",
+          "line": 135
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/imports/ImportsPage.jsx",
+          "line": 974
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/imports/ImportsPage.jsx",
+          "line": 1041
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Procurement Home / Buy list",
+      "route": "/procurement",
+      "type": "planning workspace",
+      "children": [
+        "Demand date range",
+        "Buy list/cover/status",
+        "Expandable calculation",
+        "Assumptions explanation",
+        "Save draft",
+        "CSV"
+      ],
+      "flow": "Load demand-period preview → inspect shortfall/to-order → save plan → open plan history.",
+      "strength": "Simple buy-first entry compared with detailed calculation screen; positive actionable lines; explains global stock basis.",
+      "improve": "Keep as primary buyer entry; clearer saved-plan link directly to created plan; shared persistent assumptions summary.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/home/ProcurementHomePage.jsx",
+          "line": 299
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/home/ProcurementHomePage.jsx",
+          "line": 355
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/home/ProcurementHomePage.jsx",
+          "line": 460
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Generate Plan",
+      "route": "/procurement/generate-plan",
+      "type": "detailed planning transaction",
+      "children": [
+        "Range → Validate → Preview → Save draft",
+        "Per-line warnings/fix links",
+        "Column visibility",
+        "Detailed calculation"
+      ],
+      "flow": "Validate source/BOM/policies → server preview → inspect warnings/calculation → save draft run.",
+      "strength": "Existing four-step flow and column controls; do not propose them as missing.",
+      "improve": "Present this as Advanced plan review from Buy list; simplify defaults and retain selected columns.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/generatePlan/GeneratePlanPage.jsx",
+          "line": 63
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/generatePlan/GeneratePlanPage.jsx",
+          "line": 87
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Sales Data",
+      "route": "/procurement/sales-import",
+      "type": "planning-source transactions/reports",
+      "children": [
+        "Import CSV/XLSX preview/validation",
+        "History incl manual entry/edit/delete",
+        "Batches/detail/cancel",
+        "Product×channel summary"
+      ],
+      "flow": "Import source or record manual sales → resolve channel SKU in shared mapping → committed sales feed planning; cancellation excludes batch from planning with audit retained.",
+      "strength": "Workbook-style product-channel matrix already exists; points users to canonical Supply Chain channels/mappings.",
+      "improve": "Make import-vs-history-vs-batches labels task oriented; context-return from mapping repair; avoid asking everyday operators to choose among multiple import homes.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/salesImport/SalesImportPage.jsx",
+          "line": 1276
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/salesImport/SalesImportPage.jsx",
+          "line": 1325
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/salesImport/SalesImportPage.jsx",
+          "line": 1463
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Plans / Planning History",
+      "route": "/procurement/planning-history",
+      "type": "transaction snapshots",
+      "children": [
+        "Saved run list/detail",
+        "Draft line adjustment and reason",
+        "Finalize/cancel",
+        "Snapshot warnings",
+        "PO draft conversion"
+      ],
+      "flow": "Open saved draft → adjust with reason → finalize immutable plan → select unconverted positive lines + supplier/price/tax evidence → create existing Purchase Order draft.",
+      "strength": "Immutable finalized basis, warning/manual filters, source identity retained, already converted PO links, planning+PO permissions enforced.",
+      "improve": "Clear next-action card and stepper; promote created PO links; group lines by configured default supplier with explicit price confirmation.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/planningHistory/PlanningHistoryPage.jsx",
+          "line": 492
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ProcurementPurchasePanel.jsx",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Setup",
+      "route": "/procurement/setup",
+      "type": "setup hub, not a master",
+      "children": [
+        "SKU mapping",
+        "BOM",
+        "Settings"
+      ],
+      "flow": "Permission-filtered tabs embed existing editors/read views; links to standalone compatibility routes remain.",
+      "strength": "Consolidation already present; visible tabs only include allowed pages.",
+      "improve": "Add a completion checklist and one repair queue rather than add more independent masters.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/setup/ProcurementSetupPage.jsx",
+          "line": 12
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/setup/ProcurementSetupPage.jsx",
+          "line": 79
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "SKU Mapping",
+      "route": "/procurement/setup?tab=sku; /procurement/sku-mapping",
+      "type": "shared mapping editor",
+      "children": [
+        "Mappings",
+        "Unmapped SKU queue",
+        "Quick mapping modal"
+      ],
+      "flow": "Map channel SKU to finished Item; uses same ChannelSkuMappings storage as Supply Chain.",
+      "improve": "Use the canonical editor with permitted fields, preserving Procurement view permission; avoid implying another mapping is required.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/skuMapping/SkuMappingPage.jsx",
+          "line": 132
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20260715_procurement_planning_module.sql",
+          "line": 501
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "BOM Mapping",
+      "route": "/procurement/setup?tab=bom; /procurement/bom-mapping",
+      "type": "canonical Manufacturing BOM read/repair hub",
+      "children": [
+        "Products",
+        "Issues",
+        "Applicable effective BOM",
+        "BOM versions",
+        "Maintenance links"
+      ],
+      "flow": "Choose finished Item → inspect applicable canonical Manufacturing BOM → fix issue via Manufacturing maintenance.",
+      "strength": "No competing Procurement BOM editor; direct maintenance links.",
+      "improve": "Server search/pagination instead of first 200 products and first 100 versions; retain selected product/date on return. BOM issues API returns a collection and is not established to be capped by its ignored PageSize query.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/bomMapping/BomMappingPage.jsx",
+          "line": 55
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/bomMapping/BomMappingPage.jsx",
+          "line": 96
+        }
+      ]
+    },
+    {
+      "module": "Procurement",
+      "screen": "Settings / material policy / lead history",
+      "route": "/procurement/setup?tab=settings; /procurement/settings; /procurement/settings/:itemId/edit",
+      "type": "existing Item planning child policy",
+      "children": [
+        "Configured/missing materials",
+        "Configured/history/override lead time",
+        "Supplier typed lead time",
+        "Lead-time history modal",
+        "MOQ/order multiple/rounding",
+        "Automatic/manual/active modes"
+      ],
+      "flow": "Choose existing purchased Item → configure supplier/source duration and planning defaults → inspect effective lead-time precedence → save.",
+      "strength": "Effective precedence explained; warns when both planning modes off; purchased material reuse.",
+      "improve": "Consolidate typed supplier-policy and legacy configured-days controls into one lead-time story; live example for factors/MOQ/multiple and explicit mode chooser.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/settings/ProcurementSettingsPage.jsx",
+          "line": 119
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/settings/ProcurementSettingFormPage.jsx",
+          "line": 74
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/settings/ProcurementSettingFormPage.jsx",
+          "line": 285
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ProcurementPurchasePanel.jsx",
+          "line": 42
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "Dispatch Dashboard",
+      "route": "/dispatch/dashboard",
+      "type": "analytics",
+      "children": [
+        "Date/channel scope",
+        "Finalized/recommended/allocated/warehouse totals",
+        "Server recommendation picture"
+      ],
+      "flow": "Review planning totals → open runs/reports.",
+      "improve": "Prioritize runs needing allocation/finalization and link every action metric to its work queue.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/dashboard/DispatchDashboardPage.jsx",
+          "line": 206
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "Planning Runs / New run",
+      "route": "/dispatch/runs",
+      "type": "transaction register",
+      "children": [
+        "Run list/status filters",
+        "Channel/date/committed sales-stock-inbound batch selection"
+      ],
+      "flow": "Create run from committed source snapshots for selected channel; missing sources link to Imports.",
+      "strength": "Explicit frozen source batches; missing committed snapshots give actionable import link.",
+      "improve": "Recommend latest compatible batches with dates/freshness visibly explained; keep user confirmation for chosen basis.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunsPage.jsx",
+          "line": 246
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunsPage.jsx",
+          "line": 324
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "Planning run detail",
+      "route": "/dispatch/runs/:id",
+      "type": "planning lifecycle",
+      "children": [
+        "Draft/Calculated/Allocated/Finalized stages",
+        "Recommendation table/matrix",
+        "Overrides with reason",
+        "Stock allocation",
+        "Configuration blockers",
+        "Finalize/cancel/export"
+      ],
+      "flow": "Calculate → fix missing policy/packaging → review override → allocate → finalize immutable recommendation → separate Shipment creation.",
+      "strength": "Prominent state-specific Calculate/Allocate/Finalize action; immutable stage rules; affected configuration blockers; named matrix/table.",
+      "improve": "After Finalize, show Create shipments from this run with run/warehouse prefilled and existing linked shipments.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+          "line": 98
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+          "line": 729
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+          "line": 940
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "Imports",
+      "route": "/dispatch/imports",
+      "type": "snapshot source transactions",
+      "children": [
+        "CSV import",
+        "Manual snapshot entry",
+        "History",
+        "Sales/warehouse stock/inbound types",
+        "Duplicate correction"
+      ],
+      "flow": "Choose snapshot type/channel/warehouse → stage/validate → resolve mappings and duplicate reason → commit → use in new run.",
+      "strength": "Manual entry alongside file import; contextual fields by snapshot type; duplicate correction audit.",
+      "improve": "Shared mapping templates/error repair language with other import modules; preserve snapshot vs physical stock distinction.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/imports/DispatchImportsPage.jsx",
+          "line": 311
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/imports/DispatchImportsPage.jsx",
+          "line": 1075
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "SKU Settings list / form",
+      "route": "/dispatch/settings; /new; /:id/edit",
+      "type": "existing Item/channel dispatch child policy",
+      "children": [
+        "Global/channel policy",
+        "Packaging precedence",
+        "Tier/factors/minimum",
+        "Loose vs box rounding",
+        "Allocation priority",
+        "Effective/default status"
+      ],
+      "flow": "Choose existing Item/scope → select optional explicit packaging or precedence → configure factor/rounding policy → effective policy used by Calculate.",
+      "strength": "Existing Item reuse, global/channel scope, rounding help and loose-quantity warning.",
+      "improve": "Basic policy preset + worked sample 'sales X, stock Y, boxes Z'; preview resolved policy and packaging for chosen date.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/settings/DispatchSettingsPage.jsx",
+          "line": 125
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/settings/DispatchSettingFormPage.jsx",
+          "line": 310
+        }
+      ]
+    },
+    {
+      "module": "Dispatch",
+      "screen": "Recommendation Reports",
+      "route": "/dispatch/reports",
+      "type": "report",
+      "children": [
+        "Date/channel/warehouse/run-status filters",
+        "Recommendation and allocation totals",
+        "Export"
+      ],
+      "flow": "Filter matching recommendation rows → inspect totals → export.",
+      "improve": "Quick presets for unallocated/shortfall/warehouse actions with direct links to run.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/reports/DispatchReportsPage.jsx",
+          "line": 158
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Shipment Dashboard",
+      "route": "/shipments/dashboard",
+      "type": "analytics",
+      "children": [
+        "As-of date",
+        "Draft/ready/in-transit/attempt/return/overdue counts",
+        "Quantity/freight totals"
+      ],
+      "flow": "Review current operational burden → enter shipment work list.",
+      "improve": "Make overdue/ready/return metrics open filtered work queues; show next action and assigned responsibility.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/dashboard/ShipmentDashboardPage.jsx",
+          "line": 117
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/dashboard/ShipmentDashboardPage.jsx",
+          "line": 154
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Work List",
+      "route": "/shipments/work-list",
+      "type": "transaction register",
+      "children": [
+        "Status/source/channel filters",
+        "Manual create",
+        "Create from dispatch plan",
+        "Open/cancel"
+      ],
+      "flow": "Create/open shipment → execute packing/ownership/transport/receipt/freight work → track completion.",
+      "strength": "Source/status/priority and major quantity totals visible; permission/status-specific row actions.",
+      "improve": "Role-specific presets and next-action column; basic compact columns and details expansion.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/ShipmentWorkListPage.jsx",
+          "line": 429
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Manual shipment",
+      "route": "/shipments/work-list/new",
+      "type": "transaction form",
+      "children": [
+        "Channel/warehouse",
+        "Existing Item/packaging lines",
+        "Transporter role",
+        "Dates/references/reason"
+      ],
+      "flow": "Select real shared masters → add planned lines → record manual reason → create shipment snapshot.",
+      "improve": "Search and paginate Item/profile lookups; progressive basic vs advanced fields; retain draft and selected channel on master repair.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/ManualShipmentFormPage.jsx",
+          "line": 70
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/ManualShipmentFormPage.jsx",
+          "line": 195
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Create from dispatch plan",
+      "route": "/shipments/work-list/new-from-plan",
+      "type": "linked transaction form",
+      "children": [
+        "Finalized run",
+        "Warehouse",
+        "Allocated lines/partial quantity",
+        "Transporter/dates/references"
+      ],
+      "flow": "Find finalized run → choose warehouse → select allocation lines/quantities → create linked shipment.",
+      "strength": "Only finalized allocation source accepted; source identities retained.",
+      "improve": "Deep-link/prefill directly from finalization; searchable paginated finalized runs; show already-shipped and remaining allocatable quantities clearly.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+          "line": 49
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+          "line": 74
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Shipment detail workspace",
+      "route": "/shipments/work-list/:id",
+      "type": "transaction detail",
+      "children": [
+        "Items",
+        "Packing",
+        "Invoice & unit verification",
+        "Transport",
+        "Receipts & returns",
+        "Freight",
+        "Timeline"
+      ],
+      "flow": "Shared shipment context/quantity ribbon → visit relevant tab → validate action → server update/conflict reload; status review is separate.",
+      "strength": "Seven explicit tabs, lifecycle-dependent permissions and disabled explanations, history retained.",
+      "improve": "A short guided next-action checklist with blocking reasons linked to the correct tab; user-facing labels instead of ownership enum/IDs; compact summary before 1500px item table.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 80
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 596
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/shipmentStatus.js",
+          "line": 95
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Packing",
+      "route": "shipment detail ?tab=packing",
+      "type": "transaction child",
+      "children": [
+        "Package builder",
+        "Mixed allocations",
+        "Dimensions/weights",
+        "Reconciliation",
+        "Verification integration"
+      ],
+      "flow": "Allocate quantities into packages → reconcile planned/packed balance → continue physical dispatch readiness.",
+      "strength": "Over-allocation validation and mixed-package detection.",
+      "improve": "Default package from selected verified profile, duplicate package action, barcode/keyboard bulk mode, direct fix links for missing verification.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentPackingTab.jsx",
+          "line": 27
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentPackingTab.jsx",
+          "line": 111
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Invoice & unit verification",
+      "route": "shipment detail ?tab=ownership",
+      "type": "controlled physical integration child",
+      "children": [
+        "Verify existing profile/base units",
+        "Link existing sales invoice lines",
+        "Partial quantity allocation",
+        "Stock ownership"
+      ],
+      "flow": "Verify canonical base unit/profile → declare correct invoice line owner in Sales → allocate shipment quantity → actual physical dispatch owns stock reduction.",
+      "strength": "Explicit partial links and permission intersection; verified evidence required; no fabricated pack conversion.",
+      "improve": "Guided Verify packing → Choose invoice → Allocate → Ready to dispatch, with plain stock-effect preview and remaining quantity.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 28
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 50
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 72
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Transport",
+      "route": "shipment detail ?tab=transport",
+      "type": "transaction children",
+      "children": [
+        "Docket",
+        "Appointments",
+        "Delivery attempts"
+      ],
+      "flow": "Select existing transporter role → record docket/vehicle/tracking → appointment → attempts/outcomes.",
+      "improve": "Display prerequisites and one current transport status; distinguish failed transporter lookup from zero transporters.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentTransportTab.jsx",
+          "line": 75
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 821
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Receipts & returns",
+      "route": "shipment detail ?tab=receipts-returns",
+      "type": "transaction children",
+      "children": [
+        "Receipt line quantities/rejected/damaged/short",
+        "Proof/reference",
+        "Return initiation",
+        "Return receive and restockable quantity"
+      ],
+      "flow": "Record actual delivered outcomes → initiate returns → receive against return → restock only authorized received restockable quantities.",
+      "strength": "Balances/return receive validation; separates restockable from all returned stock.",
+      "improve": "One per-line outcome grid with quantity sum/remainder and clear stock preview; explain difference between shipment receipt and physical return receipt.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentReceiptsReturnsTab.jsx",
+          "line": 69
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentReceiptsReturnsTab.jsx",
+          "line": 81
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Freight / freight work list",
+      "route": "shipment detail ?tab=freight; /shipments/freight",
+      "type": "transaction children and role queue",
+      "children": [
+        "Charge components",
+        "Submit/approve/reject",
+        "Payment",
+        "Rojmel transfer"
+      ],
+      "flow": "Create itemized freight → submit/approval → pay via existing wallet/Rojmel flow → finance linkage.",
+      "strength": "Separate charge/approval/payment permissions; existing financial masters reused.",
+      "improve": "Simple total + optional charge breakdown; role queue for 'Needs my approval/payment'; direct source and ledger links.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentFreightTab.jsx",
+          "line": 63
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/freight/ShipmentFreightPage.jsx",
+          "line": 150
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Timeline",
+      "route": "shipment detail ?tab=timeline",
+      "type": "append-only transaction history",
+      "children": [
+        "Tracking event type/time/source/status/location/reference/remarks"
+      ],
+      "flow": "Add event with source → view newest-first audit history.",
+      "strength": "Append-only editing restriction explained.",
+      "improve": "Use business-friendly quick event presets while preserving timestamp/source evidence.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 441
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 673
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Transporters",
+      "route": "/shipments/transporters",
+      "type": "Party Master role view, not separate master",
+      "children": [
+        "Party search",
+        "Transporter role toggle",
+        "Open Party Master"
+      ],
+      "flow": "Create/edit Party in existing Party Master → toggle transporter role → select in shipment/docket.",
+      "strength": "Correctly avoids duplicate transporter entities and explains reuse.",
+      "improve": "Retain query/return context when creating Party; show only authorized Party navigation actions.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/transporters/ShipmentTransportersPage.jsx",
+          "line": 108
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/transporters/ShipmentTransportersPage.jsx",
+          "line": 163
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Historical import",
+      "route": "/shipments/imports",
+      "type": "historical import transaction",
+      "children": [
+        "File",
+        "Map columns",
+        "Parse & validate",
+        "Commit",
+        "Status-value mapping",
+        "Duplicate correction",
+        "History/reverse uncommitted"
+      ],
+      "flow": "Choose historical CSV → map headers and statuses → parse/validate → commit history; explicitly does not alter current stock.",
+      "strength": "Four visible steps and no-current-stock notice; mappings/duplicate corrections kept explicit.",
+      "improve": "Remember templates by source and show clear historical-only badge across preview/history; unified import launcher.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/imports/ShipmentImportsPage.jsx",
+          "line": 704
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/imports/ShipmentImportsPage.jsx",
+          "line": 749
+        }
+      ]
+    },
+    {
+      "module": "Shipments",
+      "screen": "Shipment Reports",
+      "route": "/shipments/reports",
+      "type": "report",
+      "children": [
+        "Date/channel/warehouse/status filters",
+        "Quantities/returns/freight totals",
+        "Export"
+      ],
+      "flow": "Filter operational shipment evidence → review matching totals → export.",
+      "improve": "Shared saved presets and direct row-to-shipment/tab drilldowns.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/reports/ShipmentReportsPage.jsx",
+          "line": 145
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Item Manufacturing legacy production draft/post/cancel",
+      "route": "nested Item → Manufacturing tab",
+      "type": "legacy stock-production transaction, not a master",
+      "children": [
+        "Manufacture modal",
+        "Production draft edit",
+        "Material snapshot detail",
+        "Post stock",
+        "Cancel/reverse posted output",
+        "First 20 production records"
+      ],
+      "flow": "Choose Item → Manufacture with BOM/output → save legacy production draft → post material deduction and finished stock → cancel/reverse if needed.",
+      "strength": "Authoritative BOM snapshot, explicit stock-effect review, timeout reconciliation.",
+      "improve": "Clarify its relationship to the newer order-based Production module; align approval capability checks; preserve historical data while presenting one obvious primary entry path; paginate older records.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 150
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 219
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 418
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "module": "Production",
+      "screen": "Canonical Item Manufacturing BOM maintenance",
+      "route": "nested Item → Manufacturing tab",
+      "type": "existing Item-owned versioned BOM master",
+      "children": [
+        "Version/output base",
+        "Effective dates",
+        "Default",
+        "Raw material lines/waste/base units",
+        "Activate/deactivate",
+        "Draft edit/delete"
+      ],
+      "flow": "Create BOM version for existing Item → add raw components/output basis → activate → reused by Procurement and order production.",
+      "strength": "Canonical versioned BOM owns actual recipe; Procurement correctly links here.",
+      "improve": "Add explicit approval action for end-effectivity endpoint and scenario of retiring an active BOM without changing historical snapshots.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 99
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 409
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionBomEffectivityController.cs",
+          "line": 13
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "OPS-01",
+      "priority": "P1",
+      "kind": "source-confirmed data-entry resilience gap",
+      "title": "Daily typed quantities have no unsaved-work protection",
+      "observation": "Daily drafts use component useState. Links to individual orders/new order/planning and route changes exist, but this component has no beforeunload/route guard or persistence. Navigating away and unmounting or reloading discards entered but unreviewed rows.",
+      "proposal": "Add a visible unsaved count, scoped recoverable draft storage or router leave guard, and explicit Discard; scope by authenticated user/company/order version and never auto-post recovered data.",
+      "benefit": "Prevents a worker losing many typed/pasted rows and guessing what was saved.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/ProductionDeskPage.jsx",
+          "line": 33
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/ProductionDeskPage.jsx",
+          "line": 133
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/DailyProductionGrid.jsx",
+          "line": 24
+        }
+      ],
+      "verification": "Source behavior; navigation/reload reproduction should be tested in browser before delivery."
+    },
+    {
+      "id": "OPS-02",
+      "priority": "P1",
+      "kind": "source-confirmed incomplete lookup behavior at larger data sizes",
+      "title": "Several selectors and repair queues only load the first 200 records",
+      "observation": "Manual shipment loads only page 1 of Items and packaging profiles; plan-based shipment loads first 200 finalized runs; OEE daily resources first 200; BOM repair loads first 200 products and locally searches those products, plus only first 100 BOM versions. Item Manufacturing history loads first 20 legacy production records without history pagination. Larger datasets can make valid records unavailable or falsely look absent. The BOM Issues API itself returns an unpaged collection; its requested PageSize is not evidence of a 200-issue cap.",
+      "proposal": "Server-backed search with pagination, or deliberately fetch every permitted page where small bounded reference catalogs are intended. Display total and loading/failure states, retain selected inactive records when viewing history.",
+      "benefit": "Client can find real Items, moulds, runs and BOM issues as their catalog grows.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/ManualShipmentFormPage.jsx",
+          "line": 70
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+          "line": 49
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/bomMapping/BomMappingPage.jsx",
+          "line": 57
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/bomMapping/BomMappingPage.jsx",
+          "line": 96
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 466
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 247
+        }
+      ]
+    },
+    {
+      "id": "OPS-03",
+      "priority": "P1",
+      "kind": "source-confirmed setup handoff gap",
+      "title": "Packaging creation says saved before the nested verification step is discoverable",
+      "observation": "Packaging create/update shows success and navigates to the list. Verified source-to-base conversion is rendered only for an existing record in edit/view; the profile list presents Units/box/active/default but not conversion readiness. Required downstream evidence may remain unresolved despite successful save.",
+      "proposal": "After create offer Save & verify conversion; show a profile readiness badge and direct Verify link; show base/source units and a sample conversion. Keep save permission and approval permission separate, handing off to an approver when needed.",
+      "benefit": "A client completes setup once, instead of discovering an unexplained blocker during import or dispatch.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 150
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 332
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfilesPage.jsx",
+          "line": 232
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/PackagingConversionPanel.jsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "id": "OPS-04",
+      "priority": "P1",
+      "kind": "usability/risk recommendation, not proven stock defect",
+      "title": "Three production-entry concepts need an explicit business distinction",
+      "observation": "Manufacturing Daily Production records accepted/rejected quantities and actual material posting; OEE Production Entries records runtime/mould/shots. In addition, Item → Manufacturing still exposes its own legacy Manufacture/draft/post/cancel stock-production transaction. A client can reasonably think an entry satisfies another workflow or enter the same real-world output twice.",
+      "proposal": "Use one primary Production entry path and clearly separate Daily output & materials from Machine runtime & shots. Route new production work consistently after deciding the supported legacy migration strategy, retain legacy history, add related order/reading links where valid, and show explicit stock-effect labels. Do not blindly merge APIs or infer stock output from mould cavity.",
+      "benefit": "Avoids duplicate entry confusion and incorrect expectations about stock and machine reports.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/config/sidebar.js",
+          "line": 778
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/config/sidebar.js",
+          "line": 897
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/desk/ProductionDeskPage.jsx",
+          "line": 134
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 824
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 418
+        }
+      ]
+    },
+    {
+      "id": "OPS-05",
+      "priority": "P2",
+      "kind": "source-confirmed operational acknowledgment gap",
+      "title": "OEE Off means skipped; deliberate no-production cannot be acknowledged in this grid",
+      "observation": "Bulk entry filters only isRunning rows and refuses saving when all machines are off. UI says Off · skipped. An intentionally stopped/no-production day is therefore not evidenced by this form, which can confuse reporting completeness with missing entry.",
+      "proposal": "Add explicit Not run / Planned stop / Running acknowledgments with reason, preferably a day-completion review. Preserve genuine missing evidence and do not manufacture zero output readings.",
+      "benefit": "Supervisor knows whether nobody entered data or no production actually occurred.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 611
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 624
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 942
+        }
+      ]
+    },
+    {
+      "id": "OPS-06",
+      "priority": "P2",
+      "kind": "source-confirmed readability gap",
+      "title": "Production detail exposes resource IDs and technical evidence before business names",
+      "observation": "Order context shows Machine # / Mould # / Shift #, Channel #, BOM/routing IDs/current version, and frozen operations/work centres as IDs/rate basis code. These are useful audit identities but hard for workers to recognize.",
+      "proposal": "Resolve permitted resource labels or preserve label snapshots; present Item, resource names, due date, remaining and next action first; put IDs/version/calculation basis under Details.",
+      "benefit": "Fewer wrong-order/resource selections and less training.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderDetailPage.jsx",
+          "line": 57
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderDetailPage.jsx",
+          "line": 60
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+          "line": 273
+        }
+      ]
+    },
+    {
+      "id": "OPS-07",
+      "priority": "P2",
+      "kind": "source-confirmed cross-module handoff gap",
+      "title": "Finalized dispatch planning does not guide users directly into linked shipment creation",
+      "observation": "Dispatch detail primary actions end after Finalized and finalization text says it does not create a shipment. Shipment creation requires a separate form, loading finalized runs and choosing the run again; the form has no run query/state prefill in its initial state.",
+      "proposal": "After finalize expose Create shipment with run/warehouse context, remaining allocations and existing shipments; support a verified deep link and preserve permissions.",
+      "benefit": "Removes rediscovery and wrong-run selection while retaining a review before shipment creation.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+          "line": 729
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+          "line": 446
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "id": "OPS-08",
+      "priority": "P2",
+      "kind": "source-confirmed failure-state ambiguity",
+      "title": "Transporter request failures silently become an empty transporter list",
+      "observation": "Plan-based shipment creation catches transporter list failure and sets []; detail workspace does the same. A permission/network/server failure looks like 'no transporters configured'.",
+      "proposal": "Independent transporter error/loading/retry state and relevant Party-role setup link when genuinely empty; preserve other form data.",
+      "benefit": "User fixes the real issue instead of creating duplicate parties or abandoning entry.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+          "line": 64
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 821
+        }
+      ]
+    },
+    {
+      "id": "OPS-09",
+      "priority": "P2",
+      "kind": "source-confirmed export usability gap",
+      "title": "Operational production report primary export is NDJSON",
+      "observation": "OperationalReportsPage downloads production-<kind>.ndjson. The client works with sheets, while this output requires data tooling or import steps.",
+      "proposal": "Offer formatted CSV/XLSX with human headings, units, date/filter basis and quality flags; preserve NDJSON under Advanced export for integrations.",
+      "benefit": "Client can immediately open, reconcile and share the report in Excel.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/reports/OperationalReportsPage.jsx",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "id": "OPS-10",
+      "priority": "P2",
+      "kind": "configuration usability recommendation",
+      "title": "Policy forms expose many mathematical and logistics fields without a worked outcome",
+      "observation": "Warehouse priority/sort, packaging dimensions/divisor/effectivity/defaults, dispatch safety/recurring factors/rounding/priority, typed supplier lead duration alongside legacy configured days, and routing rate/quantity basis require users to understand implementation concepts.",
+      "proposal": "Basic/Advanced sections, sensible named policy presets, live worked example, resolved effective policy summary and Save & next setup actions. Do not create additional masters.",
+      "benefit": "Faster onboarding and fewer valid-but-wrong configurations.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/warehouses/WarehousesPage.jsx",
+          "line": 237
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+          "line": 225
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/dispatch/settings/DispatchSettingFormPage.jsx",
+          "line": 333
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/procurement/settings/ProcurementSettingFormPage.jsx",
+          "line": 285
+        }
+      ]
+    },
+    {
+      "id": "OPS-11",
+      "priority": "P2",
+      "kind": "source-confirmed accessibility and pending-state inconsistency",
+      "title": "OEE custom modal headings are not connected to the dialog name; editing stays enabled while saving",
+      "observation": "OEE shared master modal and production quick-create/edit modals omit AppModal title and render their own h2. AppModal then announces only Dialog. Shared master fields disable only isView, and its Cancel button remains enabled while isSubmitting, despite isBusy guarding outer modal closure.",
+      "proposal": "Pass title or aria-labelledby consistently; disable/edit-freeze inputs and cancel while a request is in flight, or define safe cancellation behavior. Verify keyboard focus/return and announced title.",
+      "benefit": "Accessible modal identity and less confusion when a save completes after users have changed/closed the form.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/OeeMasterPage.jsx",
+          "line": 153
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/OeeMasterPage.jsx",
+          "line": 221
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/OeeMasterPage.jsx",
+          "line": 250
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+          "line": 120
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/components/common/AppModal.jsx",
+          "line": 133
+        }
+      ]
+    },
+    {
+      "id": "OPS-12",
+      "priority": "P2",
+      "kind": "workflow usability recommendation",
+      "title": "Cross-module setup and shipment execution need a permission-aware next-action checklist",
+      "observation": "Order creation lists six lookup permissions and effective prerequisites; shipment execution spans seven tabs, separate packing verification, invoice owner declaration and partial invoice allocations. Most pieces are implemented but a new user must infer the correct sequence.",
+      "proposal": "Show a small readiness checklist with Ready / Needs setup / Ask approver / Failed to load, business-language reasons, direct repair links and return-to-current-work context. Permission failure must not look like absent master data.",
+      "benefit": "Client can proceed without knowing the module architecture or asking support where the next screen is.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+          "line": 241
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+          "line": 80
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 50
+        }
+      ]
+    },
+    {
+      "id": "OPS-13",
+      "priority": "P1",
+      "kind": "source-confirmed capability mismatch; live role test still required",
+      "title": "Legacy Item production Post/Cancel checks Edit in UI but Approve in API",
+      "observation": "ItemManufacturingTab requests view/create/update capabilities only, and both Post and Cancel/reverse actions are gated by canUpdate. The API explicitly requires Manufacturing.Productions Approve for both operations. An editor without approval sees actions that should fail 403, while an approval-only user may not see the required action.",
+      "proposal": "Request and use canApprove for stock posting/reversal independently from canUpdate for draft editing; give a clear missing-permission explanation. Verify view-only, create-only, edit-only, approve-only and combined roles.",
+      "benefit": "Approvers can complete work and editors are not led into predictable failed stock actions.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 219
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 420
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs",
+          "line": 43
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs",
+          "line": 45
+        }
+      ]
+    },
+    {
+      "id": "OPS-14",
+      "priority": "P2",
+      "kind": "API-supported command without explicit frontend entry",
+      "title": "Approved BOM end-effectivity command has no dedicated frontend action",
+      "observation": "ProductionBomEffectivityController exposes POST boms/{id}/effectivity with Boms Approve. Item Manufacturing only offers effective dates in ordinary BOM editing, edit/delete inactive BOMs, and activate/deactivate. Frontend configuration closeEffectivity calls /configuration/{kind}/{id}/effectivity, whose backend deliberately rejects kind=bom; no call to the dedicated BOM endpoint was found.",
+      "proposal": "Add a permission-aware End validity date review for active BOM versions, explaining impact on new orders and preserving frozen history. Do not add a separate BOM master.",
+      "benefit": "Users can safely retire a recipe on a specific business date through the approved flow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionBomEffectivityController.cs",
+          "line": 13
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs",
+          "line": 19
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/manufacturing/productionConfigurationService.js",
+          "line": 31
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 415
+        }
+      ]
+    },
+    {
+      "id": "OPS-15",
+      "priority": "P1",
+      "kind": "source-confirmed recovery dead end",
+      "title": "Legacy packing recovery requires removing allocations but normal packing offers no removal",
+      "observation": "The verification UI says remove affected draft package allocations in Packing first; SQL throws REPACK_REQUIRED if existing package-item allocations are present. Packing UI only builds new packages and displays packages; service/controller expose GET suggestions and POST create, not edit/remove. Base Save procedure rejects an existing package number and inserts a new package. The user cannot perform the instructed recovery using the available normal UI/API.",
+      "proposal": "Implement a controlled draft-only package edit/remove/repack workflow with reconciliation, version/permission checks and audit; expose the action from the blocker. Protect dispatched packages and posted stock. Until supported, guidance should state the actual recovery path rather than link to an unavailable action.",
+      "benefit": "Clients can fix wrong/legacy packaging without database intervention, abandoned shipments or duplicate packing.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 75
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20261027_23_legacy_packing_verification.sql",
+          "line": 16
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/shipments/detail/ShipmentPackingTab.jsx",
+          "line": 633
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/shipments/packingService.js",
+          "line": 6
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ShipmentOperations/ShipmentOperationsControllers.cs",
+          "line": 63
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20260729_shipment_operations_module.sql",
+          "line": 818
+        }
+      ]
+    }
+  ],
+  "sharedMasterReuse": [
+    {
+      "master": "Item",
+      "usedBy": "Manufacturing finished/components, Procurement BOM/policy, Supply Chain mappings/packaging, Dispatch policy, Shipments",
+      "note": "Use existing inventory Item; no extra SKU master needed."
+    },
+    {
+      "master": "Manufacturing BOM",
+      "usedBy": "Production and Procurement planning",
+      "note": "Procurement BOM Mapping is a read/repair hub with links to canonical Manufacturing maintenance."
+    },
+    {
+      "master": "Sales Channel / ChannelSkuMappings",
+      "usedBy": "Supply Chain and Procurement; Dispatch and Shipment source resolution",
+      "note": "Two UI editors are over shared storage, not duplicate masters.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20260715_procurement_planning_module.sql",
+          "line": 480
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20260715_procurement_planning_module.sql",
+          "line": 501
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/verify_supply_chain_common_foundation.sql",
+          "line": 72
+        }
+      ]
+    },
+    {
+      "master": "OEE Machine/Mould",
+      "usedBy": "OEE readings and Item Manufacturing eligibility/routing/order resources"
+    },
+    {
+      "master": "HR Shift",
+      "usedBy": "Work Centre effective capacity and Production orders"
+    },
+    {
+      "master": "Packaging Profile / verified conversion",
+      "usedBy": "Dispatch planning, Shipment packing, production/import normalization"
+    },
+    {
+      "master": "Party (transporter role)",
+      "usedBy": "Shipments/dockets/freight",
+      "note": "Transporters page is a role toggle over existing Party Master."
+    },
+    {
+      "master": "Supplier Party / existing Purchase Order",
+      "usedBy": "Procurement policy and finalized plan conversion"
+    },
+    {
+      "master": "Sales Invoice",
+      "usedBy": "Shipment-owned partial line allocation"
+    },
+    {
+      "master": "Wallet/Rojmel",
+      "usedBy": "Shipment freight payment/transfer"
+    },
+    {
+      "master": "Work Centre and Operation",
+      "usedBy": "Production routing/capacity",
+      "note": "These are the two new production business masters; shift calendars, routing and eligibility are children, not independent business masters."
+    }
+  ],
+  "flows": [
+    "Setup shared Item/Unit/BOM, OEE Machine/Mould, HR Shift → Work Centre + capacity + Operation → Item routing/eligibility → production planning → draft → release/reservation → daily entry/partial material completion → linked correction/report.",
+    "Channel → channel Warehouse → shared channel-SKU mapping → packaging profile + verified conversion → dispatch SKU policy → sales/warehouse/inbound committed snapshots → calculate/override/allocate/finalize dispatch run → linked shipment draft.",
+    "Procurement sales import/manual source → shared SKU resolution + canonical BOM + purchased Item policy → buy-list/advanced preview → saved draft → adjustment/reason → finalize → sourced supplier/price/tax selection → existing Purchase Order draft.",
+    "Shipment draft → verified packing/units + invoice ownership/line allocations → packing/docket/readiness → actual dispatch with physical stock effect → transit/appointment/attempt → receipt outcomes/return receipt → freight approval/payment/Rojmel → reports.",
+    "OEE Machine/Mould/Reason → daily runtime/shot readings → grouped history → performance, insights, submission audit and OEE reports; this is distinct from physical stock completion."
+  ],
+  "strengths": [
+    "Daily grid and Kanban are implemented and directly discoverable. They are not still missing work.",
+    "New stock-affecting production workflows use explicit review, exact quantity handling, versions, request identity/recovery, and authoritative refresh.",
+    "Shared master reuse is generally correct; avoid proposing duplicate SKU, Machine, Mould, Shift, BOM, Transporter or stock masters.",
+    "Procurement already has consolidated setup tabs, a simple buy-list, advanced four-step planning, editable draft/finalized snapshots, source-preserving PO conversion, and a workbook-like product-channel summary.",
+    "Dispatch has a clear lifecycle action, blockers and committed source batches; Shipment has explicit permissions, conflicts and distinct historical import behavior.",
+    "Reporting often keeps missing evidence and mixed units explicit rather than showing invented zero totals."
+  ],
+  "limitations": [
+    "No live browser, role-based scenario, responsive visual screenshot or accessibility execution proof from this child audit.",
+    "No database integration proof and no confirmation that the previously reported company-configuration runtime error is resolved.",
+    "No stock posting, reversal, invoice ownership, dispatch-to-shipment or finance action was executed; source intent is not runtime correctness.",
+    "No global count of masters is asserted. The coverage rows include routes, transactions, reports, child configurations and role views.",
+    "Legacy /reports/manufacturing and shared inventory/Party/HR/admin/general dashboard pages are parent/other-reviewer scope; this audit focuses the owned operational modules.",
+    "Backend reconciliation is source-only. Migration files indicate intended contracts; no assertion is made that the live database has applied those migrations."
+  ],
+  "backendReconciliation": [
+    {
+      "group": "Manufacturing BOM CRUD/status",
+      "state": "Implemented as Item Manufacturing nested BOM editor/list, not standalone sidebar master.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs",
+          "line": 11
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 409
+        }
+      ]
+    },
+    {
+      "group": "Legacy Manufacturing Productions CRUD/post/cancel",
+      "state": "Implemented as Item Manufacturing nested transaction modals/list. This is a third production concept and has approval UI mismatch, not an API-only feature.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ManufacturingControllers.cs",
+          "line": 32
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 418
+        }
+      ]
+    },
+    {
+      "group": "Production Configuration masters/children",
+      "state": "Work Centre/Operation and nested work-centre shifts/calendar/effectivity map to ConfigurationPage. Item routing/eligibility/effectivity map to ItemProductionConfiguration. No additional missing business master found.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs",
+          "line": 13
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+          "line": 274
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+          "line": 210
+        }
+      ]
+    },
+    {
+      "group": "Dedicated BOM end-effectivity",
+      "state": "API-supported; no dedicated frontend command/service found. Ordinary effective-date edit is a different operation.",
+      "finding": "OPS-14",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionBomEffectivityController.cs",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "group": "Packaging conversion",
+      "state": "Read/approval API maps to existing PackagingConversionPanel nested under profile edit/view; discoverability gap after creation.",
+      "finding": "OPS-03",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/PackagingConversionController.cs",
+          "line": 12
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/configuration/PackagingConversionPanel.jsx",
+          "line": 84
+        }
+      ]
+    },
+    {
+      "group": "Production orders/planning/import/snapshots/adjustments/reports",
+      "state": "Covered by Orders/Daily/Kanban, Planning, Imports, AdjustmentPanel and OperationalReports; stock adjustment is under Imports rather than a new Item master.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs",
+          "line": 103
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProductionStockSnapshotsControllers.cs",
+          "line": 20
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/imports/ImportsPage.jsx",
+          "line": 249
+        }
+      ]
+    },
+    {
+      "group": "Supply Chain grouped controllers",
+      "state": "Channels, Warehouses, Mappings, Packaging and Imports all map to current screens. set-default is an action, not another master. Shared procurement channels/mappings are compatibility views of canonical common tables.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/SupplyChain/SupplyChainControllers.cs",
+          "line": 21
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/SupplyChain/SupplyChainControllers.cs",
+          "line": 148
+        }
+      ]
+    },
+    {
+      "group": "Procurement legacy channels/BOM APIs",
+      "state": "Channels managed through Supply Chain UI. Legacy Procurement BOM PUT is intentionally rejected with 409 by 20261006 unification SQL; do not create an independent Procurement BOM editor merely because a controller remains.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ProcurementPlanning/ProcurementPlanningControllers.cs",
+          "line": 20
+        },
+        {
+          "path": "F:/FI/cosmos/backend/database/migrations/20261006_unify_procurement_with_manufacturing_boms.sql",
+          "line": 135
+        }
+      ]
+    },
+    {
+      "group": "Procurement settings/lead history and continuity",
+      "state": "Existing setup/settings form plus LeadTimeHistoryModal and SupplierPolicyPanel map to APIs. Finalized plan PO creation is already implemented via ProcurementPurchasePanel, not missing UI.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ProcurementPlanning/ProcurementPlanningControllers.cs",
+          "line": 221
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/ProcurementContinuityControllers.cs",
+          "line": 13
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ProcurementPurchasePanel.jsx",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "group": "Dispatch grouped controllers",
+      "state": "Settings, imports/manual snapshots, run create/calculate/recommendation override/allocate/finalize/cancel and reports/export map to existing screens. No separate missing master identified.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/DispatchPlanning/DispatchPlanningControllers.cs",
+          "line": 22
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/DispatchPlanning/DispatchPlanningControllers.cs",
+          "line": 97
+        }
+      ]
+    },
+    {
+      "group": "Shipment grouped controllers",
+      "state": "Shipment lifecycle, packing, docket, appointment, tracking, attempt, receipt, return receipt, freight stages/payment/Rojmel, transporter role, history/import and reports map to work-list/detail child tabs. Existing package edit/remove is absent across UI and listed API, creating OPS-15.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ShipmentOperations/ShipmentOperationsControllers.cs",
+          "line": 61
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ShipmentOperations/ShipmentOperationsControllers.cs",
+          "line": 124
+        }
+      ]
+    },
+    {
+      "group": "Invoice/shipment ownership APIs",
+      "state": "InvoiceOwnershipPanel and ShipmentPhysicalPanel implement owner declaration, line allocations and packing verification; these are controlled integration children, not masters.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Manufacturing/PhysicalInventoryOwnershipControllers.cs",
+          "line": 12
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/ShipmentPhysicalPanel.jsx",
+          "line": 28
+        }
+      ]
+    }
+  ]
+}

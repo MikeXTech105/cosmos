@@ -9,6 +9,11 @@ beforeEach(() => {
   for (const method of ["get", "post", "put"]) productionApi[method].mockResolvedValue({ data: { succeeded: true, data: { id: 99, version: "v2" } } });
 });
 describe("configuration real route and exact numeric contracts", () => {
+  it("ends an approved BOM using its dedicated route and current concurrency token", async () => {
+    await service.closeEffectivity("bom", "9007199254740993", { version: "0x00000000000000A1", idempotencyKey: "reviewed-intent", effectiveTo: "2026-10-28", reason: "New recipe effective tomorrow" });
+    expect(productionApi.post).toHaveBeenCalledWith("/api/v1/manufacturing/boms/9007199254740993/effectivity", expect.objectContaining({ version: "0x00000000000000A1", idempotencyKey: "reviewed-intent" }));
+    expect(productionApi.post.mock.calls.some(([path]) => path.includes("/configuration/bom/"))).toBe(false);
+  });
   it("sends an exact numeric token for large identifiers, rate and quantity basis", async () => {
     await service.createRouting(12, { revision: "R1", effectiveFrom: "2026-10-27", effectiveTo: null, steps: [{ sequence: 1, operationId: "9007199254740993", workCentreId: "22", rateBasis: 1, rate: "9999999999999999.999999", setupMinutes: "0", quantityBasis: "0.000001", machineId: null, mouldId: null }] });
     const [path, payload] = productionApi.post.mock.calls[0];

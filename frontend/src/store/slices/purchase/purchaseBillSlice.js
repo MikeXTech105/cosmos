@@ -9,6 +9,7 @@ import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
+  getThunkFormError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
 
@@ -89,7 +90,7 @@ export const createPurchaseBill = createAsyncThunk(
     try {
       return await purchaseBillService.createPurchaseBill(payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to create bill."));
+      return rejectWithValue(getThunkFormError(error, "Unable to create bill."));
     }
   },
 );
@@ -100,7 +101,7 @@ export const updatePurchaseBill = createAsyncThunk(
     try {
       return await purchaseBillService.updatePurchaseBill(id, payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to update bill."));
+      return rejectWithValue(getThunkFormError(error, "Unable to update bill."));
     }
   },
 );
@@ -198,7 +199,7 @@ const purchaseBillSlice = createSlice({
         if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
-        state.error = action.payload ?? action.error.message;
+        state.error = getThunkError(action.payload ?? action.error);
         state.listRequestId = null;
       })
       .addCase(fetchPurchaseBillById.pending, (state, action) => {
@@ -216,7 +217,7 @@ const purchaseBillSlice = createSlice({
       .addCase(fetchPurchaseBillById.rejected, (state, action) => {
         if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
-        state.detailError = action.payload ?? action.error.message;
+        state.detailError = getThunkError(action.payload ?? action.error);
         state.detailRequestId = null;
       })
       .addCase(fetchPurchaseBillsBySupplier.pending, (state, action) => {
@@ -236,9 +237,13 @@ const purchaseBillSlice = createSlice({
         if (state.bySupplierRequestId !== action.meta.requestId) return;
         state.bySupplierLoading = false;
         state.bySupplier = [];
-        state.bySupplierError = action.payload ?? action.error.message;
+        state.bySupplierError = getThunkError(action.payload ?? action.error);
         state.bySupplierRequestId = null;
       })
+      .addCase(createPurchaseBill.pending, state => { state.error = null; })
+      .addCase(createPurchaseBill.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to create bill."); })
+      .addCase(updatePurchaseBill.pending, state => { state.error = null; })
+      .addCase(updatePurchaseBill.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to update bill."); })
       .addCase(createPurchaseBill.fulfilled, (state, action) => {
         state.selected = extractEntity(action.payload.data, "purchaseBill");
       })

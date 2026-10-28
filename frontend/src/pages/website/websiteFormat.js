@@ -1,10 +1,13 @@
-export const formatWebsiteDateTime = (value) => {
+import { websiteUtcDate } from "../../utils/websiteTime";
+
+export const formatWebsiteDateTime = (value, timeZone) => {
   if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  const date = websiteUtcDate(value);
+  if (!date) return "—";
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
+    ...(timeZone ? { timeZone } : {}),
   }).format(date);
 };
 

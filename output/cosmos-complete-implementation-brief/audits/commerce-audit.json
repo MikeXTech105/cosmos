@@ -1,0 +1,2116 @@
+{
+  "reviewedOn": "2026-10-28",
+  "commit": "da46203",
+  "scope": "Inventory/Party/Sales/Purchase/Rojmel/GST source UX audit; report only",
+  "applicationChanges": false,
+  "databaseChanges": false,
+  "coverage": [
+    {
+      "id": "items",
+      "screen": "Items",
+      "route": "/items",
+      "type": "master",
+      "children": [
+        "Create/edit page",
+        "inline create modal",
+        "product/service",
+        "procurement classification",
+        "pricing",
+        "stock",
+        "manufacturing"
+      ],
+      "flow": "Create canonical Item, choose Category/Unit, enter prices/tax and optional opening stock; save; then configure manufacturing children.",
+      "improvement": "Quick/basic form first; retain advanced tabs; searchable catalog selectors; no unsafe numeric rewrite.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 402,
+          "note": "Identity/classification sections"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 542,
+          "note": "Pricing/Stock/Manufacturing tabs"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "item_categories",
+      "screen": "Categories",
+      "route": "/categories",
+      "type": "master",
+      "children": [
+        "Create/edit modal",
+        "active status",
+        "search/filter"
+      ],
+      "flow": "Reusable categories used by Item forms and transaction quick creation.",
+      "improvement": "Add dependency/use count and clear deactivation guidance; avoid adding hierarchy unless business needs it.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/categories/CategoryFormModal.jsx",
+          "line": 12,
+          "note": "Actual canonical fields name/description/isActive"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/categories/CategoriesPage.jsx",
+          "line": 297,
+          "note": "Create action"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "item_units",
+      "screen": "Units",
+      "route": "/units",
+      "type": "master",
+      "children": [
+        "Create/edit modal",
+        "short name",
+        "active status"
+      ],
+      "flow": "Reusable base unit; selected by Item and carried into stock/manufacturing.",
+      "improvement": "Show familiar unit examples and usage count; link to actual item conversions where applicable.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/units/UnitFormModal.jsx",
+          "line": 12,
+          "note": "Actual fields"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/units/UnitFormModal.jsx",
+          "line": 120,
+          "note": "Short name input"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "item_bom",
+      "screen": "Item BOMs",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "type": "child_master",
+      "children": [
+        "BOM version",
+        "effective dates",
+        "default BOM",
+        "output base quantity",
+        "component lines",
+        "wastage"
+      ],
+      "flow": "Save manufactured product, open Manufacturing, add effective versioned BOM and components.",
+      "improvement": "Guided first-BOM setup, template/copy revision, prominent base units and effective company date.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 136,
+          "note": "BOM editor"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 409,
+          "note": "BOM section"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "item_legacy_production",
+      "screen": "Item Production",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "type": "embedded_transaction",
+      "children": [
+        "Production draft",
+        "post stock",
+        "detail",
+        "cancel/reverse"
+      ],
+      "flow": "Manufacture from effective BOM; create draft; post to consume components/receive finished stock; reasoned cancellation reverses.",
+      "improvement": "Explain this workflow relative to Production Orders/Daily Entry; funnel primary operator toward intended route.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 418,
+          "note": "Production panel"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 427,
+          "note": "Posting and timeout recovery"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 429,
+          "note": "Cancellation"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "item_production_configuration",
+      "screen": "Item routing and eligibility",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "type": "embedded_setup",
+      "children": [
+        "ItemProductionConfiguration"
+      ],
+      "flow": "Manufacturing tab embeds newer order workflow configuration below BOM and production.",
+      "improvement": "Separate Setup from Daily work and link directly into applicable order/planning views.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 425,
+          "note": "Embedded ItemProductionConfiguration; operations agent covers internals"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "parties",
+      "screen": "Party Master",
+      "route": "/party",
+      "type": "master",
+      "children": [
+        "All/Customers/Suppliers/Both grouping",
+        "create/edit",
+        "detail",
+        "export"
+      ],
+      "flow": "Create canonical party, use it as customer/supplier in sale and purchase documents; groups are classifications, not separate masters.",
+      "improvement": "Search/details to show outstanding, recent documents and obvious next action; preserve list state and return target.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyGroups.jsx",
+          "line": 5,
+          "note": "Four existing groups"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormPage.jsx",
+          "line": 138,
+          "note": "Form close returns to unfiltered list route"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "party_tax_address_credit",
+      "screen": "Party child details",
+      "route": "/party/new; /party/:id/edit",
+      "type": "embedded_master_sections",
+      "children": [
+        "Basic Information",
+        "GST & Tax",
+        "billing address",
+        "shipping address",
+        "credit settings",
+        "additional details"
+      ],
+      "flow": "Verify GSTIN to fill details, review field changes, copy billing to shipping, set opening balance/limit/period.",
+      "improvement": "Default short identity/GST form; progressive disclosure of credit/extra fields; preserve intentional manual overrides.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyColumns.js",
+          "line": 83,
+          "note": "Five section definitions"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormModal.jsx",
+          "line": 1261,
+          "note": "GST verification"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormModal.jsx",
+          "line": 1340,
+          "note": "Same-as-billing copy"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "party_settings",
+      "screen": "Party settings",
+      "route": "/party (Settings)",
+      "type": "embedded_setup",
+      "children": [
+        "general/grouping/shipping/status",
+        "payment reminders",
+        "loyalty",
+        "four configurable additional fields"
+      ],
+      "flow": "Page settings load and persist independently via GET/PUT. Flags configure settings records, but source review found no consumers applying grouping/shipping/reminder/loyalty/custom-field flags to the party create/edit form or invoice print.",
+      "improvement": "Show only operative settings or wire each setting through to forms/print/reminders with visible preview and implementation ownership; do not imply saving a flag completes the behavior.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyColumns.js",
+          "line": 122,
+          "note": "Settings command fields"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyColumns.js",
+          "line": 187,
+          "note": "Settings sections"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyPage.jsx",
+          "line": 958,
+          "note": "Settings action"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "sale_invoices",
+      "screen": "Sale Invoices",
+      "route": "/sales/invoices",
+      "type": "transaction",
+      "children": [
+        "list/filter/stats",
+        "create/edit",
+        "customer quick create",
+        "item/category/unit quick create",
+        "detail"
+      ],
+      "flow": "Choose customer, lines and document dates, review calculated totals/tax context, save draft; detail supports confirm/cancel/payment/print/PDF.",
+      "improvement": "Row-safe asynchronous autofill, fast barcode/item entry, card editor on phones, guided save/confirm next step.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 432,
+          "note": "Customer selector"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 467,
+          "note": "1170px line grid"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 402,
+          "note": "Detail workflow"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "sale_payment",
+      "screen": "Invoice payments",
+      "route": "/sales/invoices/:id (Record Payment)",
+      "type": "embedded_transaction",
+      "children": [
+        "Payment modal",
+        "payment history",
+        "initial payment on invoice create"
+      ],
+      "flow": "Optionally save initial payment; later record payment from invoice detail; server history reloads.",
+      "improvement": "Show outstanding and resulting balance adjacent to amount; explain duplicate payment/timeout recovery.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 606,
+          "note": "Initial payment inputs"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 294,
+          "note": "Record payment"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 572,
+          "note": "Payment history"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "sale_templates",
+      "screen": "Invoice print/PDF templates",
+      "route": "/sales/invoices/:id",
+      "type": "embedded_presentation_setup",
+      "children": [
+        "Classic",
+        "Compact",
+        "Corporate",
+        "Minimal",
+        "Modern",
+        "print",
+        "PDF"
+      ],
+      "flow": "Select template, preview and export existing saved invoice.",
+      "improvement": "Keep selection persisted, add small template previews and one obvious Download/Print action.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 488,
+          "note": "Template selector"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 565,
+          "note": "Template preview"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "purchase_orders",
+      "screen": "Purchase Orders",
+      "route": "/purchase/orders",
+      "type": "transaction",
+      "children": [
+        "list",
+        "create/edit/detail",
+        "convert-to-bill"
+      ],
+      "flow": "Supplier and item rows -> save PO -> approve into Sent from physical panel -> receive against original lines -> convert/link draft bill.",
+      "improvement": "Single document timeline with current status, next permitted action and receipt/billing balances.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/documentConfigs.js",
+          "line": 1,
+          "note": "Shared document configuration"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx",
+          "line": 638,
+          "note": "Convert action"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/ConvertOrderModal.jsx",
+          "line": 75,
+          "note": "Convert modal"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "po_physical_actions",
+      "screen": "PO physical receipts and supply continuity",
+      "route": "/purchase/orders/:id",
+      "type": "embedded_transactions",
+      "children": [
+        "approve draft",
+        "receive accepted/rejected/quarantine",
+        "revise promise",
+        "return original receipt",
+        "credit billed physical return",
+        "close remainder"
+      ],
+      "flow": "Receipt posts accepted stock; separate dispositions; returns reference original receipt/version; credit links billed return; returns do not reopen supply.",
+      "improvement": "Replace all-action dropdown with status-aware primary step and separate secondary menu; show affected stock/credit preview.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+          "line": 50,
+          "note": "Original receipt/version required"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+          "line": 66,
+          "note": "Physical continuity panel"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+          "line": 68,
+          "note": "Six action modes"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "purchase_bills",
+      "screen": "Purchase Bills",
+      "route": "/purchase/bills",
+      "type": "transaction",
+      "children": [
+        "list",
+        "create/edit/detail",
+        "direct bills",
+        "receipt-owned bill lines",
+        "confirm/cancel"
+      ],
+      "flow": "Create supplier bill directly or through PO conversion; optionally allocate accepted receipts while draft; confirm financial record.",
+      "improvement": "Clear direct-stock versus receipt-linked origin; guide receipt allocation automatically.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+          "line": 374,
+          "note": "Physical receipt panel integration"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 48,
+          "note": "Draft receipt linking before confirmation"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "bill_receipt_allocation",
+      "screen": "Bill-to-receipt allocation",
+      "route": "/purchase/bills/:id",
+      "type": "embedded_transaction",
+      "children": [
+        "supplier PO search",
+        "existing bill line",
+        "accepted receipt line",
+        "linked quantity",
+        "multiple source POs"
+      ],
+      "flow": "Match bill lines to original accepted receipt lines while draft; avoid receiving the same stock twice.",
+      "improvement": "Suggest matching item/quantity automatically and explain remaining unmatched lines before confirmation.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 49,
+          "note": "PO selection and retained source context"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 51,
+          "note": "Manual triple allocation"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 53,
+          "note": "Allocation history"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "purchase_returns",
+      "screen": "Purchase Returns",
+      "route": "/purchase/returns",
+      "type": "transaction",
+      "children": [
+        "list/create/edit/detail",
+        "linked purchase bill",
+        "reason",
+        "return line items"
+      ],
+      "flow": "Standalone return form chooses supplier and optional linked bill, then enters return lines/reason. Physical receipt returns are also available in PO detail.",
+      "improvement": "Start from original bill/receipt; prefill supplier/items/original line IDs and remaining returnable quantities.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 139,
+          "note": "Global first-page bills lookup"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 205,
+          "note": "Bill options are not supplier scoped"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 382,
+          "note": "Bill selection only changes bill ID"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "supplier_payments",
+      "screen": "Supplier Payments",
+      "route": "/purchase/supplier-payments",
+      "type": "transaction",
+      "children": [
+        "create/edit/delete",
+        "supplier lookup",
+        "payment fields",
+        "bill allocations"
+      ],
+      "flow": "Pick supplier, record amount/mode/date/reference, optionally add bill allocation rows; allocated amount must not exceed payment.",
+      "improvement": "Select all/oldest unpaid bills, show unallocated credit, clear stale allocations on supplier changes, paginate lookups.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 81,
+          "note": "Allocation sum validation"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 260,
+          "note": "Manual allocation purpose"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 266,
+          "note": "Add allocation"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "expenses",
+      "screen": "Expenses",
+      "route": "/purchase/expenses",
+      "type": "transaction",
+      "children": [
+        "create/edit/delete",
+        "category quick create",
+        "paid-to party quick create",
+        "tax",
+        "mode",
+        "reference",
+        "attachment"
+      ],
+      "flow": "Record operating expense and attachment under independent expense category, optionally linked paid-to party.",
+      "improvement": "Clarify source/cash-book relationship so operators do not enter the same cost twice; add recent category defaults.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 159,
+          "note": "Expense date"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 178,
+          "note": "Inline category create"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 243,
+          "note": "Attachment control"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "expense_categories",
+      "screen": "Expense Categories",
+      "route": "/purchase/expense-categories",
+      "type": "master",
+      "children": [
+        "create/edit/delete",
+        "search",
+        "active status"
+      ],
+      "flow": "Reusable category in Expenses; separate family from Inventory Categories and Rojmel categories.",
+      "improvement": "Use clear business wording, usage count and archive/deactivate path for referenced categories.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenseCategories/ExpenseCategoriesPage.jsx",
+          "line": 42,
+          "note": "Actual fields"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenseCategories/ExpenseCategoriesPage.jsx",
+          "line": 282,
+          "note": "Screen header"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "purchase_reports",
+      "screen": "Purchase Reports",
+      "route": "/purchase/reports",
+      "type": "report_workspace",
+      "children": [
+        "Purchase Summary",
+        "Supplier Outstanding",
+        "Expense Summary",
+        "Category-wise Expense",
+        "Item Purchase History"
+      ],
+      "flow": "Select report tab, dates/filters, run report.",
+      "improvement": "Link result rows back to supplier/bill and share filter state; avoid repeated report naming confusion with global Reports.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/reports/PurchaseReportsPage.jsx",
+          "line": 28,
+          "note": "Five report tabs"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "purchase_followups",
+      "screen": "Purchase Follow-ups",
+      "route": "/purchase/operations",
+      "type": "operational_report",
+      "children": [
+        "PO pending/overdue",
+        "supplier receipt performance",
+        "company business date",
+        "unit-grouped totals"
+      ],
+      "flow": "See current pending accepted quantities and drill to PO; performance uses receipt period and separates base units.",
+      "improvement": "Add action-focused overdue summary and explicit follow-up next action; preserve filters on return from PO.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseOperationsPage.jsx",
+          "line": 54,
+          "note": "Two modes/filters"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseOperationsPage.jsx",
+          "line": 55,
+          "note": "PO drilldown and metrics"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_dashboard",
+      "screen": "Rojmel Dashboard",
+      "route": "/rojmel/dashboard",
+      "type": "dashboard",
+      "children": [
+        "today in",
+        "today out",
+        "cash in hand"
+      ],
+      "flow": "Cash snapshot excludes transfers from profit/loss.",
+      "improvement": "Add clear route into My Wallet or all-wallet entry based on role; clickable figures open filtered ledger.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/dashboard/RojmelDashboardPage.jsx",
+          "line": 112,
+          "note": "Cash position header"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_mywallet",
+      "screen": "My Wallet",
+      "route": "/rojmel/my-wallet",
+      "type": "daily_workspace",
+      "children": [
+        "private balance",
+        "income entry",
+        "expense entry",
+        "filtered ledger",
+        "transaction detail"
+      ],
+      "flow": "Self-scoped private wallet; no other-wallet selector; post income/expense then refresh balance/ledger.",
+      "improvement": "Make this the default daily cash entry for staff; show posted receipt with source and running balance.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+          "line": 123,
+          "note": "Private wallet boundary"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+          "line": 239,
+          "note": "No selectable other wallets"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_wallets",
+      "screen": "Wallets",
+      "route": "/rojmel/wallets",
+      "type": "master",
+      "children": [
+        "Wallet type selector (frontend Bank/Cash labels mismatch backend PettyCash/BankCash; C16)",
+        "linked user",
+        "opening balance",
+        "default",
+        "active status",
+        "detail/edit",
+        "admin entries"
+      ],
+      "flow": "Admin creates/manages wallets; linked-user requirement for user wallets; company wallet restrictions; enter money via shared modal.",
+      "improvement": "Make ownership and default meaning visible before save; show balance and posted-history consequences before deactivation.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/WalletFormModal.jsx",
+          "line": 27,
+          "note": "Linked user requirement"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/WalletFormModal.jsx",
+          "line": 141,
+          "note": "Wallet identity"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/wallets/WalletsPage.jsx",
+          "line": 180,
+          "note": "Company wallet protection"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_transactions",
+      "screen": "Transactions",
+      "route": "/rojmel/transactions",
+      "type": "transaction_ledger",
+      "children": [
+        "income",
+        "expense",
+        "admin adjustment",
+        "detail",
+        "reasoned reversal",
+        "filters"
+      ],
+      "flow": "Self users use self endpoints; admin chooses wallet; transactions can be reversed with required reason.",
+      "improvement": "One daily entry path and role-aware naming; sticky running balance; distinguish original/reversal and source references.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/transactions/TransactionsPage.jsx",
+          "line": 189,
+          "note": "Role-based create thunk"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/transactions/TransactionsPage.jsx",
+          "line": 212,
+          "note": "Reversal"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/transactions/TransactionsPage.jsx",
+          "line": 268,
+          "note": "Screen"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_entry",
+      "screen": "Rojmel income/expense/adjustment entry",
+      "route": "/rojmel/my-wallet; /rojmel/wallets; /rojmel/transactions",
+      "type": "shared_embedded_transaction",
+      "children": [
+        "amount",
+        "optional category",
+        "date",
+        "payment mode",
+        "reference",
+        "description",
+        "admin wallet"
+      ],
+      "flow": "Same shared modal posts income/expense/adjustment; self users cannot send selectable wallet ID.",
+      "improvement": "Human terms and confirmation of wallet/amount/date; guard ambiguous retries; optional save-and-next.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+          "line": 101,
+          "note": "Payload builder"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+          "line": 181,
+          "note": "Admin wallet field"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+          "line": 272,
+          "note": "Direct Post submit"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_transfers",
+      "screen": "Wallet Transfers",
+      "route": "/rojmel/transfers",
+      "type": "transaction",
+      "children": [
+        "from/to wallet",
+        "amount/date/reference",
+        "detail",
+        "reverse"
+      ],
+      "flow": "Admin posts neutral wallet-to-wallet transfer; source/destination must differ; reload balances; explicit permission restricts other views.",
+      "improvement": "Show before/after wallet balances before posting and identify both original transfer legs in friendly names.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransferFormModal.jsx",
+          "line": 23,
+          "note": "Different-wallet validation"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransferFormModal.jsx",
+          "line": 112,
+          "note": "Neutral transfer explanation"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/transfers/TransfersPage.jsx",
+          "line": 201,
+          "note": "Visibility restriction"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_categories",
+      "screen": "Rojmel category lookup",
+      "route": "embedded in cash entries/reports",
+      "type": "lookup_master_family",
+      "children": [
+        "Income",
+        "Expense",
+        "Both"
+      ],
+      "flow": "Existing category lookup feeds shared entries and reports; distinct from Purchase Expense Categories.",
+      "improvement": "Make administrator maintenance/import ownership explicit; do not silently create duplicate category families.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/rojmel/myWalletService.js",
+          "line": 52,
+          "note": "Read-only category lookup service"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Rojmel/RojmelControllers.cs",
+          "line": 38,
+          "note": "Category lookup response; no maintenance claimed"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "rojmel_reports",
+      "screen": "Rojmel Reports",
+      "route": "/rojmel/reports",
+      "type": "report_workspace",
+      "children": [
+        "wallet ledger",
+        "all transactions",
+        "income-expense",
+        "category-wise expense",
+        "transfers",
+        "daily cash flow",
+        "user wallet balances"
+      ],
+      "flow": "Role-aware report framework and filters; wallet balances restricted to admin permission.",
+      "improvement": "Ledger-first shortcuts from cash dashboard and wallet; preserve filter context.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/reports/reportRegistry.js",
+          "line": 856,
+          "note": "Wallet ledger definition"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/reports/reportRegistry.js",
+          "line": 971,
+          "note": "User wallet balance report"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_overview",
+      "screen": "GST overview",
+      "route": "/gst/configuration",
+      "type": "configuration_status",
+      "children": [
+        "provider environment",
+        "feature names",
+        "missing setting names",
+        "rate history link"
+      ],
+      "flow": "Read configuration status; credentials live server-side; explicit unavailable compliance dependencies.",
+      "improvement": "Provide actionable setup readiness checklist with business labels and admin ownership.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstOverviewPage.jsx",
+          "line": 23,
+          "note": "Configuration status"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstOverviewPage.jsx",
+          "line": 33,
+          "note": "Explicit unavailable workflows"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_registrations",
+      "screen": "GST registrations",
+      "route": "/gst/registrations",
+      "type": "master",
+      "children": [
+        "create/edit",
+        "GSTIN/state/address/branch",
+        "enable flags",
+        "default",
+        "verify"
+      ],
+      "flow": "Manage GSTIN registrations and select active seller registration in invoices.",
+      "improvement": "Company/branch/state lookups; derive state from GSTIN; constrained statuses; remove manual numeric IDs from daily operator flow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 16,
+          "note": "String-field schema"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 19,
+          "note": "Manual company/branch IDs"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 83,
+          "note": "Default action"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_verify",
+      "screen": "GSTIN verification",
+      "route": "/gst/verify-gstin",
+      "type": "lookup_workflow",
+      "children": [
+        "GSTIN validity",
+        "provider/cache result"
+      ],
+      "flow": "Validate 15-character format, verify with provider/cache, view legal/trade/state/status details.",
+      "improvement": "Offer permission-aware Apply to Party/Registration action with review instead of copy-paste.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstVerificationPage.jsx",
+          "line": 16,
+          "note": "Format validation"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstVerificationPage.jsx",
+          "line": 26,
+          "note": "Lookup form"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_rate_history",
+      "screen": "GST rate history",
+      "route": "/gst/rate-history",
+      "type": "versioned_master",
+      "children": [
+        "rule code",
+        "total rate",
+        "effective dates",
+        "active",
+        "notes"
+      ],
+      "flow": "Create dated total-rate version; component tax calculation explicitly outside this screen.",
+      "improvement": "Searchable/paginated rate history, rule descriptions, overlap preview; keep approved effective dating clear.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRateHistoryPage.jsx",
+          "line": 24,
+          "note": "First-page 200-row load"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRateHistoryPage.jsx",
+          "line": 31,
+          "note": "Rate creation and explicit calculation scope"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_einvoice",
+      "screen": "E-Invoice lookup",
+      "route": "/gst/e-invoices",
+      "type": "lookup_reconciliation_workflow",
+      "children": [
+        "identifier lookup",
+        "stored record",
+        "provider refresh",
+        "reconciled status",
+        "cancel",
+        "raster QR"
+      ],
+      "flow": "Enter IRN -> fetch stored record -> refresh provider -> only matching active reconciled linked document permits change. Generate disabled.",
+      "improvement": "Invoice-linked document register and automatic identifiers; readiness checklist before eventual issuance implementation.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 90,
+          "note": "Manual identifier"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 98,
+          "note": "Association guard"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 103,
+          "note": "Generation disabled"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_eway",
+      "screen": "E-Way Bill lookup",
+      "route": "/gst/eway-bills",
+      "type": "lookup_reconciliation_workflow",
+      "children": [
+        "identifier lookup",
+        "stored/provider reconcile",
+        "cancel",
+        "vehicle update",
+        "disabled extension"
+      ],
+      "flow": "Look up EWB number, reconcile original registration/document, then allowed cancellation or vehicle update.",
+      "improvement": "Same document-led register; show why a step is blocked inline, give owned next action.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 105,
+          "note": "Vehicle update guard"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 106,
+          "note": "Extension disabled"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_sessions",
+      "screen": "GST session status",
+      "route": "/gst/sessions",
+      "type": "support_lookup",
+      "children": [
+        "registration ID",
+        "session status",
+        "expiry",
+        "OTP timestamp"
+      ],
+      "flow": "Stored session lookup only; OTP generation/authentication unavailable.",
+      "improvement": "Registration-name selector and direct link from GST registration; admin/support role placement.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstSessionPage.jsx",
+          "line": 19,
+          "note": "Numeric registration-ID lookup"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstSessionPage.jsx",
+          "line": 22,
+          "note": "OTP limitation"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "gst_logs",
+      "screen": "GST API logs",
+      "route": "/gst/api-logs",
+      "type": "support_log",
+      "children": [
+        "search",
+        "exact operation",
+        "registration ID",
+        "outcome",
+        "local datetime",
+        "correlation copy"
+      ],
+      "flow": "Filter safe provider operation summaries; tokens/payloads withheld.",
+      "improvement": "Name registration and operations in human terms; link failures to affected document and safe recovery guidance.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstLogsPage.jsx",
+          "line": 29,
+          "note": "Exact operation input"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstLogsPage.jsx",
+          "line": 30,
+          "note": "Numeric registration ID"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstLogsPage.jsx",
+          "line": 41,
+          "note": "Safe log limits"
+        }
+      ],
+      "verification": "source_review"
+    },
+    {
+      "id": "hsn_catalog",
+      "screen": "HSN/SAC catalog",
+      "route": "No reviewed public API/frontend route",
+      "type": "backend_application_submaster_unexposed",
+      "children": [
+        "code",
+        "HSN/SAC code type",
+        "description",
+        "active",
+        "list/get/create/update application methods"
+      ],
+      "flow": "DTOs and application service implement catalog operations, but reviewed HsnGstController exposes only rate versions and frontend has no catalog service/screen.",
+      "improvement": "Decide approved Phase 1 scope; if needed expose canonical API/permissions and add guided maintenance in existing Item/Category/GST setup. Do not equate application-service methods with an available user workflow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/HsnGst/HsnGstDtos.cs",
+          "line": 3,
+          "note": "Catalog DTO"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Services/HsnGstService.cs",
+          "line": 14,
+          "note": "List/get/save methods"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+          "line": 11,
+          "note": "Only exposed rate endpoints"
+        }
+      ],
+      "verification": "source_review_only_not_available_frontend_workflow"
+    },
+    {
+      "id": "category_hsn_defaults",
+      "screen": "Category HSN defaults",
+      "route": "No reviewed public API/frontend route",
+      "type": "backend_application_submaster_unexposed",
+      "children": [
+        "HSN/SAC ID",
+        "effective from/to",
+        "effective lookup",
+        "retire"
+      ],
+      "flow": "Application interface/service supports category mapping, but CategoryFormModal only name/description/active and no reviewed controller route exposes mappings.",
+      "improvement": "Decide approved Phase 1 scope; if needed expose canonical API/permissions and add guided maintenance in existing Item/Category/GST setup. Do not equate application-service methods with an available user workflow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Abstractions/Services/IHsnGstService.cs",
+          "line": 13,
+          "note": "Category mapping methods"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Services/HsnGstService.cs",
+          "line": 19,
+          "note": "Save mapping"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/categories/CategoryFormModal.jsx",
+          "line": 12,
+          "note": "Canonical Category fields"
+        }
+      ],
+      "verification": "source_review_only_not_available_frontend_workflow"
+    },
+    {
+      "id": "item_hsn_overrides",
+      "screen": "Item HSN overrides",
+      "route": "No reviewed public API/frontend route",
+      "type": "backend_application_submaster_unexposed",
+      "children": [
+        "HSN/SAC ID",
+        "effective from/to",
+        "retire"
+      ],
+      "flow": "Application methods support item override, but Item UI edits only legacy HSN Code and GST rate.",
+      "improvement": "Decide approved Phase 1 scope; if needed expose canonical API/permissions and add guided maintenance in existing Item/Category/GST setup. Do not equate application-service methods with an available user workflow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Abstractions/Services/IHsnGstService.cs",
+          "line": 14,
+          "note": "Item mapping methods"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Services/HsnGstService.cs",
+          "line": 20,
+          "note": "Save override"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 573,
+          "note": "Legacy HSN text field"
+        }
+      ],
+      "verification": "source_review_only_not_available_frontend_workflow"
+    },
+    {
+      "id": "effective_hsn_resolver",
+      "screen": "Effective item classification",
+      "route": "No reviewed public API/frontend route",
+      "type": "backend_application_submaster_unexposed",
+      "children": [
+        "item override",
+        "category default",
+        "legacy fallback",
+        "business date"
+      ],
+      "flow": "Application service resolves by Item/date; invoice calls missing frontend method so reviewed UI falls back to Item master (C01).",
+      "improvement": "Decide approved Phase 1 scope; if needed expose canonical API/permissions and add guided maintenance in existing Item/Category/GST setup. Do not equate application-service methods with an available user workflow.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Services/HsnGstService.cs",
+          "line": 24,
+          "note": "Resolver method"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 267,
+          "note": "Unwired client call"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/gst/hsnGstService.js",
+          "line": 6,
+          "note": "Only rate methods"
+        }
+      ],
+      "verification": "source_review_only_not_available_frontend_workflow"
+    }
+  ],
+  "findings": [
+    {
+      "id": "C01",
+      "priority": "P1",
+      "category": "frontend_api_contract",
+      "title": "Invoice effective HSN lookup calls a method absent from the frontend service and API routes",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 267,
+          "note": "Calls getEffectiveClassification"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/gst/hsnGstService.js",
+          "line": 6,
+          "note": "Service exports rate list/create only"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+          "line": 11,
+          "note": "API only rate list and create"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 276,
+          "note": "Catch silently substitutes legacy Item-master HSN"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Services/HsnGstService.cs",
+          "line": 24,
+          "note": "Underlying application service does support effective classification"
+        }
+      ],
+      "impact": "Current call fails synchronously inside the try and falls back to raw item HSN. Effective-dated/category-default/item-override classification is not actually resolved by this UI. The underlying application logic exists, but is not exposed through the reviewed controller/client service.",
+      "recommendation": "Choose and clearly present the supported classification source. If effective mapping is required, expose/review its API and frontend method, provide permission-aware mapping maintenance, show fallback reason, and refresh on invoice-date changes. Also guard row autofill by stable row and current Item ID before asynchronous writes.",
+      "acceptance": "No nonexistent service call; visible HSN source accurately reflects actual lookup. Item override/category default/effective date/legacy fallback each behave explicitly. Delayed row requests cannot overwrite a different current selection.",
+      "confidence": "source_confirmed_current_contract_mismatch; no live DB/provider execution",
+      "correction": "An initial audit hypothesis described a current async overwrite race. Backend cross-check showed this missing service call prevents the normal awaited branch; the current concrete finding is silent fallback, while stale-row protection remains a requirement when wiring the async path."
+    },
+    {
+      "id": "C02",
+      "priority": "P1",
+      "category": "catalog_search",
+      "title": "First-200 static dropdowns hide valid masters and records",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 164,
+          "note": "Customers/items first page 200"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 139,
+          "note": "Supplier/item/bill first page 200"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 457,
+          "note": "Supplier first page"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 482,
+          "note": "Supplier bills first page"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 374,
+          "note": "Category and party caps"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 217,
+          "note": "Category/unit caps"
+        }
+      ],
+      "impact": "As data grows, users cannot find records outside downloaded page, and newly created records may still be absent after a refresh.",
+      "recommendation": "Remote debounced search with paging and exact by-ID hydration for selected/inactive historical values; expose loading/retry; retain newly created result immediately.",
+      "acceptance": "Records 201+ can be found and selected in all affected forms; editing historical documents preserves selected inactive records."
+    },
+    {
+      "id": "C03",
+      "priority": "P1",
+      "category": "payment_allocation",
+      "title": "Supplier changes do not clear/revalidate existing allocations and bill requests can race",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 160,
+          "note": "Supplier watcher only starts bill load"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 186,
+          "note": "Existing allocations passed to submit"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+          "line": 478,
+          "note": "Async bill load lacks request identity guard"
+        }
+      ],
+      "impact": "Old supplier bill allocations can remain attached in the form or stale results can appear after quick changes. Server may reject; source review cannot claim incorrect database acceptance.",
+      "recommendation": "Clear/review allocations when changing supplier, cancel/discard stale bills requests, disable allocation editing until correct bills load; suggest oldest-first allocations and show remaining/unallocated payment.",
+      "acceptance": "Changing A to B never leaves A bills selected or shown; payment can be split across correct unpaid bills, with total and unallocated amount clear."
+    },
+    {
+      "id": "C04",
+      "priority": "P1",
+      "category": "returns_workflow",
+      "title": "Return against bill asks operator to repeat supplier and line information",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 139,
+          "note": "Bills not scoped to supplier"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 205,
+          "note": "All loaded bills offered"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 382,
+          "note": "Selecting bill stores only ID"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/purchaseDocumentSchema.js",
+          "line": 15,
+          "note": "Original bill-item ID is optional"
+        }
+      ],
+      "impact": "Manual linkage and re-entry invite mismatched supplier/item/original line selection and slow returns.",
+      "recommendation": "Add Return against this bill/receipt action that preloads authoritative original lines, supplier and remaining returnable quantities; retain explicitly separate financial versus physical-return steps.",
+      "acceptance": "Operator selects source and quantities, not repeat supplier/items; original IDs retained; excess return disabled with explanation."
+    },
+    {
+      "id": "C05",
+      "priority": "P1",
+      "category": "status_actions",
+      "title": "Purchase detail actions ignore document state",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+          "line": 289,
+          "note": "openAction checks permission only"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+          "line": 431,
+          "note": "Edit visible by permission only"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+          "line": 437,
+          "note": "Confirm visible by feature/permission only"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+          "line": 446,
+          "note": "Cancel visible by feature/permission only"
+        }
+      ],
+      "impact": "Confirmed/cancelled documents still offer actions the server may reject; creates failed clicks and uncertainty. Contrast: InvoiceDetailPage gates draft/confirmed actions.",
+      "recommendation": "Use authoritative allowedActions or explicit shared state rules; put one valid next action first and explain read-only/blocked reasons.",
+      "acceptance": "Draft/sent/received/confirmed/cancelled states expose only permitted transitions; server rejection retains record and gives next step."
+    },
+    {
+      "id": "C06",
+      "priority": "P1",
+      "category": "save_recovery",
+      "title": "Sales and purchase page forms collapse API validation into toast",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 378,
+          "note": "Save catch shows general toast"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 306,
+          "note": "Save catch shows general toast"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 351,
+          "note": "Existing Item API field-mapping pattern"
+        }
+      ],
+      "impact": "Client validation can highlight fields, but business/server validation may leave the operator unable to identify which row or field to fix.",
+      "recommendation": "Map safe server field errors onto React Hook Form fields/rows, add persistent summary with jump-to-first-invalid, preserve all entered values and mark uncertain submissions for reconciliation.",
+      "acceptance": "Duplicate supplier reference, invalid original-line link, insufficient stock or stale version gives persistent actionable field/record feedback."
+    },
+    {
+      "id": "C07",
+      "priority": "P1",
+      "category": "recovery",
+      "title": "Long forms navigate away without unsaved-change protection",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 406,
+          "note": "Back navigates directly"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 498,
+          "note": "Cancel directly navigates away"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormPage.jsx",
+          "line": 138,
+          "note": "Close navigates directly"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 651,
+          "note": "Cancel navigates directly"
+        }
+      ],
+      "impact": "Multi-line transactions and party details can be lost on accidental Back/Cancel/route change. Global rg found no useBlocker/beforeunload guard for these forms.",
+      "recommendation": "Dirty-form guard across page and modal paths, returnTo/list-context restoration, safe local draft only with user/company isolation and explicit clear-after-save.",
+      "acceptance": "Leaving changed form requires discard/continue choice; successful save clears guard; returning to list preserves filters and highlights saved record."
+    },
+    {
+      "id": "C08",
+      "priority": "P1",
+      "category": "compliance_readiness",
+      "title": "GST issuance workflow is explicitly incomplete",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 103,
+          "note": "Generate disabled"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 106,
+          "note": "Extension disabled"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentLinks.jsx",
+          "line": 19,
+          "note": "Invoice generation disabled"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstSessionPage.jsx",
+          "line": 22,
+          "note": "OTP generation/authentication unavailable"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstOverviewPage.jsx",
+          "line": 33,
+          "note": "Registers need list APIs"
+        }
+      ],
+      "impact": "Existing GST views inspect/reconcile existing records; they cannot be represented as complete issue-to-government workflow.",
+      "recommendation": "Present role-aware readiness checklist and concrete owner/blocking reason; use invoice-led links and real document register APIs; implement issuance only with verified backend/provider capability and duplicate protection.",
+      "acceptance": "User can tell available versus unavailable actions without relying on disabled-button hover; successful issue/retry/cancel tested only once genuine backend/provider integration exists."
+    },
+    {
+      "id": "C09",
+      "priority": "P1",
+      "category": "business_date_consistency",
+      "title": "Item manufacturing uses UTC calendar date while newer workflows use company business date",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 50,
+          "note": "today() uses toISOString date"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 157,
+          "note": "Legacy production default uses today"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 368,
+          "note": "Applicable BOM lookup uses UTC today"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/hooks/useDocumentBusinessDefaults.js",
+          "line": 13,
+          "note": "New document date uses verified company business date"
+        }
+      ],
+      "impact": "Around India midnight UTC and company-day differences, selected effective BOM or default production date can differ between entry paths.",
+      "recommendation": "Use same verified business-date runtime and explicit unavailable-date/manual-entry behavior for BOM applicability and production forms.",
+      "acceptance": "Before/after midnight and backdated company calendar produce the same applicable BOM/default date across item production and production orders."
+    },
+    {
+      "id": "C10",
+      "priority": "P2",
+      "category": "navigation_mental_model",
+      "title": "Two production entry paths coexist inside and outside Item master",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 418,
+          "note": "Item master contains production drafts/posting"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 425,
+          "note": "New workflow item configuration also embedded"
+        }
+      ],
+      "impact": "Operator can confuse master setup, legacy one-shot manufacture and newer order/daily/board workflow.",
+      "recommendation": "Label Setup versus Daily production, choose primary route by role, give linked history/next step; retain compatibility route only with explicit explanation."
+    },
+    {
+      "id": "C11",
+      "priority": "P2",
+      "category": "mobile_entry",
+      "title": "Document and cash ledgers require wide horizontal tables",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 467,
+          "note": "1170px minimum sale line table"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/PurchaseLineItems.jsx",
+          "line": 154,
+          "note": "1040px minimum purchase line table"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/transfers/TransfersPage.jsx",
+          "line": 238,
+          "note": "980px transfer table"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 79,
+          "note": "900px GST registration table"
+        }
+      ],
+      "impact": "Overflow prevents clipping but phone users must pan repeatedly between item/quantity/price/actions.",
+      "recommendation": "Retain fast desktop sheet, add responsive line cards/drawer editor with item and totals pinned; desktop keyboard navigation and paste only after row validation.",
+      "acceptance": "At 360px width operator can identify item, edit quantity and save with visible row context and no page-level horizontal pan."
+    },
+    {
+      "id": "C12",
+      "priority": "P2",
+      "category": "quick_create_continuity",
+      "title": "Inline master creation reloads lists but does not select the newly created record",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 331,
+          "note": "Create customer response discarded then list reload"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 335,
+          "note": "Create item response discarded"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 259,
+          "note": "Supplier create response discarded"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+          "line": 263,
+          "note": "Item create response discarded"
+        }
+      ],
+      "impact": "A user creates a missing party/item mid-entry and must find/select it again; first-page caps can prevent finding it.",
+      "recommendation": "Use canonical returned object/ID, insert/hydrate option and select into originating customer/supplier/line field; restore keyboard focus."
+    },
+    {
+      "id": "C13",
+      "priority": "P2",
+      "category": "setup_simplicity",
+      "title": "GST setup/support asks operators to know internal IDs and exact strings",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 19,
+          "note": "Company ID/branch ID and free status"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstRegistrationsPage.jsx",
+          "line": 73,
+          "note": "Exact registration status filter"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstSessionPage.jsx",
+          "line": 19,
+          "note": "Manual registration ID"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstLogsPage.jsx",
+          "line": 29,
+          "note": "Exact API type and registration ID"
+        }
+      ],
+      "impact": "Admin knowledge is required for routine selection and support navigation.",
+      "recommendation": "Company/branch/GSTIN lookups, derived state from GSTIN, enumerated statuses/operation labels and links from affected registration/document; keep raw ID optional in support details."
+    },
+    {
+      "id": "C14",
+      "priority": "P2",
+      "category": "numeric_entry",
+      "title": "Item stock controls rewrite decimal strings via JavaScript Number",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 124,
+          "note": "Blur normalizer uses Number"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 597,
+          "note": "Opening stock uses normalizer"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemFormPage.jsx",
+          "line": 601,
+          "note": "Minimum stock uses normalizer"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/itemHelpers.js",
+          "line": 99,
+          "note": "Opening stock payload uses numeric conversion"
+        }
+      ],
+      "impact": "Large/high-precision stock values can visibly change on blur before save. Backend range/precision was not validated during this audit.",
+      "recommendation": "Apply canonical decimal-string quantity handling with documented scale/range and explicit rounding; show entered value and reject excess precision rather than silently rewriting."
+    },
+    {
+      "id": "C15",
+      "priority": "P2",
+      "category": "cash_workflow",
+      "title": "Expense category and daily cash workflows are separate families without visible origin guidance",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 623,
+          "note": "Operating expense entry"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+          "line": 199,
+          "note": "Cash-book category"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/rojmel/myWalletService.js",
+          "line": 52,
+          "note": "Separate Rojmel category API"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+          "line": 123,
+          "note": "Private daily cashbook"
+        }
+      ],
+      "impact": "An operator can reasonably ask whether to record the same cash cost under Expenses, My Wallet or Transactions. No claim that backend duplicates balances: automatic cross-module posting was not traced.",
+      "recommendation": "Document one authoritative expense-entry path, show source/link on resulting cash movement, and make manual versus automatic posting clear; audit backend posting ownership before adding automation."
+    },
+    {
+      "id": "C16",
+      "priority": "P1",
+      "category": "enum_contract",
+      "title": "Rojmel transaction and wallet labels disagree with backend enums",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/constants/rojmelEnums.js",
+          "line": 12,
+          "note": "UI transaction5=Adjustment,6=OpeningBalance,7=Other"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/Rojmel/RojmelEnums.cs",
+          "line": 18,
+          "note": "Backend5=OpeningBalance,6=AdjustmentIn,7=AdjustmentOut"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/constants/rojmelEnums.js",
+          "line": 28,
+          "note": "UI wallet4=Bank,5=Cash"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/Rojmel/RojmelEnums.cs",
+          "line": 8,
+          "note": "Backend wallet4=PettyCash,5=BankCash"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/RojmelShared.jsx",
+          "line": 41,
+          "note": "Badges consume frontend labels"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/rojmelHelpers.js",
+          "line": 53,
+          "note": "Filter options consume numeric enum values"
+        }
+      ],
+      "impact": "Ledger badges and filters can call opening balances adjustments, adjustment-in opening balances and adjustment-out Other. Wallet creation/filters can label a PettyCash choice Bank. Backend status1 Posted is also shown as Active.",
+      "recommendation": "Use backend canonical enum contract to generate shared labels/options, explicitly distinguish adjustment directions and Posted status, and apply consistently to filters/badges/report columns.",
+      "acceptance": "Known backend transaction types1–7 and wallet types1–5 display and filter with matching meaning; create wallet choice stores the advertised backend type; old rows remain correctly classified."
+    },
+    {
+      "id": "C17",
+      "priority": "P1",
+      "category": "party_master_contract",
+      "title": "Party type is omitted from create/edit payload even though grouped customer/supplier flows depend on it",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyColumns.js",
+          "line": 10,
+          "note": "Command-field allowlist has no partyType through line81"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormModal.jsx",
+          "line": 1376,
+          "note": "Payload built only from supplied fields"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyHelpers.js",
+          "line": 63,
+          "note": "Payload allowlist builder"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Parties/Commands/CreatePartyCommand.cs",
+          "line": 29,
+          "note": "Missing type defaults Both"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Parties/Commands/UpdatePartyCommand.cs",
+          "line": 29,
+          "note": "Update default also Both"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Persistence/Repositories/PartyRepository.cs",
+          "line": 137,
+          "note": "Command type passed into persistence"
+        }
+      ],
+      "impact": "Quick-create labeled Customer or Supplier omits its role and backend defaults Both. Updating an existing typed party can also reset its type to Both under the current command default; database acceptance/state was not exercised.",
+      "recommendation": "Add explicit Customer/Supplier/Both field; preselect role from originating transaction and preserve existing role on edit; keep server validation aligned and clarify one shared party record can serve both.",
+      "acceptance": "Create Customer and Supplier yields intended type, edit preserves role unless deliberately changed, and Both appears in both document lookups."
+    },
+    {
+      "id": "C18",
+      "priority": "P2",
+      "category": "settings_behavior",
+      "title": "Party setting flags are persisted without a connected form or print behavior",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/partyColumns.js",
+          "line": 122,
+          "note": "Grouping/shipping/status/reminder/loyalty and custom-field flags"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyPage.jsx",
+          "line": 608,
+          "note": "Settings loaded only for settings editor"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyPage.jsx",
+          "line": 635,
+          "note": "Settings saved"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormPage.jsx",
+          "line": 129,
+          "note": "Party fields are fixed command fields"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PartySettingsController.cs",
+          "line": 24,
+          "note": "Independent settings GET/PUT"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/Parties/PartyDtos.cs",
+          "line": 5,
+          "note": "Party record has standard fields, no additional-field values"
+        }
+      ],
+      "impact": "Saving flags such as shipping/grouping/custom fields can appear to enable a behavior that the reviewed frontend form/print does not read. Source search found flag names only in settings schema/persistence; runtime effects were not tested.",
+      "recommendation": "Declare actual support of each setting and wire supported flags through to consumers with preview. Keep future loyalty/reminder/custom-field options visibly unavailable until data and behavior are implemented.",
+      "acceptance": "Each exposed setting has an observable defined effect, persists on reload and is tested at its consuming form/print; unsupported options clearly state prerequisite."
+    }
+  ],
+  "strengths": [
+    {
+      "description": "Canonical masters and permission-aware inline create already reduce navigation during transaction entry.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 442,
+          "note": "Customer create"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+          "line": 506,
+          "note": "Item create"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+          "line": 178,
+          "note": "Expense category create"
+        }
+      ]
+    },
+    {
+      "description": "Party GSTIN verification, reviewed autofill and same-as-billing shipping already remove manual work.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormModal.jsx",
+          "line": 1261,
+          "note": "GSTIN verify/apply"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/party/PartyFormModal.jsx",
+          "line": 1340,
+          "note": "Shipping copy"
+        }
+      ]
+    },
+    {
+      "description": "BOMs retain version/effective dates/components; production post explains stock impact and timeout recovery.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 409,
+          "note": "Versioned BOM"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+          "line": 427,
+          "note": "Stock impact/recovery"
+        }
+      ]
+    },
+    {
+      "description": "Physical procurement retains original receipt/version/disposition and separates receipt stock from financial bill linkage.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+          "line": 50,
+          "note": "Original receipt/version"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 48,
+          "note": "Financial versus stock ownership"
+        }
+      ]
+    },
+    {
+      "description": "Rojmel protects self-wallet scope, explains transfer neutrality and requires reasoned reversal.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+          "line": 123,
+          "note": "Self-wallet scope"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/TransferFormModal.jsx",
+          "line": 112,
+          "note": "Neutrality"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/rojmel/components/ReversalModal.jsx",
+          "line": 68,
+          "note": "Reason audit trail"
+        }
+      ]
+    },
+    {
+      "description": "GST mutations require reconciled matching active context and uncertain outcomes are blocked pending reconciliation; logs avoid raw secrets.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 82,
+          "note": "Management gate"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstDocumentPage.jsx",
+          "line": 38,
+          "note": "Uncertain outcome recovery"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/gst/GstLogsPage.jsx",
+          "line": 41,
+          "note": "Safe summaries"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Source review of actual pages, embedded sections/modals, services and selected backend contracts. No live browser proof, database writes, backend starts, or provider calls performed by this sub-audit.",
+    "No claim of exhaustive runtime QA or complete production readiness. Source-confirmed missing UI checks describe possible user-facing outcomes; backend may reject unsafe requests.",
+    "Rojmel category lookup is implemented; no category maintenance UI/API was found in this reviewed family. This is a read lookup family rather than an asserted missing sidebar master.",
+    "Manufacturing Work Centre/Operation/routing internals and global Reports/navigation are delegated elsewhere. Item embedded configuration and commerce integration boundaries were included here.",
+    "Inventory categories and expense categories are flat canonical masters; no parent/child hierarchy was found in their actual form schemas. Party group filters are classifications rather than standalone group master CRUD.",
+    "Automatic ledger/cash posting ownership across Expenses, Supplier Payments and Rojmel was not fully traced; C15 intentionally calls for an ownership audit before any automation change.",
+    "Nested backend cross-check distinguishes persistence/application-only HSN families from actual exposed API/client functionality. Current fixed enums were checked against local backend source; source code is evidence, not a substitute for live response verification."
+  ],
+  "backendCrossCheck": [
+    {
+      "family": "Party Master and settings",
+      "result": "Canonical party CRUD/status/export and separate settings GET/PUT exist. PartyType omission and settings consumption gaps documented C17/C18.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PartiesController.cs",
+          "line": 51,
+          "note": "Party create/update"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PartySettingsController.cs",
+          "line": 24,
+          "note": "Separate settings endpoints"
+        }
+      ]
+    },
+    {
+      "family": "Item/Category/Unit",
+      "result": "Canonical master CRUD exists, categories/units are flat and fields match their UI. Item HSN legacy field and procurement classification are actual Item request members. Manufacturing BOM/routing/packaging cross-check is covered by operations audit.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ItemsController.cs",
+          "line": 63,
+          "note": "Multipart Item create"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ItemsController.cs",
+          "line": 153,
+          "note": "Procurement classification/HSN request fields"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/CategoriesController.cs",
+          "line": 39,
+          "note": "Category CRUD"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/UnitsController.cs",
+          "line": 39,
+          "note": "Unit CRUD"
+        }
+      ]
+    },
+    {
+      "family": "HSN/GST nested masters",
+      "result": "Catalog/category defaults/item overrides/effective resolver application methods and DTOs exist, but API controller and frontend service expose only rate versions. Added four explicit unavailable frontend workflow rows; C01 identifies dangling invoice method.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Application/Abstractions/Services/IHsnGstService.cs",
+          "line": 8,
+          "note": "Full service contract"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+          "line": 11,
+          "note": "Exposed endpoints"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/services/gst/hsnGstService.js",
+          "line": 6,
+          "note": "Client methods"
+        }
+      ]
+    },
+    {
+      "family": "Rojmel categories and types",
+      "result": "Category GET lookup and enum Income/Expense/Both match frontend; no category-maintenance controller in reviewed Rojmel family. Wallet CRUD is present. Transaction/wallet enums mismatch UI (C16). These are fixed enumerations, not missing CRUD masters.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Rojmel/RojmelControllers.cs",
+          "line": 36,
+          "note": "Categories GET"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/Rojmel/RojmelControllers.cs",
+          "line": 72,
+          "note": "Wallet CRUD"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/Rojmel/RojmelEnums.cs",
+          "line": 29,
+          "note": "Category enum"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/constants/rojmelEnums.js",
+          "line": 12,
+          "note": "Type mismatch"
+        }
+      ]
+    },
+    {
+      "family": "Sales invoice children",
+      "result": "Create/list/get/update/confirm/cancel plus payments POST/GET exist. Print template choice lives in client preview; no claim of separate server template master.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/SalesInvoicesController.cs",
+          "line": 66,
+          "note": "Payment child APIs"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+          "line": 488,
+          "note": "Client template selector"
+        }
+      ]
+    },
+    {
+      "family": "Purchase masters and child transactions",
+      "result": "Expense categories full CRUD; bills/order/returns/supplier payments/expenses APIs exist. Supplier payment allocation and return original bill-line ID are real DTO child fields. No separate extra configuration master inferred from static UI enums.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/ExpenseCategoriesController.cs",
+          "line": 4,
+          "note": "Category CRUD"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/PurchaseExpense/PurchaseExpenseDtos.cs",
+          "line": 5,
+          "note": "Return original bill-line ID"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.Contracts/PurchaseExpense/PurchaseExpenseDtos.cs",
+          "line": 7,
+          "note": "Payment allocation child DTO"
+        },
+        {
+          "path": "F:/FI/cosmos/backend/src/Cosmos.API/Controllers/PurchaseBillsController.cs",
+          "line": 8,
+          "note": "Supplier-scoped bill lookup"
+        }
+      ]
+    },
+    {
+      "family": "Physical purchase receipt children",
+      "result": "Frontend actual receipt/return/credit/promise/link flows inspected. Backend physical controllers are separate from financial document CRUD, preserving ownership boundary.",
+      "evidence": [
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+          "line": 50,
+          "note": "Receipt/version linkage"
+        },
+        {
+          "path": "F:/FI/cosmos/frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+          "line": 48,
+          "note": "Financial receipt link policy"
+        }
+      ]
+    }
+  ]
+}

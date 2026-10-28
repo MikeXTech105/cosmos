@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { serializeProductionJson } from "../../services/manufacturing/productionApi";
+const wire = value => JSON.parse(serializeProductionJson(value));
 
 import {
   buildBomPayload,
@@ -13,6 +15,14 @@ import {
 } from "./manufacturingHelpers";
 
 describe("manufacturing helpers", () => {
+  it("keeps legacy stock commands exact above the browser integer limit", () => {
+    const payload = buildProductionPayload({finishedItem:{id:"9007199254740993"},bomId:"9007199254740995",plannedQuantity:"9999999999999999.123456",producedQuantity:"0.000001",productionDate:"2026-10-28"});
+    const json = serializeProductionJson(payload);
+    expect(json).toContain('"finishedItemId":9007199254740993');
+    expect(json).toContain('"bomId":9007199254740995');
+    expect(json).toContain('"plannedQuantity":9999999999999999.123456');
+    expect(json).toContain('"producedQuantity":0.000001');
+  });
   it("calculates base plus wastage for the produced quantity", () => {
     expect(calculateRequiredQuantity({ baseQuantity: 2, wastagePercentage: 5 }, 10)).toBe(21);
   });
@@ -30,8 +40,8 @@ describe("manufacturing helpers", () => {
     expect(getBomStatus({ status: 2 })).toBe("Active");
   });
 
-  it("serializes BOM lines with numeric quantities", () => {
-    expect(buildBomPayload({
+  it("serializes BOM lines as JSON numeric quantities", () => {
+    expect(wire(buildBomPayload({
       finishedItem: { id: "8" },
       version: " v2 ",
       effectiveFrom: "2026-09-22",
@@ -39,7 +49,7 @@ describe("manufacturing helpers", () => {
       notes: " Standard recipe ",
       isDefault: true,
       components: [{ item: { id: "4", unitId: "2" }, quantity: "2.5", wastagePercentage: "3", notes: " Cut first " }],
-    })).toEqual({
+    }))).toEqual({
       finishedItemId: 8,
       version: "v2",
       effectiveFrom: "2026-09-22",
@@ -60,7 +70,7 @@ describe("manufacturing helpers", () => {
       productionDate: "2026-09-22",
       referenceNumber: " PR-1 ",
     };
-    expect(buildProductionPayload(form)).toEqual({
+    expect(wire(buildProductionPayload(form))).toEqual({
       bomId: 7,
       finishedItemId: 8,
       notes: "Run A",
@@ -69,7 +79,7 @@ describe("manufacturing helpers", () => {
       productionDate: "2026-09-22",
       referenceNumber: "PR-1",
     });
-    expect(buildProductionUpdatePayload(form)).toEqual({
+    expect(wire(buildProductionUpdatePayload(form))).toEqual({
       notes: "Run A",
       plannedQuantity: 12,
       producedQuantity: 10,
@@ -90,6 +100,6 @@ describe("manufacturing helpers", () => {
     });
     expect(update).not.toHaveProperty("finishedItemId");
     expect(update).not.toHaveProperty("version");
-    expect(update.components[0]).toMatchObject({ quantity: 2, sortOrder: 1 });
+    expect(wire(update.components[0])).toMatchObject({ quantity: 2, sortOrder: 1 });
   });
 });

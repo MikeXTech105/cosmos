@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Cosmos.Application.Services;
 
-public sealed class HrService : IHrService
+public sealed partial class HrService : IHrService
 {
     private readonly IHrRepository _repository;
     private readonly IAuditRepository _auditRepository;

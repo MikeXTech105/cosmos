@@ -9,6 +9,7 @@ public sealed class ProductionMigrationSyntaxTests
     {
         var root = FindRoot();
         var scripts = Directory.GetFiles(Path.Combine(root, "backend", "database", "migrations"), "20261027_*.sql")
+            .Concat(Directory.GetFiles(Path.Combine(root, "backend", "database", "migrations"), "20261028_*.sql"))
             .Append(Path.Combine(root,"backend","database","verification","production_workspace_reconciliation.sql")).ToArray();
         Assert.NotEmpty(scripts);
         foreach (var path in scripts)

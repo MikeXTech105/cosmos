@@ -61,6 +61,7 @@ public sealed class GstinVerificationResponse
 
 public sealed class EWayBillResponse
 {
+    public string? ConcurrencyVersion { get; set; }
     public long Id { get; set; }
     public long CompanyGstRegistrationId { get; set; }
     public long? SalesInvoiceId { get; set; }
@@ -91,6 +92,8 @@ public sealed class EWayBillResponse
     public DateTime? UpdatedAt { get; set; }
     public long? UpdatedBy { get; set; }
 }
+
+public sealed record GstEWayExtensionOperation(Guid IdempotencyKey, long EWayBillId, long CompanyGstRegistrationId, string EWayBillNumber, string State, bool IsNew, DateTime? PriorValidUpTo);
 
 public sealed class EInvoiceResponse
 {

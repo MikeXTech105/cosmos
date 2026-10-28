@@ -7,17 +7,19 @@ import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppModal from "../../../components/common/AppModal";
 import AppSelect from "../../../components/common/AppSelect";
+import ConfigurationLookup, { ConfigurationReferenceLabel } from "./ConfigurationLookup";
 import PageHeader from "../../../components/common/PageHeader";
 import useProductionRuntime from "../../../hooks/useProductionRuntime";
 import { assertBusinessDate } from "../../../utils/productionValues";
 import { productionConfigurationService as service } from "../../../services/manufacturing/productionConfigurationService";
 import { ManufacturingCard } from "../ManufacturingShared";
-import { RATE_BASES, isDecimal, lookupOptions, nameOf, rowsOf, validDateRange, validateIntervals } from "./configurationHelpers";
+import { RATE_BASES, isDecimal, lookupOptions, rowsOf, validDateRange, validateIntervals } from "./configurationHelpers";
 import { CommandRecovery, ActiveField, DateFields, EffectiveDates, EffectivityDialog, EmptyRows, InlineMessage, RefreshButton, Version } from "./ConfigurationShared";
 const MasterEditor = ({
   kind,
   record,
   shifts,
+  lookupContext,
   onClose,
   onSaved
 }) => {
@@ -79,7 +81,7 @@ const MasterEditor = ({
           defaultValue: "Name"
         })} maxLength={200} value={form.name} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={event => setField("name", event.target.value)} /></div>{kind === "work-centres" ? <><AppInput label={t("Capacity basis", {
           defaultValue: "Capacity basis"
-        })} value="Minutes" disabled /><AppSelect label={t("Default HR shift (optional)", {
+        })} value="Minutes" disabled /><ConfigurationLookup kind="shifts" lookupContext={lookupContext} label={t("Default HR shift (optional)", {
           defaultValue: "Default HR shift (optional)"
         })} options={[{
           value: "",
@@ -106,6 +108,7 @@ const MasterEditor = ({
 const ShiftEditor = ({
   centre,
   shifts,
+  lookupContext,
   onClose,
   onSaved
 }) => {
@@ -143,7 +146,7 @@ const ShiftEditor = ({
   };
   return <AppModal isOpen title={`${t("Add shift capacity", {
     defaultValue: "Add shift capacity"
-  })} · ${centre.name}`} isBusy={command.busy} onClose={() => { if (!command.committed && !command.uncertain && !command.conflict) onClose(); }}><div className="space-y-4"><AppSelect required label={t("HR shift", {
+  })} · ${centre.name}`} isBusy={command.busy} onClose={() => { if (!command.committed && !command.uncertain && !command.conflict) onClose(); }}><div className="space-y-4"><ConfigurationLookup kind="shifts" lookupContext={lookupContext} required label={t("HR shift", {
         defaultValue: "HR shift"
       })} options={lookupOptions(shifts, form.shiftId)} value={form.shiftId} disabled={command.busy || command.committed || command.conflict || command.uncertain} onChange={value => setField("shiftId", value)} /><DateFields form={form} setField={setField} disabled={command.busy || command.committed || command.conflict || command.uncertain} /><div className="grid gap-4 sm:grid-cols-2"><AppInput required label={t("Break minutes", {
           defaultValue: "Break minutes"
@@ -296,7 +299,7 @@ const WorkCentreCapacity = ({
           defaultValue: "Loading shift capacity\u2026"
         })}</InlineMessage>}{!state.loading && !records.length && <EmptyRows>{t("No shift capacity configured.", {
           defaultValue: "No shift capacity configured."
-        })}</EmptyRows>}{records.map(record => <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row" key={record.id}><div><h3 className="font-medium text-slate-900">{nameOf(lookups.shifts, record.shiftId)}</h3><EffectiveDates record={record} /><p className="mt-2 text-sm text-slate-700">{t("Break:", {
+        })}</EmptyRows>}{records.map(record => <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row" key={record.id}><div><h3 className="font-medium text-slate-900"><ConfigurationReferenceLabel kind="shifts" id={record.shiftId} lookupContext={lookups} /></h3><EffectiveDates record={record} /><p className="mt-2 text-sm text-slate-700">{t("Break:", {
               defaultValue: "Break:"
             })} {record.breakMinutes} {t("minutes \xB7 Capacity factor:", {
               defaultValue: "minutes \xB7 Capacity factor:"
@@ -307,7 +310,7 @@ const WorkCentreCapacity = ({
             record
           })}>{t("Close effectivity", {
               defaultValue: "Close effectivity"
-            })}</AppButton></div>}</div>)}</div>{capabilities.canUpdate && editor && <ShiftEditor centre={centre} shifts={lookups.shifts} onClose={() => setEditor(false)} onSaved={reload} />}{capabilities.canApprove && calendar && <CalendarEditor record={calendar} onClose={() => setCalendar(null)} onSaved={reload} />}{capabilities.canApprove && closing && <EffectivityDialog target={closing} onClose={() => setClosing(null)} onSaved={reload} />}</ManufacturingCard>;
+            })}</AppButton></div>}</div>)}</div>{capabilities.canUpdate && editor && <ShiftEditor centre={centre} shifts={lookups.shifts} lookupContext={lookups} onClose={() => setEditor(false)} onSaved={reload} />}{capabilities.canApprove && calendar && <CalendarEditor record={calendar} onClose={() => setCalendar(null)} onSaved={reload} />}{capabilities.canApprove && closing && <EffectivityDialog target={closing} onClose={() => setClosing(null)} onSaved={reload} />}</ManufacturingCard>;
 };
 const ConfigurationPage = () => {
   const t = useProductionText(configurationMessages);
@@ -372,7 +375,7 @@ const ConfigurationPage = () => {
           defaultValue: "No records match this search."
         })}</EmptyRows> : <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-left text-sm"><thead className="bg-slate-50 text-xs text-slate-500"><tr>{["Code / name", "Configuration", "Status", "Actions"].map(label => <th scope="col" className="p-4" key={label}>{t(label, {
                   defaultValue: label
-                })}</th>)}</tr></thead><tbody>{page.items.map(record => <tr key={record.id} className="border-t border-slate-100"><td className="p-4"><p className="font-semibold text-slate-900">{record.code} · {record.name}</p><Version value={record.version} /></td><td className="p-4">{kind === "work-centres" ? `${record.capacityBasis ?? "Minutes"} · ${nameOf(lookups.shifts, record.defaultShiftId)}` : `${RATE_BASES.find(entry => entry.value === Number(record.rateBasis))?.label ?? "—"} · ${record.defaultRate ?? "No default rate"}`}</td><td className="p-4">{t(record.isActive ? "Active" : "Inactive", {
+                })}</th>)}</tr></thead><tbody>{page.items.map(record => <tr key={record.id} className="border-t border-slate-100"><td className="p-4"><p className="font-semibold text-slate-900">{record.code} · {record.name}</p><Version value={record.version} /></td><td className="p-4">{kind === "work-centres" ? <>{record.capacityBasis ?? "Minutes"} · <ConfigurationReferenceLabel kind="shifts" id={record.defaultShiftId} lookupContext={lookups} /></> : `${RATE_BASES.find(entry => entry.value === Number(record.rateBasis))?.label ?? "—"} · ${record.defaultRate ?? "No default rate"}`}</td><td className="p-4">{t(record.isActive ? "Active" : "Inactive", {
                   defaultValue: record.isActive ? "Active" : "Inactive"
                 })}</td><td className="p-4"><div className="flex gap-2">{capabilities.canUpdate && <AppButton variant="secondary" onClick={() => setEditor({
                     record
@@ -401,7 +404,7 @@ const ConfigurationPage = () => {
             pageNumber: current.pageNumber + 1
           }))}>{t("Next", {
               defaultValue: "Next"
-            })}</AppButton></div></div></ManufacturingCard>{centre && kind === "work-centres" && <WorkCentreCapacity key={centre.id} centre={centre} lookups={lookups} capabilities={capabilities} />}{editor && (editor.record ? capabilities.canUpdate : capabilities.canCreate) && <MasterEditor kind={kind} record={editor.record} shifts={lookups.shifts} onClose={() => setEditor(null)} onSaved={async () => {
+            })}</AppButton></div></div></ManufacturingCard>{centre && kind === "work-centres" && <WorkCentreCapacity key={centre.id} centre={centre} lookups={lookups} capabilities={capabilities} />}{editor && (editor.record ? capabilities.canUpdate : capabilities.canCreate) && <MasterEditor kind={kind} record={editor.record} shifts={lookups.shifts} lookupContext={lookups} onClose={() => setEditor(null)} onSaved={async () => {
       const refreshed = await reload();
       const references = await lookups.refresh();
       return refreshed && references;

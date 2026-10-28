@@ -63,6 +63,7 @@ export const CustomerBlock = ({ invoice, title = "Bill To" }) => {
         {invoice.customer.email && <p>Email: {invoice.customer.email}</p>}
         {invoice.customer.gstin && <p>GSTIN: {invoice.customer.gstin}</p>}
       </div>
+      {invoice.printShippingAddress && invoice.shipTo && <div className="mt-4 border-t border-slate-100 pt-3"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Ship To</p><p className="mt-2 text-sm font-bold text-slate-950">{invoice.shipTo.name}</p><p className="mt-1 text-xs leading-5 text-slate-500">{invoice.shipTo.address}</p></div>}
     </div>
   );
 };

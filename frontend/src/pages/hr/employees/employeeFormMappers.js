@@ -4,6 +4,7 @@ import {
   HR_GENDER,
 } from "../../../utils/hrEnums";
 import { normalizeEmployeeMobile } from "../../../utils/validationSchemas";
+import { idWire } from "../../../utils/productionValues";
 
 const BANK_FIELDS = [
   "bankName",
@@ -30,9 +31,7 @@ const getNumberOrEmpty = (...values) => {
     return "";
   }
 
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : "";
+  try { return String(idWire(value)); } catch { return ""; }
 };
 
 const getEnumValue = (value, fallback) => {
@@ -114,6 +113,7 @@ const getAddresses = (employee) => {
 
 export const extractEmployeeBankDetails = (payload) => {
   const data = payload?.data ?? payload;
+  if (Array.isArray(data)) return data[0] ?? {};
   const nested =
     data?.bankDetails ??
     data?.employeeBankDetails ??
@@ -283,12 +283,12 @@ export const mapFormToPayload = (
     joiningDate: trimValue(values.joiningDate),
     mobile: normalizeEmployeeMobile(trimValue(values.mobile)),
     email: trimValue(values.email),
-    departmentId: Number(values.departmentId),
-    designationId: Number(values.designationId),
+    departmentId: idWire(values.departmentId),
+    designationId: idWire(values.designationId),
     reportingManagerId: values.reportingManagerId
-      ? Number(values.reportingManagerId)
+      ? idWire(values.reportingManagerId)
       : null,
-    shiftId: Number(values.shiftId),
+    shiftId: idWire(values.shiftId),
     employmentType: Number(values.employmentType),
     status: Number(values.status),
     profilePhotoUrl: trimValue(values.profilePhotoUrl),

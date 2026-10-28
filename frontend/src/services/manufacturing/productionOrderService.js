@@ -20,6 +20,7 @@ export const productionOrderService = {
   list: (params = {}, { signal } = {}) => read(base, params, signal),
   getById: (id, { signal } = {}) => read(`${base}/${id}`, {}, signal),
   context: (id, { signal } = {}) => read(`${base}/${id}/context`, {}, signal),
+  labels: (id, { signal } = {}) => read(`${base}/${id}/labels`, {}, signal),
   create: (payload) => post(base, payload),
   update: async (id, payload) => unwrapResponse(await productionApi.put(`${base}/${id}`, orderWirePayload(payload))),
   release: (id, payload) => post(`${base}/${id}/release`, payload),

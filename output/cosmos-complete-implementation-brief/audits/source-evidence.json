@@ -1,0 +1,345 @@
+{
+  "kind": "Source-only evidence; no backend, real login or SQL connection",
+  "ordinaryRoleProductionMenu": {
+    "input": {
+      "canView": true,
+      "canCreate": false,
+      "canEdit": false,
+      "canDelete": false,
+      "canApprove": false,
+      "canExport": false,
+      "pageId": 990,
+      "pageName": "Manufacturing.Orders",
+      "displayName": "Production Orders",
+      "route": "/manufacturing/orders",
+      "parentPageId": null,
+      "sortOrder": 0,
+      "icon": "app"
+    },
+    "result": [
+      {
+        "id": "productionDaily",
+        "label": "Daily Production",
+        "route": "/manufacturing/daily"
+      },
+      {
+        "id": "productionKanban",
+        "label": "Kanban Board",
+        "route": "/manufacturing/board"
+      },
+      {
+        "id": "990",
+        "label": "Production Orders",
+        "route": "/manufacturing/orders"
+      },
+      {
+        "id": "990",
+        "label": "Production Orders",
+        "route": "/manufacturing/planning"
+      },
+      {
+        "id": "990",
+        "label": "Production Orders",
+        "route": "/manufacturing/imports"
+      }
+    ]
+  },
+  "reportCount": 43,
+  "reportGroups": [
+    {
+      "id": "sales",
+      "label": "Sales",
+      "count": 7
+    },
+    {
+      "id": "purchase",
+      "label": "Purchase",
+      "count": 7
+    },
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "count": 11
+    },
+    {
+      "id": "manufacturing",
+      "label": "Manufacturing",
+      "count": 2
+    },
+    {
+      "id": "party",
+      "label": "Party",
+      "count": 5
+    },
+    {
+      "id": "expense",
+      "label": "Expense",
+      "count": 4
+    },
+    {
+      "id": "rojmel",
+      "label": "Rojmel",
+      "count": 7
+    }
+  ],
+  "reports": [
+    {
+      "id": "sales-summary",
+      "title": "Sales Summary",
+      "group": "sales",
+      "route": "/reports/sales/summary"
+    },
+    {
+      "id": "sales-invoices",
+      "title": "Sales Invoices",
+      "group": "sales",
+      "route": "/reports/sales/invoices"
+    },
+    {
+      "id": "sales-by-party",
+      "title": "Sales By Party",
+      "group": "sales",
+      "route": "/reports/sales/by-party"
+    },
+    {
+      "id": "sales-by-item",
+      "title": "Sales By Item",
+      "group": "sales",
+      "route": "/reports/sales/by-item"
+    },
+    {
+      "id": "sales-payments-in",
+      "title": "Payments In",
+      "group": "sales",
+      "route": "/reports/sales/payments-in"
+    },
+    {
+      "id": "sales-receivables",
+      "title": "Sales Receivables",
+      "group": "sales",
+      "route": "/reports/sales/receivables"
+    },
+    {
+      "id": "sales-tax-summary",
+      "title": "Sales Tax Summary",
+      "group": "sales",
+      "route": "/reports/sales/tax-summary"
+    },
+    {
+      "id": "purchase-summary",
+      "title": "Purchase Summary",
+      "group": "purchase",
+      "route": "/reports/purchase/summary"
+    },
+    {
+      "id": "purchase-bills",
+      "title": "Purchase Bills",
+      "group": "purchase",
+      "route": "/reports/purchase/bills"
+    },
+    {
+      "id": "purchase-by-supplier",
+      "title": "Purchase By Supplier",
+      "group": "purchase",
+      "route": "/reports/purchase/by-supplier"
+    },
+    {
+      "id": "purchase-by-item",
+      "title": "Purchase By Item",
+      "group": "purchase",
+      "route": "/reports/purchase/by-item"
+    },
+    {
+      "id": "purchase-payments-out",
+      "title": "Payments Out",
+      "group": "purchase",
+      "route": "/reports/purchase/payments-out"
+    },
+    {
+      "id": "purchase-payables",
+      "title": "Purchase Payables",
+      "group": "purchase",
+      "route": "/reports/purchase/payables"
+    },
+    {
+      "id": "purchase-tax-summary",
+      "title": "Purchase Tax Summary",
+      "group": "purchase",
+      "route": "/reports/purchase/tax-summary"
+    },
+    {
+      "id": "inventory-stock-summary",
+      "title": "Stock Summary",
+      "group": "inventory",
+      "route": "/reports/inventory/stock-summary"
+    },
+    {
+      "id": "inventory-stock-ledger",
+      "title": "Stock Ledger",
+      "group": "inventory",
+      "route": "/reports/inventory/stock-ledger"
+    },
+    {
+      "id": "inventory-item-movement",
+      "title": "Item Movement",
+      "group": "inventory",
+      "route": "/reports/inventory/item-movement"
+    },
+    {
+      "id": "inventory-low-stock",
+      "title": "Low Stock",
+      "group": "inventory",
+      "route": "/reports/inventory/low-stock"
+    },
+    {
+      "id": "inventory-stock-valuation",
+      "title": "Stock Valuation",
+      "group": "inventory",
+      "route": "/reports/inventory/stock-valuation"
+    },
+    {
+      "id": "inventory-negative-stock",
+      "title": "Negative Stock",
+      "group": "inventory",
+      "route": "/reports/inventory/negative-stock"
+    },
+    {
+      "id": "inventory-stock-movements",
+      "title": "Stock Movements",
+      "group": "inventory",
+      "route": "/reports/inventory/stock-movements"
+    },
+    {
+      "id": "inventory-item-ledger",
+      "title": "Item Ledger",
+      "group": "inventory",
+      "route": "/reports/inventory/item-ledger"
+    },
+    {
+      "id": "inventory-dead-stock",
+      "title": "Dead Stock",
+      "group": "inventory",
+      "route": "/reports/inventory/dead-stock"
+    },
+    {
+      "id": "inventory-fast-moving-items",
+      "title": "Fast Moving Items",
+      "group": "inventory",
+      "route": "/reports/inventory/fast-moving-items"
+    },
+    {
+      "id": "inventory-slow-moving-items",
+      "title": "Slow Moving Items",
+      "group": "inventory",
+      "route": "/reports/inventory/slow-moving-items"
+    },
+    {
+      "id": "manufacturing-history",
+      "title": "Manufacturing History",
+      "group": "manufacturing",
+      "route": "/reports/manufacturing/history"
+    },
+    {
+      "id": "manufacturing-consumption",
+      "title": "Raw Material Consumption",
+      "group": "manufacturing",
+      "route": "/reports/manufacturing/consumption"
+    },
+    {
+      "id": "party-ledger",
+      "title": "Party Ledger",
+      "group": "party",
+      "route": "/reports/party/ledger"
+    },
+    {
+      "id": "party-customer-statement",
+      "title": "Customer Statement",
+      "group": "party",
+      "route": "/reports/party/customer-statement"
+    },
+    {
+      "id": "party-supplier-statement",
+      "title": "Supplier Statement",
+      "group": "party",
+      "route": "/reports/party/supplier-statement"
+    },
+    {
+      "id": "party-receivable-aging",
+      "title": "Receivable Aging",
+      "group": "party",
+      "route": "/reports/party/receivable-aging"
+    },
+    {
+      "id": "party-payable-aging",
+      "title": "Payable Aging",
+      "group": "party",
+      "route": "/reports/party/payable-aging"
+    },
+    {
+      "id": "expense-summary",
+      "title": "Expense Summary",
+      "group": "expense",
+      "route": "/reports/expense/summary"
+    },
+    {
+      "id": "expense-by-category",
+      "title": "Expense By Category",
+      "group": "expense",
+      "route": "/reports/expense/by-category"
+    },
+    {
+      "id": "expense-by-party",
+      "title": "Expense By Party",
+      "group": "expense",
+      "route": "/reports/expense/by-party"
+    },
+    {
+      "id": "expense-monthly-summary",
+      "title": "Monthly Expense Summary",
+      "group": "expense",
+      "route": "/reports/expense/monthly-summary"
+    },
+    {
+      "id": "rojmel-wallet-ledger",
+      "title": "Wallet Ledger",
+      "group": "rojmel",
+      "route": "/rojmel/reports/wallet-ledger"
+    },
+    {
+      "id": "rojmel-all-transactions",
+      "title": "All Transactions",
+      "group": "rojmel",
+      "route": "/rojmel/reports/all-transactions"
+    },
+    {
+      "id": "rojmel-income-expense",
+      "title": "Income vs Expense",
+      "group": "rojmel",
+      "route": "/rojmel/reports/income-expense"
+    },
+    {
+      "id": "rojmel-category-expense",
+      "title": "Category-wise Expense",
+      "group": "rojmel",
+      "route": "/rojmel/reports/category-expense"
+    },
+    {
+      "id": "rojmel-transfers",
+      "title": "Transfers",
+      "group": "rojmel",
+      "route": "/rojmel/reports/transfers"
+    },
+    {
+      "id": "rojmel-daily-cash-flow",
+      "title": "Daily Cash Flow",
+      "group": "rojmel",
+      "route": "/rojmel/reports/daily-cash-flow"
+    },
+    {
+      "id": "rojmel-user-wallet-balances",
+      "title": "User Wallet Balances",
+      "group": "rojmel",
+      "route": "/rojmel/reports/user-wallet-balances"
+    }
+  ]
+}

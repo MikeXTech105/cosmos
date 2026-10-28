@@ -4,6 +4,7 @@ import {
   FileSearch,
   RefreshCw,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import AppButton from "../../components/common/AppButton";
 import AppSelect from "../../components/common/AppSelect";
@@ -101,6 +102,8 @@ const ReportTable = ({
   onSortChange,
   report,
   rows,
+  getCellLink,
+  returnTo,
 }) => {
   const columns = report.columns ?? [];
   const pageNumber = Number(filters.PageNumber || meta?.pageNumber || 1);
@@ -108,6 +111,11 @@ const ReportTable = ({
   const totalCount = Number(meta?.totalCount) || rows.length;
   const totalPages =
     Number(meta?.totalPages) || Math.max(1, Math.ceil(totalCount / pageSize));
+  const renderCell = (column, row) => {
+    const text = formatCell(getReportValue(row, column.key), column);
+    const link = getCellLink?.(column, row);
+    return link ? <Link to={link} state={{ fromReport: returnTo }} className="font-medium text-brand hover:underline">{text}</Link> : text;
+  };
 
   if (!isLoading && (error || rows.length === 0)) {
     return (
@@ -135,7 +143,11 @@ const ReportTable = ({
 
   return (
     <div className="flex min-h-[420px] flex-col">
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div className="space-y-3 p-3 sm:hidden" aria-label="Report records">
+        {isLoading ? <p role="status" className="text-sm text-slate-500">Loading report…</p> : rows.map((row, rowIndex) => <article key={row?.id ?? rowIndex} className="rounded-xl border border-slate-200 bg-white p-3"><h3 className="mb-2 text-sm font-semibold text-slate-900">{columns[0] ? renderCell(columns[0], row) : `Record ${rowIndex + 1}`}</h3><dl className="grid grid-cols-2 gap-x-3 gap-y-2">{columns.slice(1).map((column) => <div key={column.key} className="min-w-0"><dt className="text-xs text-slate-500">{column.header ?? column.label}</dt><dd className="break-words text-sm font-medium text-slate-800">{renderCell(column, row)}</dd></div>)}</dl></article>)}
+        {report.paginated && <p className="text-xs text-slate-500">Showing this page. Period summaries and page totals are labelled separately.</p>}
+      </div>
+      <div className="hidden min-h-0 flex-1 overflow-auto sm:block">
         <table className="w-full min-w-[920px] table-fixed text-left">
           <thead className="sticky top-0 z-10 bg-slate-50">
             <tr>
@@ -243,7 +255,7 @@ const ReportTable = ({
                             isNegativeTone ? "text-red-600" : "",
                           ].join(" ")}
                         >
-                          {formatCell(value, column)}
+                          {renderCell(column, row)}
                         </td>
                       );
                     })}

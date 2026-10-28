@@ -9,6 +9,8 @@ import {
 import { ProcurementItemClassification } from "../constants/procurementEnums";
 import { normalizeItemClassification } from "./itemClassification";
 import { ITEM_TYPE } from "./itemTypes";
+import { itemDecimalSchema, itemLookupIdSchema } from "../pages/inventory/items/itemPrecision";
+import { hrIdentifier, optionalHrIdentifier } from "./hrIdentifiers";
 
 export const loginSchema = z.object({
   usernameOrEmail: z.string().trim().min(1, "Username or email is required").max(256),
@@ -72,14 +74,6 @@ const nonNegativeNumber = (label) => {
   return z.coerce.number().min(0, `${label} cannot be negative`);
 };
 
-const optionalPositiveId = z.preprocess((value) => {
-  if (value === "" || value === null || value === undefined) {
-    return null;
-  }
-
-  return Number(value);
-}, z.number().int().positive().nullable());
-
 export const normalizeEmployeeMobile = (value) => {
   if (typeof value !== "string") return value;
 
@@ -118,7 +112,7 @@ export const hrDesignationSchema = z.object({
     .trim()
     .min(1, "Designation name is required")
     .max(200, "Designation name is too long"),
-  departmentId: z.coerce.number().int().positive("Department is required"),
+  departmentId: hrIdentifier("Department"),
   description: z
     .string()
     .trim()
@@ -175,10 +169,10 @@ export const hrEmployeeSchema = z.object({
       "Enter a valid mobile number with 7 to 15 digits; + is allowed only at the start",
     ),
   email: z.string().trim().max(200).pipe(z.union([z.literal(""), z.string().email("Enter a valid email address")])).default(""),
-  departmentId: z.coerce.number().int().positive("Department is required"),
-  designationId: z.coerce.number().int().positive("Designation is required"),
-  reportingManagerId: optionalPositiveId,
-  shiftId: z.coerce.number().int().positive("Shift is required"),
+  departmentId: hrIdentifier("Department"),
+  designationId: hrIdentifier("Designation"),
+  reportingManagerId: optionalHrIdentifier,
+  shiftId: hrIdentifier("Shift"),
   employmentType: enumNumber(HR_EMPLOYMENT_TYPE, "Employment type"),
   status: z.coerce
     .number()
@@ -250,12 +244,12 @@ export const hrEmployeeRejoinSchema = z.object({
 });
 
 export const hrAttendanceQuickActionSchema = z.object({
-  employeeId: z.coerce.number().int().positive("Employee is required"),
+  employeeId: hrIdentifier("Employee"),
   actionTime: z.string().trim().min(1, "Time is required"),
 });
 
 export const hrAttendanceManualSchema = z.object({
-  employeeId: z.coerce.number().int().positive("Employee is required"),
+  employeeId: hrIdentifier("Employee"),
   attendanceDate: z.string().trim().min(1, "Attendance date is required"),
   checkInTime: z.string().trim().optional(),
   checkOutTime: z.string().trim().optional(),
@@ -263,30 +257,27 @@ export const hrAttendanceManualSchema = z.object({
 });
 
 export const hrAttendanceAdjustmentSchema = z.object({
-  employeeId: z.coerce.number().int().positive("Employee is required"),
-  attendanceId: z.coerce.number().int().positive("Attendance id is required"),
+  employeeId: hrIdentifier("Employee"),
+  attendanceId: hrIdentifier("Attendance day"),
   reason: z.string().trim().min(1, "Reason is required"),
 });
 
 export const hrAttendanceDecisionSchema = z.object({
-  adjustmentId: z.coerce.number().int().positive("Adjustment id is required"),
+  adjustmentId: hrIdentifier("Correction request"),
   remarks: z.string().trim().optional(),
 });
 
 export const hrLeaveApplySchema = z.object({
-  employeeId: z.coerce.number().int().positive("Employee is required"),
-  leaveTypeId: z.coerce.number().int().positive("Leave type is required"),
+  employeeId: hrIdentifier("Employee"),
+  leaveTypeId: hrIdentifier("Leave type"),
   startDate: requiredDate("Start date"),
   endDate: requiredDate("End date"),
   reason: z.string().trim().min(1, "Reason is required").max(500),
 }).superRefine((values, context) => dateOrder(values, context, "startDate", "endDate", "End date cannot be before start date"));
 
 export const hrLeaveActionSchema = z.object({
-  leaveApplicationId: z.coerce
-    .number()
-    .int()
-    .positive("Leave application id is required"),
-  employeeId: optionalPositiveId,
+  leaveApplicationId: hrIdentifier("Leave request"),
+  employeeId: optionalHrIdentifier,
   remarks: z.string().trim().optional(),
 });
 
@@ -296,13 +287,10 @@ export const hrPayrollProcessSchema = z.object({
 });
 
 export const hrPayrollApproveSchema = z.object({
-  payrollRunId: z.coerce.number().int().positive("Payroll run id is required"),
+  payrollRunId: hrIdentifier("Payroll run"),
 });
 
-const lookupId = z.union([
-  z.literal(""),
-  z.number().int().positive(),
-]);
+const lookupId = itemLookupIdSchema;
 
 const parseItemTypeInput = (value) => {
   if (value === null || value === undefined || value === "") {
@@ -347,8 +335,8 @@ export const itemSchema = z
         z.nativeEnum(ProcurementItemClassification).nullable(),
       )
       .optional(),
-    salesPrice: nonNegativeNumber("Sales price"),
-    purchasePrice: nonNegativeNumber("Purchase price"),
+    salesPrice: itemDecimalSchema("Sales price", 2),
+    purchasePrice: itemDecimalSchema("Purchase price", 2),
       hsnCode: z.string().trim().max(50).refine(
         (value) => !value || /^[A-Za-z0-9]+$/.test(value),
         "HSN code may contain letters and digits only",
@@ -356,11 +344,11 @@ export const itemSchema = z
     gstRate: nonNegativeNumber("GST rate").max(100, "GST rate cannot exceed 100%"),
     trackInventory: z.boolean(),
     isManufactured: z.boolean(),
-    openingStock: nonNegativeNumber("Opening stock"),
-    openingStockValue: nonNegativeNumber("Opening stock value"),
-    currentStock: nonNegativeNumber("Current stock"),
-    reservedStock: nonNegativeNumber("Reserved stock"),
-    minimumStock: nonNegativeNumber("Minimum stock"),
+    openingStock: itemDecimalSchema("Opening stock"),
+    openingStockValue: itemDecimalSchema("Opening stock value", 2),
+    currentStock: itemDecimalSchema("Current stock"),
+    reservedStock: itemDecimalSchema("Reserved stock"),
+    minimumStock: itemDecimalSchema("Minimum stock"),
     description: z
       .string()
       .trim()

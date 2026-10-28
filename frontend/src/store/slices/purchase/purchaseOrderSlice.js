@@ -9,6 +9,7 @@ import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
+  getThunkFormError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
 
@@ -69,7 +70,7 @@ export const createPurchaseOrder = createAsyncThunk(
     try {
       return await purchaseOrderService.createPurchaseOrder(payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to create order."));
+      return rejectWithValue(getThunkFormError(error, "Unable to create order."));
     }
   },
 );
@@ -80,7 +81,7 @@ export const updatePurchaseOrder = createAsyncThunk(
     try {
       return await purchaseOrderService.updatePurchaseOrder(id, payload);
     } catch (error) {
-      return rejectWithValue(getThunkError(error, "Unable to update order."));
+      return rejectWithValue(getThunkFormError(error, "Unable to update order."));
     }
   },
 );
@@ -179,7 +180,7 @@ const purchaseOrderSlice = createSlice({
         if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
-        state.error = action.payload ?? action.error.message;
+        state.error = getThunkError(action.payload ?? action.error);
         state.listRequestId = null;
       })
       .addCase(fetchPurchaseOrderById.pending, (state, action) => {
@@ -197,9 +198,13 @@ const purchaseOrderSlice = createSlice({
       .addCase(fetchPurchaseOrderById.rejected, (state, action) => {
         if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
-        state.detailError = action.payload ?? action.error.message;
+        state.detailError = getThunkError(action.payload ?? action.error);
         state.detailRequestId = null;
       })
+      .addCase(createPurchaseOrder.pending, state => { state.error = null; })
+      .addCase(createPurchaseOrder.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to create order."); })
+      .addCase(updatePurchaseOrder.pending, state => { state.error = null; })
+      .addCase(updatePurchaseOrder.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to update order."); })
       .addCase(createPurchaseOrder.fulfilled, (state, action) => {
         state.selected = extractEntity(action.payload.data, "purchaseOrder");
       })

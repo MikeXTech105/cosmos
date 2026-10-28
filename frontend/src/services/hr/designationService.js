@@ -1,7 +1,7 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { unwrapResponse } from "../apiServiceUtils";
-import { sanitizeHrListParams } from "./hrServiceUtils";
+import { hrCommandIds, sanitizeHrListParams } from "./hrServiceUtils";
 
 const DESIGNATION_SORT_FIELDS = [
   "designationCode",
@@ -29,7 +29,7 @@ export const hrDesignationService = {
   createDesignation: async (payload) => {
     const response = await axiosInstance.post(
       ENDPOINTS.HR_DESIGNATIONS,
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);
@@ -38,7 +38,7 @@ export const hrDesignationService = {
   updateDesignation: async (id, payload) => {
     const response = await axiosInstance.put(
       ENDPOINTS.HR_DESIGNATION_BY_ID(id),
-      payload,
+      hrCommandIds(payload),
     );
 
     return unwrapResponse(response);

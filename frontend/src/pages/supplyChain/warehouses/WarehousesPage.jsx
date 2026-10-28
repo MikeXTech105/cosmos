@@ -233,7 +233,7 @@ const WarehouseModal = ({
           value={form.postalCode}
           onChange={(event) => setField("postalCode", event.target.value)}
         />
-        <AppInput
+        <details className="md:col-span-2 rounded-xl border border-slate-200 p-4"><summary className="cursor-pointer text-sm font-semibold">Advanced allocation and display order</summary><p className="my-3 text-xs text-slate-500">Within the same allocation priority and tier, lower warehouse priority is allocated first. Example: priority 1 precedes priority 2. Sort order controls the warehouse display; it does not replace stock or allocation policy.</p><div className="grid gap-4 md:grid-cols-2"><AppInput
           disabled={readOnly || saving}
           error={errors.priority}
           label="Priority"
@@ -251,6 +251,7 @@ const WarehouseModal = ({
           value={form.sortOrder}
           onChange={(event) => setField("sortOrder", event.target.value)}
         />
+        </div></details>
         <label className="flex items-center gap-2 self-end pb-3 text-sm text-slate-700">
           <input
             checked={form.isActive}

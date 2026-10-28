@@ -57,6 +57,7 @@ import {
   getDispatchError,
 } from "../dispatchDisplay";
 import useDispatchCapabilities from "../useDispatchCapabilities";
+import useShipmentCapabilities from "../../shipments/useShipmentCapabilities";
 import DispatchRecommendationMatrix from "./DispatchRecommendationMatrix";
 
 const getItemId = (item) => item?.id ?? item?.itemId ?? "";
@@ -535,6 +536,7 @@ const CompanyStockSnapshots = ({ snapshots }) => (
 );
 
 const DispatchRunDetailPage = () => {
+  const shipmentAccess = useShipmentCapabilities();
   const { id } = useParams();
   const navigate = useNavigate();
   const [run, setRun] = useState(null);
@@ -1108,6 +1110,11 @@ const DispatchRunDetailPage = () => {
       status === DISPATCH_RUN_STATUS.Finalized ? (
         <CompanyStockSnapshots snapshots={snapshots} />
       ) : null}
+      {status === DISPATCH_RUN_STATUS.Finalized && <section className="rounded-xl border border-brand/20 bg-brand/5 p-5">
+        <h2 className="text-base font-semibold">Next: review a linked shipment</h2>
+        <p className="mt-1 text-sm text-slate-600">Choose the destination and remaining allocation quantities. Existing active shipments keep their quantities; creating this draft does not move stock.</p>
+        {shipmentAccess.canCreate ? <Link className="mt-3 inline-flex rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white" to={`/shipments/work-list/new-from-plan?runId=${encodeURIComponent(id)}`}>Create shipment from this run</Link> : <p className="mt-3 text-sm text-amber-700">Ask a colleague with shipment creation permission to create the linked shipment.</p>}
+      </section>}
 
       <OverrideModal
         recommendation={overrideTarget}

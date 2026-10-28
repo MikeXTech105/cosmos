@@ -64,7 +64,7 @@ export const DEEP_PAGES = [
   {
     id: "oee",
     slug: "oee-telemetry",
-    label: "OEE Manufacturing Telemetry",
+    label: "Machine performance",
     short: "Manufacturing",
     icon: "oee",
     description:
@@ -84,7 +84,7 @@ export const DEEP_PAGES = [
   {
     id: "gst",
     slug: "gst-intelligence",
-    label: "GST & Statutory Intelligence",
+    label: "GST status",
     short: "GST Intelligence",
     icon: "invoice",
     description:
@@ -94,7 +94,7 @@ export const DEEP_PAGES = [
   {
     id: "cross",
     slug: "cross-module-intelligence",
-    label: "Cross-Module Intelligence",
+    label: "Business overview",
     short: "Cross-Module",
     icon: "reports",
     description:

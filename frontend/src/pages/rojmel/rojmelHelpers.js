@@ -56,14 +56,14 @@ export const ROJMEL_TRANSACTION_TYPE_OPTIONS = [
   { label: "Expense", value: RojmelTransactionType.Expense },
   { label: "Transfer In", value: RojmelTransactionType.TransferIn },
   { label: "Transfer Out", value: RojmelTransactionType.TransferOut },
-  { label: "Adjustment", value: RojmelTransactionType.Adjustment },
+  { label: "Adjustment In", value: RojmelTransactionType.AdjustmentIn },
   { label: "Opening Balance", value: RojmelTransactionType.OpeningBalance },
-  { label: "Other", value: RojmelTransactionType.Other },
+  { label: "Adjustment Out", value: RojmelTransactionType.AdjustmentOut },
 ];
 
 export const ROJMEL_STATUS_OPTIONS = [
   { label: "All status", value: "all" },
-  { label: "Active", value: RojmelTransactionStatus.Active },
+  { label: "Posted", value: RojmelTransactionStatus.Posted },
   { label: "Cancelled", value: RojmelTransactionStatus.Cancelled },
 ];
 
@@ -72,8 +72,8 @@ export const ROJMEL_WALLET_TYPE_OPTIONS = [
   { label: "Company", value: RojmelWalletType.Company },
   { label: "User", value: RojmelWalletType.User },
   { label: "External", value: RojmelWalletType.External },
-  { label: "Bank", value: RojmelWalletType.Bank },
-  { label: "Cash", value: RojmelWalletType.Cash },
+  { label: "Bank Cash", value: RojmelWalletType.BankCash },
+  { label: "Petty Cash", value: RojmelWalletType.PettyCash },
 ];
 
 export const ROJMEL_PAGE_SIZE_OPTIONS = [10, 20, 50, 100, 200].map(

@@ -19,9 +19,9 @@ import {
 import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
-import AppSelect from "../../../components/common/AppSelect";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
+import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
 import { oeeDowntimeReasonService } from "../../../services/oee/oeeDowntimeReasonService";
 import { oeeMachineService } from "../../../services/oee/oeeMachineService";
 import { oeeMouldService } from "../../../services/oee/oeeMouldService";
@@ -48,8 +48,12 @@ import useOeeCapabilities from "../useOeeCapabilities";
 import { oeeProductionEntryService } from "../../../services/oee/oeeProductionEntryService";
 import { loadDowntimeEntries } from "../dashboard/downtimeAnalysis";
 import ProductionHistoryByDate from "./ProductionHistoryByDate";
+import OeeStoppedDayPanel from "./OeeStoppedDayPanel";
+import AppLookup from "../../../components/common/AppLookup";
+import { lookupPage } from "../../../utils/lookupPage";
 
 const getItems = (response) => {
+  if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data?.items)) {
     return response.data.items;
   }
@@ -90,11 +94,16 @@ const createRowsFromMachines = (machines, defaultDowntimeReasonId) => {
   }));
 };
 
-const toOptions = (items, getLabel) => {
-  return items.map((item) => ({
-    value: getOeeRecordId(item),
-    label: getLabel(item),
-  }));
+const resourceServices = {
+  machine: { list: oeeMachineService.getMachines, get: oeeMachineService.getMachineById, label: item => `${item.machineCode ?? ""} · ${item.machineName ?? ""}` },
+  mould: { list: oeeMouldService.getMoulds, get: oeeMouldService.getMouldById, label: item => item.mouldName ?? "" },
+  reason: { list: oeeDowntimeReasonService.getDowntimeReasons, get: oeeDowntimeReasonService.getDowntimeReasonById, label: item => item.reasonName ?? "" },
+};
+const ResourceLookup = ({ kind, ...props }) => {
+  const service = resourceServices[kind];
+  return <AppLookup {...props} getOptionValue={getOeeRecordId} getOptionLabel={service.label}
+    loadPage={async ({ search, page, pageSize }) => lookupPage(await service.list({ IsActive: true, Search: search, Page: page, PageSize: pageSize }), page, pageSize)}
+    loadById={async id => { const response = await service.get(id); return extractOeeEntity(response.data, kind === "reason" ? "downtimeReason" : kind); }} />;
 };
 
 const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
@@ -108,6 +117,7 @@ const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
   });
 
   const setValue = (name, value) => {
+    if (isSaving) return;
     setValues((current) => ({ ...current, [name]: value }));
   };
 
@@ -121,6 +131,7 @@ const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
       isBusy={isSaving}
       isOpen={isOpen}
       maxWidth="max-w-xl"
+      title={isMould ? "Create Mould" : "Create Downtime Reason"}
       onClose={isSaving ? undefined : onClose}
     >
       <div className="flex items-start gap-3">
@@ -142,6 +153,7 @@ const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
       </div>
 
       <form className="mt-6 space-y-5" onSubmit={submit}>
+        <fieldset className="contents" disabled={isSaving}>
         {isMould ? (
           <div className="grid gap-4 md:grid-cols-2">
             <AppInput
@@ -190,6 +202,7 @@ const QuickCreateModal = ({ isOpen, isSaving, onClose, onSubmit, type }) => {
             Create
           </AppButton>
         </div>
+        </fieldset>
       </form>
     </AppModal>
   );
@@ -214,23 +227,8 @@ const EditEntryModal = ({
   }));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const machineOptions = useMemo(
-    () =>
-      toOptions(lookups.machines, (machine) =>
-        [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
-      ),
-    [lookups.machines],
-  );
-  const mouldOptions = useMemo(
-    () => toOptions(lookups.moulds, (mould) => mould.mouldName ?? "-"),
-    [lookups.moulds],
-  );
-  const reasonOptions = useMemo(
-    () => toOptions(lookups.reasons, (reason) => reason.reasonName ?? "-"),
-    [lookups.reasons],
-  );
-
   const setValue = (name, value) => {
+    if (isSubmitting) return;
     setValues((current) => ({ ...current, [name]: value }));
   };
 
@@ -241,12 +239,12 @@ const EditEntryModal = ({
     try {
       await onSubmit({
         productionDate: values.productionDate,
-        machineId: Number(values.machineId),
+        machineId: values.machineId,
         machineOnTime: normalizeMachineOnTime(values.machineOnTime),
-        mouldId: Number(values.mouldId),
+        mouldId: values.mouldId,
         shotCount: Number(values.shotCount) || 0,
         downtimeReasonId: values.downtimeReasonId
-          ? Number(values.downtimeReasonId)
+          ? values.downtimeReasonId
           : null,
         remarks: values.remarks.trim(),
       });
@@ -260,6 +258,7 @@ const EditEntryModal = ({
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-3xl"
+      title="Edit Production Entry"
       onClose={isSubmitting ? undefined : onClose}
     >
       <div className="flex items-start gap-3">
@@ -288,6 +287,7 @@ const EditEntryModal = ({
         </div>
       ) : (
         <form className="mt-6 space-y-5" onSubmit={submit}>
+        <fieldset className="contents" disabled={isSubmitting}>
           <div className="grid gap-4 md:grid-cols-2">
             <AppInput
               id="editProductionDate"
@@ -299,12 +299,12 @@ const EditEntryModal = ({
                 setValue("productionDate", event.target.value)
               }
             />
-            <AppSelect
+            <ResourceLookup kind="machine"
               label="Machine"
               required
               value={values.machineId}
               onChange={(value) => setValue("machineId", value)}
-              options={machineOptions}
+              initialOptions={lookups.machines}
             />
             <AppInput
               id="editMachineOnTime"
@@ -316,12 +316,12 @@ const EditEntryModal = ({
                 setValue("machineOnTime", event.target.value)
               }
             />
-            <AppSelect
+            <ResourceLookup kind="mould"
               label="Mould"
               required
               value={values.mouldId}
               onChange={(value) => setValue("mouldId", value)}
-              options={mouldOptions}
+              initialOptions={lookups.moulds}
             />
             <OeeNumberInput
               id="editShotCount"
@@ -331,11 +331,11 @@ const EditEntryModal = ({
               value={values.shotCount}
               onChange={(value) => setValue("shotCount", value)}
             />
-            <AppSelect
+            <ResourceLookup kind="reason"
               label="Downtime Reason"
               value={values.downtimeReasonId}
               onChange={(value) => setValue("downtimeReasonId", value)}
-              options={reasonOptions}
+              initialOptions={lookups.reasons}
               placeholder="Select reason"
             />
           </div>
@@ -372,7 +372,8 @@ const EditEntryModal = ({
               Save Changes
             </AppButton>
           </div>
-        </form>
+          </fieldset>
+      </form>
       )}
     </AppModal>
   );
@@ -412,6 +413,10 @@ const OeeProductionEntriesPage = () => {
     reasons: [],
   });
   const [rows, setRows] = useState([]);
+  const [acknowledgementDirty, setAcknowledgementDirty] = useState(false);
+  const dirtyReadings = rows.some(row => row.isRunning || row.machineOnTime || row.mouldId || row.remarks);
+  const { confirmLeave } = useUnsavedChanges({ when: dirtyReadings || acknowledgementDirty, message: "Unsaved OEE readings or stopped-day notes will be discarded. Leave this work?" });
+  const [machinePage, setMachinePage] = useState(1), [moreMachines, setMoreMachines] = useState(false), [machinesLoading, setMachinesLoading] = useState(false);
   const [rowErrors, setRowErrors] = useState({});
   const [quickCreate, setQuickCreate] = useState({
     isOpen: false,
@@ -429,15 +434,6 @@ const OeeProductionEntriesPage = () => {
     isLoading: false,
     isOpen: false,
   });
-
-  const mouldOptions = useMemo(
-    () => toOptions(lookups.moulds, (mould) => mould.mouldName ?? "-"),
-    [lookups.moulds],
-  );
-  const reasonOptions = useMemo(
-    () => toOptions(lookups.reasons, (reason) => reason.reasonName ?? "-"),
-    [lookups.reasons],
-  );
 
   const queryParams = useMemo(
     () =>
@@ -465,28 +461,27 @@ const OeeProductionEntriesPage = () => {
       const [machines, moulds, reasons] = await Promise.all([
         oeeMachineService.getMachines({
           IsActive: true,
-          Page: 1,
-          PageSize: 200,
+          PageSize: 40,
           SortBy: "displayOrder",
           SortDirection: "asc",
-        }),
+          Page: 1}),
         oeeMouldService.getMoulds({
           IsActive: true,
-          Page: 1,
-          PageSize: 200,
+          PageSize: 40,
           SortBy: "mouldName",
           SortDirection: "asc",
-        }),
+          Page: 1}),
         oeeDowntimeReasonService.getDowntimeReasons({
           IsActive: true,
-          Page: 1,
-          PageSize: 200,
+          PageSize: 40,
           SortBy: "reasonName",
           SortDirection: "asc",
-        }),
+          Page: 1}),
       ]);
 
       const nextMachines = getItems(machines);
+      setMachinePage(1);
+      setMoreMachines(lookupPage(machines, 1, 40).hasMore);
       const nextReasons = getItems(reasons);
       const noneReason = nextReasons.find(
         (reason) =>
@@ -507,7 +502,7 @@ const OeeProductionEntriesPage = () => {
       });
       setRows((current) => {
         const existing = new Map(current.map((row) => [row.id, row]));
-        return createRowsFromMachines(
+        const refreshed = createRowsFromMachines(
           nextMachines,
           defaultDowntimeReasonId,
         ).map((row) => ({
@@ -516,6 +511,7 @@ const OeeProductionEntriesPage = () => {
           machineCode: row.machineCode,
           machineName: row.machineName,
         }));
+        return [...new Map([...current, ...refreshed].map(row => [row.id, row])).values()];
       });
     } catch (error) {
       setLookups((current) => ({
@@ -525,6 +521,19 @@ const OeeProductionEntriesPage = () => {
       }));
     }
   }, []);
+
+  const loadMoreMachines = async () => {
+    if (machinesLoading || !moreMachines) return;
+    setMachinesLoading(true);
+    try {
+      const response = await oeeMachineService.getMachines({ IsActive: true, Page: machinePage + 1, PageSize: 40, SortBy: "displayOrder", SortDirection: "asc" });
+      const next = getItems(response);
+      setLookups(current => ({ ...current, machines: [...new Map([...current.machines, ...next].map(item => [String(getOeeRecordId(item)), item])).values()] }));
+      setRows(current => [...new Map([...createRowsFromMachines(next, ""), ...current].map(row => [row.id, row])).values()]);
+      setMachinePage(value => value + 1); setMoreMachines(lookupPage(response, machinePage + 1, 40).hasMore);
+    } catch (failure) { setLookups(current => ({ ...current, error: getOeeActionError(failure, "More machines could not be loaded. Your typed rows are retained.") })); }
+    finally { setMachinesLoading(false); }
+  };
 
   useEffect(() => {
     void Promise.resolve().then(loadLookups);
@@ -623,12 +632,12 @@ const OeeProductionEntriesPage = () => {
       entries: rows
         .filter((row) => row.isRunning)
         .map((row) => ({
-          machineId: Number(row.machineId),
+          machineId: row.machineId,
           machineOnTime: normalizeMachineOnTime(row.machineOnTime),
-          mouldId: Number(row.mouldId),
+          mouldId: row.mouldId,
           shotCount: Number(row.shotCount) || 0,
           downtimeReasonId: row.downtimeReasonId
-            ? Number(row.downtimeReasonId)
+            ? row.downtimeReasonId
             : null,
           remarks: row.remarks.trim(),
         })),
@@ -642,6 +651,7 @@ const OeeProductionEntriesPage = () => {
       toast.success(
         getOeeSuccessMessage(response, "Daily production saved successfully"),
       );
+      setRows(current => current.map(row => ({ ...row, isRunning: false, machineOnTime: "", mouldId: "", shotCount: "0", remarks: "" })));
       await loadHistory();
     } catch (error) {
       toast.error(
@@ -794,24 +804,6 @@ const OeeProductionEntriesPage = () => {
     }
   };
 
-  const filterMachineOptions = useMemo(
-    () => [
-      { value: "", label: "All machines" },
-      ...toOptions(lookups.machines, (machine) =>
-        [machine.machineCode, machine.machineName].filter(Boolean).join(" - "),
-      ),
-    ],
-    [lookups.machines],
-  );
-  const filterMouldOptions = useMemo(
-    () => [{ value: "", label: "All moulds" }, ...mouldOptions],
-    [mouldOptions],
-  );
-  const filterReasonOptions = useMemo(
-    () => [{ value: "", label: "All reasons" }, ...reasonOptions],
-    [reasonOptions],
-  );
-
   return (
     <section className="min-w-0 space-y-5">
       <PageHeader
@@ -856,6 +848,9 @@ const OeeProductionEntriesPage = () => {
           {lookups.error}
         </div>
       )}
+      <p className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">Machine runtime and shots feed OEE analysis. They never post physical production stock. Record accepted output and material use in <a className="font-semibold underline" href="/manufacturing/daily">Daily Production</a>; retain legacy Item production for its separate stock history.</p>
+      {moreMachines && <AppButton variant="secondary" disabled={machinesLoading || production.bulkSaving} onClick={loadMoreMachines}>{machinesLoading ? "Loading machines…" : "Load more machines"} · {rows.length} currently available</AppButton>}
+      <OeeStoppedDayPanel key={productionDate} productionDate={productionDate} canView={capabilities.canView} canCreate={capabilities.canCreate} canUpdate={capabilities.canUpdate} onDirtyChange={setAcknowledgementDirty} />
 
       <div className="oee-entry-form rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -881,7 +876,7 @@ const OeeProductionEntriesPage = () => {
               required
               value={productionDate}
               disabled={production.bulkSaving}
-              onChange={(event) => setProductionDate(event.target.value)}
+              onChange={(event) => confirmLeave(() => { setProductionDate(event.target.value); setRows(current => current.map(row => ({ ...row, isRunning: false, machineOnTime: "", mouldId: "", shotCount: "0", remarks: "" }))); })}
               className="h-10"
             />
           </div>
@@ -973,7 +968,7 @@ const OeeProductionEntriesPage = () => {
                 </div>
                 <div className="oee-entry-field ">
                   <span className="oee-entry-field-label">Mould</span>
-                  <AppSelect
+                  <ResourceLookup kind="mould"
                     value={row.mouldId}
                     disabled={
                       !row.isRunning ||
@@ -981,11 +976,11 @@ const OeeProductionEntriesPage = () => {
                       !capabilities.canCreate
                     }
                     onChange={(value) => updateRow(row.id, { mouldId: value })}
-                    options={mouldOptions}
+                    initialOptions={lookups.moulds}
                     placeholder="Select mould"
-                    creatable={canCreateMould}
+
                     createLabel="Create mould"
-                    onCreateClick={() => {
+                    onCreate={canCreateMould ? () => {
                       if (canCreateMould) {
                         setQuickCreate({
                           isOpen: true,
@@ -994,7 +989,7 @@ const OeeProductionEntriesPage = () => {
                           type: "mould",
                         });
                       }
-                    }}
+                    } : undefined}
                     aria-label="Mould"
                   />
                 </div>
@@ -1016,7 +1011,7 @@ const OeeProductionEntriesPage = () => {
                 </div>
                 <div className="oee-entry-field ">
                   <span className="oee-entry-field-label">Downtime</span>
-                  <AppSelect
+                  <ResourceLookup kind="reason"
                     value={row.downtimeReasonId}
                     disabled={
                       !row.isRunning ||
@@ -1026,11 +1021,11 @@ const OeeProductionEntriesPage = () => {
                     onChange={(value) =>
                       updateRow(row.id, { downtimeReasonId: value })
                     }
-                    options={reasonOptions}
+                    initialOptions={lookups.reasons}
                     placeholder="Select reason"
-                    creatable={canCreateDowntimeReason}
+
                     createLabel="Create reason"
-                    onCreateClick={() => {
+                    onCreate={canCreateDowntimeReason ? () => {
                       if (canCreateDowntimeReason) {
                         setQuickCreate({
                           isOpen: true,
@@ -1039,7 +1034,7 @@ const OeeProductionEntriesPage = () => {
                           type: "reason",
                         });
                       }
-                    }}
+                    } : undefined}
                     aria-label="Downtime reason"
                   />
                 </div>
@@ -1107,25 +1102,25 @@ const OeeProductionEntriesPage = () => {
               dispatch(setOeeProductionEntryPage(1));
             }}
           />
-          <AppSelect
+          <ResourceLookup kind="machine"
             value={production.filters.MachineId}
             onChange={(value) => {
               dispatch(setOeeProductionEntryFilters({ MachineId: value }));
               dispatch(setOeeProductionEntryPage(1));
             }}
-            options={filterMachineOptions}
+            initialOptions={lookups.machines}
             aria-label="Machine filter"
           />
-          <AppSelect
+          <ResourceLookup kind="mould"
             value={production.filters.MouldId}
             onChange={(value) => {
               dispatch(setOeeProductionEntryFilters({ MouldId: value }));
               dispatch(setOeeProductionEntryPage(1));
             }}
-            options={filterMouldOptions}
+            initialOptions={lookups.moulds}
             aria-label="Mould filter"
           />
-          <AppSelect
+          <ResourceLookup kind="reason"
             value={production.filters.DowntimeReasonId}
             onChange={(value) => {
               dispatch(
@@ -1133,7 +1128,7 @@ const OeeProductionEntriesPage = () => {
               );
               dispatch(setOeeProductionEntryPage(1));
             }}
-            options={filterReasonOptions}
+            initialOptions={lookups.reasons}
             aria-label="Downtime reason filter"
           />
           <AppButton

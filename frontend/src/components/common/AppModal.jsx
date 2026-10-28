@@ -32,10 +32,12 @@ const AppModal = ({
   const titleId = title ? `app-modal-title-${generatedTitleId}` : undefined;
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
+  const keyboardOptionsRef = useRef({ isBusy, closeOnEscape });
 
   useEffect(() => {
     onCloseRef.current = onClose;
-  }, [onClose]);
+    keyboardOptionsRef.current = { isBusy, closeOnEscape };
+  }, [onClose, isBusy, closeOnEscape]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -56,10 +58,13 @@ const AppModal = ({
     });
 
     const handleKeyDown = (event) => {
+      if (event.defaultPrevented) return;
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (dialogs[dialogs.length - 1] !== dialogRef.current) return;
       if (
         event.key === "Escape" &&
-        closeOnEscape &&
-        !isBusy &&
+        keyboardOptionsRef.current.closeOnEscape &&
+        !keyboardOptionsRef.current.isBusy &&
         onCloseRef.current
       ) {
         event.preventDefault();
@@ -111,7 +116,7 @@ const AppModal = ({
         previouslyFocused.focus();
       }
     };
-  }, [closeOnEscape, isBusy, isOpen]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>

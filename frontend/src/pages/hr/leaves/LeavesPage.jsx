@@ -11,6 +11,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
@@ -57,6 +58,9 @@ import {
   HrStatCard,
 } from "../HrShared";
 import useHrCapabilities from "../useHrCapabilities";
+import { LeaveBalanceResults } from "../HrResults";
+import { LeaveEntitlementPanel, LeaveSetupPanel } from "../HrSetupPanels";
+import { hrSetupService } from "../../../services/hr/setupService";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -100,7 +104,7 @@ const LeaveStatusPill = ({ status }) => {
   );
 };
 
-const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
+const ApplyLeaveModal = ({ employeeOptions, leaveTypeOptions, isOpen, onClose, onSubmit }) => {
   const {
     control,
     formState: { errors, isSubmitting },
@@ -112,7 +116,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
     defaultValues: {
       employeeId: "",
       endDate: today(),
-      leaveTypeId: HR_LEAVE_TYPE_OPTIONS[0].value,
+      leaveTypeId: "",
       reason: "",
       startDate: today(),
     },
@@ -123,18 +127,18 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
       reset({
         employeeId: "",
         endDate: today(),
-        leaveTypeId: HR_LEAVE_TYPE_OPTIONS[0].value,
+        leaveTypeId: leaveTypeOptions.find((type) => !type.inactive)?.value ?? "",
         reason: "",
         startDate: today(),
       });
     }
-  }, [isOpen, reset]);
+  }, [isOpen, leaveTypeOptions, reset]);
 
   const submitForm = async (values) => {
     await onSubmit({
-      employeeId: Number(values.employeeId),
+      employeeId: values.employeeId,
       endDate: values.endDate,
-      leaveTypeId: Number(values.leaveTypeId),
+      leaveTypeId: values.leaveTypeId,
       reason: values.reason?.trim() ?? "",
       startDate: values.startDate,
     });
@@ -142,6 +146,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
 
   return (
     <AppModal
+      title="Apply leave"
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-2xl"
@@ -176,7 +181,7 @@ const ApplyLeaveModal = ({ employeeOptions, isOpen, onClose, onSubmit }) => {
               label="Leave Type"
               value={field.value}
               onChange={field.onChange}
-              options={HR_LEAVE_TYPE_OPTIONS}
+              options={leaveTypeOptions.filter((type) => !type.inactive)}
               error={errors.leaveTypeId?.message}
             />
           )}
@@ -249,8 +254,8 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 
   const submitForm = async (values) => {
     await onSubmit({
-      employeeId: values.employeeId ? Number(values.employeeId) : null,
-      leaveApplicationId: Number(values.leaveApplicationId),
+      employeeId: selectedLeave?.employeeId ?? null,
+      leaveApplicationId: getHrRecordId(selectedLeave, "leaveApplication"),
       remarks: values.remarks?.trim() ?? "",
     });
   };
@@ -263,6 +268,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 
   return (
     <AppModal
+      title={labels[action] || "Review leave"}
       isBusy={isSubmitting}
       isOpen={isOpen}
       maxWidth="max-w-lg"
@@ -274,19 +280,14 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
       </p>
 
       <form className="mt-6 space-y-5" onSubmit={handleSubmit(submitForm)}>
-        <AppInput
-          id="leaveApplicationId"
-          label="Leave Application ID"
-          required
-          error={errors.leaveApplicationId?.message}
-          {...register("leaveApplicationId")}
-        />
-        <AppInput
-          id="leaveEmployeeId"
-          label="Employee ID"
-          error={errors.employeeId?.message}
-          {...register("employeeId")}
-        />
+        <div className="space-y-2 rounded-xl bg-slate-50 p-4 text-sm">
+          <p className="font-semibold">{selectedLeave?.employeeName || selectedLeave?.employeeCode || "Selected employee"}</p>
+          <p>{selectedLeave?.leaveName || getHrOptionLabel(HR_LEAVE_TYPE_OPTIONS, selectedLeave?.leaveTypeId, "Leave")} · {formatHrDate(selectedLeave?.startDate)} – {formatHrDate(selectedLeave?.endDate)}</p>
+          <p>{String(selectedLeave?.leaveDays ?? selectedLeave?.totalDays ?? selectedLeave?.days ?? "—")} days</p>
+          <p>Reason: {selectedLeave?.reason || "No reason provided"}</p>
+          <input type="hidden" {...register("leaveApplicationId")} />
+          <input type="hidden" {...register("employeeId")} />
+        </div>
         <AppInput
           id="leaveRemarks"
           label="Remarks"
@@ -308,6 +309,7 @@ const LeaveActionModal = ({ action, isOpen, onClose, onSubmit, selectedLeave }) 
 };
 
 const LeavesPage = () => {
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const leaveState = useSelector((state) => state.hrLeaves);
   const capabilities = useHrCapabilities({
@@ -318,10 +320,18 @@ const LeavesPage = () => {
     route: "/hr/leaves",
   });
   const [employeeOptions, setEmployeeOptions] = useState([]);
+  const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
+  const applyLeaveTypes = useCallback((types) => setLeaveTypeOptions(types.map((type) => ({ label: `${type.leaveName}${type.isActive ? "" : " (inactive)"}`, value: String(type.id), inactive: !type.isActive }))), []);
   const [modal, setModal] = useState(null);
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [balanceEmployeeId, setBalanceEmployeeId] = useState("");
   const [pendingManagerId, setPendingManagerId] = useState("");
+  useEffect(() => {
+    const patch = {};
+    if (searchParams.get("employeeId")) patch.EmployeeId = searchParams.get("employeeId");
+    if (searchParams.get("status")) patch.Status = searchParams.get("status");
+    if (Object.keys(patch).length) { dispatch(setHrLeaveFilters(patch)); dispatch(setHrLeavePage(1)); }
+  }, [dispatch, searchParams]);
 
   const queryParams = useMemo(
     () =>
@@ -331,13 +341,13 @@ const LeavesPage = () => {
         pageSize: leaveState.pageSize,
         extra: {
           EmployeeId: leaveState.filters.EmployeeId
-            ? Number(leaveState.filters.EmployeeId)
+            ? leaveState.filters.EmployeeId
             : undefined,
           FromDate: leaveState.filters.FromDate || undefined,
           LeaveTypeId:
             leaveState.filters.LeaveTypeId === "all"
               ? undefined
-              : Number(leaveState.filters.LeaveTypeId),
+              : leaveState.filters.LeaveTypeId,
           Status:
             leaveState.filters.Status === "all"
               ? undefined
@@ -368,6 +378,11 @@ const LeavesPage = () => {
   useEffect(() => {
     void Promise.resolve().then(loadEmployees);
   }, [loadEmployees]);
+  useEffect(() => {
+    let active = true;
+    hrSetupService.leaveTypes().then((response) => { if (active) setLeaveTypeOptions((response.data || []).map((type) => ({ label: `${type.leaveName}${type.isActive ? "" : " (inactive)"}`, value: String(type.id), inactive: !type.isActive }))); }).catch((error) => toast.error(getHrActionError(error, "Unable to load maintained leave types.")));
+    return () => { active = false; };
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -417,7 +432,7 @@ const LeavesPage = () => {
   const submitAction = useCallback(
     async (payload) => {
       const isAllowed =
-        modal === "cancel" ? capabilities.canUpdate : capabilities.canApprove;
+        modal === "cancel" ? capabilities.canCreate : capabilities.canApprove;
 
       if (!isAllowed) {
         return;
@@ -441,7 +456,7 @@ const LeavesPage = () => {
     },
     [
       capabilities.canApprove,
-      capabilities.canUpdate,
+      capabilities.canCreate,
       dispatch,
       loadLeaves,
       modal,
@@ -450,7 +465,7 @@ const LeavesPage = () => {
 
   const openAction = (action, leave) => {
     const isAllowed =
-      action === "cancel" ? capabilities.canUpdate : capabilities.canApprove;
+      action === "cancel" ? capabilities.canCreate : capabilities.canApprove;
 
     if (!isAllowed) {
       return;
@@ -468,7 +483,7 @@ const LeavesPage = () => {
 
     try {
       const response = await dispatch(
-        fetchHrLeaveBalance(Number(balanceEmployeeId)),
+        fetchHrLeaveBalance(balanceEmployeeId),
       ).unwrap();
       toast.success(getHrSuccessMessage(response, "Leave balance loaded"));
     } catch (error) {
@@ -483,7 +498,7 @@ const LeavesPage = () => {
           PageNumber: 1,
           PageSize: 50,
           ReportingManagerId: pendingManagerId
-            ? Number(pendingManagerId)
+            ? pendingManagerId
             : undefined,
         }),
       ).unwrap();
@@ -550,7 +565,7 @@ const LeavesPage = () => {
               dispatch(setHrLeaveFilters({ LeaveTypeId: value }));
               dispatch(setHrLeavePage(1));
             }}
-            options={[{ value: "all", label: "All leave types" }, ...HR_LEAVE_TYPE_OPTIONS]}
+            options={[{ value: "all", label: "All leave types" }, ...leaveTypeOptions]}
           />
 <AppDateRangeFilter
             className="w-full sm:col-span-2 sm:min-w-[260px]"
@@ -639,14 +654,14 @@ const LeavesPage = () => {
                           {formatHrDate(leave.startDate)} - {formatHrDate(leave.endDate)}
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5 text-sm font-medium text-slate-900">
-                          {leave.totalDays ?? leave.days ?? "-"}
+                          {leave.leaveDays ?? leave.totalDays ?? leave.days ?? "-"}
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
                           <LeaveStatusPill status={leave.status} />
                         </td>
                         <td className="border-b border-slate-100 px-4 py-3.5">
                           <div className="flex items-center justify-end gap-0.5">
-                            {capabilities.canApprove && (
+                            {capabilities.canApprove && Number(leave.status) === HR_LEAVE_STATUS.PENDING && (
                               <>
                                 <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("approve", leave)}>
                                   Approve
@@ -656,7 +671,7 @@ const LeavesPage = () => {
                                 </AppButton>
                               </>
                             )}
-                            {capabilities.canUpdate && (
+                            {capabilities.canCreate && [HR_LEAVE_STATUS.PENDING, HR_LEAVE_STATUS.APPROVED].includes(Number(leave.status)) && (
                               <AppButton variant="secondary" className="h-8 rounded-lg px-2 text-xs" onClick={() => openAction("cancel", leave)}>
                                 Cancel
                               </AppButton>
@@ -687,6 +702,7 @@ const LeavesPage = () => {
           <h3 className="text-sm font-semibold text-slate-900">Leave Balance</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
             <AppSelect
+              label="Employee for leave balance"
               value={balanceEmployeeId}
               onChange={setBalanceEmployeeId}
               options={[{ value: "", label: "Select employee" }, ...employeeOptions]}
@@ -695,15 +711,14 @@ const LeavesPage = () => {
               Load Balance
             </AppButton>
           </div>
-          <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-slate-50 p-3 text-xs text-slate-600">
-            {leaveState.balance ? JSON.stringify(leaveState.balance, null, 2) : "No balance loaded"}
-          </pre>
+          <LeaveBalanceResults balance={leaveState.balance} />
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900">Pending Approvals</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
             <AppSelect
+              label="Reporting manager for approvals"
               value={pendingManagerId}
               onChange={setPendingManagerId}
               options={[{ value: "", label: "All managers" }, ...employeeOptions]}
@@ -729,6 +744,7 @@ const LeavesPage = () => {
                   <p className="text-xs text-slate-500">
                     {formatHrDate(leave.startDate)} - {formatHrDate(leave.endDate)}
                   </p>
+                  {capabilities.canApprove && <div className="mt-2 flex gap-2"><AppButton variant="secondary" onClick={() => openAction("approve", leave)}>Review approval</AppButton><AppButton variant="secondary" onClick={() => openAction("reject", leave)}>Review rejection</AppButton></div>}
                 </div>
               ))
             )}
@@ -738,6 +754,7 @@ const LeavesPage = () => {
 
       <ApplyLeaveModal
         employeeOptions={employeeOptions}
+        leaveTypeOptions={leaveTypeOptions}
         isOpen={modal === "apply"}
         onClose={() => setModal(null)}
         onSubmit={submitLeave}
@@ -752,6 +769,8 @@ const LeavesPage = () => {
         onSubmit={submitAction}
         selectedLeave={selectedLeave}
       />
+      <LeaveSetupPanel capabilities={capabilities} onTypesChanged={applyLeaveTypes} />
+      <LeaveEntitlementPanel capabilities={capabilities} employeeOptions={employeeOptions} leaveTypeOptions={leaveTypeOptions} />
     </section>
   );
 };

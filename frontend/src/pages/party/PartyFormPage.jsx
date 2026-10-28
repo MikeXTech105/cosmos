@@ -1,11 +1,13 @@
+import useFormReturnContext from "../../hooks/useFormReturnContext";
 import { Contact } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import PageHeader from "../../components/common/PageHeader";
 import useCapabilities from "../../hooks/useCapabilities";
 import { getApiStatus } from "../../utils/apiError";
+import { withoutDirtyPrompt } from "../../utils/dirtyWork";
 import { PARTY_COMMAND_FIELDS, PARTY_FIELD_SECTIONS } from "./partyColumns";
 import { extractEntity, getErrorMessage } from "./partyHelpers";
 import { PartyFormContent } from "./PartyFormModal";
@@ -14,7 +16,7 @@ import { partyService } from "./partyService";
 const PartyFormPage = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const navigate = useNavigate();
+  const { returnToList } = useFormReturnContext("/party");
   const capabilities = useCapabilities({
     actions: ["view", "create", "update"],
     label: "Party Master",
@@ -42,6 +44,7 @@ const PartyFormPage = () => {
       return partyService
         .getPartyById(id, { signal: controller.signal })
         .then((response) => {
+          if (controller.signal.aborted) return;
           setState({ error: null, loading: false, party: extractEntity(response.data) });
         })
         .catch((error) => {
@@ -51,7 +54,7 @@ const PartyFormPage = () => {
 
           if (getApiStatus(error) === 404) {
             toast.error("This party no longer exists.");
-            navigate("/party", { replace: true });
+            withoutDirtyPrompt(() => returnToList());
             return;
           }
 
@@ -60,7 +63,7 @@ const PartyFormPage = () => {
     });
 
     return () => controller.abort();
-  }, [id, isEdit, navigate]);
+  }, [id, isEdit, returnToList]);
 
   const saveDisabledReason = (isEdit ? capabilities.canUpdate : capabilities.canCreate)
     ? ""
@@ -73,20 +76,20 @@ const PartyFormPage = () => {
     }
 
     try {
+      let response;
       if (isEdit) {
-        await partyService.updateParty(id, payload);
+        response=await partyService.updateParty(id, payload);
         toast.success("Party updated successfully");
       } else {
-        await partyService.createParty(payload);
+        response=await partyService.createParty(payload);
         toast.success("Party created successfully");
       }
 
-      navigate("/party");
+      withoutDirtyPrompt(() => returnToList(extractEntity(response.data)?.id ?? (isEdit ? id : undefined)));
     } catch (error) {
       if (isEdit && getApiStatus(error) === 404) {
         toast.error("This party no longer exists.");
-        navigate("/party", { replace: true });
-        return;
+        throw error;
       }
 
       toast.error(getErrorMessage(error, "Unable to save this party."));
@@ -95,6 +98,8 @@ const PartyFormPage = () => {
   };
 
   const title = isEdit ? "Edit party" : "Add party";
+  const formSource = isEdit && String(state.party?.id) === String(id) ? state.party : null;
+  const formLoading = isEdit && (state.loading || !formSource);
 
   if (isEdit && state.error) {
     return (
@@ -117,7 +122,7 @@ const PartyFormPage = () => {
         }
       />
 
-      {state.loading ? (
+      {formLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 9 }, (_, index) => (
             <div key={index} className="h-24 animate-pulse rounded-2xl bg-slate-100" />
@@ -126,6 +131,7 @@ const PartyFormPage = () => {
       ) : (
         <div className="-mx-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:mx-0">
           <PartyFormContent
+            key={id ?? "new"}
             fields={PARTY_COMMAND_FIELDS}
             groupedFields={PARTY_FIELD_SECTIONS.map((section) => ({
               ...section,
@@ -133,9 +139,9 @@ const PartyFormPage = () => {
             })).filter((section) => section.fields.length > 0)}
             isView={false}
             mode={isEdit ? "edit" : "create"}
-            source={state.party}
+            source={formSource}
             submitLabel={isEdit ? "Save Changes" : "Create Party"}
-            onClose={() => navigate("/party")}
+            onClose={() => returnToList()}
             onSubmit={submitParty}
           />
         </div>

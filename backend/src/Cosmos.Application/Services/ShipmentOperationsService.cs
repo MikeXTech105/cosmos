@@ -55,6 +55,9 @@ public sealed class ShipmentOperationsService : IShipmentOperationsService
     public async Task<ApiResponse<ShipmentDto>> GetShipmentAsync(long id, CancellationToken ct) =>
         ApiResponse<ShipmentDto>.Success(await ShipmentAsync(id, ct));
 
+    public async Task<ApiResponse<IReadOnlyCollection<ShipmentDispatchAllocationDto>>> GetDispatchAllocationsAsync(long runId, CancellationToken ct) =>
+        ApiResponse<IReadOnlyCollection<ShipmentDispatchAllocationDto>>.Success(await _repository.GetDispatchAllocationsAsync(runId, ct));
+
     public async Task<ApiResponse<ShipmentDto>> CreateManualShipmentAsync(CreateManualShipmentRequest request, CancellationToken ct)
     {
         await ValidateAsync(request, ct);
@@ -114,6 +117,16 @@ public sealed class ShipmentOperationsService : IShipmentOperationsService
         var after = await ShipmentAsync(shipmentId, ct);
         await AuditAsync("ShipmentPackages", shipmentId, "SavePackage", new { request.PackageNumber }, new { after.TotalPackages, after.TotalPackedQuantity }, ct);
         return ApiResponse<ShipmentDto>.Success(after, "Shipment package saved. Inventory was not changed.");
+    }
+
+    public async Task<ApiResponse<ShipmentDto>> RemovePackageAsync(long shipmentId, long packageId, RemoveShipmentPackageRequest request, CancellationToken ct)
+    {
+        await ValidateAsync(request, ct);
+        // Version, packing state, repeat intent and allocation reconciliation are checked
+        // under the same database lock. Readback does not repeat the physical command.
+        await _repository.RemovePackageAsync(shipmentId, packageId, request, _currentUser.UserId, ct);
+        return ApiResponse<ShipmentDto>.Success(await ShipmentAsync(shipmentId, ct),
+            "Draft package removed. Its quantities are unpacked; verify conversion and review the replacement package. Inventory was not changed.");
     }
 
     public async Task<ApiResponse<ShipmentDto>> SaveDocketAsync(long shipmentId, SaveShipmentDocketRequest request, CancellationToken ct)

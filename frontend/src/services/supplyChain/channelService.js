@@ -1,4 +1,4 @@
-import axiosInstance from "../../api/axios";
+import axiosInstance from "../manufacturing/productionApi";
 import { ENDPOINTS } from "../../api/endpoints";
 import { sanitizeSupplyChainChannelParams } from "../../utils/supplyChainQuery";
 import { normalizeParams, unwrapResponse } from "../apiServiceUtils";

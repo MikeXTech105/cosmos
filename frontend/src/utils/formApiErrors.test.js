@@ -5,6 +5,12 @@ import { applyApiErrorsToForm } from "./formApiErrors";
 const apiError = (status, data) => ({ response: { data, status } });
 
 describe("applyApiErrorsToForm", () => {
+  it("binds indexed backend line paths and keeps the first invalid row focusable", () => {
+    const setError = vi.fn();
+    const result = applyApiErrorsToForm({ error: apiError(422, { errors: { "Request.Items[2].Quantity": ["Exceeds remaining quantity."] } }), formFieldNames: ["items.2.quantity"], setError });
+    expect(result.boundFields).toEqual(["items.2.quantity"]);
+    expect(setError).toHaveBeenCalledWith("items.2.quantity", { message: "Exceeds remaining quantity.", type: "server" }, { shouldFocus: true });
+  });
   it("binds PascalCase backend fields to existing camelCase form fields", () => {
     const setError = vi.fn();
     const result = applyApiErrorsToForm({

@@ -98,6 +98,9 @@ export const getShipmentActions = (shipment = {}, capabilities = {}) => {
   const transitionTargets = getAvailableTransitions(status);
   const transitionPermission =
     capabilities.canTransition ?? capabilities.canUpdate ?? false;
+  const packingState = [SHIPMENT_STATUS.Draft, SHIPMENT_STATUS.ReadyForPacking, SHIPMENT_STATUS.PackingInProgress].includes(status);
+  const repackingState = packingState || [SHIPMENT_STATUS.Packed, SHIPMENT_STATUS.ReadyForDispatch].includes(status);
+  const freightProtected = (shipment.freightCharges ?? []).some(charge => ["Submitted", "Approved", "PartiallyPaid", "Paid", 2, 3, 5, 6].includes(charge.status));
 
   return {
     appointment: permitted(
@@ -125,11 +128,12 @@ export const getShipmentActions = (shipment = {}, capabilities = {}) => {
       writeReason ||
         "Freight actions require Shipment Operations Freight permission.",
     ),
-    pack: permitted(
-      !terminal && capabilities.canManagePacking,
-      writeReason ||
-        "Packing actions require Shipment Operations Packing permission.",
-    ),
+    pack: {
+      ...permitted(!terminal && packingState && !shipment.dispatchedAtUtc && capabilities.canManagePacking,
+        writeReason || (!packingState ? "Adding packages requires a draft packing state. Review Remove / repack to reopen an undispatched package." : "Packing actions require Shipment Operations Packing edit permission.")),
+      canRepack: !terminal && repackingState && !shipment.dispatchedAtUtc && !freightProtected && capabilities.canManagePacking,
+      repackReason: freightProtected ? "Ask Accounts to resolve submitted, approved or paid freight before changing package weights." : "Repack requires Packing edit permission and an undispatched package.",
+    },
     receipt: permitted(
       !terminal && capabilities.canManageReceipts,
       writeReason ||

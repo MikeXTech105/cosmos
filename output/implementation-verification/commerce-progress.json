@@ -1,0 +1,3282 @@
+{
+  "updatedAt": "2026-10-28T12:46:30.453Z",
+  "baselineCommit": "da46203",
+  "owner": "commerce",
+  "findings": [
+    {
+      "id": "C01",
+      "priority": "P1",
+      "title": "Invoice effective HSN lookup calls a method absent from the frontend service and API routes",
+      "audit": "commerce-audit.json",
+      "acceptance": "Actual authorized classification API/client and maintenance surfaces work; cover override/default/effectivity/retire/fallback, source visibility, invoice date changes and stable-row stale-result rejection. Preserve the corrected current diagnosis.",
+      "scenarioIds": [
+        "SC-05",
+        "SC-11",
+        "SC-12",
+        "SC-21"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Effective classification service method and controller maintenance/read routes were absent despite existing application persistence.",
+      "implementationFiles": [
+        "backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+        "backend/src/Cosmos.Application/Services/HsnGstService.cs",
+        "frontend/src/services/gst/hsnGstService.js",
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/sales/invoices/invoiceLookupGuard.js"
+      ],
+      "apiChanges": [
+        "HsnGstController exposes GET/POST/PUT hsn-sacs; GET/PUT category dated default+retire; PUT Item override+retire; GET Item effective classification. Existing application persistence reused; exact View/Create/Edit permission metadata enforced."
+      ],
+      "migrations": [],
+      "testCases": [
+        "hsnGstService.test.js",
+        "invoiceLookupGuard.test.js",
+        "HsnMaintenanceContractTests"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Exposed actual catalogue/default/override/effective/retire APIs, validated date/identity inputs, exact client transport, catalogue/mapping maintenance panel, stable row+Item+date/request guard and date refresh, explicit source/failure.",
+      "remaining": "Real SQL effectivity/overlap/retirement/fallback execution and ordinary-role browser classification flow. Statutory snapshot stays PendingPolicy by human decision."
+    },
+    {
+      "id": "C02",
+      "priority": "P1",
+      "title": "First-200 static dropdowns hide valid masters and records",
+      "audit": "commerce-audit.json",
+      "acceptance": "All affected Item/Party/bill/category/unit selections can find records201+, retain inactive selected history and select a just-created object without first-page reload dependency.",
+      "scenarioIds": [
+        "SC-04",
+        "SC-05",
+        "SC-07"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "First-page200 master caches were used as the entire option universe, with no search/paging or selected-ID hydration.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemMasterLookup.jsx",
+        "frontend/src/pages/party/CommerceFilterLookup.jsx",
+        "frontend/src/pages/party/CommerceFilterLookup.test.jsx",
+        "frontend/src/pages/party/CommerceListFilters.test.jsx",
+        "frontend/src/pages/inventory/items/ItemsPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFilters.jsx",
+        "frontend/src/pages/inventory/items/ItemTable.jsx",
+        "frontend/src/pages/sales/invoices/SalesInvoicesPage.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFilters.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceTable.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Remote paged lookup+selected-by-ID hydration in sales customer/items, purchase supplier/items/source bills, Item category/unit page and modal. Residual Item category, Sale customer, Purchase supplier list filters now use remote canonical paging/by-ID hydration, exact string IDs and explicit All. Historical inactive options are selectable for filter reads without changing mutation availability. Actual remote page2, role+Both merge, query page1 reset and inlinecreate focus proved.",
+      "remaining": "Ordinary-role authenticated browser journeys against real data201+, real SQL query/filter/upgrade fixtures and inactive historical records are pending; no implementation residual in the identified selectors."
+    },
+    {
+      "id": "C03",
+      "priority": "P1",
+      "title": "Supplier changes do not clear/revalidate existing allocations and bill requests can race",
+      "audit": "commerce-audit.json",
+      "acceptance": "Switch supplier A→B while requests complete in reverse order; no A bill/allocation survives in B's payment; totals and unallocated amount reconcile; API rejects cross-supplier IDs.",
+      "scenarioIds": [
+        "SC-05",
+        "SC-13",
+        "SC-14"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Supplier changes retained prior allocation rows and allowed older bill responses to repopulate another supplier context.",
+      "implementationFiles": [
+        "frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Supplier change clears allocations; request generation rejects old bill responses; correct-supplier filter, loading/error/retry, disabled stale allocations, existing unallocated totals retained.",
+      "remaining": "Real SQL cross-supplier allocation rejection/conservation and ordinary-role browser verification; root owns executed reverse-response component evidence."
+    },
+    {
+      "id": "C04",
+      "priority": "P1",
+      "title": "Return against bill asks operator to repeat supplier and line information",
+      "audit": "commerce-audit.json",
+      "acceptance": "Return initiated from source prefills supplier, exact original line IDs and units; remaining returnable quantity accounts for earlier returns; financial/physical effects are explicit and conserved.",
+      "scenarioIds": [
+        "SC-13",
+        "SC-17"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Return editor did not load immutable original bill line identity, returnable remainder or physical/financial inventory owner.",
+      "implementationFiles": [
+        "backend/src/Cosmos.Contracts/PurchaseExpense/PurchaseExpenseDtos.cs",
+        "backend/src/Cosmos.Persistence/Repositories/PurchaseExpenseRepository.cs",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/documents/purchaseReturnSource.js",
+        "frontend/src/pages/purchase/documents/purchaseDocumentSchema.js",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx"
+      ],
+      "apiChanges": [
+        "PurchaseLineDto readback now includes InventoryOwner, ReturnedQuantity, RemainingReturnableQuantity; PurchaseReturnDto includes PhysicalReceiptReturnId. Bill readback derives nondeleted original-linked return remainder server-side."
+      ],
+      "migrations": [],
+      "testCases": [
+        "purchaseReturnSource.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Bill detail reads inventory ownership and authoritative prior-return/remaining quantities; source action prefills supplier, exact original line and unit IDs and remaining quantities; source Item cannot change; quantity limit and proportional currency discount; receipt-owned goods direct to existing physical return and separate credit.",
+      "remaining": "Real SQL concurrent/excess/rollback tests and normal UI physical-return journey; verify per-receipt allocations and financial source details."
+    },
+    {
+      "id": "C05",
+      "priority": "P1",
+      "title": "Purchase detail actions ignore document state",
+      "audit": "commerce-audit.json",
+      "acceptance": "For every real purchase state, UI offers only valid permitted actions with blocked reasons; direct API calls independently reject invalid transitions and retain authoritative detail on failure.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-15"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Capability-only actions ignored persisted document state and stock ownership in detail/list/editor paths.",
+      "implementationFiles": [
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+        "frontend/src/pages/purchase/documents/purchaseLifecycle.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "purchaseLifecycle.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "State+capability gate for bill draft edit/confirm, valid cancel and confirmed return; unconverted orders edit/cancel; receipt-linked draft edit blocked; physical return credit edit blocked. Final list actions/handlers use the same lifecycle helper; fresh detail ownership is checked before edit navigation. List create/edit uses canonical full-page editor. Direct form save is blocked for nonmatching source/invalid lifecycle/receipt-owned immutable source.",
+      "remaining": "Real direct API lifecycle/concurrent state and physical ownership verification; new rendered list7 cases passed."
+    },
+    {
+      "id": "C06",
+      "priority": "P1",
+      "title": "Sales and purchase page forms collapse API validation into toast",
+      "audit": "commerce-audit.json",
+      "acceptance": "Server field/row/business errors persist after toast expiry, focus/jump to the affected input, retain all entry and distinguish failed from uncertain submission.",
+      "scenarioIds": [
+        "SC-08"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Server validation often surfaced as transient toast or unbound paths; indexed row paths needed normalization.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/formErrors.js",
+        "frontend/src/components/commerce/FormErrorSummary.test.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useUncertainSave.test.jsx",
+        "frontend/src/utils/thunkFormError.js",
+        "frontend/src/pages/inventory/items/ItemSaveRecovery.test.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.errors.test.jsx",
+        "frontend/src/pages/party/DocumentSaveRecovery.test.jsx",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "FormErrorSummary.test.jsx3",
+        "ItemFormModal.errors.test.jsx1",
+        "ItemSaveRecovery.test.jsx3 actualRedux",
+        "DocumentSaveRecovery.test.jsx10 actualRedux",
+        "useUncertainSave.test.jsx15",
+        "thunkFormErrorTransport.test.js actual create/update paths"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Actual create/update thunk unwrap now preserves safe serializable status/fieldErrors/correlation through getThunkFormError; reducer display errors remain strings. Sale/Purchase/Item main forms and Item modal render persistent labelled summary actions, mount hidden Stock tab before focus, resolve current line indices after removal, and scope focus to containing form. Immediate scoped save-outcome journals persist before requests regardless dirty; recovered marker blocks before optional draft restore; network/408/5xx lock edits/replay until explicit saved-history/readback review. Direct known-ID readback never repeats mutation or resets retained form values. Shared AppModal busy-focus lifecycle fixed by root.",
+      "remaining": "Real network/server failures, actual SQL response contracts and ordinary-role authenticated browser reconciliation need release verification. Local attempt journal is not server idempotency; no automatic mutation replay introduced."
+    },
+    {
+      "id": "C07",
+      "priority": "P1",
+      "title": "Long forms navigate away without unsaved-change protection",
+      "audit": "commerce-audit.json",
+      "acceptance": "Dirty page/modal changes survive or are explicitly discarded across Back/Cancel/route/refresh; successful save clears draft/guard; list filter/scroll return context is restored.",
+      "scenarioIds": [
+        "SC-06"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Unscoped automatic local drafts and missing dirty guards could restore wrong-context data or lose unsaved work.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/hooks/useListReturnContext.js",
+        "frontend/src/hooks/useFormReturnContext.js",
+        "frontend/src/hooks/useListReturnScope.js",
+        "frontend/src/utils/listReturnContext.js",
+        "frontend/src/hooks/useListReturnContext.test.jsx",
+        "frontend/src/pages/party/PartyPage.jsx",
+        "frontend/src/pages/party/PartyTable.jsx",
+        "frontend/src/pages/party/PartyFormPage.jsx",
+        "frontend/src/pages/party/PartyReturnFlow.test.jsx",
+        "frontend/src/pages/inventory/items/ItemDraftRecovery.jsx",
+        "frontend/src/pages/inventory/items/useItemDraft.js",
+        "frontend/src/pages/inventory/items/useItemDraft.test.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "useListReturnContext.test.jsx9",
+        "CommerceListFilters.test.jsx7",
+        "PartyReturnFlow.test.jsx4",
+        "DocumentSaveRecovery.test.jsx authoritative origin cases"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Shared route/unload guard, scoped session draft explicit recovery/stale-version review, clearing only after successful server save. Party modal uses scoped draft recovery with explicit restore, account/company key, dirty close and consumed/nested Escape guards. Item page/modal scoped recovery excludes live balances and file objects, restores explicitly, blocks dirty modal/route/unload exits and clears/bypasses only authoritative success. Party page guarded against stale source reuse. Item/Sale/Purchase/Party lists capture scoped filters/page/query/scroll before route exits; forms/details carry safe origin through authoritative save and edit, restore list on Back, and only mark known saved IDs after success. Visible rows highlight once; off-page saves preserve filters with an explicit notice. Party old-source404 returns captured origin and failed-save404 retains dirty draft. Purchase details use the canonical full-page editor instead of unreachable legacy modal/cache.",
+      "remaining": "Authenticated browser reload/Back/account/company switch and real network/persistence verification remain; identified list/form/detail restoration and once-only highlight source is implemented with component/hook evidence."
+    },
+    {
+      "id": "C08",
+      "priority": "P1",
+      "title": "GST issuance workflow is explicitly incomplete",
+      "audit": "commerce-audit.json",
+      "acceptance": "Required supported GST issuance/session/extension flows use real backend/provider contracts and sandbox evidence. Missing access is an explicit unexecuted gate, never a local fake success or completed disabled button.",
+      "scenarioIds": [
+        "SC-41"
+      ],
+      "status": "Source implemented with automated evidence; issuance policy deferred by human; SQL/provider verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Statutory generation lacked validated immutable source/policy consumers; extension/session adapters and unknown-outcome persistence lacked complete contract/safety handling.",
+      "implementationFiles": [
+        "backend/src/Cosmos.Shared/Options/GstZenOptions.cs",
+        "backend/src/Cosmos.Application/Gst/GstRequests.cs",
+        "backend/src/Cosmos.Application/Services/GstServices.cs",
+        "backend/src/Cosmos.Infrastructure/Gst/GstZenProviderService.cs",
+        "frontend/src/pages/gst/GstSessionPage.jsx",
+        "frontend/src/services/gst/gstService.js"
+      ],
+      "apiChanges": [
+        "POST eway-bills/extensions/{key}/reconcile reads provider status without extension replay. Extend request requires exact saved registration, source concurrencyVersion and unique reviewed command key; status response includes concurrencyVersion.",
+        "GET gst/invoices/{id}/snapshots/preparation; POST snapshots/prepare; GET snapshots/preparations/{requestKey}. Sales View plus GST EInvoice View/Create and verified actualcatalog CompanyKey; only immutable PendingPolicy created, source rowversion+fingerprint and policy proposals allowlisted.",
+        "OTP request payload derives GSTIN from saved active registration; session authentication requires actual successful future-expiry provider response. No raw credential/payload pass-through."
+      ],
+      "migrations": [
+        "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+        "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql"
+      ],
+      "testCases": [
+        "gstService.test.js",
+        "GstZenProviderServiceTests"
+      ],
+      "evidence": [
+        "GstSnapshotPreparationPanel.test.jsx3; GstSnapshotPreparationTests8; SQL integration suite guarded/skipped; strict mocked official provider contract tests"
+      ],
+      "externalDependencies": [
+        "Human2026-10-28: option rakh e apde pachi nakki karishu; proposals are not approved.",
+        "User will run guarded SQL scripts later.",
+        "Real provider sandbox/token/registration setup and official reason-code catalogue"
+      ],
+      "finalOutcome": "PendingPolicy preparation, session and durable extension source implemented/tested; actual statutory issuance intentionally remains unavailable until the user decides policy and approved validation is complete.",
+      "implemented": "Official-contract GSTN OTP/session adapter and operator UI; saved registration overrides untrusted GSTIN; separate Bearer credential; strict documented success+future Unix expiry; unconditional credential/OTP log redaction; no actual provider execution. Durable E-Way extension reserve/unknown/rejected/confirmed state, exact-registration and version gates, explicit reviewed transport, later-validity persistence and readback-only reconciliation implemented. New SQL scripts not executed. Serializable confirmed-source preparation API/repository and InvoiceDetail panel now freeze invoice, issuer, buyer/current master and dated effective classification evidence; replay-safe request keys with frozen-source readback. Policy selectors remain unapproved proposals and only PendingPolicy is inserted.",
+      "remaining": "Human explicitly deferred statutory rounding/discount/issuance policy: no policy activated and generation remains unavailable. Future validated component-tax snapshot/calculation/issuance requires that decision. Actual SQL migration/immutable/concurrency fixtures and live provider sandbox pending; authoritative extension reason-code catalogue not available in reviewed public docs."
+    },
+    {
+      "id": "C09",
+      "priority": "P1",
+      "title": "Item manufacturing uses UTC calendar date while newer workflows use company business date",
+      "audit": "commerce-audit.json",
+      "acceptance": "Legacy Item manufacture and new order flows use verified company business date consistently around local midnight, night shift, backdating and effective BOM boundaries.",
+      "scenarioIds": [
+        "SC-21",
+        "SC-23",
+        "SC-24"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "UTC/browser date was used for company production defaults and effective-BOM resolution could become stale on date changes.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Removed UTC calendar defaults; verified company runtime businessDate defaults BOM/new legacy production and applicable BOM lookup; missing runtime blocks new production with retry.",
+      "remaining": "Real midnight/night/backdate and company-zone SQL/browser checks; date-change stale-result and frozen snapshot DOM tests passed."
+    },
+    {
+      "id": "C10",
+      "priority": "P2",
+      "title": "Two production entry paths coexist inside and outside Item master",
+      "audit": "commerce-audit.json",
+      "acceptance": "All three production concepts have recognizable labels, stock-effect explanations, correct primary path and history access; an OEE reading never silently records stock output.",
+      "scenarioIds": [
+        "SC-18",
+        "SC-19",
+        "SC-23",
+        "SC-25"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Setup, legacy stock posting, order/daily production and OEE readings lacked clear workflow ownership.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Three production concepts explicitly described with primary Daily/Board and OEE links; legacy draft/post/reversal history retained.",
+      "remaining": "Operator/browser acceptance of primary path and ordinary-role destination grants; links now capability-aware."
+    },
+    {
+      "id": "C11",
+      "priority": "P2",
+      "title": "Document and cash ledgers require wide horizontal tables",
+      "audit": "commerce-audit.json",
+      "acceptance": "At phone width users can identify/edit invoice/purchase/cash line context and save with visible totals/actions; desktop grid and keyboard behavior remain intact.",
+      "scenarioIds": [
+        "SC-12",
+        "SC-13",
+        "SC-16",
+        "SC-42"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Wide min-width line/ledger tables required repeated mobile horizontal panning.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Responsive same-DOM line cards added to Sale/Purchase line editors and mobile record cards to wallet transfers/GST registrations; stable row IDs retained, visible numeric labels/context, desktop sheets preserved.",
+      "remaining": "Actual360px browser verification and keyboard/lookup overlay flow."
+    },
+    {
+      "id": "C12",
+      "priority": "P2",
+      "title": "Inline master creation reloads lists but does not select the newly created record",
+      "audit": "commerce-audit.json",
+      "acceptance": "Creating an Item/Party/Category/Unit/other supported inline master returns and selects its canonical ID/object in the originating field and restores focus without losing other values.",
+      "scenarioIds": [
+        "SC-07"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Inline created objects were discarded in favor of first-page reloads and row indices could lose the originating selection.",
+      "implementationFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/PurchaseLineItems.jsx",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+        "frontend/src/pages/party/CommerceListFilters.test.jsx",
+        "frontend/src/services/inventory/categoryService.js",
+        "frontend/src/services/inventory/unitService.js",
+        "frontend/src/services/inventory/itemService.js",
+        "frontend/src/services/inventory/masterCreatePrecision.test.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [
+        "Root AppLookup shared create-close focus race fixed and regression added; lookup-list-final-tests.log17/17 passed with actualcreated label+aria-expandedfalse+focus assertions, no timeout increase."
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Created Item/Party selection in originating transaction, stable row target, created category/unit selection callbacks; append canonical object instead of first-page reload and restore focus. List-filter inline category/customer/supplier creation now returns canonical entity promises, immediately selects exact created ID and restores originating focus without first-page reload. Category/Unit JSON create responses and Item multipart response preserve BIGINT identities.",
+      "remaining": "Real authenticated nested create/permission/lookup network journeys remain pending; actual component tests cover listed create/filter continuity."
+    },
+    {
+      "id": "C13",
+      "priority": "P2",
+      "title": "GST setup/support asks operators to know internal IDs and exact strings",
+      "audit": "commerce-audit.json",
+      "acceptance": "Choose company/registration/GSTIN through authorized human-readable lookups; show enumerated operation/status meanings and contextual document/support links; raw IDs are optional details.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-41"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Operators were asked for opaque IDs and exact filter strings; optional integration metadata had no maintained company/branch master.",
+      "implementationFiles": [
+        "frontend/src/pages/gst/GstRegistrationLookup.jsx",
+        "frontend/src/pages/gst/GstSessionPage.jsx",
+        "frontend/src/pages/gst/GstLogsPage.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Searchable GSTIN/legal-name/branch registration selectors for session and logs; technical registration ID no longer typed there. Registration ordinary form now derives state from GSTIN, selects known status, preserves optional CompanyId/BranchId as read-only support integration metadata. Logs operation labels enumerated from provider service.",
+      "remaining": "Registration form browser validation, provider session sandbox. No general Company/Branch master exists, confirmed optional BIGINT columns without FKs in003 + nullable request fields."
+    },
+    {
+      "id": "C14",
+      "priority": "P2",
+      "title": "Item stock controls rewrite decimal strings via JavaScript Number",
+      "audit": "commerce-audit.json",
+      "acceptance": "Supported quantity boundary strings round-trip exactly; excess scale/range is rejected or explicitly rounded under documented rule; blur never silently rewrites high-precision/large values.",
+      "scenarioIds": [
+        "SC-20"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Number-based normalization/serialization rewrote long IDs and high-precision stock text before save.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/itemPrecision.js",
+        "frontend/src/pages/inventory/items/itemHelpers.js",
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+        "frontend/src/services/inventory/itemService.js",
+        "frontend/src/utils/validationSchemas.js",
+        "frontend/src/services/inventory/masterCreatePrecision.test.js",
+        "frontend/src/services/inventory/categoryService.js",
+        "frontend/src/services/inventory/unitService.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "itemPrecision.test.js",
+        "validationRules.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Exact decimal strings retained through blur/schema/payload; stock22,6 versus money18,2 validation; exact JSON numeric-token update transport and multipart creation; exact master IDs. Created Item response parses exact JSON without overriding multipart request transform; Category/Unit create/update use canonical exact transport. New boundary tests preserve created9007199254740993 and16-digit6-place stock.",
+      "remaining": "Real SQL boundary round-trip and existing upgrade fixture test."
+    },
+    {
+      "id": "C15",
+      "priority": "P2",
+      "title": "Expense category and daily cash workflows are separate families without visible origin guidance",
+      "audit": "commerce-audit.json",
+      "acceptance": "Document the authoritative expense path and resulting source-linked cash effects; test manual versus automatic behavior and prove no duplicate expense/stock/wallet postings are introduced.",
+      "scenarioIds": [
+        "SC-13",
+        "SC-16",
+        "SC-17",
+        "SC-30"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Independent Expense and Rojmel cash models lacked visible source/posting ownership guidance.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Traced Expense service/repository/sp_Expense_Save: independent Expense document+audit only, no wallet posting. Rojmel/MyWallet guidance and explicit manual Expense-number reference explain reconciliation; root owns Expense guidance.",
+      "remaining": "Browser review of guidance and SQL save ownership evidence; no automatic cross-posting introduced."
+    },
+    {
+      "id": "C16",
+      "priority": "P1",
+      "title": "Rojmel transaction and wallet labels disagree with backend enums",
+      "audit": "commerce-audit.json",
+      "acceptance": "Assert actual backend contract values independently: transaction5 OpeningBalance/6 AdjustmentIn/7 AdjustmentOut; wallet4 PettyCash/5 BankCash; Posted status. Verify badges, filter payloads, creation and reports.",
+      "scenarioIds": [
+        "SC-16"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Frontend enum values5/6/7 and wallet4/5 disagreed with persisted backend contracts.",
+      "implementationFiles": [
+        "frontend/src/constants/rojmelEnums.js",
+        "frontend/src/pages/rojmel/rojmelHelpers.js",
+        "frontend/src/pages/rojmel/RojmelShared.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "rojmelEnums.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Canonical persisted transaction5=OpeningBalance6=AdjustmentIn7=AdjustmentOut, wallet4=PettyCash5=BankCash and status1=Posted; badges/options/filter values aligned.",
+      "remaining": "Real ledger creation/filter/report SQL/browser conservation journey."
+    },
+    {
+      "id": "C17",
+      "priority": "P1",
+      "title": "Party type is omitted from create/edit payload even though grouped customer/supplier flows depend on it",
+      "audit": "commerce-audit.json",
+      "acceptance": "Create Customer, Supplier and Both, including contextual quick-create; edit preserves existing type unless intentionally changed; backend persistence and lookup eligibility agree.",
+      "scenarioIds": [
+        "SC-07",
+        "SC-10"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "PartyType was absent from UI command fields and legacy API omission defaulted edits to Both.",
+      "implementationFiles": [
+        "frontend/src/pages/party/partyColumns.js",
+        "frontend/src/pages/party/partyHelpers.js",
+        "frontend/src/pages/party/PartyFormModal.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx"
+      ],
+      "apiChanges": [
+        "UpdatePartyCommand optional PartyType defaultsnull (omission only); PartyService resolves omission against persisted PartyType before validation. Explicit Customer/Supplier/Both changes still validated; frontend always sends reviewed role."
+      ],
+      "migrations": [],
+      "testCases": [
+        "partyHelpers.test.js",
+        "PartyTypeUpdateTests7 cases"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Party type in form allowlist/default/select and payload; contextual Customer/Supplier defaults; edit source retained. Older API client omission now resolves PartyType against persisted role before validation; explicit edits remain validated.",
+      "remaining": "DB role persistence/eligibility and contextual quick-create browser journeys. Legacy omission preservation now covered7 backend cases."
+    },
+    {
+      "id": "C18",
+      "priority": "P2",
+      "title": "Party setting flags are persisted without a connected form or print behavior",
+      "audit": "commerce-audit.json",
+      "acceptance": "Each exposed Party setting has a specified, observable, persisted effect in its consuming UI/print/workflow; related external capability gaps stay explicit and cannot be closed by persisting a checkbox.",
+      "scenarioIds": [
+        "SC-10"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Saved settings flags had no supported consumer wiring and future functionality appeared enabled.",
+      "implementationFiles": [],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [
+        "Human via root2026-10-28: હાલ future options તરીકે unavailable રાખો",
+        "PartyFormModal.test.jsx4 DOM tests; wewelInvoice.test.jsx shipping all5 templates"
+      ],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Supported grouping/shipping/status consumers wired, all5 invoice templates obey shipping-print flag. Reminder/loyalty/custom fields disabled with explanation, existing saved values preserved.",
+      "remaining": "Browser+SQL verification of supported settings. Future options intentionally unavailable per explicit human instruction, not an unfinished implementation promise."
+    },
+    {
+      "id": "OPS-13",
+      "priority": "P1",
+      "title": "Legacy Item production Post/Cancel checks Edit in UI but Approve in API",
+      "audit": "operations-audit.json",
+      "acceptance": "View/create/edit/approve-only and combined roles are tested against nested Item UI and real API; draft editing and stock post/reversal use their own canonical capabilities.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-23"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Legacy Post/Cancel actions incorrectly depended on Edit rather than their distinct Approve capability.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Legacy Post/Cancel requires Approve capability; Edit remains distinct, including Approve-only users.",
+      "remaining": "Ordinary-role UI/API permission fixture tests."
+    },
+    {
+      "id": "OPS-14",
+      "priority": "P2",
+      "title": "Approved BOM end-effectivity command has no dedicated frontend action",
+      "audit": "operations-audit.json",
+      "acceptance": "Approved End validity date uses the dedicated BOM endpoint, handles date/version conflicts, affects future applicability and preserves prior frozen orders/history.",
+      "scenarioIds": [
+        "SC-02",
+        "SC-21",
+        "SC-24"
+      ],
+      "status": "Source implemented with automated evidence; SQL/authenticated browser release verification pending",
+      "currentConfirmation": "Revalidated current source at da4620383e88f4831a2c0d719882befd497661d7 baseline; source-only findings separated from runtime outcomes.",
+      "rootCause": "Approved BOM effectivity endpoint was not available from the legacy Item BOM history surface.",
+      "implementationFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+        "frontend/src/services/manufacturing/productionConfigurationService.js"
+      ],
+      "apiChanges": [],
+      "migrations": [],
+      "testCases": [
+        "productionConfigurationService.test.js"
+      ],
+      "evidence": [],
+      "externalDependencies": [],
+      "finalOutcome": "Source implementation and focused automated evidence delivered; no claim that deployed SQL or authenticated end-to-end journeys passed.",
+      "implemented": "Approved BOM End effectivity loads current concurrencyVersion then shared guarded idempotent EffectivityDialog calls dedicated /boms/{id}/effectivity route.",
+      "remaining": "Real SQL historical frozen-order/effectivity boundary and concurrent command verification."
+    }
+  ],
+  "coverage": [
+    {
+      "coverageId": "COV-006",
+      "name": "Items",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/items",
+      "routes": [],
+      "included": [
+        "Create/edit page",
+        "inline create modal",
+        "product/service",
+        "procurement classification",
+        "pricing",
+        "stock",
+        "manufacturing"
+      ],
+      "currentFlow": "Create canonical Item, choose Category/Unit, enter prices/tax and optional opening stock; save; then configure manufacturing children.",
+      "canonicalEntity": "Item owns category/unit references and stock quantities. Exact ID and22,6 stock /18,2 prices are preserved in master writes.",
+      "parentChildRelation": "Item owns category/unit references and stock quantities. Exact ID and22,6 stock /18,2 prices are preserved in master writes.",
+      "permissions": {
+        "view": "Items:View (server RequirePermission)",
+        "create": "Items:Create (server command permission)",
+        "edit": "Items:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+        "frontend/src/pages/inventory/items/ItemMasterLookup.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useFormReturnContext.js",
+        "frontend/src/pages/inventory/items/ItemsPage.jsx",
+        "frontend/src/pages/inventory/items/ItemFilters.jsx",
+        "frontend/src/pages/inventory/items/ItemTable.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ItemsController"
+      ],
+      "databaseDependencies": [
+        "Items",
+        "Categories",
+        "Units"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C09",
+        "C10",
+        "C12",
+        "C14",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "Actual Redux mutation error transport and immediate unknown-save recovery: ItemSaveRecovery3 + DocumentSaveRecovery10; known400/422 fieldfocus,503/network locked replay/remount/readback/manualretry; no real server execution.",
+        "itemPrecision.test.js; itemHelpers.test.js; itemService.test.js; validationRules.test.js",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "C07 remote list7 component cases plus shared return9: retained page3 after debounce, query/filter/scroll, exact known saved-ID one-shot highlight and off-page notice.",
+        "masterCreatePrecision.test.js3 actual transport-config boundary cases, exact newCategory/Unit/Item ID with untouched multipart request handling."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-007",
+      "name": "Categories",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/categories",
+      "routes": [],
+      "included": [
+        "Create/edit modal",
+        "active status",
+        "search/filter"
+      ],
+      "currentFlow": "Reusable categories used by Item forms and transaction quick creation.",
+      "canonicalEntity": "Independent Category master referenced by Items",
+      "parentChildRelation": "Independent Category master referenced by Items; Category owns dated HSN default mappings.",
+      "permissions": {
+        "view": "Categories:View (server RequirePermission)",
+        "create": "Categories:Create (server command permission)",
+        "edit": "Categories:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/inventory/categories/CategoryFormModal.jsx",
+        "frontend/src/pages/inventory/items/ItemMasterLookup.jsx"
+      ],
+      "serviceApiDependencies": [
+        "CategoriesController"
+      ],
+      "databaseDependencies": [
+        "Categories",
+        "CategoryHsnDefaults"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C09",
+        "C10",
+        "C12",
+        "C14",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "hsnGstService.test.js; HsnMaintenanceContractTests",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "masterCreatePrecision.test.js3 actual transport-config boundary cases, exact newCategory/Unit/Item ID with untouched multipart request handling."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-008",
+      "name": "Units",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/units",
+      "routes": [],
+      "included": [
+        "Create/edit modal",
+        "short name",
+        "active status"
+      ],
+      "currentFlow": "Reusable base unit; selected by Item and carried into stock/manufacturing.",
+      "canonicalEntity": "Independent Unit master referenced by Item and persisted document line unit snapshots.",
+      "parentChildRelation": "Independent Unit master referenced by Item and persisted document line unit snapshots.",
+      "permissions": {
+        "view": "Units:View (server RequirePermission)",
+        "create": "Units:Create (server command permission)",
+        "edit": "Units:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/inventory/units/UnitFormModal.jsx",
+        "frontend/src/pages/inventory/items/ItemMasterLookup.jsx"
+      ],
+      "serviceApiDependencies": [
+        "UnitsController"
+      ],
+      "databaseDependencies": [
+        "Units",
+        "Items"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C09",
+        "C10",
+        "C12",
+        "C14",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "itemPrecision.test.js exact Unit identity",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "masterCreatePrecision.test.js3 actual transport-config boundary cases, exact newCategory/Unit/Item ID with untouched multipart request handling."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-009",
+      "name": "Item BOMs",
+      "audit": "commerce-audit.json",
+      "classification": "child_master",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "routes": [],
+      "included": [
+        "BOM version",
+        "effective dates",
+        "default BOM",
+        "output base quantity",
+        "component lines",
+        "wastage"
+      ],
+      "currentFlow": "Save manufactured product, open Manufacturing, add effective versioned BOM and components.",
+      "canonicalEntity": "Finished Item owns canonical versioned BOM headers",
+      "parentChildRelation": "Finished Item owns canonical versioned BOM headers; ManufacturingBomItems are immutable production-snapshot inputs. Active approved BOM end-effectivity is a separate Approve action.",
+      "permissions": {
+        "view": "Manufacturing.Boms:View (server RequirePermission)",
+        "create": "Manufacturing.Boms:Create (server command permission)",
+        "edit": "Manufacturing.Boms:Edit (server command permission)",
+        "approve": "Manufacturing.Boms:Approve for end-effectivity",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ManufacturingBomsController",
+        "ProductionBomEffectivityController"
+      ],
+      "databaseDependencies": [
+        "ManufacturingBoms",
+        "ManufacturingBomItems"
+      ],
+      "linkedFindingIds": [
+        "C09",
+        "C10",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "manufacturingHelpers.test.js; productionConfigurationService.test.js; ItemManufacturingTab.test.jsx",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-010",
+      "name": "Item Production",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_transaction",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "routes": [],
+      "included": [
+        "Production draft",
+        "post stock",
+        "detail",
+        "cancel/reverse"
+      ],
+      "currentFlow": "Manufacture from effective BOM; create draft; post to consume components/receive finished stock; reasoned cancellation reverses.",
+      "canonicalEntity": "Finished Item legacy production draft owns ManufacturingProductionMaterials snapshot",
+      "parentChildRelation": "Finished Item legacy production draft owns ManufacturingProductionMaterials snapshot; Post/Cancel atomically affect physical stock, separately from order/daily production and OEE.",
+      "permissions": {
+        "view": "Manufacturing.Productions:View (server RequirePermission)",
+        "create": "Manufacturing.Productions:Create (server command permission)",
+        "edit": "Manufacturing.Productions:Edit (server command permission)",
+        "approve": "Manufacturing.Productions:Approve for both Post and Cancel",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ManufacturingProductionsController"
+      ],
+      "databaseDependencies": [
+        "ManufacturingProductions",
+        "ManufacturingProductionMaterials"
+      ],
+      "linkedFindingIds": [
+        "C09",
+        "C10",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "ItemManufacturingTab.test.jsx2 date/snapshot DOM tests; manufacturingHelpers.test.js exact stock wire",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-011",
+      "name": "Item routing and eligibility",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_setup",
+      "route": "/items/:id/edit?tab=manufacturing",
+      "routes": [],
+      "included": [
+        "ItemProductionConfiguration"
+      ],
+      "currentFlow": "Manufacturing tab embeds newer order workflow configuration below BOM and production.",
+      "canonicalEntity": "Item owns routing versions with ordered routing steps and machine/mould eligibility records.",
+      "parentChildRelation": "Item owns routing versions with ordered routing steps and machine/mould eligibility records.",
+      "permissions": {
+        "view": "Manufacturing.Configuration:View (server RequirePermission)",
+        "create": "Manufacturing.Configuration:Create (server command permission)",
+        "edit": "Manufacturing.Configuration:Edit (server command permission)",
+        "approve": "Manufacturing.Configuration:Approve for close-effectivity",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ProductionConfigurationController"
+      ],
+      "databaseDependencies": [
+        "ItemProductionRoutings",
+        "ItemProductionRoutingSteps",
+        "ItemProductionEligibility"
+      ],
+      "linkedFindingIds": [
+        "C09",
+        "C10",
+        "OPS-13",
+        "OPS-14"
+      ],
+      "journeyEvidence": [
+        "Source-mapped here; operations agent owns configuration workflow regressions",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-012",
+      "name": "Party Master",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/party",
+      "routes": [],
+      "included": [
+        "All/Customers/Suppliers/Both grouping",
+        "create/edit",
+        "detail",
+        "export"
+      ],
+      "currentFlow": "Create canonical party, use it as customer/supplier in sale and purchase documents; groups are classifications, not separate masters.",
+      "canonicalEntity": "Canonical Party role Customer/Supplier/Both shared across Sales and Purchase, with filtered list groups rather than separate masters.",
+      "parentChildRelation": "Canonical Party role Customer/Supplier/Both shared across Sales and Purchase, with filtered list groups rather than separate masters.",
+      "permissions": {
+        "view": "Party:View (server RequirePermission)",
+        "create": "Party:Create (server command permission)",
+        "edit": "Party:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Party:Export CSV"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/party/PartyPage.jsx",
+        "frontend/src/pages/party/PartyFormModal.jsx",
+        "frontend/src/pages/party/usePartySettings.js",
+        "frontend/src/pages/party/PartyFormPage.jsx",
+        "frontend/src/pages/party/PartyTable.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PartiesController",
+        "PartySettingsController"
+      ],
+      "databaseDependencies": [
+        "Parties",
+        "PartySettings"
+      ],
+      "linkedFindingIds": [
+        "C17"
+      ],
+      "journeyEvidence": [
+        "PartyReturnFlow.test.jsx4 actual normal-permission Router/Redux/form journeys: deferred edit/create success origin restoration, off-page notice, no premature highlight,404save draft retention and missing-source404 back context.",
+        "partyHelpers.test.js; PartyFormModal.test.jsx4 DOM tests; PartyTypeUpdateTests7 backend cases",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-013",
+      "name": "Party child details",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_master_sections",
+      "route": "/party/new; /party/:id/edit",
+      "routes": [],
+      "included": [
+        "Basic Information",
+        "GST & Tax",
+        "billing address",
+        "shipping address",
+        "credit settings",
+        "additional details"
+      ],
+      "currentFlow": "Verify GSTIN to fill details, review field changes, copy billing to shipping, set opening balance/limit/period.",
+      "canonicalEntity": "GST identity, billing/shipping, credit and status are child sections of the same Party command and detail record.",
+      "parentChildRelation": "GST identity, billing/shipping, credit and status are child sections of the same Party command and detail record.",
+      "permissions": {
+        "view": "Party:View (server RequirePermission)",
+        "create": "Party:Create (server command permission)",
+        "edit": "Party:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/party/PartyFormModal.jsx",
+        "frontend/src/pages/party/PartyDetailsModal.jsx",
+        "frontend/src/pages/party/PartyFormPage.jsx",
+        "frontend/src/pages/party/PartyTable.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PartiesController"
+      ],
+      "databaseDependencies": [
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C17"
+      ],
+      "journeyEvidence": [
+        "PartyReturnFlow.test.jsx4 actual normal-permission Router/Redux/form journeys: deferred edit/create success origin restoration, off-page notice, no premature highlight,404save draft retention and missing-source404 back context.",
+        "PartyFormModal.test.jsx explicit scoped recovery/settings preservation; partyHelpers.test.js",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-014",
+      "name": "Party settings",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_setup",
+      "route": "/party (Settings)",
+      "routes": [],
+      "included": [
+        "general/grouping/shipping/status",
+        "payment reminders",
+        "loyalty",
+        "four configurable additional fields"
+      ],
+      "currentFlow": "Page settings load and persist independently via GET/PUT. Flags configure settings records, but source review found no consumers applying grouping/shipping/reminder/loyalty/custom-field flags to the party create/edit form or invoice print.",
+      "canonicalEntity": "Independent PartySettings singleton configures grouping/shipping/status form consumers and shipping print",
+      "parentChildRelation": "Independent PartySettings singleton configures grouping/shipping/status form consumers and shipping print; future reminder/loyalty/custom field controls remain unavailable by explicit human decision.",
+      "permissions": {
+        "view": "Party:View (server RequirePermission)",
+        "create": "Not applicable - singleton update only",
+        "edit": "Party:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/party/PartyFormModal.jsx",
+        "frontend/src/pages/party/usePartySettings.js",
+        "frontend/src/pages/party/PartyPage.jsx",
+        "frontend/src/pages/party/PartyFormPage.jsx",
+        "frontend/src/pages/party/PartyTable.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PartySettingsController"
+      ],
+      "databaseDependencies": [
+        "PartySettings",
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C17"
+      ],
+      "journeyEvidence": [
+        "PartyReturnFlow.test.jsx4 actual normal-permission Router/Redux/form journeys: deferred edit/create success origin restoration, off-page notice, no premature highlight,404save draft retention and missing-source404 back context.",
+        "PartyFormModal.test.jsx unsupported values preserved; wewelInvoice.test.jsx all5 shipping-print gates",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-015",
+      "name": "Sale Invoices",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/sales/invoices",
+      "routes": [],
+      "included": [
+        "list/filter/stats",
+        "create/edit",
+        "customer quick create",
+        "item/category/unit quick create",
+        "detail"
+      ],
+      "currentFlow": "Choose customer, lines and document dates, review calculated totals/tax context, save draft; detail supports confirm/cancel/payment/print/PDF.",
+      "canonicalEntity": "Sales invoice header owns ordered SalesInvoiceItems",
+      "parentChildRelation": "Sales invoice header owns ordered SalesInvoiceItems; customer is canonical Party reference, stored HSN/name/unit/tax values are historical line snapshots.",
+      "permissions": {
+        "view": "Sales.Invoice:View (server RequirePermission)",
+        "create": "Sales.Invoice:Create (server command permission)",
+        "edit": "Sales.Invoice:Edit (server command permission)",
+        "approve": "Sales.Invoice:Approve for confirm/payment; Delete for cancellation",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useFormReturnContext.js",
+        "frontend/src/pages/sales/invoices/SalesInvoicesPage.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceFilters.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceTable.jsx"
+      ],
+      "serviceApiDependencies": [
+        "SalesInvoicesController"
+      ],
+      "databaseDependencies": [
+        "SalesInvoices",
+        "SalesInvoiceItems",
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Actual Redux mutation error transport and immediate unknown-save recovery: ItemSaveRecovery3 + DocumentSaveRecovery10; known400/422 fieldfocus,503/network locked replay/remount/readback/manualretry; no real server execution.",
+        "invoiceLookupGuard.test.js; invoiceHelpers.test.js; hsnGstService.test.js",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "C07 remote list7 component cases plus shared return9: retained page3 after debounce, query/filter/scroll, exact known saved-ID one-shot highlight and off-page notice."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-016",
+      "name": "Invoice payments",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_transaction",
+      "route": "/sales/invoices/:id (Record Payment)",
+      "routes": [],
+      "included": [
+        "Payment modal",
+        "payment history",
+        "initial payment on invoice create"
+      ],
+      "currentFlow": "Optionally save initial payment; later record payment from invoice detail; server history reloads.",
+      "canonicalEntity": "SalesPayment child records belong to exactly one SalesInvoice and update its payment/balance state.",
+      "parentChildRelation": "SalesPayment child records belong to exactly one SalesInvoice and update its payment/balance state.",
+      "permissions": {
+        "view": "Sales.Invoice:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Sales.Invoice:Edit (server command permission)",
+        "approve": "Sales.Invoice:Approve for confirm/payment; Delete for cancellation",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/sales/invoices/PaymentModal.jsx",
+        "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "SalesInvoicesController"
+      ],
+      "databaseDependencies": [
+        "SalesInvoices",
+        "SalesInvoicePayments"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Existing invoiceHelpers.test.js calculations; real payment journey pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-017",
+      "name": "Invoice print/PDF templates",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_presentation_setup",
+      "route": "/sales/invoices/:id",
+      "routes": [],
+      "included": [
+        "Classic",
+        "Compact",
+        "Corporate",
+        "Minimal",
+        "Modern",
+        "print",
+        "PDF"
+      ],
+      "currentFlow": "Select template, preview and export existing saved invoice.",
+      "canonicalEntity": "Templates render the selected persisted invoice and lines",
+      "parentChildRelation": "Templates render the selected persisted invoice and lines; address uses current canonical Party read, so it is not a statutory immutable identity snapshot.",
+      "permissions": {
+        "view": "Sales.Invoice:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "UI print/PDF reads Sales.Invoice:View; no dedicated server export mutation"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+        "frontend/src/pages/sales/invoiceTemplates/InvoiceTemplateShared.jsx",
+        "frontend/src/pages/sales/invoiceTemplates/ClassicTemplate.jsx"
+      ],
+      "serviceApiDependencies": [
+        "SalesInvoicesController",
+        "PartiesController",
+        "PartySettingsController"
+      ],
+      "databaseDependencies": [
+        "SalesInvoices",
+        "SalesInvoiceItems",
+        "Parties",
+        "PartySettings"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "wewelInvoice.test.jsx all5 templates exact quantities, shipping flag and no invented fallback",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-018",
+      "name": "Purchase Orders",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/purchase/orders",
+      "routes": [],
+      "included": [
+        "list",
+        "create/edit/detail",
+        "convert-to-bill"
+      ],
+      "currentFlow": "Supplier and item rows -> save PO -> approve into Sent from physical panel -> receive against original lines -> convert/link draft bill.",
+      "canonicalEntity": "PurchaseOrder header owns line items",
+      "parentChildRelation": "PurchaseOrder header owns line items; supplier is Party, physical receipts belong to PO lines.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseOrder:View (server RequirePermission)",
+        "create": "PurchaseExpense.PurchaseOrder:Create (server command permission)",
+        "edit": "PurchaseExpense.PurchaseOrder:Edit (server command permission)",
+        "approve": "PurchaseExpense.PurchaseOrder:Approve for confirm/receive/close-remainder",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useFormReturnContext.js"
+      ],
+      "serviceApiDependencies": [
+        "PurchaseOrdersController"
+      ],
+      "databaseDependencies": [
+        "PurchaseOrders",
+        "PurchaseOrderItems",
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Actual Redux mutation error transport and immediate unknown-save recovery: ItemSaveRecovery3 + DocumentSaveRecovery10; known400/422 fieldfocus,503/network locked replay/remount/readback/manualretry; no real server execution.",
+        "PurchaseDocumentListPage.test.jsx7 actual rendered action cases; purchaseLifecycle.test.js; list routes create/edit to guarded full-page editor",
+        "purchaseLifecycle.test.js; purchaseReturnSource.test.js; source-only PO persistence",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "C07 remote list7 component cases plus shared return9: retained page3 after debounce, query/filter/scroll, exact known saved-ID one-shot highlight and off-page notice."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-019",
+      "name": "PO physical receipts and supply continuity",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_transactions",
+      "route": "/purchase/orders/:id",
+      "routes": [],
+      "included": [
+        "approve draft",
+        "receive accepted/rejected/quarantine",
+        "revise promise",
+        "return original receipt",
+        "credit billed physical return",
+        "close remainder"
+      ],
+      "currentFlow": "Receipt posts accepted stock; separate dispositions; returns reference original receipt/version; credit links billed return; returns do not reopen supply.",
+      "canonicalEntity": "PO line owns physical receipt lines",
+      "parentChildRelation": "PO line owns physical receipt lines; receipt posts stock once, independent of financial bill/credit ownership.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseOrder:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "PurchaseExpense.PurchaseOrder:Edit for promise changes; receipt mutation uses Approve",
+        "approve": "PurchaseExpense.PurchaseOrder:Approve for confirm/receive/close-remainder",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PurchasePhysicalController"
+      ],
+      "databaseDependencies": [
+        "PurchaseOrders",
+        "PurchaseOrderItems",
+        "PurchasePhysicalReceipts",
+        "PurchasePhysicalReceiptLines"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Source mapped here; operations-owned physicalReceipt tests and SQL pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-020",
+      "name": "Purchase Bills",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/purchase/bills",
+      "routes": [],
+      "included": [
+        "list",
+        "create/edit/detail",
+        "direct bills",
+        "receipt-owned bill lines",
+        "confirm/cancel"
+      ],
+      "currentFlow": "Create supplier bill directly or through PO conversion; optionally allocate accepted receipts while draft; confirm financial record.",
+      "canonicalEntity": "PurchaseBill owns financial lines",
+      "parentChildRelation": "PurchaseBill owns financial lines; InventoryOwner distinguishes legacy bill stock from receipt-owned stock; posted source is authoritative.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseBill:View (server RequirePermission)",
+        "create": "PurchaseExpense.PurchaseBill:Create (server command permission)",
+        "edit": "PurchaseExpense.PurchaseBill:Edit (server command permission)",
+        "approve": "PurchaseExpense.PurchaseBill:Approve for confirm",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useFormReturnContext.js"
+      ],
+      "serviceApiDependencies": [
+        "PurchaseBillsController"
+      ],
+      "databaseDependencies": [
+        "PurchaseBills",
+        "PurchaseBillItems"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Actual Redux mutation error transport and immediate unknown-save recovery: ItemSaveRecovery3 + DocumentSaveRecovery10; known400/422 fieldfocus,503/network locked replay/remount/readback/manualretry; no real server execution.",
+        "PurchaseDocumentListPage.test.jsx7 actual rendered action cases; purchaseLifecycle.test.js; list routes create/edit to guarded full-page editor",
+        "purchaseLifecycle.test.js draft-state action gates; purchaseReturnSource.test.js ownership restrictions",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "C07 remote list7 component cases plus shared return9: retained page3 after debounce, query/filter/scroll, exact known saved-ID one-shot highlight and off-page notice."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-021",
+      "name": "Bill-to-receipt allocation",
+      "audit": "commerce-audit.json",
+      "classification": "embedded_transaction",
+      "route": "/purchase/bills/:id",
+      "routes": [],
+      "included": [
+        "supplier PO search",
+        "existing bill line",
+        "accepted receipt line",
+        "linked quantity",
+        "multiple source POs"
+      ],
+      "currentFlow": "Match bill lines to original accepted receipt lines while draft; avoid receiving the same stock twice.",
+      "canonicalEntity": "PurchaseBillReceiptLinks allocate financial bill lines to PO physical receipt lines",
+      "parentChildRelation": "PurchaseBillReceiptLinks allocate financial bill lines to PO physical receipt lines; this must not create another stock receipt.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseBill:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - allocation command uses PurchaseExpense.PurchaseBill:Approve",
+        "approve": "PurchaseExpense.PurchaseBill:Approve for receipt links",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PurchaseReceiptBillingController"
+      ],
+      "databaseDependencies": [
+        "PurchaseBillReceiptLinks",
+        "PurchaseBillItems",
+        "PurchasePhysicalReceiptLines"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Source mapped; operations-owned SQL/browser allocation journey remains pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-022",
+      "name": "Purchase Returns",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/purchase/returns",
+      "routes": [],
+      "included": [
+        "list/create/edit/detail",
+        "linked purchase bill",
+        "reason",
+        "return line items"
+      ],
+      "currentFlow": "Standalone return form chooses supplier and optional linked bill, then enters return lines/reason. Physical receipt returns are also available in PO detail.",
+      "canonicalEntity": "Financial return lines retain original PurchaseBillItem IDs and remaining returnable quantities",
+      "parentChildRelation": "Financial return lines retain original PurchaseBillItem IDs and remaining returnable quantities; receipt-owned physical return is a separate authoritative flow.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseReturn:View (server RequirePermission)",
+        "create": "PurchaseExpense.PurchaseReturn:Create (server command permission)",
+        "edit": "PurchaseExpense.PurchaseReturn:Edit (server command permission)",
+        "approve": "PurchaseExpense.PurchaseReturn:Approve only for physical return/credit endpoint; legacy financial CRUD has no Approve endpoint",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+        "frontend/src/pages/purchase/documents/purchaseReturnSource.js",
+        "frontend/src/components/commerce/FormErrorSummary.jsx",
+        "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+        "frontend/src/hooks/useUncertainSave.js",
+        "frontend/src/hooks/useFormReturnContext.js"
+      ],
+      "serviceApiDependencies": [
+        "PurchaseReturnsController",
+        "PurchasePhysicalController"
+      ],
+      "databaseDependencies": [
+        "PurchaseReturns",
+        "PurchaseReturnItems",
+        "PurchaseBillItems",
+        "PurchasePhysicalReturns"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Actual Redux mutation error transport and immediate unknown-save recovery: ItemSaveRecovery3 + DocumentSaveRecovery10; known400/422 fieldfocus,503/network locked replay/remount/readback/manualretry; no real server execution.",
+        "PurchaseDocumentListPage.test.jsx7 actual rendered action cases; purchaseLifecycle.test.js; list routes create/edit to guarded full-page editor",
+        "purchaseReturnSource.test.js; purchaseLifecycle.test.js; purchase schema remaining cap",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "C07 remote list7 component cases plus shared return9: retained page3 after debounce, query/filter/scroll, exact known saved-ID one-shot highlight and off-page notice."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-023",
+      "name": "Supplier Payments",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/purchase/supplier-payments",
+      "routes": [],
+      "included": [
+        "create/edit/delete",
+        "supplier lookup",
+        "payment fields",
+        "bill allocations"
+      ],
+      "currentFlow": "Pick supplier, record amount/mode/date/reference, optionally add bill allocation rows; allocated amount must not exceed payment.",
+      "canonicalEntity": "SupplierPayment header owns allocations to same-supplier confirmed bills",
+      "parentChildRelation": "SupplierPayment header owns allocations to same-supplier confirmed bills; change of supplier clears previous allocations before readback.",
+      "permissions": {
+        "view": "PurchaseExpense.PaymentOut:View (server RequirePermission)",
+        "create": "PurchaseExpense.PaymentOut:Create (server command permission)",
+        "edit": "PurchaseExpense.PaymentOut:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "SupplierPaymentsController"
+      ],
+      "databaseDependencies": [
+        "SupplierPayments",
+        "SupplierPaymentAllocations",
+        "PurchaseBills",
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Root SupplierPaymentModal.test.jsx supplier-change reverse-response, remote page2 and scoped draft/precision contracts",
+        "Root owns final remote/payment precision and delayed supplier race DOM tests; C03 prior reset implemented",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-024",
+      "name": "Expenses",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/purchase/expenses",
+      "routes": [],
+      "included": [
+        "create/edit/delete",
+        "category quick create",
+        "paid-to party quick create",
+        "tax",
+        "mode",
+        "reference",
+        "attachment"
+      ],
+      "currentFlow": "Record operating expense and attachment under independent expense category, optionally linked paid-to party.",
+      "canonicalEntity": "Expense document references ExpenseCategory and optional paid-to Party",
+      "parentChildRelation": "Expense document references ExpenseCategory and optional paid-to Party; it does not post to Rojmel wallets automatically.",
+      "permissions": {
+        "view": "PurchaseExpense.Expense:View (server RequirePermission)",
+        "create": "PurchaseExpense.Expense:Create (server command permission)",
+        "edit": "PurchaseExpense.Expense:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/expenses/ExpensesPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ExpensesController"
+      ],
+      "databaseDependencies": [
+        "Expenses",
+        "ExpenseCategories",
+        "Parties"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Root owns final Expense remote selectors/exact financial contract and modal recovery tests",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-025",
+      "name": "Expense Categories",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/purchase/expense-categories",
+      "routes": [],
+      "included": [
+        "create/edit/delete",
+        "search",
+        "active status"
+      ],
+      "currentFlow": "Reusable category in Expenses; separate family from Inventory Categories and Rojmel categories.",
+      "canonicalEntity": "Independent expense category labels operating cost documents",
+      "parentChildRelation": "Independent expense category labels operating cost documents; separate from WalletCategories in Rojmel.",
+      "permissions": {
+        "view": "PurchaseExpense.ExpenseCategory:View (server RequirePermission)",
+        "create": "PurchaseExpense.ExpenseCategory:Create (server command permission)",
+        "edit": "PurchaseExpense.ExpenseCategory:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/expenseCategories/ExpenseCategoriesPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "ExpenseCategoriesController"
+      ],
+      "databaseDependencies": [
+        "ExpenseCategories",
+        "Expenses"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Source mapped; root remote category inline-create/selection regression",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-026",
+      "name": "Purchase Reports",
+      "audit": "commerce-audit.json",
+      "classification": "report_workspace",
+      "route": "/purchase/reports",
+      "routes": [],
+      "included": [
+        "Purchase Summary",
+        "Supplier Outstanding",
+        "Expense Summary",
+        "Category-wise Expense",
+        "Item Purchase History"
+      ],
+      "currentFlow": "Select report tab, dates/filters, run report.",
+      "canonicalEntity": "Read-only aggregates of bills, outstanding supplier payments and operating expense categories",
+      "parentChildRelation": "Read-only aggregates of bills, outstanding supplier payments and operating expense categories; no document ownership or posting change.",
+      "permissions": {
+        "view": "PurchaseExpense.Report:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/purchase/reports/PurchaseReportsPage.jsx",
+        "frontend/src/components/common/AppLookup.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PurchaseExpenseReportsController"
+      ],
+      "databaseDependencies": [
+        "PurchaseBills",
+        "SupplierPayments",
+        "Expenses",
+        "ExpenseCategories"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "No executed report journey in this agent; source mapping only and SQL/browser pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence.",
+        "Legacy Item purchase-history selector migrated to remote pages/by-ID hydration; actual browser report journey remains pending"
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-027",
+      "name": "Purchase Follow-ups",
+      "audit": "commerce-audit.json",
+      "classification": "operational_report",
+      "route": "/purchase/operations",
+      "routes": [],
+      "included": [
+        "PO pending/overdue",
+        "supplier receipt performance",
+        "company business date",
+        "unit-grouped totals"
+      ],
+      "currentFlow": "See current pending accepted quantities and drill to PO; performance uses receipt period and separates base units.",
+      "canonicalEntity": "Purchase operations reads PO remainder/promises and supplier physical receipt performance",
+      "parentChildRelation": "Purchase operations reads PO remainder/promises and supplier physical receipt performance; next action links return to canonical PO.",
+      "permissions": {
+        "view": "PurchaseExpense.PurchaseOrder:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/manufacturing/integrations/PurchaseOperationsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "PurchasePhysicalController",
+        "PurchaseSupplierPerformanceController"
+      ],
+      "databaseDependencies": [
+        "PurchaseOrders",
+        "PurchaseOrderItems",
+        "PurchasePromiseHistory",
+        "PurchasePhysicalReceipts",
+        "PurchasePhysicalReceiptLines"
+      ],
+      "linkedFindingIds": [
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "Operations agent owns filters/results regressions; this row source-mapped here",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-028",
+      "name": "Rojmel Dashboard",
+      "audit": "commerce-audit.json",
+      "classification": "dashboard",
+      "route": "/rojmel/dashboard",
+      "routes": [],
+      "included": [
+        "today in",
+        "today out",
+        "cash in hand"
+      ],
+      "currentFlow": "Cash snapshot excludes transfers from profit/loss.",
+      "canonicalEntity": "Read-only wallet/transaction aggregates respect own-versus-admin wallet ownership.",
+      "parentChildRelation": "Read-only wallet/transaction aggregates respect own-versus-admin wallet ownership.",
+      "permissions": {
+        "view": "Rojmel.Dashboard:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Read-only Rojmel.Reports:View at legacy API; report framework export additionally capability-gated"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/dashboard/RojmelDashboardPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelDashboardController"
+      ],
+      "databaseDependencies": [
+        "Wallets",
+        "WalletTransactions",
+        "WalletTransfers"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js persisted contract; SQL/ordinary-role browser aggregate journey pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-029",
+      "name": "My Wallet",
+      "audit": "commerce-audit.json",
+      "classification": "daily_workspace",
+      "route": "/rojmel/my-wallet",
+      "routes": [],
+      "included": [
+        "private balance",
+        "income entry",
+        "expense entry",
+        "filtered ledger",
+        "transaction detail"
+      ],
+      "currentFlow": "Self-scoped private wallet; no other-wallet selector; post income/expense then refresh balance/ledger.",
+      "canonicalEntity": "Own-user wallet is resolved by server, never chosen through a client WalletId",
+      "parentChildRelation": "Own-user wallet is resolved by server, never chosen through a client WalletId; entries are cash movements separate from operating Expense documents.",
+      "permissions": {
+        "view": "Rojmel.MyWallet:View (server RequirePermission)",
+        "create": "Rojmel.MyWallet:Create; server-derived own wallet",
+        "edit": "Not applicable - own wallet endpoint exposes no edit command",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+        "frontend/src/pages/rojmel/components/TransactionEntryModal.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelMyWalletController"
+      ],
+      "databaseDependencies": [
+        "Wallets",
+        "WalletTransactions",
+        "WalletCategories"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js; source ownership mapping and manual-reference guidance",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-030",
+      "name": "Wallets",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/rojmel/wallets",
+      "routes": [],
+      "included": [
+        "Wallet type selector (frontend Bank/Cash labels mismatch backend PettyCash/BankCash; C16)",
+        "linked user",
+        "opening balance",
+        "default",
+        "active status",
+        "detail/edit",
+        "admin entries"
+      ],
+      "currentFlow": "Admin creates/manages wallets; linked-user requirement for user wallets; company wallet restrictions; enter money via shared modal.",
+      "canonicalEntity": "Wallet is canonical balance owner",
+      "parentChildRelation": "Wallet is canonical balance owner; immutable cash movement rows refer to wallet and user scope.",
+      "permissions": {
+        "view": "Rojmel.Wallets:View (server RequirePermission)",
+        "create": "Rojmel.Wallets:Create (server command permission)",
+        "edit": "Rojmel.Wallets:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/wallets/WalletsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelWalletsController"
+      ],
+      "databaseDependencies": [
+        "Wallets",
+        "WalletTransactions"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js Wallet4 PettyCash/5 BankCash contract; SQL ownership runtime pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-031",
+      "name": "Transactions",
+      "audit": "commerce-audit.json",
+      "classification": "transaction_ledger",
+      "route": "/rojmel/transactions",
+      "routes": [],
+      "included": [
+        "income",
+        "expense",
+        "admin adjustment",
+        "detail",
+        "reasoned reversal",
+        "filters"
+      ],
+      "currentFlow": "Self users use self endpoints; admin chooses wallet; transactions can be reversed with required reason.",
+      "canonicalEntity": "WalletTransaction belongs to one Wallet",
+      "parentChildRelation": "WalletTransaction belongs to one Wallet; reference is manually supplied source metadata. Correction/cancel requires Rojmel.Admin Edit plus transaction permission.",
+      "permissions": {
+        "view": "Rojmel.Transactions:View (server RequirePermission)",
+        "create": "Rojmel.Transactions:Create (server command permission)",
+        "edit": "Rojmel.Transactions:Edit plus Rojmel.Admin:Edit; Delete plus Rojmel.Admin:Edit for cancel",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/transactions/TransactionsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelTransactionsController"
+      ],
+      "databaseDependencies": [
+        "WalletTransactions",
+        "Wallets",
+        "WalletCategories"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js Posted1 and types5/6/7 contract; SQL ledger mutations pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-032",
+      "name": "Rojmel income/expense/adjustment entry",
+      "audit": "commerce-audit.json",
+      "classification": "shared_embedded_transaction",
+      "route": "/rojmel/my-wallet; /rojmel/wallets; /rojmel/transactions",
+      "routes": [],
+      "included": [
+        "amount",
+        "optional category",
+        "date",
+        "payment mode",
+        "reference",
+        "description",
+        "admin wallet"
+      ],
+      "currentFlow": "Same shared modal posts income/expense/adjustment; self users cannot send selectable wallet ID.",
+      "canonicalEntity": "Income/Expense/Adjustment forms create WalletTransactions",
+      "parentChildRelation": "Income/Expense/Adjustment forms create WalletTransactions; MyWallet derives own wallet, admin movement forms select authorized wallet. Operating Expense is never auto-posted.",
+      "permissions": {
+        "view": "Rojmel.Transactions:View (server RequirePermission)",
+        "create": "Rojmel.MyWallet:Create own movement, or Rojmel.Transactions:Create authorized wallet movement",
+        "edit": "Rojmel.Transactions:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/components/TransactionEntryModal.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelMyWalletController",
+        "RojmelTransactionsController"
+      ],
+      "databaseDependencies": [
+        "WalletTransactions",
+        "Wallets",
+        "WalletCategories"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js; manual expense-reference guidance source-only until browser execution",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-033",
+      "name": "Wallet Transfers",
+      "audit": "commerce-audit.json",
+      "classification": "transaction",
+      "route": "/rojmel/transfers",
+      "routes": [],
+      "included": [
+        "from/to wallet",
+        "amount/date/reference",
+        "detail",
+        "reverse"
+      ],
+      "currentFlow": "Admin posts neutral wallet-to-wallet transfer; source/destination must differ; reload balances; explicit permission restricts other views.",
+      "canonicalEntity": "WalletTransfer pairs debit and credit WalletTransactions and reversal uses the same transfer identity",
+      "parentChildRelation": "WalletTransfer pairs debit and credit WalletTransactions and reversal uses the same transfer identity; source/destination wallets remain separate owners.",
+      "permissions": {
+        "view": "Rojmel.Transfers:View (server RequirePermission)",
+        "create": "Rojmel.Transfers:Create (server command permission)",
+        "edit": "Rojmel.Transfers:Edit (server command permission)",
+        "approve": "Transfer reversal: Rojmel.Transfers:Delete plus Rojmel.Admin:Edit",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/transfers/TransfersPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelTransfersController"
+      ],
+      "databaseDependencies": [
+        "WalletTransfers",
+        "WalletTransactions",
+        "Wallets"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js; mobile card layout source-only, transfer SQL/browser pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-034",
+      "name": "Rojmel category lookup",
+      "audit": "commerce-audit.json",
+      "classification": "lookup_master_family",
+      "route": "embedded in cash entries/reports",
+      "routes": [],
+      "included": [
+        "Income",
+        "Expense",
+        "Both"
+      ],
+      "currentFlow": "Existing category lookup feeds shared entries and reports; distinct from Purchase Expense Categories.",
+      "canonicalEntity": "WalletCategory is shared read-only transaction classification, separate from operating ExpenseCategory. No standalone category edit route exists.",
+      "parentChildRelation": "WalletCategory is shared read-only transaction classification, separate from operating ExpenseCategory. No standalone category edit route exists.",
+      "permissions": {
+        "view": "Rojmel.MyWallet:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/components/TransactionEntryModal.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelMyWalletController"
+      ],
+      "databaseDependencies": [
+        "WalletCategories"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "Source-mapped category read contract; no standalone CRUD journey applicable",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-035",
+      "name": "Rojmel Reports",
+      "audit": "commerce-audit.json",
+      "classification": "report_workspace",
+      "route": "/rojmel/reports",
+      "routes": [],
+      "included": [
+        "wallet ledger",
+        "all transactions",
+        "income-expense",
+        "category-wise expense",
+        "transfers",
+        "daily cash flow",
+        "user wallet balances"
+      ],
+      "currentFlow": "Role-aware report framework and filters; wallet balances restricted to admin permission.",
+      "canonicalEntity": "Read-only wallet ledger, movement and transfer aggregates",
+      "parentChildRelation": "Read-only wallet ledger, movement and transfer aggregates; report export comes from report framework capability rather than mutating ledger.",
+      "permissions": {
+        "view": "Rojmel.Reports:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Read-only Rojmel.Reports:View at legacy API; report framework export additionally capability-gated"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/rojmel/reports/RojmelReportRoutePage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "RojmelReportsController"
+      ],
+      "databaseDependencies": [
+        "Wallets",
+        "WalletTransactions",
+        "WalletTransfers",
+        "WalletCategories"
+      ],
+      "linkedFindingIds": [
+        "C16"
+      ],
+      "journeyEvidence": [
+        "rojmelEnums.test.js shared enum labels; root report precision regressions; SQL totals pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-036",
+      "name": "GST overview",
+      "audit": "commerce-audit.json",
+      "classification": "configuration_status",
+      "route": "/gst/configuration",
+      "routes": [],
+      "included": [
+        "provider environment",
+        "feature names",
+        "missing setting names",
+        "rate history link"
+      ],
+      "currentFlow": "Read configuration status; credentials live server-side; explicit unavailable compliance dependencies.",
+      "canonicalEntity": "Read-only server configuration status exposes configured-secret booleans and safe paths, never credentials.",
+      "parentChildRelation": "Read-only server configuration status exposes configured-secret booleans and safe paths, never credentials.",
+      "permissions": {
+        "view": "GST.Configuration:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstOverviewPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "GstConfigurationController"
+      ],
+      "databaseDependencies": [
+        "Not applicable: configuration read has no persistence mutation"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "gstScreens.test.jsx; GstZenProviderServiceTests credential mask/config availability",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-037",
+      "name": "GST registrations",
+      "audit": "commerce-audit.json",
+      "classification": "master",
+      "route": "/gst/registrations",
+      "routes": [],
+      "included": [
+        "create/edit",
+        "GSTIN/state/address/branch",
+        "enable flags",
+        "default",
+        "verify"
+      ],
+      "currentFlow": "Manage GSTIN registrations and select active seller registration in invoices.",
+      "canonicalEntity": "CompanyGstRegistration owns GSTIN identity/branch-name settings",
+      "parentChildRelation": "CompanyGstRegistration owns GSTIN identity/branch-name settings; nullable CompanyId/BranchId are integration metadata, not maintained authorized company masters.",
+      "permissions": {
+        "view": "GST.Registration:View (server RequirePermission)",
+        "create": "GST.Registration:Create (server command permission)",
+        "edit": "GST.Registration:Edit (server command permission)",
+        "approve": "GST.Registration:Approve provider verification",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstRegistrationsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "GstRegistrationsController"
+      ],
+      "databaseDependencies": [
+        "CompanyGstRegistrations"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "GstRegistrationsPage.test.jsx2 DOM tests: derived state, immutable opaque integration IDs and unsupported prefix rejected",
+        "gstScreens.test.jsx; gstService.test.js exact registration read/write transport",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-038",
+      "name": "GSTIN verification",
+      "audit": "commerce-audit.json",
+      "classification": "lookup_workflow",
+      "route": "/gst/verify-gstin",
+      "routes": [],
+      "included": [
+        "GSTIN validity",
+        "provider/cache result"
+      ],
+      "currentFlow": "Validate 15-character format, verify with provider/cache, view legal/trade/state/status details.",
+      "canonicalEntity": "Provider GSTIN verification caches lookup result separately",
+      "parentChildRelation": "Provider GSTIN verification caches lookup result separately; applying verified details is an explicit Party operator action.",
+      "permissions": {
+        "view": "GST.Verification:View (server RequirePermission)",
+        "create": "GST.Verification:Create explicit provider verification",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstVerificationPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "GstVerificationController"
+      ],
+      "databaseDependencies": [
+        "GstVerificationLogs",
+        "GstApiLogs"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "gstService.test.js cached verification payload; GstZenProviderServiceTests mocked provider responses",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-039",
+      "name": "GST rate history",
+      "audit": "commerce-audit.json",
+      "classification": "versioned_master",
+      "route": "/gst/rate-history",
+      "routes": [],
+      "included": [
+        "rule code",
+        "total rate",
+        "effective dates",
+        "active",
+        "notes"
+      ],
+      "currentFlow": "Create dated total-rate version; component tax calculation explicitly outside this screen.",
+      "canonicalEntity": "Effective HSN rate versions are classified master data and do not retroactively recalculate stored document lines.",
+      "parentChildRelation": "Effective HSN rate versions are classified master data and do not retroactively recalculate stored document lines.",
+      "permissions": {
+        "view": "GST.RateHistory:View (server RequirePermission)",
+        "create": "GST.RateHistory:Create rate version",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstRateHistoryPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "HsnGstController"
+      ],
+      "databaseDependencies": [
+        "HsnSacMasters",
+        "GstRateRuleVersions"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "hsnGstService.test.js; HsnMaintenanceContractTests; real effective SQL rate behavior pending",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-040",
+      "name": "E-Invoice lookup",
+      "audit": "commerce-audit.json",
+      "classification": "lookup_reconciliation_workflow",
+      "route": "/gst/e-invoices",
+      "routes": [],
+      "included": [
+        "identifier lookup",
+        "stored record",
+        "provider refresh",
+        "reconciled status",
+        "cancel",
+        "raster QR"
+      ],
+      "currentFlow": "Enter IRN -> fetch stored record -> refresh provider -> only matching active reconciled linked document permits change. Generate disabled.",
+      "canonicalEntity": "Stored EInvoice belongs to selected registration and source document",
+      "parentChildRelation": "Stored EInvoice belongs to selected registration and source document; lookup/reconcile/cancel never rewrite accounting invoice/stock. Generation remains gated pending immutable validated source/policy. Catalog-bound PendingPolicy snapshot freezes confirmed source and current-master evidence with rowversion/fingerprint and request-key readback; human policy decision is deferred.",
+      "permissions": {
+        "view": "GST.EInvoice:View (server RequirePermission)",
+        "create": "GST.EInvoice:Create generation endpoint gated by source safety",
+        "edit": "GST.EInvoice:Delete cancellation; GST.EInvoice:View refresh/readback",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstDocumentPage.jsx",
+        "frontend/src/pages/gst/GstDocumentLinks.jsx",
+        "frontend/src/pages/gst/GstSnapshotPreparationPanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "EInvoicesController",
+        "GstInvoiceEligibilityController",
+        "GstComplianceSnapshotsController",
+        "GstComplianceSnapshotService",
+        "GstComplianceSnapshotRepository"
+      ],
+      "databaseDependencies": [
+        "EInvoices",
+        "GstComplianceSnapshots",
+        "GstGenerationRequests",
+        "GstGenerationAttempts"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "GstSnapshotPreparationTests8 + SQL syntax checks; GstSnapshotPreparationPanel.test.jsx3 review/uncertain/readback DOM tests; GstSnapshotPreparationSqlIntegrationTests1 compiled and skipped under guard",
+        "gstScreens.test.jsx; gstService.test.js; existing readiness/authorization tests; no live provider execution",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-041",
+      "name": "E-Way Bill lookup",
+      "audit": "commerce-audit.json",
+      "classification": "lookup_reconciliation_workflow",
+      "route": "/gst/eway-bills",
+      "routes": [],
+      "included": [
+        "identifier lookup",
+        "stored/provider reconcile",
+        "cancel",
+        "vehicle update",
+        "disabled extension"
+      ],
+      "currentFlow": "Look up EWB number, reconcile original registration/document, then allowed cancellation or vehicle update.",
+      "canonicalEntity": "Stored EWayBill belongs to saved registration and source document",
+      "parentChildRelation": "Stored EWayBill belongs to saved registration and source document; extension command key reserves reviewed intent, unresolved outcome blocks replay, readback confirms later validity without stock mutation.",
+      "permissions": {
+        "view": "GST.EWayBill:View (server RequirePermission)",
+        "create": "GST.EWayBill:Create issuance endpoint gated by source safety",
+        "edit": "GST.EWayBill:Edit vehicle/extension/readback reconciliation; Delete cancellation",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstDocumentPage.jsx",
+        "frontend/src/pages/gst/EWayExtensionModal.jsx"
+      ],
+      "serviceApiDependencies": [
+        "EWayBillsController"
+      ],
+      "databaseDependencies": [
+        "EWayBills",
+        "GstEWayExtensionCommands",
+        "GstApiLogs"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "GstEWayExtensionServiceTests8; GstZenProviderServiceTests official extension wire; GstEWayExtensionSqlIntegrationTests1 compiled but guarded/skipped",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-042",
+      "name": "GST session status",
+      "audit": "commerce-audit.json",
+      "classification": "support_lookup",
+      "route": "/gst/sessions",
+      "routes": [],
+      "included": [
+        "registration ID",
+        "session status",
+        "expiry",
+        "OTP timestamp"
+      ],
+      "currentFlow": "Stored session lookup only; OTP generation/authentication unavailable.",
+      "canonicalEntity": "Saved registration owns GSTN session",
+      "parentChildRelation": "Saved registration owns GSTN session; separate GSTN Bearer token configured server-side, OTP only operator-triggered and never drafted.",
+      "permissions": {
+        "view": "GST.Session:View (server RequirePermission)",
+        "create": "GST.Session:Create OTP generation",
+        "edit": "GST.Session:Edit OTP authentication; View status",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstSessionPage.jsx",
+        "frontend/src/pages/gst/GstRegistrationLookup.jsx"
+      ],
+      "serviceApiDependencies": [
+        "GstSessionsController"
+      ],
+      "databaseDependencies": [
+        "CompanyGstSessions",
+        "CompanyGstRegistrations",
+        "GstApiLogs"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "gstService.test.js OTP allowlist/exact registration; GstZenProviderServiceTests strict OTPREQUEST/AUTHTOKEN future expiry",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-043",
+      "name": "GST API logs",
+      "audit": "commerce-audit.json",
+      "classification": "support_log",
+      "route": "/gst/api-logs",
+      "routes": [],
+      "included": [
+        "search",
+        "exact operation",
+        "registration ID",
+        "outcome",
+        "local datetime",
+        "correlation copy"
+      ],
+      "currentFlow": "Filter safe provider operation summaries; tokens/payloads withheld.",
+      "canonicalEntity": "Immutable provider operation logs reference registration and safe correlation IDs",
+      "parentChildRelation": "Immutable provider operation logs reference registration and safe correlation IDs; no raw request/response/secret UI.",
+      "permissions": {
+        "view": "GST.Logs:View (server RequirePermission)",
+        "create": "Not applicable - read/child action surface; command-specific permission listed in notes",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/GstLogsPage.jsx"
+      ],
+      "serviceApiDependencies": [
+        "GstApiLogsController"
+      ],
+      "databaseDependencies": [
+        "GstApiLogs"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C08",
+        "C13"
+      ],
+      "journeyEvidence": [
+        "gstService.test.js log allowlist; gstScreens.test.jsx safe log UI; gstCompliance.test.js UTC timestamps",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-044",
+      "name": "HSN/SAC catalog",
+      "audit": "commerce-audit.json",
+      "classification": "backend_application_submaster_unexposed",
+      "route": "/gst/rate-history (HSN/SAC catalog panel)",
+      "routes": [],
+      "included": [
+        "code",
+        "HSN/SAC code type",
+        "description",
+        "active",
+        "list/get/create/update application methods"
+      ],
+      "currentFlow": "DTOs and application service implement catalog operations, but reviewed HsnGstController exposes only rate versions and frontend has no catalog service/screen.",
+      "canonicalEntity": "HSN/SAC catalogue is canonical classification master",
+      "parentChildRelation": "HSN/SAC catalogue is canonical classification master; defaults/overrides reference it rather than duplicate labels.",
+      "permissions": {
+        "view": "GST.RateHistory:View (server RequirePermission)",
+        "create": "GST.RateHistory:Create (server command permission)",
+        "edit": "GST.RateHistory:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "HsnGstController"
+      ],
+      "databaseDependencies": [
+        "HsnSacMasters"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "HsnMaintenanceContractTests; hsnGstService.test.js catalogue contracts",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-045",
+      "name": "Category HSN defaults",
+      "audit": "commerce-audit.json",
+      "classification": "backend_application_submaster_unexposed",
+      "route": "/gst/rate-history (Category default panel)",
+      "routes": [],
+      "included": [
+        "HSN/SAC ID",
+        "effective from/to",
+        "effective lookup",
+        "retire"
+      ],
+      "currentFlow": "Application interface/service supports category mapping, but CategoryFormModal only name/description/active and no reviewed controller route exposes mappings.",
+      "canonicalEntity": "Category owns nonoverlapping effective HSN default records and explicit retirement.",
+      "parentChildRelation": "Category owns nonoverlapping effective HSN default records and explicit retirement.",
+      "permissions": {
+        "view": "Categories:View (server RequirePermission)",
+        "create": "Not applicable - effective mapping uses Edit; no independent create permission",
+        "edit": "Categories:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "HsnGstController"
+      ],
+      "databaseDependencies": [
+        "CategoryHsnDefaults",
+        "Categories",
+        "HsnSacMasters"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "HsnMaintenanceContractTests date/permission contracts; hsnGstService.test.js default/retire endpoints",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-046",
+      "name": "Item HSN overrides",
+      "audit": "commerce-audit.json",
+      "classification": "backend_application_submaster_unexposed",
+      "route": "/gst/rate-history (Item override panel)",
+      "routes": [],
+      "included": [
+        "HSN/SAC ID",
+        "effective from/to",
+        "retire"
+      ],
+      "currentFlow": "Application methods support item override, but Item UI edits only legacy HSN Code and GST rate.",
+      "canonicalEntity": "Item owns effective HSN override records",
+      "parentChildRelation": "Item owns effective HSN override records; product override takes precedence over category default and retirement preserves history.",
+      "permissions": {
+        "view": "Items:View (server RequirePermission)",
+        "create": "Not applicable - effective mapping uses Edit; no independent create permission",
+        "edit": "Items:Edit (server command permission)",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "HsnGstController"
+      ],
+      "databaseDependencies": [
+        "ItemHsnOverrides",
+        "Items",
+        "HsnSacMasters"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "HsnMaintenanceContractTests; hsnGstService.test.js item save/retire/effective calls",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    },
+    {
+      "coverageId": "COV-047",
+      "name": "Effective item classification",
+      "audit": "commerce-audit.json",
+      "classification": "backend_application_submaster_unexposed",
+      "route": "/sales/invoices/new or /sales/invoices/:id/edit (date-based effective classification)",
+      "routes": [],
+      "included": [
+        "item override",
+        "category default",
+        "legacy fallback",
+        "business date"
+      ],
+      "currentFlow": "Application service resolves by Item/date; invoice calls missing frontend method so reviewed UI falls back to Item master (C01).",
+      "canonicalEntity": "Read-only effective classification for Item and explicit invoice date resolves override then category fallback and reports actual source.",
+      "parentChildRelation": "Read-only effective classification for Item and explicit invoice date resolves override then category fallback and reports actual source.",
+      "permissions": {
+        "view": "Items:View (server RequirePermission)",
+        "create": "Not applicable - effective mapping uses Edit; no independent create permission",
+        "edit": "Not applicable - read-only surface",
+        "approve": "Not applicable - no approval action on this read/master surface",
+        "export": "Not applicable - no dedicated export endpoint on this surface"
+      },
+      "frontendFiles": [
+        "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+        "frontend/src/pages/gst/HsnMaintenancePanel.jsx"
+      ],
+      "serviceApiDependencies": [
+        "HsnGstController"
+      ],
+      "databaseDependencies": [
+        "ItemHsnOverrides",
+        "CategoryHsnDefaults",
+        "HsnSacMasters"
+      ],
+      "linkedFindingIds": [
+        "C01",
+        "C02",
+        "C06",
+        "C07",
+        "C12",
+        "C17"
+      ],
+      "journeyEvidence": [
+        "invoiceLookupGuard.test.js stable row/Item/date stale guards; HsnMaintenanceContractTests; hsnGstService.test.js",
+        "SQL and ordinary-role browser end-to-end journeys are pending; focused contract/DOM tests do not prove deployed persistence."
+      ],
+      "status": "Source mapped with focused evidence; SQL/browser release verification pending",
+      "notes": "Updated source and focused test mapping, not release verification. No SQL/provider writes executed."
+    }
+  ],
+  "verification": [
+    {
+      "command": "npx vitest run [13 commerce/contract suites enumerated in session]",
+      "result": "Passed",
+      "files": 13,
+      "testsPassed": 102,
+      "testsFailed": 0,
+      "startedAtLocal": "2026-10-28T16:16:19+05:30",
+      "scope": "Pure/unit/client contracts and server-render tests; no real browser/SQL/provider writes."
+    },
+    {
+      "command": "dotnet test --filter HsnMaintenanceContractTests|GstZenProviderServiceTests|GstEWayExtensionServiceTests|GstEWayExtensionSqlIntegrationTests|PartyTypeUpdateTests",
+      "result": "Passed35, skipped1 guardedSQL, failed0",
+      "artifact": "output/implementation-verification/commerce-backend-tests/commerce-contracts.trx",
+      "scope": "Compiled real projects + mocked service/provider contracts. SQL not run."
+    },
+    {
+      "command": "npx vitest run PartyFormModal.test.jsx wewelInvoice.test.jsx gstService.test.js gstCompliance.test.js gstScreens.test.jsx ItemManufacturingTab.test.jsx manufacturingHelpers.test.js",
+      "result": "Passed7 files59 tests0 failures",
+      "startedAtLocal": "2026-10-28T16:49:54+05:30",
+      "scope": "DOM and contract assertions; no live browser/SQL/provider."
+    },
+    {
+      "command": "Focused21 commerce FE suites",
+      "result": "Passed21files147tests0fail",
+      "startedAtLocal": "2026-10-28T17:12:51+05:30",
+      "scope": "No real browser/SQL/provider",
+      "files": [
+        "useItemDraft",
+        "PartyFormModal",
+        "GstSnapshotPreparationPanel",
+        "GstRegistrationsPage",
+        "gstService",
+        "gstCompliance",
+        "gstScreens",
+        "ItemManufacturingTab",
+        "manufacturingHelpers",
+        "wewelInvoice",
+        "itemPrecision",
+        "itemHelpers",
+        "itemService",
+        "hsnGstService",
+        "purchaseLifecycle",
+        "purchaseReturnSource",
+        "invoiceLookupGuard",
+        "rojmelEnums",
+        "partyHelpers",
+        "validationRules",
+        "productionConfigurationService"
+      ]
+    },
+    {
+      "command": "Final dotnet focused contracts + ProductionMigrationSyntaxTests",
+      "result": "Passed44, skipped2guardedSQL, failed0",
+      "artifact": "output/implementation-verification/commerce-backend-tests/commerce-contracts.trx",
+      "scope": "Real compile, mocked contracts and SQL syntax only; no database/provider executed."
+    },
+    {
+      "command": "npx vitest run PurchaseDocumentListPage.test.jsx purchaseLifecycle.test.js purchaseReturnSource.test.js; targeted eslint",
+      "result": "Passed3files22tests, lint0errors0warnings",
+      "startedAtLocal": "2026-10-28T17:20:53+05:30"
+    },
+    {
+      "command": "Final PurchaseDocumentListPage source-load failure closes partial editor; focused eslint",
+      "result": "Lint0errors0warnings",
+      "finishedAtLocal": "2026-10-28T17:24:39+05:30"
+    },
+    {
+      "command": "Actual Redux final recovery components",
+      "result": "ItemSaveRecovery3 passed; DocumentSaveRecovery10 passed; FormErrorSummary3+actual Item modal1 passed",
+      "scope": "400/422 binding/focus; unchangededit/create503/network journal BEFOREresponse, remount beforeRestore, locked programmatic resubmit, read-only known-ID readback, manual reviewed retry and authoritative captured-origin propagation. Mocked canonical APIs, real reducers/thunks/controls."
+    },
+    {
+      "command": "Remote list and return context focused tests",
+      "result": "CommerceFilterLookup4 +CommerceListFilters7 +PurchaseDocumentListPage7 passed; PartyReturnFlow4 passed; shared return hooks9 passed",
+      "scope": "No SQL/provider/browser claims. Root whole-suite verification is reconciled separately; bounded focused shared/commerce17-case rerun passed after correcting one genuine focus race."
+    },
+    {
+      "command": "Shared uncertain save and Redux transport focused tests (ops)",
+      "result": "UncertainSave15 passed; combined with actual thunk transport36 passed, scopedlint0",
+      "scope": "Render race, double-click, recovered marker,400/409 definite,408/500/503/504 unknown, storagefailure, initial verifiedscope arrival, true account/company switch isolation, stale handler tokens and callback stability."
+    },
+    {
+      "command": "Master create precision boundary",
+      "result": "3 new cases +4 existing Item service cases passed; lint0errors0warnings",
+      "startedAtLocal": "2026-10-28T18:05:32+05:30"
+    },
+    {
+      "command": "Root bounded shared lookup +actualcommerce list +Party return rerun",
+      "result": "Passed3files17tests0fail aftergenuine sharedfocus race correction",
+      "startedAtLocal": "2026-10-28T18:13:57+05:30",
+      "durationSeconds": 14.86,
+      "artifact": "output/implementation-verification/lookup-list-final-tests.log",
+      "scope": "No timeout increase; source diagnosis was reopened lookupsearch hiding created selection, not a stale business ID. Allactual labels/closed-state/focus retained."
+    }
+  ],
+  "newMigrations": [
+    "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+    "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql"
+  ],
+  "prerequisites": [
+    "Existing base DB and003_gst_integration_module.sql before extension migration; never run reset/full setup on an existing DB.",
+    "Root guarded SQL handoff runner: disposable CosmosSalesGstIntegrationTests_* catalog only; extension suite seeds exact synthetic rows and cleans only those IDs; no provider calls.",
+    "Migration06 requires20261024 immutable snapshot foundation + current HSN and issuer registration schema. Snapshot suite intentionally leaves unique append-only immutable fixtures in guarded disposable catalog; never disables immutability trigger."
+  ],
+  "providerSources": [
+    "https://my.gstzen.in/docs/api/gstn-generate-otp-api/",
+    "https://my.gstzen.in/docs/api/gstn-establish-session-api/",
+    "https://my.gstzen.in/docs/api/ewaybill-api/extend-eway-bill/",
+    "https://my.gstzen.in/docs/api/einvoice-api/einvoice-gen/"
+  ],
+  "externalGates": [
+    "User will run guarded SQL scripts later; SQL not executed here.",
+    "Private environment-specific GSTN REST Bearer access token and sandbox registration/provider setup; no credentials requested in chat.",
+    "Human explicitly deferred issuance policy; no statutory policy default approved/activated.",
+    "Ordinary-role authenticated browser and360px journeys, real SQL execution/upgrade/reconciliation/conservation and provider sandbox remain release verification gates."
+  ],
+  "unfinishedIndependentWork": [],
+  "sourceFreezeAt": "2026-10-28T18:13:41+05:30",
+  "clientGuide": "output/implementation-verification/commerce-client-guide-gu.md",
+  "technicalGuide": "docs/COMMERCE_GST_PROVIDER_AND_VERIFICATION_HANDOFF.md",
+  "sourceManifest": [
+    {
+      "path": "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+      "sha256": "9d08db5dbe49530210078d8de6aae4d16b28237db969848e25d7182eebde3236"
+    },
+    {
+      "path": "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql",
+      "sha256": "e6933d958150eddcb008524536189113abdba56a91b9c33a3824c200dc1efcbb"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/GstComplianceSnapshotsController.cs",
+      "sha256": "d430d27a16ab195bc0e11018edbab80baeeb65e62f24be49bab8f46d639d7c1e"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IGstComplianceSnapshotRepository.cs",
+      "sha256": "e638e281aa8976bea17ffaba59f547558db0255f3f09b099a16f9fbd12f270ee"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IGstComplianceSnapshotService.cs",
+      "sha256": "71499a20f163ad32f6c460276d3d51d36ce4f2d2a3cb68d4ce33dc12fb0ad8e8"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Gst/GstSnapshotPreparation.cs",
+      "sha256": "8d8a51c7bf21f5207af38df67182cacc430eef12b15b1656818fdf74a9d9c755"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/GstComplianceSnapshotService.cs",
+      "sha256": "f3e9df8150d51160eb95ff1a49b29505a312c3ffeb721face6f9da1bc7aa2eff"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/GstServices.cs",
+      "sha256": "7ba2a826aeac5a3e7f613e7d7ab4cceeaf91f0262249278a9d582160d277b440"
+    },
+    {
+      "path": "backend/src/Cosmos.Infrastructure/Gst/GstZenProviderService.cs",
+      "sha256": "d6816d87845deb284a7e577052ffc92b2789a959112eb51cc036b62c7abd0a93"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/GstComplianceSnapshotRepository.cs",
+      "sha256": "9e5544b886032ae8a9e4a41336ccd89da1004085aa3a5c3fc73a8c57acf21244"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstEWayExtensionServiceTests.cs",
+      "sha256": "3b0a7117f8553c26f33039a8ab26706981202ece12573e8f82e9645fed4f7e6d"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstEWayExtensionSqlIntegrationTests.cs",
+      "sha256": "c9d920640358ad4b77d5c14cc50b4ce25619c2a86728fbb551a6026805b918e7"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstSnapshotPreparationSqlIntegrationTests.cs",
+      "sha256": "fc491786e1dd2ea237f495a55418e01cf357491cf33a0409b7a8adbcdc4fe481"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstSnapshotPreparationTests.cs",
+      "sha256": "195cffee3fb6cf4700431f04291fda829cbb6e185ca87aeb46bec198597c99ee"
+    },
+    {
+      "path": "frontend/src/components/commerce/FormErrorSummary.jsx",
+      "sha256": "6592688bf2bc00de830eea4d8e4a7c3a44ee694b71982e5caedab9aff8710006"
+    },
+    {
+      "path": "frontend/src/components/commerce/FormErrorSummary.test.jsx",
+      "sha256": "305b9fc7ade673ca068a2b36cf77ce4c207f9d1b5dcf9e2eb782cb1540603306"
+    },
+    {
+      "path": "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+      "sha256": "5e9aece10e807b571c2a30c0c016796101b182eef0ea1d8600e99407e05034a9"
+    },
+    {
+      "path": "frontend/src/components/commerce/formErrors.js",
+      "sha256": "879925e50fe5ab565a9018b78c3fe023377f82a954a4327f7bb0d3dcb3abb7cd"
+    },
+    {
+      "path": "frontend/src/components/common/AppLookup.jsx",
+      "sha256": "c6988563a0b548f52c60195a9af7ec29eaf5a0f9332b51894cbb93bc4c875fea"
+    },
+    {
+      "path": "frontend/src/hooks/useFormReturnContext.js",
+      "sha256": "8de29f52f55dd3898e9c7b51d17189e1667eb921c752bbef00898f7c8c03d27b"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnContext.js",
+      "sha256": "b07e5cbb052fb815384301a81d80836169593e223935a47286b80241b6b61fcc"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnContext.test.jsx",
+      "sha256": "ba3c371b8a70dec098690908dd36f67b100299d0810148c749343c029ccd4263"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnScope.js",
+      "sha256": "f737f0172910aa1c8e93f77373fa68c7c67903a29693a8efce7f96148e19f5a5"
+    },
+    {
+      "path": "frontend/src/hooks/useUncertainSave.js",
+      "sha256": "2e8762c48e996ba46044394cec97a71cdae70e151e1181bd0cf59afcd745277f"
+    },
+    {
+      "path": "frontend/src/hooks/useUncertainSave.test.jsx",
+      "sha256": "f7fd5e65ba25efdffbc3f425602996ae71ed383f8b11cc537c5f4ee50408c5a2"
+    },
+    {
+      "path": "frontend/src/pages/gst/EWayExtensionModal.jsx",
+      "sha256": "1ef623709d79f32380cf479f2bfddd1869087823fa1f1e4b71486cbb5712246e"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstDocumentLinks.jsx",
+      "sha256": "a1104acc0b68597f800d30dc2077c3b6fdbdc5edf6f46911a4084af5e749efc0"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstDocumentPage.jsx",
+      "sha256": "6deeaa89e256e820e8de6426dea117cf65f24ff4e0f2fbf1754beaeecece8b85"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstLogsPage.jsx",
+      "sha256": "b2ecdd9ba7a23224b6385b0f48fddc1467ec9f6f81f9c93f8978ef4af47036a8"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstOverviewPage.jsx",
+      "sha256": "08314bed9d24dd866a13e5f80d8e78b215b13ae8e8689abcfc354fcc4d69b21a"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRateHistoryPage.jsx",
+      "sha256": "8e826f5104586bde87779b99be901f77875684cebbd40e0d6d774ea8c5f45da4"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRegistrationLookup.jsx",
+      "sha256": "f2c61b7e5c4344547c436a5bc935d17703a9b56ff3344830faa8c943a02088f7"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRegistrationsPage.jsx",
+      "sha256": "8b40bfbd436c42a6a9ffac28c349a05b47bbe7139c5fb7a2bd1f92529bb5fb9c"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstSessionPage.jsx",
+      "sha256": "defbfaf2c32db5043a5cb8a2147feb7aa0fc2b1774a09ab3f07b74a58bd9c404"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstSnapshotPreparationPanel.jsx",
+      "sha256": "f340bfb6cb7dcb8352a9943e34af0364dd0168efd3dc6517faaaa1defe467037"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstVerificationPage.jsx",
+      "sha256": "03e12e8b8164d3929217a29397b4d0cbfdeb8b217048fc62eb5da91077fd0c73"
+    },
+    {
+      "path": "frontend/src/pages/gst/HsnMaintenancePanel.jsx",
+      "sha256": "b80ee13147fe183ac92902d2776c5a84d70e93cfcac12ec2e4b27b766ade704f"
+    },
+    {
+      "path": "frontend/src/pages/inventory/categories/CategoryFormModal.jsx",
+      "sha256": "83c2dac7cf2b65455a695fe73143d8e01bca2bfbab3da30a195466b5b9210ce8"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemDraftRecovery.jsx",
+      "sha256": "13397d64212a1acf61301ddacb8d3f7bbf356319850fca666f69efc0bc29dbae"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFilters.jsx",
+      "sha256": "2c967d1f01772eb7359563089ef5975166b1c3f72ef8eeee69abccb73983c460"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormModal.errors.test.jsx",
+      "sha256": "c35e92093d28ca49c133f3b678cb77cac6f0e952388c9d44528c84b3d99db940"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+      "sha256": "b665d22e924f4c9a9dcaefb70d2404a60c3569ed0f856ecacb165fe76b6a943d"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+      "sha256": "84ddd3e91578d96fd4fbc4c09cfc9370b7761a958c14bd8c26ec86a55f4849f0"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+      "sha256": "4bc7dbfd8892812f52c1e954a2319153c089729af17f3e33e8e899a57ba5fb03"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemMasterLookup.jsx",
+      "sha256": "4cf39e0a8648846d2a9e5d31c653b83e30b1b7a437d024ac0ad713bba1c33d74"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemSaveRecovery.test.jsx",
+      "sha256": "908e3c1d4412e080a90acd67534d51d6bfede3dad384fd103ae2bbe7cdaf2d95"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemTable.jsx",
+      "sha256": "fcc36c79fc7d1bd81ac436d2073ea8d9aafd6b3edc64b6650ea625df3dfb31de"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemsPage.jsx",
+      "sha256": "6e2a886bd53c54e9a415b6cfac312f97fb846f4b3c7202fb9b341f5f25258d55"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/useItemDraft.js",
+      "sha256": "1b71aeeeb4b9e27798c7db71fb79b147a8316eaab8cd014c3661f4a41c53bb19"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/useItemDraft.test.jsx",
+      "sha256": "0aa0f8b63e64116b3be42aed68c4007c87b2c15cdf689e44fc2f85da36e091fa"
+    },
+    {
+      "path": "frontend/src/pages/inventory/units/UnitFormModal.jsx",
+      "sha256": "7abf35310205f5805ba3f49b942864da6012efd65656aabeea0b70710d048e10"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+      "sha256": "c3af0df7816a0a17c0f449e21753c80c8593e5888c74fce5e7e5cff01e072b58"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/integrations/PurchaseBillReceiptPanel.jsx",
+      "sha256": "a21fb3f4faf9479733575f043aafa9423d549675e7a4a9d841b44c312d2a4ac1"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/integrations/PurchaseOperationsPage.jsx",
+      "sha256": "e30577eb48ad485732c1cd768e0330fea9d014aad1928d00dfe235761a13ceb7"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/integrations/PurchasePhysicalPanel.jsx",
+      "sha256": "54b6c37edb2c864ee768d6f4014275e20eb2a15ca21d3624e6da32a1febcad41"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceFilterLookup.jsx",
+      "sha256": "f9756fe0e316b4f833b5b235cafc83f5da0a1faa87836790761e1e8236f5a265"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceFilterLookup.test.jsx",
+      "sha256": "af6dd6c1085d14377a5db9bc957794b6a17e7c81ed6d2f169c5070b8af50eeb6"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceListFilters.test.jsx",
+      "sha256": "5ea754dd9b570d2627789468f531f8642985d7bbcc18130375c9526592732b05"
+    },
+    {
+      "path": "frontend/src/pages/party/DocumentSaveRecovery.test.jsx",
+      "sha256": "163be1085d01d4aa1cb4b1c53ee88a719ed8ea3d37783ccdd3040572e9b12a6e"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyDetailsModal.jsx",
+      "sha256": "4acdcd7af442d520cb9da1ede1b4f146da529dcdc2ae0a1d3b3f0ff1befd5704"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyFormModal.jsx",
+      "sha256": "6018b812b63d458015693ac80fcd70c5b7912cbc19c1a38575d41a32116d740c"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyFormPage.jsx",
+      "sha256": "6f01415a57bee6cde9b1537f1f1e69a6719696c20573e33897a16f01408ed792"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyPage.jsx",
+      "sha256": "66f3acc1cb0a70d38a9f9ed4d6f2506c0d58fe29f72ea025c4a814bf1dc0b2ea"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyReturnFlow.test.jsx",
+      "sha256": "e46185272a8fa909c86b05ecc5095a4be82576d457e2895bee7e7846279a016c"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyTable.jsx",
+      "sha256": "35d1a462a1369249042080f1a514e39111c7e91607b96a2f6a4257c5ab2183a5"
+    },
+    {
+      "path": "frontend/src/pages/party/usePartySettings.js",
+      "sha256": "11a98696172f92acc332b4861c58ef8b20feabc60ae73edc13c54dfd56e93f9d"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+      "sha256": "eb251d351c677c62787843ce850f1922a875d6e80173c13beb56ada8b2643aca"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+      "sha256": "83f5dc6b9cf9cf1f30f7f9e2a68fb556473ce933c58244ecbeba39f04c629e45"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx",
+      "sha256": "d16c70a009943da427c97d3c0ff4700775349a904531ef54039443da2685303e"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseReturnSource.js",
+      "sha256": "fbe2d0d458576ec4d3451f7619f28c810b85ac6c226d9d9bad74f349bba4562a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/expenseCategories/ExpenseCategoriesPage.jsx",
+      "sha256": "1d3e42fe8dc5d9af9b8871fa735fcee6641f254d690239a96bcc4910ae1f14c5"
+    },
+    {
+      "path": "frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+      "sha256": "710e79dc8f919295848ccc0ff4bcfa859369225225b360390d1bec199cc0c76a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/reports/PurchaseReportsPage.jsx",
+      "sha256": "c6e3031081f00c86ca8a8747fbabc522f9030720de9a17ce93789d17bfc8ab7a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+      "sha256": "84607f7c8fb5d1ebaceb65dda0587ee4dca692530383868e2a793e7457d4d770"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+      "sha256": "d50dcf39fb0a63e5f6605680c670b0483479834bdb598474bca3912717ad3178"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/dashboard/RojmelDashboardPage.jsx",
+      "sha256": "a0c49228b02ad3be504d20bca6a5ff3c8bc71de3303debb7969b55436cfaff9e"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+      "sha256": "09011f8bd124eff96041bab9d67d1206f53dd28ecc3ad6b1b997cedfb3b722d5"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/reports/RojmelReportRoutePage.jsx",
+      "sha256": "07e84593a7f5a62ddd1e5470c49c2896971cb386aa8130ee79684f4ffc90fe5b"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/transactions/TransactionsPage.jsx",
+      "sha256": "2d2a915c22fb52b049aad5d9decbd2860ec21a41fa98e2d13f478979ba72f432"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/transfers/TransfersPage.jsx",
+      "sha256": "f48d7a4071742e4903e8245730a60284545798e52a35adffc89d581492b3a13d"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/wallets/WalletsPage.jsx",
+      "sha256": "f24125fe32ff2a4ac655d3caa206e818d146a9813f92aaec79a548a0dab749d8"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoiceTemplates/ClassicTemplate.jsx",
+      "sha256": "47b5ce73b0a724df6fc20b1864a0001dca42a7194569a393a78f6666e105e716"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoiceTemplates/InvoiceTemplateShared.jsx",
+      "sha256": "bcd94ec42e88f075c9109d5d9c52181ec3b0b3664eb65400899b0394f9c82dc7"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+      "sha256": "999cb00c931858ab7c4fe9771776645626a70b546661da555b438cdcdc6e6297"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceFilters.jsx",
+      "sha256": "d91c88de2d27b3a47cf55efeb2e612088969cefedb268099645a44d2d0fb8428"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+      "sha256": "5f772d0cefa3eae60f73a055c747fe34882a08d643245023b7c32f45b51ac5c4"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceTable.jsx",
+      "sha256": "64fe720ae9ead059f03aabf3a91c1f44d58f95e46f36f5d6cc91fbfa1caa955b"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/PaymentModal.jsx",
+      "sha256": "5599b4e2a308d0b3d5c7981936e48011657f0d95967a6937ef4f6925866433c4"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/SalesInvoicesPage.jsx",
+      "sha256": "cb9a524af338d566de839bf527ae2f59169c71eef7c4f974d6adde010e488c8c"
+    },
+    {
+      "path": "frontend/src/services/inventory/categoryService.js",
+      "sha256": "0a196d47b974a6effb0b0b8819ad3aa358e64e26225440998d293aa38d81a0b2"
+    },
+    {
+      "path": "frontend/src/services/inventory/itemService.js",
+      "sha256": "c6da7c9f4044c3ee7430c4900e1016a79e484b83e7482b391fc162d864625b08"
+    },
+    {
+      "path": "frontend/src/services/inventory/masterCreatePrecision.test.js",
+      "sha256": "0a6e1f00b104419744c7d9c285502c0d2a512c2c0468d732dc1faa3f27e711ab"
+    },
+    {
+      "path": "frontend/src/services/inventory/unitService.js",
+      "sha256": "04c07bfb0de079f4723a3154f03a26013eea846d21b65de390677e5a91758c1e"
+    },
+    {
+      "path": "frontend/src/store/slices/inventory/inventorySliceHelpers.js",
+      "sha256": "d510b4e33993126b417a40c8d6a2752d7605a2290be06dffb6ae1b2e7ed6c45a"
+    },
+    {
+      "path": "frontend/src/store/slices/inventory/itemSlice.js",
+      "sha256": "a5ee2f0813c8939f15c16ce1798ebb170f3b52744db7e0649f5c94bfc0cd21d9"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/expenseSlice.js",
+      "sha256": "8e3e6a0f8cd80ec5b230bb84030f7945f6c869547f5ecc3ea418b4b9bdff04bd"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseBillSlice.js",
+      "sha256": "334929de9868598453eb22c7783abe8d816154536cf38f2e266dbfcf7a7ac455"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseOrderSlice.js",
+      "sha256": "c83ff7037d13694b3aa20eb2469642f3763022516b3d8f0de1e230076a4a3af1"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseSliceFactory.js",
+      "sha256": "fd8c340784e4b76d3b76aad54fd4c1fa836c705ca6349b8c9d6ae835dda47a4e"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/supplierPaymentSlice.js",
+      "sha256": "73d1e51530219cca5373331ab0ab8c43dddfde3f1bcc5bc1a12501c95114f20d"
+    },
+    {
+      "path": "frontend/src/store/slices/sales/invoiceSlice.js",
+      "sha256": "b53286d68df0fbfbe97060342b07dac7783d0f20fba1a5765e8e1c19edf402c4"
+    },
+    {
+      "path": "frontend/src/utils/listReturnContext.js",
+      "sha256": "3fa57dd0b6ca1bee1bb5945ac408041b7cb2becd25e77838922cf37cf2173a1e"
+    },
+    {
+      "path": "frontend/src/utils/thunkFormError.js",
+      "sha256": "c4ff0f8f6b7b12e58dab0e96236030db400afa30251ec1da477578c3ee839fa7"
+    }
+  ],
+  "sourceManifestScope": "Observed final source references across commerce contributions, including shared implementations coordinated with root/operations; not a claim of exclusive ownership.",
+  "wholeReleaseClaim": false,
+  "releaseBoundary": "Implementation complete for assigned current scope with named automated evidence; real SQL/user-run migration fixtures, authenticated browser/provider sandbox and human-deferred issuance policy remain explicit gates."
+}

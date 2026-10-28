@@ -207,6 +207,8 @@ const Users = () => {
   const [isRolesLoading, setIsRolesLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const [rolesError, setRolesError] = useState(null);
+  const [pendingRoleAssignment, setPendingRoleAssignment] = useState(null);
+  const [retryingRoleAssignment, setRetryingRoleAssignment] = useState(false);
   const [modalState, setModalState] = useState({
     isLoading: false,
     isOpen: false,
@@ -461,7 +463,14 @@ const Users = () => {
         });
 
         if (String(previousRoleId) !== String(roleId)) {
-          await userService.assignRoles(modalState.user.id, [roleId]);
+          try {
+            await userService.assignRoles(modalState.user.id, [roleId]);
+          } catch (error) {
+            setPendingRoleAssignment({ userId: modalState.user.id, roleId, name: userPayload.fullName || userPayload.username, error: getErrorMessage(error, "Role assignment failed.") });
+            closeModal();
+            await loadUsers();
+            return;
+          }
           toast.success("Role assignment updated successfully");
         }
 
@@ -480,7 +489,14 @@ const Users = () => {
           throw new Error("User created, but API response did not include user id.");
         }
 
-        await userService.assignRoles(createdUserId, [roleId]);
+        try {
+          await userService.assignRoles(createdUserId, [roleId]);
+        } catch (error) {
+          setPendingRoleAssignment({ userId: createdUserId, roleId, name: userPayload.fullName || userPayload.username, error: getErrorMessage(error, "Role assignment failed.") });
+          closeModal();
+          await loadUsers();
+          return;
+        }
         toast.success("User created successfully");
         toast.success("Role assigned successfully");
       }
@@ -701,6 +717,12 @@ const Users = () => {
 
   return (
     <section className="min-w-0 space-y-5">
+      {pendingRoleAssignment && <div role="alert" className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p><strong>{pendingRoleAssignment.name || "User"} was saved.</strong> Their role has not been assigned. {pendingRoleAssignment.error}</p><button type="button" className="font-semibold underline" disabled={!capabilities.canAssignRole || retryingRoleAssignment} onClick={async () => {
+        setRetryingRoleAssignment(true);
+        try { await userService.assignRoles(pendingRoleAssignment.userId, [pendingRoleAssignment.roleId]); setPendingRoleAssignment(null); await Promise.all([loadUsers(), loadRoles()]); toast.success("Role assigned successfully"); }
+        catch (error) { setPendingRoleAssignment((current) => ({ ...current, error: getErrorMessage(error, "Role assignment failed.") })); }
+        finally { setRetryingRoleAssignment(false); }
+      }}>{retryingRoleAssignment ? "Retrying…" : "Retry role assignment"}</button></div>}
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand ring-1 ring-inset ring-brand/10">

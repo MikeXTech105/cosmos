@@ -1,19 +1,12 @@
 import { Filter, RotateCcw, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useMemo } from "react";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppSelect from "../../../components/common/AppSelect";
-import { categoryService } from "../../../services/inventory/categoryService";
-import { itemService } from "../../../services/inventory/itemService";
-import { unitService } from "../../../services/inventory/unitService";
-import { expenseCategoryService } from "../../../services/purchase/expenseCategoryService";
-import { partyService } from "../../party/partyService";
-import { myWalletService } from "../../../services/rojmel/myWalletService";
-import { walletService } from "../../../services/rojmel/walletService";
-import { RojmelCategoryType } from "../../../constants/rojmelEnums";
+import AppLookup from "../../../components/common/AppLookup";
+import { reportLookups } from "./reportLookups";
 import useRojmelCapabilities from "../../rojmel/useRojmelCapabilities";
 import {
   DATE_PRESETS,
@@ -27,130 +20,8 @@ import {
 
 const withAll = (label, options) => [{ label, value: "all" }, ...options];
 
-const extractList = (response) => {
-  const data = response?.data;
-
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  if (Array.isArray(data?.items)) {
-    return data.items;
-  }
-
-  return [];
-};
-
-const compactOption = (value, label) => {
-  const text = String(label ?? "").trim();
-
-  return value && text ? { label: text, value } : null;
-};
-
-const getPartyOption = (party) => {
-  return compactOption(
-    party?.id ?? party?.partyId,
-    party?.partyName ?? party?.tradeName ?? party?.legalName ?? party?.name,
-  );
-};
-
-const getItemOption = (item) => {
-  const label = [item?.name ?? item?.itemName, item?.itemCode]
-    .filter(Boolean)
-    .join(" - ");
-
-  return compactOption(item?.id ?? item?.itemId, label);
-};
-
-const getCategoryOption = (category) => {
-  return compactOption(
-    category?.id ?? category?.categoryId,
-    category?.name ?? category?.categoryName,
-  );
-};
-
-const getUnitOption = (unit) => {
-  return compactOption(
-    unit?.id ?? unit?.unitId,
-    unit?.name ?? unit?.unitName ?? unit?.symbol,
-  );
-};
-
-const getWalletOption = (wallet) =>
-  compactOption(
-    wallet?.id ?? wallet?.walletId,
-    [wallet?.walletName, wallet?.walletCode].filter(Boolean).join(" · "),
-  );
-
 const trimLeadingZeroes = (value) => {
   return String(value).replace(/^0+(?=\d)/, "");
-};
-
-const lookupRequestMap = {
-  categories: () =>
-    categoryService.getCategories({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-    }),
-  expenseCategories: () =>
-    expenseCategoryService.getExpenseCategories({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-    }),
-  items: () =>
-    itemService.getItems({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-    }),
-  parties: () =>
-    partyService.getParties({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-    }),
-  units: () =>
-    unitService.getUnits({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-    }),
-  rojmelWallets: () =>
-    walletService.getWallets({
-      IsActive: true,
-      PageNumber: 1,
-      PageSize: 200,
-      SortBy: "walletName",
-      SortDirection: "asc",
-    }),
-  rojmelCategories: () =>
-    myWalletService.getCategories(RojmelCategoryType.Both),
-};
-
-const getNeededLookups = (report) => {
-  const needs = new Set();
-
-  (report.filters ?? []).forEach((filter) => {
-    const config = normalizeFilterConfig(filter);
-
-    if (config.key === "party") {
-      needs.add("parties");
-    } else if (config.key === "item") {
-      needs.add("items");
-    } else if (config.key === "unit") {
-      needs.add("units");
-    } else if (config.key === "category") {
-      needs.add(config.source === "expense" ? "expenseCategories" : "categories");
-    } else if (config.key === "rojmelWallet") {
-      needs.add("rojmelWallets");
-    } else if (config.key === "rojmelCategory") {
-      needs.add("rojmelCategories");
-    }
-  });
-
-  return [...needs];
 };
 
 const ReportFilterBar = ({
@@ -166,75 +37,13 @@ const ReportFilterBar = ({
     resource: "rojmel.reports",
     route: "/rojmel/reports",
   });
-  const [lookups, setLookups] = useState({
-    categories: [],
-    expenseCategories: [],
-    items: [],
-    parties: [],
-    units: [],
-    rojmelCategories: [],
-    rojmelWallets: [],
-  });
-  const [loadingLookups, setLoadingLookups] = useState({});
-  const [loadedLookups, setLoadedLookups] = useState({});
-  const neededLookups = useMemo(
-    () =>
-      getNeededLookups(report).filter(
-        (key) => key !== "rojmelWallets" || rojmelCapabilities.isAdmin,
-      ),
-    [report, rojmelCapabilities.isAdmin],
-  );
-
-  useEffect(() => {
-    let isMounted = true;
-
-    neededLookups.forEach((key) => {
-      if (loadedLookups[key] || loadingLookups[key]) {
-        return;
-      }
-
-      setLoadingLookups((current) => ({ ...current, [key]: true }));
-
-      lookupRequestMap[key]()
-        .then((response) => {
-          if (!isMounted) {
-            return;
-          }
-
-          const mapper =
-            key === "parties"
-              ? getPartyOption
-              : key === "items"
-                ? getItemOption
-                : key === "units"
-                  ? getUnitOption
-                  : key === "rojmelWallets"
-                    ? getWalletOption
-                  : getCategoryOption;
-          const options = extractList(response).map(mapper).filter(Boolean);
-
-          setLookups((current) => ({ ...current, [key]: options }));
-          setLoadedLookups((current) => ({ ...current, [key]: true }));
-        })
-        .catch(() => {
-          if (!isMounted) {
-            return;
-          }
-
-          setLoadedLookups((current) => ({ ...current, [key]: true }));
-          toast.error("Unable to load report filter options.");
-        })
-        .finally(() => {
-          if (isMounted) {
-            setLoadingLookups((current) => ({ ...current, [key]: false }));
-          }
-        });
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [loadedLookups, loadingLookups, neededLookups]);
+  const renderLookup = (source, param, label, allLabel) => <AppLookup
+    key={`${source}-${param}`} value={filters[param] ?? "all"}
+    onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
+    {...reportLookups[source]} initialOptions={[{ value: "all", label: allLabel }]}
+    disabled={disabled} placeholder={label} aria-label={`Filter by ${label.toLowerCase()}`}
+    className="min-w-[180px] flex-1 sm:max-w-[260px]"
+  />;
 
   const defaults = useMemo(() => getDefaultReportFilters(report), [report]);
   const hasActiveFilters = hasActiveReportFilters(report, filters);
@@ -296,53 +105,9 @@ const ReportFilterBar = ({
       );
     }
 
-    if (config.key === "party") {
-      return (
-        <AppSelect
-          key={param}
-          value={filters[param] ?? "all"}
-          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
-          options={withAll(`All ${config.label ?? definition.label}`, lookups.parties)}
-          placeholder={config.label ?? definition.label}
-          className="min-w-[180px]"
-          disabled={disabled || loadingLookups.parties}
-          aria-label={`Filter by ${config.label ?? definition.label}`}
-        />
-      );
-    }
-
-    if (config.key === "item") {
-      return (
-        <AppSelect
-          key={param}
-          value={filters[param] ?? "all"}
-          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
-          options={withAll(
-            config.required ? "Select an item" : "All items",
-            lookups.items,
-          )}
-          placeholder="Item"
-          className="min-w-[180px]"
-          disabled={disabled || loadingLookups.items}
-          aria-label="Filter by item"
-        />
-      );
-    }
-
-    if (config.key === "unit") {
-      return (
-        <AppSelect
-          key="UnitId"
-          value={filters.UnitId ?? "all"}
-          onChange={(value) => onChange({ PageNumber: 1, UnitId: value })}
-          options={withAll("All units", lookups.units)}
-          placeholder="Unit"
-          className="min-w-[160px]"
-          disabled={disabled || loadingLookups.units}
-          aria-label="Filter by unit"
-        />
-      );
-    }
+    if (config.key === "party") return renderLookup("parties", param, config.label ?? definition.label, `All ${config.label ?? definition.label}`);
+    if (config.key === "item") return renderLookup("items", param, "Item", config.required ? "Select an item" : "All items");
+    if (config.key === "unit") return renderLookup("units", "UnitId", "Unit", "All units");
 
     if (
       config.key === "movementType" ||
@@ -363,58 +128,9 @@ const ReportFilterBar = ({
       );
     }
 
-    if (config.key === "category") {
-      const sourceKey =
-        config.source === "expense" ? "expenseCategories" : "categories";
-
-      return (
-        <AppSelect
-          key={`${sourceKey}-${param}`}
-          value={filters[param] ?? "all"}
-          onChange={(value) => onChange({ [param]: value, PageNumber: 1 })}
-          options={withAll(
-            config.source === "expense"
-              ? "All expense categories"
-              : "All categories",
-            lookups[sourceKey],
-          )}
-          placeholder={config.source === "expense" ? "Expense category" : "Category"}
-          className="min-w-[180px]"
-          disabled={disabled || loadingLookups[sourceKey]}
-          aria-label="Filter by category"
-        />
-      );
-    }
-
-    if (config.key === "rojmelWallet") {
-      if (!rojmelCapabilities.isAdmin) return null;
-
-      return (
-        <AppSelect
-          key="WalletId"
-          value={filters.WalletId ?? "all"}
-          onChange={(value) => onChange({ PageNumber: 1, WalletId: value })}
-          options={withAll("All wallets", lookups.rojmelWallets)}
-          className="min-w-[190px]"
-          disabled={disabled || loadingLookups.rojmelWallets}
-          aria-label="Filter by wallet"
-        />
-      );
-    }
-
-    if (config.key === "rojmelCategory") {
-      return (
-        <AppSelect
-          key="RojmelCategoryId"
-          value={filters.CategoryId ?? "all"}
-          onChange={(value) => onChange({ CategoryId: value, PageNumber: 1 })}
-          options={withAll("All categories", lookups.rojmelCategories)}
-          className="min-w-[180px]"
-          disabled={disabled || loadingLookups.rojmelCategories}
-          aria-label="Filter by Rojmel category"
-        />
-      );
-    }
+    if (config.key === "category") return renderLookup(config.source === "expense" ? "expenseCategories" : "categories", param, config.source === "expense" ? "Expense category" : "Category", "All categories");
+    if (config.key === "rojmelWallet") return rojmelCapabilities.isAdmin ? renderLookup("rojmelWallets", "WalletId", "Wallet", "All wallets") : null;
+    if (config.key === "rojmelCategory") return renderLookup("rojmelCategories", "CategoryId", "Rojmel category", "All categories");
 
     if (
       config.key === "rojmelTransactionType" ||

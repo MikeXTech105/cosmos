@@ -71,10 +71,12 @@ const DetailStat = ({ colorClass, icon: Icon, label, value }) => (
 
 const EmployeeAttendanceModal = ({
   canCreate,
+  canRequestCorrection,
   employee,
   isOpen,
   onClose,
   onManualEntry,
+  onRequestCorrection,
 }) => {
   const now = new Date();
   const employeeId = getHrRecordId(employee, "employee");
@@ -106,7 +108,7 @@ const EmployeeAttendanceModal = ({
         toDate,
       }),
       hrAttendanceService.getMonthlyReport({
-        EmployeeId: Number(employeeId),
+        EmployeeId: employeeId,
         Month: viewMonth.month,
         Year: viewMonth.year,
       }),
@@ -486,6 +488,7 @@ const EmployeeAttendanceModal = ({
                             </p>
                           </div>
                           <div className="shrink-0 text-right">
+                            {record && canRequestCorrection && onRequestCorrection && <button type="button" className="mb-2 block text-xs font-semibold text-brand underline" onClick={() => onRequestCorrection(record)}>Request correction</button>}
                             {record ? (
                               <AttendanceStatusBadge
                                 status={

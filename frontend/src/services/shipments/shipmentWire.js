@@ -1,0 +1,4 @@
+import { decimalWire, idWire } from "../../utils/productionValues";
+const identities = new Set(["channelId", "warehouseId", "itemId", "packagingProfileId", "invoiceId", "dispatchPlanningRunId", "dispatchPlanningAllocationId", "shipmentItemId", "shipmentReceiptItemId", "shipmentReturnItemId"]);
+const quantities = new Set(["plannedQuantity", "quantity", "receivedQuantity", "rejectedQuantity", "damagedQuantity", "shortQuantity", "returnQuantity", "receivedBackQuantity", "restockableQuantity", "nonRestockableQuantity"]);
+export const wireShipmentPayload = value => Array.isArray(value) ? value.map(wireShipmentPayload) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, entry == null ? entry : identities.has(key) ? idWire(entry) : quantities.has(key) ? decimalWire(entry, { integerDigits: 13, scale: 6 }) : wireShipmentPayload(entry)])) : value;

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 import { documentIdSchema, documentQuantitySchema, optionalDocumentIdSchema } from "../../../utils/documentFieldSchemas";
 import { PAYMENT_TYPE } from "../purchaseHelpers";
+import { compareDecimal } from "../../../utils/productionValues";
 
 export const purchaseLineSchema = z.object({
   itemId: documentIdSchema("Item"),
@@ -13,6 +14,9 @@ export const purchaseLineSchema = z.object({
   taxPercentage: z.coerce.number().min(0),
   unitId: optionalDocumentIdSchema,
   purchaseBillItemId: optionalDocumentIdSchema,
+  maxReturnQuantity: z.string().optional(),
+  sourceQuantity: z.string().optional(),
+  sourceDiscountAmount: z.string().optional(),
 });
 
 export const purchaseDocumentSchema = (dateField) => z.object({
@@ -33,6 +37,9 @@ export const purchaseDocumentSchema = (dateField) => z.object({
   notes: z.string().max(1000, "Notes are too long").optional(),
   items: z.array(purchaseLineSchema).min(1, "Add at least one line item"),
 }).superRefine((values, context) => {
+  values.items.forEach((line, index) => {
+    if (line.maxReturnQuantity && compareDecimal(line.quantity, line.maxReturnQuantity) > 0) context.addIssue({ code: "custom", message: `Remaining returnable quantity is ${line.maxReturnQuantity}. Refresh the source if another return has been saved.`, path: ["items", index, "quantity"] });
+  });
   if (dateField === "billDate") dateOrder(values, context, "billDate", "dueDate", "Due date cannot be before bill date");
   if (dateField === "orderDate") dateOrder(values, context, "orderDate", "expectedDeliveryDate", "Expected delivery cannot be before order date");
 });

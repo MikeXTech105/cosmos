@@ -270,6 +270,9 @@ public sealed class AttendanceAdjustmentRequestValidator : AbstractValidator<Att
         RuleFor(x => x.EmployeeId).GreaterThan(0);
         RuleFor(x => x.AttendanceId).GreaterThan(0);
         RuleFor(x => x.Reason).NotEmpty().MaximumLength(500);
+        RuleFor(x => x.ProposedAttendanceStatus).Must(x => x is null || Enum.IsDefined(typeof(AttendanceStatus), x.Value));
+        RuleFor(x => x.ExpectedAttendanceStatus).NotNull().When(x => x.ProposedAttendanceStatus.HasValue);
+        RuleFor(x => x).Must(x => !x.ProposedCheckInTime.HasValue || !x.ProposedCheckOutTime.HasValue || x.ProposedCheckOutTime > x.ProposedCheckInTime).WithMessage("Proposed check-out must be after check-in.");
     }
 }
 
@@ -290,5 +293,12 @@ public sealed class ProcessPayrollValidator : AbstractValidator<ProcessPayrollCo
     {
         RuleFor(x => x.PayrollMonth).InclusiveBetween(1, 12);
         RuleFor(x => x.PayrollYear).InclusiveBetween(2000, 9999);
+        RuleFor(x => x.RateSelections).Must(rows => rows is null || rows.Select(row => row.EmployeeId).Distinct().Count() == rows.Count).WithMessage("Choose only one period rate per employee.");
+        RuleForEach(x => x.RateSelections).ChildRules(row => {
+            row.RuleFor(x => x.EmployeeId).GreaterThan(0);
+            row.RuleFor(x => x.SalaryAssignmentId).GreaterThan(0);
+            row.RuleFor(x => x.RowVersion).NotNull().Must(value => value is { Length: 8 }).WithMessage("Reload the selected salary assignment version.");
+            row.RuleFor(x => x.Reviewed).Equal(true).WithMessage("Review each selected period rate before processing.");
+        });
     }
 }

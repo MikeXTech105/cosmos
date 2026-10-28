@@ -1,6 +1,16 @@
 # COSMOS — Current Status and Roadmap
-**Reviewed:** 2026-10-26 · **Repository base:** `main@7046dbd61592f1c10c442d19b75cdbde78a64b42`.
-**Evidence level:** Repository source, documents and historical tests. **No live deployment, full test suite, or SQL deployment verification was executed as part of this consolidation.**
+**Reviewed:** 2026-10-28 · **Implementation base:** `lucifer-dev@da4620383e88f4831a2c0d719882befd497661d7`.
+**Evidence level:** Current source, executed frontend/backend automated checks and synthetic component screenshots. No deployment, SQL integration, real account journey or live GST provider mutation was executed in the 28 October implementation session.
+
+## Complete implementation brief — 28 October
+
+The working tree implements shared remote lookup/recovery/navigation/report improvements and the Commerce, Production/OEE/Supply Chain, HR/RBAC, Data Book and Website findings. All 56 finding IDs and 125 coverage rows are reconciled in the [verification artifacts](../output/implementation-verification/); each row distinguishes implemented source from runtime evidence. The [44-scenario matrix](../output/implementation-verification/acceptance-scenarios.json) records the remaining acceptance journeys. This is implementation delivery, not production sign-off.
+
+User decisions are retained: payroll uses calendar-day earnings proration with fixed deductions, blocks attendance/paid-leave overlap, includes the employed portion of resigned staff and uses one reviewed period rate; unsupported Party options stay unavailable. GST preparation is immutable and explicitly **PendingPolicy**. No proposed tax rounding/discount policy is approved and statutory generation remains blocked.
+
+Current check results, exact logs and source/migration hashes are in [verification-results.json](../output/implementation-verification/verification-results.json). Browser captures show actual components with synthetic data at six widths and three themes; they do not certify authenticated API/SQL journeys. Existing dependency advisory warnings remain recorded in the build log.
+
+The user will run SQL later. Use the guarded [complete verification script](../backend/scripts/Test-CompleteImplementation.ps1) and [operations instructions](OPERATIONS.md#complete-brief-verification-28-october). Fresh, populated predecessor upgrade, repeatability, concurrency and conservation results are pending that run. The predecessor sentinel is a bounded synthetic linked-master/stock-history fixture, not a restored company backup. Restore/rollback rehearsal and business acceptance remain separate gates. The [Gujarati operator guide](../handoff/COSMOS_CLIENT_FLOW_GUIDE_GU.md) describes the delivered flows.
 
 ## Executive assessment
 The project has implemented broad ERP APIs and a substantial React interface, but **enterprise production sign-off remains unverified**. Older progress reports mention successful builds and test counts at the time; they do not certify this revision. The integrated QA dated 2026-10-09 said **NOT READY FOR SIGN-OFF**.

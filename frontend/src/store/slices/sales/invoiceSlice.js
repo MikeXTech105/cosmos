@@ -5,6 +5,7 @@ import {
   extractEntity,
   getRequestEntityId,
   getThunkError,
+  getThunkFormError,
   normalizePagedPayload,
 } from "../inventory/inventorySliceHelpers";
 
@@ -82,7 +83,7 @@ export const createInvoice = createAsyncThunk(
       return await invoiceService.createInvoice(payload);
     } catch (error) {
       return rejectWithValue(
-        getThunkError(error, "Unable to create invoice."),
+        getThunkFormError(error, "Unable to create invoice."),
       );
     }
   },
@@ -95,7 +96,7 @@ export const updateInvoice = createAsyncThunk(
       return await invoiceService.updateInvoice(id, payload);
     } catch (error) {
       return rejectWithValue(
-        getThunkError(error, "Unable to update invoice."),
+        getThunkFormError(error, "Unable to update invoice."),
       );
     }
   },
@@ -217,7 +218,7 @@ const invoiceSlice = createSlice({
         if (state.listRequestId !== action.meta.requestId) return;
         state.loading = false;
         state.list = [];
-        state.error = action.payload ?? action.error.message;
+        state.error = getThunkError(action.payload ?? action.error);
         state.listRequestId = null;
       })
       .addCase(fetchInvoiceById.pending, (state, action) => {
@@ -238,9 +239,13 @@ const invoiceSlice = createSlice({
       .addCase(fetchInvoiceById.rejected, (state, action) => {
         if (state.detailRequestId !== action.meta.requestId) return;
         state.detailLoading = false;
-        state.detailError = action.payload ?? action.error.message;
+        state.detailError = getThunkError(action.payload ?? action.error);
         state.detailRequestId = null;
       })
+      .addCase(createInvoice.pending, state => { state.error = null; })
+      .addCase(createInvoice.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to create invoice."); })
+      .addCase(updateInvoice.pending, state => { state.error = null; })
+      .addCase(updateInvoice.rejected, (state, action) => { state.error = getThunkError(action.payload ?? action.error, "Unable to update invoice."); })
       .addCase(createInvoice.fulfilled, (state, action) => {
         state.selected = extractEntity(action.payload.data, "invoice");
       })
@@ -275,7 +280,7 @@ const invoiceSlice = createSlice({
       .addCase(fetchInvoicePayments.rejected, (state, action) => {
         state.paymentsLoading = false;
         state.payments = [];
-        state.paymentsError = action.payload ?? action.error.message;
+        state.paymentsError = getThunkError(action.payload ?? action.error);
       })
       .addCase(recordInvoicePayment.fulfilled, (state, action) => {
         const payment = extractEntity(action.payload.data, "payment");

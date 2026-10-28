@@ -27,8 +27,8 @@ export const productionWorkspaceService = {
   stock: (id, signal) => read(`/api/items/${id}/stock-balance`, {}, signal),
   adjust: (id, body) => post(`/api/items/${id}/stock-adjustments`, { ...body, unitId: idWire(body.unitId), signedQuantity: decimalWire(body.signedQuantity, { nonNegative: false }) }),
   report: (kind, query, signal) => read(`${root}/reports/operational/${kind}`, query, signal),
-  exportReport: async (kind, query) => {
-    try { return await axiosInstance.get(`${root}/reports/operational/${kind}/export`, { params: normalizeParams(query), responseType: "blob" }); }
+  exportReport: async (kind, query, format = "ndjson") => {
+    try { return await axiosInstance.get(`${root}/reports/operational/${kind}/export`, { params: normalizeParams({ ...query, format }), responseType: "blob" }); }
     catch (error) { if (error.response?.data instanceof Blob) { try { error.response.data = JSON.parse(await error.response.data.text()); } catch { /* Keep the original network/status error when the response is not JSON. */ } } throw error; }
   },
 };

@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 import AppButton from "../../components/common/AppButton";
+import useUnsavedChanges from "../../hooks/useUnsavedChanges";
 import AppTooltip from "../../components/common/AppTooltip";
 import PageHeader from "../../components/common/PageHeader";
 import StatCards from "../../components/common/StatCards";
@@ -148,6 +149,10 @@ const DataBookPage = () => {
   });
   const [searchValue, setSearchValue] = useState(state.filters.Search);
   const [copyingId, setCopyingId] = useState(null);
+  const [gridPending, setGridPending] = useState(0);
+  const gridDraftSaver = useRef(null);
+  const captureGridPending = useCallback((count, saver) => { setGridPending(count); gridDraftSaver.current = saver; }, []);
+  const { confirmLeave } = useUnsavedChanges({ when: gridPending > 0, message: "This sheet has unsaved or pasted rows. Save all before changing the sheet/view, or continue without applying them?" });
   const [exporting, setExporting] = useState(false);
   const [formModal, setFormModal] = useState({
     entry: null,
@@ -314,22 +319,29 @@ const DataBookPage = () => {
   [ephemeralSheet, sheetCatalog.categories, state.items]);
 
   const selectViewMode = useCallback((mode) => {
+    if (mode !== viewMode && gridPending > 0 && !confirmLeave(() => {})) return;
+    if (gridPending > 0) gridDraftSaver.current?.();
     setViewMode(mode);
     try {
       globalThis.localStorage?.setItem("dataBookViewMode", mode);
     } catch {
       // The selected mode still works for this session.
     }
-  }, []);
+  }, [confirmLeave, gridPending, viewMode]);
 
   const selectSheet = useCallback((category) => {
+    if (category !== activeSheet && gridPending > 0 && !confirmLeave(() => {})) return;
+    if (gridPending > 0) gridDraftSaver.current?.();
+    setGridPending(0);
     setActiveSheet(category);
     dispatch(setDataBookFilters({ Category: category }));
     dispatch(setDataBookPage(1));
     selectViewMode("grid");
-  }, [dispatch, selectViewMode]);
+  }, [activeSheet, confirmLeave, dispatch, gridPending, selectViewMode]);
 
   const refreshAll = useCallback(async () => {
+    if (gridPending > 0 && !confirmLeave(() => {})) return;
+    if (gridPending > 0) gridDraftSaver.current?.();
     if (ephemeralSheet) {
       setEphemeralSheet(null);
       setActiveSheet(null);
@@ -337,7 +349,7 @@ const DataBookPage = () => {
       dispatch(setDataBookPage(1));
     }
     await Promise.all([loadEntries(), loadSheetCatalog(), loadGridEntries()]);
-  }, [dispatch, ephemeralSheet, loadEntries, loadGridEntries, loadSheetCatalog]);
+  }, [confirmLeave, dispatch, ephemeralSheet, gridPending, loadEntries, loadGridEntries, loadSheetCatalog]);
 
   const stats = useMemo(() => {
     const publicOnPage = state.items.filter((entry) => !entry.isPrivate).length;
@@ -834,7 +846,7 @@ const DataBookPage = () => {
       <ProcurementTabs
         active={state.activeTab}
         tabs={DATA_BOOK_TAB_OPTIONS}
-        onChange={(tab) => dispatch(setDataBookTab(tab))}
+        onChange={(tab) => confirmLeave(() => { if (gridPending > 0) gridDraftSaver.current?.(); setGridPending(0); dispatch(setDataBookTab(tab)); })}
       />
 
       <DataBookFilters
@@ -905,7 +917,9 @@ const DataBookPage = () => {
             onSelect={selectSheet}
           />
           <DataBookGrid
-            key={activeSheet === null ? "no-sheet" : `sheet-${activeSheet}`}
+            onPendingChange={captureGridPending}
+            key={`${state.activeTab}:${activeSheet === null ? "no-sheet" : `sheet-${activeSheet}`}`}
+            draftContext={`${state.activeTab}:${activeSheet ?? "none"}`}
             activeSheet={activeSheet}
             capabilities={capabilities}
             copyingId={copyingId}

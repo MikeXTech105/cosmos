@@ -99,7 +99,8 @@ public sealed record ShipmentDto(
     IReadOnlyCollection<ShipmentDeliveryAttemptDto> DeliveryAttempts,
     IReadOnlyCollection<ShipmentReceiptDto> Receipts,
     IReadOnlyCollection<ShipmentReturnDto> Returns,
-    IReadOnlyCollection<ShipmentFreightChargeDto> FreightCharges);
+    IReadOnlyCollection<ShipmentFreightChargeDto> FreightCharges,
+    string? Version = null);
 
 public sealed record ShipmentItemDto(
     long Id,
@@ -353,6 +354,12 @@ public sealed record SaveShipmentPackageRequest(
     string? Notes = null);
 
 public sealed record SaveShipmentPackageItemRequest(long ShipmentItemId, decimal Quantity);
+
+public sealed record RemoveShipmentPackageRequest(string Version, Guid CommandKey, string Reason);
+
+public sealed record ShipmentDispatchAllocationDto(long Id, long RecommendationId, long ItemId, string ItemCode, string ItemName,
+    string ChannelSku, long WarehouseId, string WarehouseCode, string WarehouseName, decimal AllocatedQuantity,
+    decimal ConvertedQuantity, decimal RemainingQuantity);
 public sealed record ShipmentPackingSuggestionRequest(bool AllowMixedPackages = false, bool IncludeLoosePackage = true);
 public sealed record ShipmentPackingSuggestionDto(long ShipmentItemId, long ItemId, string ItemCode, string ItemName, decimal Quantity, decimal UnitsPerBox, int SuggestedPackageCount, decimal SuggestedLooseQuantity, decimal Length, decimal Width, decimal Height, decimal GrossWeight, decimal NetWeight, decimal? VolumetricDivisor);
 

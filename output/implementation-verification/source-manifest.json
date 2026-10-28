@@ -1,0 +1,1582 @@
+{
+  "createdAt": "2026-10-28T12:52:44.155Z",
+  "baselineCommit": "da4620383e88f4831a2c0d719882befd497661d7",
+  "files": [
+    {
+      "path": "backend/database/migrations/20261028_01_draft_packing_recovery.sql",
+      "sha256": "f650a01dfcf15785e013790f16835c8c81c536d8ad4239e3ad4df9eaa6c9d47c"
+    },
+    {
+      "path": "backend/database/migrations/20261028_02_hr_operator_setup.sql",
+      "sha256": "3b0eced9e0cb8f5b0c0e7ed584797ea380d8f81a1630ec9efbe02558e9c8c8b0"
+    },
+    {
+      "path": "backend/database/migrations/20261028_02_oee_day_acknowledgements.sql",
+      "sha256": "cd88f8cf59538e28bc7af13ad2b619a063b6b7c9b0e9e5580b5cfef9c033ffd6"
+    },
+    {
+      "path": "backend/database/migrations/20261028_03_production_order_labels.sql",
+      "sha256": "f12df73dcad17f6e2733e426ad9a5886db4848002b279b1f99c6de24c4043fd3"
+    },
+    {
+      "path": "backend/database/migrations/20261028_04_packaging_readiness.sql",
+      "sha256": "d698e5b26166ef86b582a01f63e0eb5e57325a5152e874b3d665dc2deb48efbd"
+    },
+    {
+      "path": "backend/database/migrations/20261028_05_gst_eway_extension_commands.sql",
+      "sha256": "9d08db5dbe49530210078d8de6aae4d16b28237db969848e25d7182eebde3236"
+    },
+    {
+      "path": "backend/database/migrations/20261028_06_gst_pending_source_snapshots.sql",
+      "sha256": "e6933d958150eddcb008524536189113abdba56a91b9c33a3824c200dc1efcbb"
+    },
+    {
+      "path": "backend/database/migrations/20261028_07_production_master_lookup.sql",
+      "sha256": "0d98a7cc1f426ad37561337da70bc5a25f477402d0017798c4518cc60df005f1"
+    },
+    {
+      "path": "backend/docs/HR_OPERATOR_SETUP.md",
+      "sha256": "6baa1239d316ac729139ef35f985f05d52a01b9eb625397e09207775b0092598"
+    },
+    {
+      "path": "backend/scripts/Test-CompleteImplementation.ps1",
+      "sha256": "a7757211355fcf19824c9f60cb50ad18d193cc58a38b940662100072296ef17e"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/DispatchPlanning/DispatchPlanningControllers.cs",
+      "sha256": "e66e9fbc65d6257c1245dade0d555326d2e49245b0c7e7b04ab055e37954f54d"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/EWayBillsController.cs",
+      "sha256": "40ca089396de37fb29912e8ccca840e9af655884f710a35454e0f8fbb0258d8b"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/GstComplianceSnapshotsController.cs",
+      "sha256": "d430d27a16ab195bc0e11018edbab80baeeb65e62f24be49bab8f46d639d7c1e"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/HR/HrSetupController.cs",
+      "sha256": "ff2c309ff812b982778aa9092e91ad658bcb5a16adb70e85dbab7013093ca829"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/HsnGstController.cs",
+      "sha256": "720c1b1a5a18c3eda7714f1bef20dddcf662fbe64bd91daeb554812ce5688cf6"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/Manufacturing/PlanningPolicyExamplesController.cs",
+      "sha256": "48bf5dc82ee419de5a438fee3fbbeba7a08f684481156cfd321f1a81a585ca7b"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionOperationalReportsController.cs",
+      "sha256": "6f2c013fb25df73e7f6f5353f1e9b8e83f4ff34b02c0ddb8fc93d263c46e72c1"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/Manufacturing/ProductionWorkspaceControllers.cs",
+      "sha256": "9871a1b343c208c24a8e262aa2331bea986d2eb4673ee079928a95a2568584a1"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/OeeProductionEntriesController.cs",
+      "sha256": "abdbcf58e944ccf04df36708643e9668cea1d4805a9a1d9435f14b3691cdbef4"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Controllers/ShipmentOperations/ShipmentOperationsControllers.cs",
+      "sha256": "8d457ebf3cbaa52e565e1bf451fadac973d7e36407db4e429c26bf12b5ca5c0b"
+    },
+    {
+      "path": "backend/src/Cosmos.API/Exports/CompleteReportExport.cs",
+      "sha256": "797c212edb58fc2370987ec347e403ca60dffa6b9207c74a607211ecf01b7db8"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IGstComplianceSnapshotRepository.cs",
+      "sha256": "e638e281aa8976bea17ffaba59f547558db0255f3f09b099a16f9fbd12f270ee"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IGstRepository.cs",
+      "sha256": "1d89f666c9142489cbb6c083da24354e6fe10c67cfcc8ad1fa6316f0c85015f9"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IHrRepository.cs",
+      "sha256": "80410932ea0f9560c9a98e5b6fd14e7e6b06f2b3b80e903a253a22d66af461fc"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IOeeRepository.cs",
+      "sha256": "17a2916add878f71bd88b063450ae738ef67b9ffe28fc215412f9a25fe26222f"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Persistence/IShipmentOperationsRepository.cs",
+      "sha256": "f4409c40d78ed1e31cf9e14af0b88a170a3a5b90336975d82bb966db2fbe037f"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IEWayBillService.cs",
+      "sha256": "0a275a2620e05b5c83e1bae1aa491e37792bb33c57c90018abf6172adc45ec26"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IGstComplianceSnapshotService.cs",
+      "sha256": "71499a20f163ad32f6c460276d3d51d36ce4f2d2a3cb68d4ce33dc12fb0ad8e8"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IHrService.cs",
+      "sha256": "251187e232e9f52eabd6cd8b4135326026527ea72ed5e93a764ff3d03243a16e"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IOeeService.cs",
+      "sha256": "0eb1adc4f407d5b23e01b952923bf8f0e098904bc411f3e9961bd779627fe70d"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IProductionWorkspaceService.cs",
+      "sha256": "25a9aa0c26909272bdb1661236edf2447f9905a72ad80caa8b05c8f2718b21b4"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Abstractions/Services/IShipmentOperationsService.cs",
+      "sha256": "988e844a07d7c36b4a04d045462898bbcc74c5d32d02f19ff5f41fb158ffdfbe"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/DependencyInjection.cs",
+      "sha256": "1ec9645afc8572fe479fbbf552fed8d70c05f97c1e14be77acd55c7f5e89c1b5"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Gst/GstProviderRejection.cs",
+      "sha256": "456549da3f147c4877d317000f5c8fab2356180dcbb4b5eec358722a3f806868"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Gst/GstRequests.cs",
+      "sha256": "50416bfcbcb6794a1b2bc87c92517d660a73c7924899f41b21e932f12d03dbec"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Gst/GstSnapshotPreparation.cs",
+      "sha256": "8d8a51c7bf21f5207af38df67182cacc430eef12b15b1656818fdf74a9d9c755"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/HR/HrRequests.cs",
+      "sha256": "54f85539a5d8ad12978116caa3e44409fe5b76210ee67c87c034a1c4324fc474"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/HR/HrSetupRequests.cs",
+      "sha256": "0802deab5079d17b4093bb78e741eb8e270eac2d7b95f93e6d67cd7ec0fbeed2"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Manufacturing/PlanningPolicyExamples.cs",
+      "sha256": "9bf628ba009161e8b8af478f41ecde9beac93f60794d9852a3ed2400e3d942c4"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Parties/Commands/UpdatePartyCommand.cs",
+      "sha256": "87f36571e6b5772b38f58b4e9de04f5f82012e07d19961acdec7ac09b4662a98"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/GstComplianceSnapshotService.cs",
+      "sha256": "f3e9df8150d51160eb95ff1a49b29505a312c3ffeb721face6f9da1bc7aa2eff"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/GstServices.cs",
+      "sha256": "7ba2a826aeac5a3e7f613e7d7ab4cceeaf91f0262249278a9d582160d277b440"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/HrService.cs",
+      "sha256": "f9fb6417acb698fa40e90b89d852138929b4be9c67c1f5c1fc1fdd3b24092b44"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/HrSetupService.cs",
+      "sha256": "5489404125481b005a58622d9192ce3ab21e6fe5e2152f1a0997300c2fff6db9"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/HsnGstService.cs",
+      "sha256": "0ff93cb4c5b98d9202774a0c877b5bcc55c841486ec699666119bc16d6b5128e"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/OeeService.cs",
+      "sha256": "cf8d55804922e6fc905724e9e5bad4b17a10852ffdbd0030ccf4ee3381734998"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/PartyService.cs",
+      "sha256": "f0c61f8729a650c4944bc0a7a50c2deffbcd67fed370801e75f880839ae78f9c"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/ProductionWorkspaceService.cs",
+      "sha256": "6a9da7a3bb0422378e4548aab68fb40d3b10742c17aa53a44030ad4f756ac067"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Services/ShipmentOperationsService.cs",
+      "sha256": "bfda162e63337383e4d23c736b1bb0c935cbd92873c9acb924b91c64aa079f2c"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Validators/GstValidators.cs",
+      "sha256": "a6bc1f00c3f15707d0b5920dba6fb0b0881a0efedb897af5775ea54d31963360"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Validators/HrSetupValidators.cs",
+      "sha256": "f6ecfff96640186245d831402d2c1cfb2b7f3a23a9fc50de1a18c6c4a7c11f71"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Validators/HrValidators.cs",
+      "sha256": "0126cc3c2657f8ecc1163457ffb6345556c7de7eb44da54579025bb0f4cab2cb"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Validators/ShipmentOperationsValidators.cs",
+      "sha256": "3f1bb6e40cda88e96e93dfea58786bab79bce5012302491d1a5a4d7f2c791c48"
+    },
+    {
+      "path": "backend/src/Cosmos.Application/Validators/WebsiteManagementValidators.cs",
+      "sha256": "469b289f67d256b9959aeda4adb79963876c28dc32c7812576bfbe7777465200"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Gst/GstDtos.cs",
+      "sha256": "d714a0df04aeb8b9f798341cc18ac857d1cdc58a30bcd816ac51f48a6a3c1293"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/HR/HrSetupDtos.cs",
+      "sha256": "05c2910d1f54fa299e534f312b1e5931f85660c48ba3855318ea569327b66ad5"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/PlanningPolicyExampleDtos.cs",
+      "sha256": "e1a80aa15b8af2f7234d1a84d751fa06918603cc71deee46dad344fe14b2e651"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Manufacturing/ProductionOrderLabelsDto.cs",
+      "sha256": "3dc1698240d48305f6aed22fc6da91bd1c0a564246347d310f343950cee76703"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/Oee/OeeDayAcknowledgementDtos.cs",
+      "sha256": "309ec039af674a09e7144e1bbae3bc769f9256743fdc2b6973f168a629c8568a"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/PurchaseExpense/PurchaseExpenseDtos.cs",
+      "sha256": "99c2e3d8b770f21760e2133d24dfb6f568b1956a2f2750eca20a423ed07eb149"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/ShipmentOperations/ShipmentOperationsDtos.cs",
+      "sha256": "58e16316c09270b87936bd487481e9d4af5236dddf0b7d076872975e729d1176"
+    },
+    {
+      "path": "backend/src/Cosmos.Contracts/SupplyChain/SupplyChainDtos.cs",
+      "sha256": "01707ffb57757d027cc4c70e5aefc61217b5352ad528055308467355a2c52fff"
+    },
+    {
+      "path": "backend/src/Cosmos.Infrastructure/Gst/GstZenProviderService.cs",
+      "sha256": "d6816d87845deb284a7e577052ffc92b2789a959112eb51cc036b62c7abd0a93"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/DependencyInjection.cs",
+      "sha256": "268d50f5180447c739b56846eed405e6d2cafe1114d5cc966c06d93f2870727f"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/GstComplianceSnapshotRepository.cs",
+      "sha256": "9e5544b886032ae8a9e4a41336ccd89da1004085aa3a5c3fc73a8c57acf21244"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/GstRepository.cs",
+      "sha256": "4a8363f836e75ef5fd68b518c5b3d226b1e038916ebb94fd8049ac9428b5be38"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/HrRepository.cs",
+      "sha256": "7ca39ed8b6fea964b67b5eaf5336e49acf9e0c1abec12ae91e0957600cf810fb"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/HrSetupRepository.cs",
+      "sha256": "5690be90de8d5082f5b638c6c31163edfad464ce527a4211dc658d4ce79624b2"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/OeeRepository.cs",
+      "sha256": "9e17e3e7856ee4bd71da92e9553ceced0a55e4ff29f7ad985568afbabecca673"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/PurchaseExpenseRepository.cs",
+      "sha256": "dbcd9fcd19897aad064f7c2990ce081601fc413185e32a26bd31697e4e1e50fa"
+    },
+    {
+      "path": "backend/src/Cosmos.Persistence/Repositories/ShipmentOperationsRepository.cs",
+      "sha256": "dbabb816e5e181f1acf0ff68adb921c6e2e466c467eb1185e117689c09920d5f"
+    },
+    {
+      "path": "backend/src/Cosmos.Shared/Options/GstZenOptions.cs",
+      "sha256": "6c75f520fcd0b2bf558239448fd45b7b03cf9b3e9582008591b11d7a3a51c832"
+    },
+    {
+      "path": "backend/tests/Cosmos.SqlVerification/Program.cs",
+      "sha256": "6c2cd045857e6aabcba98b92fb8d60661120610e72aecfb0b4196f1d3a6c2362"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstEWayExtensionServiceTests.cs",
+      "sha256": "3b0a7117f8553c26f33039a8ab26706981202ece12573e8f82e9645fed4f7e6d"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstEWayExtensionSqlIntegrationTests.cs",
+      "sha256": "c9d920640358ad4b77d5c14cc50b4ce25619c2a86728fbb551a6026805b918e7"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstSnapshotPreparationSqlIntegrationTests.cs",
+      "sha256": "fc491786e1dd2ea237f495a55418e01cf357491cf33a0409b7a8adbcdc4fe481"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstSnapshotPreparationTests.cs",
+      "sha256": "195cffee3fb6cf4700431f04291fda829cbb6e185ca87aeb46bec198597c99ee"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Gst/GstZenProviderServiceTests.cs",
+      "sha256": "cb6664644927ccae4e251fb3d6ce76cabd98d185e62c19aa1ca314b5584953ae"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupSqlIntegrationTests.cs",
+      "sha256": "0170e02a66313fd8fe50509515116d9a5520688eb62234a2928737e0d5405306"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Hr/HrOperatorSetupTests.cs",
+      "sha256": "f9b2eaf7f7b7142e6a510f346cec2791a4b29258b5faff2a984f8e3227999801"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Hr/WebsiteOperatorSettingsValidationTests.cs",
+      "sha256": "3f06c9d7c20945dd347d7558f834999a67367bac255a5cf9472863f96a4eca51"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/HsnGst/HsnMaintenanceContractTests.cs",
+      "sha256": "b96090948e919c09e0f9971e0bb78f4d0839a69fd906711a3dcbade2ce98f374"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Manufacturing/PlanningPolicyExampleTests.cs",
+      "sha256": "7597411575a890fc45f15a8492a807bab9f43422275eb60284176ec97ce8ccf0"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionCommandValidationTests.cs",
+      "sha256": "ae0099f7a21cc8cee401208b4dab3eaeadf88cfc79daab507084110028928f7e"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionMigrationSyntaxTests.cs",
+      "sha256": "3cdfd58cc655a1d031f947b918ecdc08b12abd7692bccdfdc2851481d8624cde"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionOperationalCsvTests.cs",
+      "sha256": "4fccc5400e31bdbd2d307e857ec35332f844836acddd4e3514fb2c6524e13e7b"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Manufacturing/ProductionSqlIntegrationTests.cs",
+      "sha256": "e5ad950aeb73906bf7ff849334bf358d83954a3a84d1d9183546e6fa5d6362e7"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Oee/OeeDayAcknowledgementSqlTests.cs",
+      "sha256": "be3d5f358458f16c0a3d764d01c18586aa098645f2b2f1a3d8927d777eee8d77"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/Parties/PartyTypeUpdateTests.cs",
+      "sha256": "9bb5735d74de3bb8c8f76fcf7e134a7ee120d51441cdb5556a3b9eeb04e6fb8c"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/ShipmentOperations/CompleteOperationsReportExportTests.cs",
+      "sha256": "972eac0ed52e2cdbdf54ac5247c8b15232c6cb512625ba12130da38231a2b7ce"
+    },
+    {
+      "path": "backend/tests/Cosmos.Tests/ShipmentOperations/ShipmentPackingRecoveryTests.cs",
+      "sha256": "7c698462363c10b9a5b19fc96a1fa711c83c8e4225c4c7ef433cef2895a42b01"
+    },
+    {
+      "path": "docs/API_AND_DATA_CONTRACTS.md",
+      "sha256": "0ad18db274a44ca8f905401bd782c542c8a35398aa0959849ebbbffca5bbdf08"
+    },
+    {
+      "path": "docs/COMMERCE_GST_PROVIDER_AND_VERIFICATION_HANDOFF.md",
+      "sha256": "7e1de6270776679a18f3d33589417e025fc51713640e01aee4a939071464cc88"
+    },
+    {
+      "path": "docs/DOCUMENT_REGISTER.md",
+      "sha256": "1b35334ae859baacf3ba226e5dd4872fa874494fab96966cc2c0d79fa5f9b9e9"
+    },
+    {
+      "path": "docs/OPERATIONS.md",
+      "sha256": "c5f00d8c1b16fbf2fb53cba40a3282fbe31b33994328f1c6350ee659d20d0179"
+    },
+    {
+      "path": "docs/PROJECT_STATUS.md",
+      "sha256": "772507c394b28d2632d199c069119d2f80fe92b824b8070e1a9412139a0f7e13"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "9034513790c721048a5cba93f5db3c741083168b78e5430f7a02c9232691b8ee"
+    },
+    {
+      "path": "frontend/package.json",
+      "sha256": "b14190a54c0a09d498a7803fcd186f5a33f360120eb7980e12bc59859e385789"
+    },
+    {
+      "path": "frontend/src/components/auth/CompanyDraftScopeProvider.jsx",
+      "sha256": "9df54b4201ec9b11ada74a35041343e7f531240caaad4b225d74663747ab41bb"
+    },
+    {
+      "path": "frontend/src/components/auth/CompanyDraftScopeProvider.test.jsx",
+      "sha256": "e4bae11166300e145829169b65adea0eca31b5fa4402d1b7a341e61647756072"
+    },
+    {
+      "path": "frontend/src/components/commerce/FormErrorSummary.jsx",
+      "sha256": "6592688bf2bc00de830eea4d8e4a7c3a44ee694b71982e5caedab9aff8710006"
+    },
+    {
+      "path": "frontend/src/components/commerce/FormErrorSummary.test.jsx",
+      "sha256": "305b9fc7ade673ca068a2b36cf77ce4c207f9d1b5dcf9e2eb782cb1540603306"
+    },
+    {
+      "path": "frontend/src/components/commerce/UncertainSaveNotice.jsx",
+      "sha256": "5e9aece10e807b571c2a30c0c016796101b182eef0ea1d8600e99407e05034a9"
+    },
+    {
+      "path": "frontend/src/components/commerce/formErrors.js",
+      "sha256": "879925e50fe5ab565a9018b78c3fe023377f82a954a4327f7bb0d3dcb3abb7cd"
+    },
+    {
+      "path": "frontend/src/components/common/AppLookup.jsx",
+      "sha256": "c6988563a0b548f52c60195a9af7ec29eaf5a0f9332b51894cbb93bc4c875fea"
+    },
+    {
+      "path": "frontend/src/components/common/AppLookup.test.jsx",
+      "sha256": "bc97e873a766e81d1b795d39755017b79c27f534e7c9bd2fd90d4a77ee5ae347"
+    },
+    {
+      "path": "frontend/src/components/common/AppModal.jsx",
+      "sha256": "6b862a41dcdac6a608943ee8b2f8611162eaa33ccbe755a7e65e9ed5a66f3d3f"
+    },
+    {
+      "path": "frontend/src/components/common/AppModal.test.jsx",
+      "sha256": "51d8964317dc5464a26014076916236223d999f6da64d507e5d61caa7859d727"
+    },
+    {
+      "path": "frontend/src/components/common/DirtyWorkRouteGuard.jsx",
+      "sha256": "893e0057d2477e1e41f55ce8eb0973f3772e83b4cfa8c3186c374699323163b2"
+    },
+    {
+      "path": "frontend/src/components/common/DirtyWorkRouteGuard.test.jsx",
+      "sha256": "36d81befc5e044b4542eb63a463a10fd9d1d6d0f4df85c6d3eb6cde05af5ab0e"
+    },
+    {
+      "path": "frontend/src/components/layout/RecentDestinations.jsx",
+      "sha256": "6b29363a09b16b3f54705d3d43b6915342e8f072344ba988fa2fbeae20ba2666"
+    },
+    {
+      "path": "frontend/src/components/layout/ReportReturnLink.jsx",
+      "sha256": "ec3e1313bb6e97bc3bd94f7a79e2b6f2fbe538c48df095fe844b552fe96301ab"
+    },
+    {
+      "path": "frontend/src/components/layout/Sidebar.jsx",
+      "sha256": "1c3c9a4e5beee3d50d918088af43301451b18156ccfff3bc5430e1d07c3b49a0"
+    },
+    {
+      "path": "frontend/src/config/sidebar.js",
+      "sha256": "9cf9488c9e100554a12ba3ed6ad023cad48ed23d7695fe65faed2161f7cf15a2"
+    },
+    {
+      "path": "frontend/src/constants/rojmelEnums.js",
+      "sha256": "cbd781d4e06c3332964d1ef5093ec88c1980955c28c742f4b4c65537b8c46b73"
+    },
+    {
+      "path": "frontend/src/constants/rojmelEnums.test.js",
+      "sha256": "1a8113d7f19df010ba2c6b3e68a0cd3b9c8587404a77a6c6ea8a00775b66fd44"
+    },
+    {
+      "path": "frontend/src/hooks/companyDraftScopeContext.js",
+      "sha256": "aa28fc2cd307e0724df3dd21d17b0f4cb166a2632e23cbde0d69d8b3774070fd"
+    },
+    {
+      "path": "frontend/src/hooks/useFormReturnContext.js",
+      "sha256": "8de29f52f55dd3898e9c7b51d17189e1667eb921c752bbef00898f7c8c03d27b"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnContext.js",
+      "sha256": "b07e5cbb052fb815384301a81d80836169593e223935a47286b80241b6b61fcc"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnContext.test.jsx",
+      "sha256": "ba3c371b8a70dec098690908dd36f67b100299d0810148c749343c029ccd4263"
+    },
+    {
+      "path": "frontend/src/hooks/useListReturnScope.js",
+      "sha256": "f737f0172910aa1c8e93f77373fa68c7c67903a29693a8efce7f96148e19f5a5"
+    },
+    {
+      "path": "frontend/src/hooks/useScopedDraft.js",
+      "sha256": "9da628acc7ca4cef87de60bb687bda9342bbfca662b251bad0a02b7b4365e530"
+    },
+    {
+      "path": "frontend/src/hooks/useScopedDraft.test.jsx",
+      "sha256": "8537bcd6edae45e5967e68900f7a92f125dd64bbf625a85568c63fc6b25ac806"
+    },
+    {
+      "path": "frontend/src/hooks/useSidebarMenu.test.js",
+      "sha256": "1bd285f2f6837f1f7a7032c87df74ba3a42fabcb5912a57bf0cef707986e2ed9"
+    },
+    {
+      "path": "frontend/src/hooks/useUncertainSave.js",
+      "sha256": "2e8762c48e996ba46044394cec97a71cdae70e151e1181bd0cf59afcd745277f"
+    },
+    {
+      "path": "frontend/src/hooks/useUncertainSave.test.jsx",
+      "sha256": "f7fd5e65ba25efdffbc3f425602996ae71ed383f8b11cc537c5f4ee50408c5a2"
+    },
+    {
+      "path": "frontend/src/hooks/useUnsavedChanges.js",
+      "sha256": "f45166f79aadf2085791bc171304b11347817fddce4941351f4e639e0d28c879"
+    },
+    {
+      "path": "frontend/src/hooks/useUserPreferences.js",
+      "sha256": "5cb8d9b614ff5cda2047a72d8ac36c53f41b1f74d6bcaa276a6e3756aeb80474"
+    },
+    {
+      "path": "frontend/src/hooks/useUserPreferences.test.jsx",
+      "sha256": "ac97dc7e3529c7d61433bc14e6455c6ce0d5ba35282191e0891a7d7b3acf163f"
+    },
+    {
+      "path": "frontend/src/layouts/MainLayout.jsx",
+      "sha256": "f6cce6cd5f19ee00eef0845a6680658abdd7c0f8b9e305803d23724f3b72e228"
+    },
+    {
+      "path": "frontend/src/main.jsx",
+      "sha256": "c3c74a18049482fe92fa9ed060ca993fab7e4f290649151acdda94c9f0593ae5"
+    },
+    {
+      "path": "frontend/src/pages/auth/ResetPassword.context.test.jsx",
+      "sha256": "44547c9f3ebd8e4aee87d966c439c54284093f4c0292178dd22092dc18aaec8d"
+    },
+    {
+      "path": "frontend/src/pages/auth/ResetPassword.jsx",
+      "sha256": "d280146a2d91fe25aba188db917ceb804f4abbd7523b213f437b2e162376ae50"
+    },
+    {
+      "path": "frontend/src/pages/dashboard/DashboardPage.jsx",
+      "sha256": "8acb4212311aca90d0e1ae8a01891193e8c88edfc4310087746287ab3660d683"
+    },
+    {
+      "path": "frontend/src/pages/dashboard/alertLinks.js",
+      "sha256": "5453eb4b517e2b703b59f2ccad565242097123861b77fba287cf5834871188ca"
+    },
+    {
+      "path": "frontend/src/pages/dashboard/alertLinks.test.js",
+      "sha256": "692203c9e70851123bbba646918c39704b249446a0adfa79a00b34d5037e33f1"
+    },
+    {
+      "path": "frontend/src/pages/dashboard/widgets/AlertsPanel.jsx",
+      "sha256": "d1235c44aa0e95dc144b35678df14dcc7edc9b2def23a954fc623ef05c328390"
+    },
+    {
+      "path": "frontend/src/pages/dataBook/DataBookGrid.jsx",
+      "sha256": "3ece7962cc5b006a23e308ed99d73eec4629c86482376faf1cbedb8431ff127e"
+    },
+    {
+      "path": "frontend/src/pages/dataBook/DataBookGridRecovery.test.jsx",
+      "sha256": "4c4ddbdab73549f01ccbbbfbe6133a5109e7a7233cd5eed031cd7dd61da1dc86"
+    },
+    {
+      "path": "frontend/src/pages/dataBook/DataBookPage.jsx",
+      "sha256": "045db82b50c99954fa0923c7e73f332e0d3b98d72ef307d9fb452b6d7961c1e0"
+    },
+    {
+      "path": "frontend/src/pages/dataBook/useDataBookGrid.js",
+      "sha256": "9912572c1b883222f5c09bd3cd89b6dc026611a4505634a79dc90efbdbdbb663"
+    },
+    {
+      "path": "frontend/src/pages/deepDive/deepDiveConfig.js",
+      "sha256": "5a80b50654135f244ffb8c2f0fa5a41aadd6c0f22b70dd00c59ee7ec16ed8b76"
+    },
+    {
+      "path": "frontend/src/pages/dispatch/dispatchDisplay.js",
+      "sha256": "bb6384161f68ba93121af44e7c366ef5ecb25de08d16464fe7cb5e4a0892a327"
+    },
+    {
+      "path": "frontend/src/pages/dispatch/runs/DispatchRunDetailPage.jsx",
+      "sha256": "b7b50acc017546697d12120bef37e3c96d8428f17dcf0f9955b8226b176a08ef"
+    },
+    {
+      "path": "frontend/src/pages/dispatch/settings/DispatchSettingFormPage.jsx",
+      "sha256": "3606c9e83509b5dc1dd55906ef517b0de1ead4650b17b34856707fde94c60144"
+    },
+    {
+      "path": "frontend/src/pages/gst/EWayExtensionModal.jsx",
+      "sha256": "1ef623709d79f32380cf479f2bfddd1869087823fa1f1e4b71486cbb5712246e"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstDocumentPage.jsx",
+      "sha256": "6deeaa89e256e820e8de6426dea117cf65f24ff4e0f2fbf1754beaeecece8b85"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstLogsPage.jsx",
+      "sha256": "b2ecdd9ba7a23224b6385b0f48fddc1467ec9f6f81f9c93f8978ef4af47036a8"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRateHistoryPage.jsx",
+      "sha256": "8e826f5104586bde87779b99be901f77875684cebbd40e0d6d774ea8c5f45da4"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRegistrationLookup.jsx",
+      "sha256": "f2c61b7e5c4344547c436a5bc935d17703a9b56ff3344830faa8c943a02088f7"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRegistrationsPage.jsx",
+      "sha256": "8b40bfbd436c42a6a9ffac28c349a05b47bbe7139c5fb7a2bd1f92529bb5fb9c"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstRegistrationsPage.test.jsx",
+      "sha256": "4bc89f13e61e33895df93fc62a4284bef508ddc1e85b09c06b6584e669654ad3"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstSessionPage.jsx",
+      "sha256": "defbfaf2c32db5043a5cb8a2147feb7aa0fc2b1774a09ab3f07b74a58bd9c404"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstSnapshotPreparationPanel.jsx",
+      "sha256": "f340bfb6cb7dcb8352a9943e34af0364dd0168efd3dc6517faaaa1defe467037"
+    },
+    {
+      "path": "frontend/src/pages/gst/GstSnapshotPreparationPanel.test.jsx",
+      "sha256": "831664138b74d78bbb529d1174ae80a09b13dba7dc1d33697702c9d820a04431"
+    },
+    {
+      "path": "frontend/src/pages/gst/HsnMaintenancePanel.jsx",
+      "sha256": "b80ee13147fe183ac92902d2776c5a84d70e93cfcac12ec2e4b27b766ade704f"
+    },
+    {
+      "path": "frontend/src/pages/gst/gstScreens.test.jsx",
+      "sha256": "a10636a0462d0877eb9fe780159f72bcc1ec91394ab8b09ffc3b7e9b5bdfbf66"
+    },
+    {
+      "path": "frontend/src/pages/hr/HrResults.jsx",
+      "sha256": "3d3c427810918bb48145e87534df4fb6e626caf8097629b9be2a38df5b9bde94"
+    },
+    {
+      "path": "frontend/src/pages/hr/HrResults.test.jsx",
+      "sha256": "dca290279cc818a24b3d37fe0a5200e9640d2322e433ac81e538246f3af58188"
+    },
+    {
+      "path": "frontend/src/pages/hr/HrSetupPanels.jsx",
+      "sha256": "b13deb07f38e5f0389e42506c452dcb275887e6ad8c96d9437af8e4a50472f3e"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/AttendanceActionModals.jsx",
+      "sha256": "c7f81a0094360b587c70e80d2d90c0b96394bbcb5341394cd1c999d02a255636"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/AttendanceWorkspace.jsx",
+      "sha256": "4ec2a85a7bbdb1e03803745ab0d9b353f8d2fb047fb9c66134300b7c56df483c"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/DepartmentAttendancePanel.jsx",
+      "sha256": "9fecc8a7afb87580c93c76501a12627df969f9d895fe450b4b44d6202d7973f5"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/DepartmentAttendancePanel.test.jsx",
+      "sha256": "787b9e18f471861491e42a929105a3540ebe8991dfb6be8eb77e10076dd0bde1"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/EmployeeAttendanceModal.jsx",
+      "sha256": "03535075f7c29d2f3971a949e1a1b26ffb47352f9048b71d72922426d1255002"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/attendanceCorrectionValues.js",
+      "sha256": "3e14d88369fecf32aa2be98171ece7e56bd0244985586c5af410de058a0966a7"
+    },
+    {
+      "path": "frontend/src/pages/hr/attendance/attendanceCorrectionValues.test.js",
+      "sha256": "bb41d66c9c8f1aeb116646611f12114a8245068a9dc87693f91d6b32339618a7"
+    },
+    {
+      "path": "frontend/src/pages/hr/dashboard/HrDashboardPage.jsx",
+      "sha256": "146ec53d428110a276b745b5d1feaf2f552b81955e5c7ac4de15ac2e440fbadd"
+    },
+    {
+      "path": "frontend/src/pages/hr/designations/DesignationFormModal.jsx",
+      "sha256": "71d5f6f48946d7b69d8a9c5e7ce80a518dc7870af85c4bac38f4dd8c2df6324d"
+    },
+    {
+      "path": "frontend/src/pages/hr/employees/EmployeeFormPage.jsx",
+      "sha256": "e75bd98a264d49f3d06781db220d9bbb8de6417fccc6364ff84364cfd8f108af"
+    },
+    {
+      "path": "frontend/src/pages/hr/employees/EmployeesPage.jsx",
+      "sha256": "bbd50308afb0bb4ed3c60afbbf630135e0b06a394d8c509c383f4d4dbdf8b37c"
+    },
+    {
+      "path": "frontend/src/pages/hr/employees/bankSaveRecovery.js",
+      "sha256": "772e662a4742802d1f7c1ebc4c6a424da06bc467ad3c08bf57ab0092498e3a83"
+    },
+    {
+      "path": "frontend/src/pages/hr/employees/bankSaveRecovery.test.js",
+      "sha256": "e88c20ea9aa8d2caba4d0e9c2f1f2d7360cae169efdcce29ede82a2936723968"
+    },
+    {
+      "path": "frontend/src/pages/hr/employees/employeeFormMappers.js",
+      "sha256": "4392ed6ded036e9596db560920f910aeedafe8babd13e0ea1314bc63bd103a52"
+    },
+    {
+      "path": "frontend/src/pages/hr/hrHelpers.js",
+      "sha256": "f654a181045d60de5cc6cde2dce329a126d6b8c05e2e2b96034ccdf50feab0f5"
+    },
+    {
+      "path": "frontend/src/pages/hr/leaves/LeavesPage.jsx",
+      "sha256": "44338bf1daa11a3ba05b4d9fc70bc4ab850b1f433e8000706601962ea76752be"
+    },
+    {
+      "path": "frontend/src/pages/hr/payroll/PayrollPage.jsx",
+      "sha256": "f069b267b150cf6c15059e6eefe47006edec447c38dd7b3e2b333d765844a884"
+    },
+    {
+      "path": "frontend/src/pages/hr/payroll/PayrollRateReview.jsx",
+      "sha256": "c6a1879d19b9a7add879fb7f40258738ac208bcab3561966119950b220eedb9d"
+    },
+    {
+      "path": "frontend/src/pages/hr/payroll/PayrollRateReview.test.jsx",
+      "sha256": "f5db55076679f6650a9eabc2c6b9f93977228a021a3f1fafc54755d80393649b"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemDraftRecovery.jsx",
+      "sha256": "13397d64212a1acf61301ddacb8d3f7bbf356319850fca666f69efc0bc29dbae"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFilters.jsx",
+      "sha256": "2c967d1f01772eb7359563089ef5975166b1c3f72ef8eeee69abccb73983c460"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormModal.errors.test.jsx",
+      "sha256": "c35e92093d28ca49c133f3b678cb77cac6f0e952388c9d44528c84b3d99db940"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormModal.jsx",
+      "sha256": "b665d22e924f4c9a9dcaefb70d2404a60c3569ed0f856ecacb165fe76b6a943d"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemFormPage.jsx",
+      "sha256": "84ddd3e91578d96fd4fbc4c09cfc9370b7761a958c14bd8c26ec86a55f4849f0"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemManufacturingTab.jsx",
+      "sha256": "4bc7dbfd8892812f52c1e954a2319153c089729af17f3e33e8e899a57ba5fb03"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemManufacturingTab.test.jsx",
+      "sha256": "b5402540a8d137f9851254ceac73577ac206a661d530f0938031265bd4e12993"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemMasterLookup.jsx",
+      "sha256": "4cf39e0a8648846d2a9e5d31c653b83e30b1b7a437d024ac0ad713bba1c33d74"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemSaveRecovery.test.jsx",
+      "sha256": "908e3c1d4412e080a90acd67534d51d6bfede3dad384fd103ae2bbe7cdaf2d95"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemTable.jsx",
+      "sha256": "fcc36c79fc7d1bd81ac436d2073ea8d9aafd6b3edc64b6650ea625df3dfb31de"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/ItemsPage.jsx",
+      "sha256": "6e2a886bd53c54e9a415b6cfac312f97fb846f4b3c7202fb9b341f5f25258d55"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/itemHelpers.js",
+      "sha256": "19a6122df6201ddf0ce7a65f7ad08cae2993c288d2dfd97c083ca3e3f8bd7219"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/itemPrecision.js",
+      "sha256": "07a28fa80755df2e23e2164c5b66dad2fc402fa0d0225edb832988487e0da690"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/itemPrecision.test.js",
+      "sha256": "28a3ef5cef6489224bf532ef15b666d402fbfb9e05995f6e39a863ad86794ad6"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/useItemDraft.js",
+      "sha256": "1b71aeeeb4b9e27798c7db71fb79b147a8316eaab8cd014c3661f4a41c53bb19"
+    },
+    {
+      "path": "frontend/src/pages/inventory/items/useItemDraft.test.jsx",
+      "sha256": "0aa0f8b63e64116b3be42aed68c4007c87b2c15cdf689e44fc2f85da36e091fa"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/PlanningPolicyExample.jsx",
+      "sha256": "3f6f406e5094497d0cf751e7f5020fe90ce1d2b53087eef8fb0683cbdfc4c009"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/SetupReadiness.jsx",
+      "sha256": "561318809dfa72f4c6f6215c506235d038e36b09aac51dcfe1b2205b903e8274"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/ConfigurationLookup.jsx",
+      "sha256": "0326e6dfba99500d9824bd6cc787fea115d987db6e2dd1901a6241af6e34f79b"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/ConfigurationLookup.test.jsx",
+      "sha256": "724a7174e2bc593ee4289d3caf8f96c22ea4423a4936e4b825ccd91821b74fd6"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/ConfigurationPage.jsx",
+      "sha256": "f8c970afdc7ec5fcf1bcadbf63ec124bcd6b66b2dbe25c6f0dc5498aece3f63a"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/ItemProductionConfiguration.jsx",
+      "sha256": "c3af0df7816a0a17c0f449e21753c80c8593e5888c74fce5e7e5cff01e072b58"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/PackagingConversionPanel.jsx",
+      "sha256": "dd1bd7cc45ae1a55be24eec4a7170a4278a2fc9b24842e5957165ac1392e399b"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/RoutingPolicyExample.jsx",
+      "sha256": "a1b3201b093f57fe2b16dc9ddecd79e13e45a033108fc4caed9274fbb3dc734b"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/configurationHelpers.js",
+      "sha256": "00b587062593136574672e31900f0c9bc82fb73ab0c80781b2a34aa47677fc81"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/configurationHelpers.test.js",
+      "sha256": "a40d92272c3e6307390d4e1bd3c47eff762ca4d44bfae01ade4c0247c6963daa"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/configuration/configurationHooks.js",
+      "sha256": "80d783c84ff1b781b104480fccae78784644a94ca0941d70379fa50e6f0b0e96"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/desk/ProductionDesk.dom.test.jsx",
+      "sha256": "3f0dc6f3c52ef9d8c152a2c067c4c6fab30ac60b41a6ab6b728e368d864a83ee"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/desk/ProductionDeskPage.jsx",
+      "sha256": "330a43ac2f7e528a109901970008b0d05008995644694272b0c68e178f7db1f4"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/integrations/ProcurementPurchasePanel.jsx",
+      "sha256": "f8434c0075c30526feb61cc9fbc4ee937291a5eff16df5da047232a801f69124"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/manufacturingHelpers.js",
+      "sha256": "0ead12658942910ea52e3c972e84c2f838134ec456357551b8938f85f3f185a4"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/manufacturingHelpers.test.js",
+      "sha256": "7b4553baed4a2144907e916e9b16a65d1672eb4184e571db9a52ac03a66a4a34"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/orders/OrderDetailPage.jsx",
+      "sha256": "42fc428c4982d122e7895b8decf814052a3151f621cc866eb81ca3ccb34fa6db"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/orders/OrderFormPage.jsx",
+      "sha256": "4e502053933ec0824d9ef3148ba9639f8cf1f318f2b423b3bdc708225afd3d2d"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/reports/OperationalReportsPage.jsx",
+      "sha256": "5f4b0d1d1f398755e5f68a0bfe6c43bef10260b6303673fd9170ea512e55d94b"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/setupReadinessLinks.js",
+      "sha256": "8fe4ebdb0cc5d0bce626ba1c6dec8b4303c71f507452b140ebe6767d6fc05749"
+    },
+    {
+      "path": "frontend/src/pages/manufacturing/workspaceViews.test.jsx",
+      "sha256": "53dc6f091b2a00ff58c2df2e5a1dce04a824b3789bdd75d0c122e835d40693f3"
+    },
+    {
+      "path": "frontend/src/pages/oee/OeeMasterPage.jsx",
+      "sha256": "00ea21b06c564bb68c9f655c188bd6f84b681b7b19f72d0c3831da939b604813"
+    },
+    {
+      "path": "frontend/src/pages/oee/dashboard/DailySubmissionAudit.jsx",
+      "sha256": "73bf54aab63c57a20220f2edde1628d9d5308fe070ac7637160aeeeefa2e4757"
+    },
+    {
+      "path": "frontend/src/pages/oee/dashboard/OeeDashboardPage.jsx",
+      "sha256": "5f9dc46dfa80873964458e1845f45c23bb641c161ace07d6443f737689aee39f"
+    },
+    {
+      "path": "frontend/src/pages/oee/dashboard/submissionAudit.js",
+      "sha256": "460fcb73979cbb5858be9ee2dc6b42fbce5bac8c3c6c1303875066186eb532f8"
+    },
+    {
+      "path": "frontend/src/pages/oee/dashboard/submissionAudit.test.js",
+      "sha256": "b2e8e11d17d700835f70f59dee5e98cc7a5e3ca2feda2f16536a5c62a7270266"
+    },
+    {
+      "path": "frontend/src/pages/oee/productionEntries/OeeProductionEntriesPage.jsx",
+      "sha256": "021386b3bd1e55871823bd73312feb1634b3e40bcc67bda52653e2f8d968634f"
+    },
+    {
+      "path": "frontend/src/pages/oee/productionEntries/OeeStoppedDayPanel.jsx",
+      "sha256": "469c5cb4eadcfcd80dfd98353a41282cb3ea06835ce46212a843ae703e8ab32a"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceFilterLookup.jsx",
+      "sha256": "f9756fe0e316b4f833b5b235cafc83f5da0a1faa87836790761e1e8236f5a265"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceFilterLookup.test.jsx",
+      "sha256": "af6dd6c1085d14377a5db9bc957794b6a17e7c81ed6d2f169c5070b8af50eeb6"
+    },
+    {
+      "path": "frontend/src/pages/party/CommerceListFilters.test.jsx",
+      "sha256": "5ea754dd9b570d2627789468f531f8642985d7bbcc18130375c9526592732b05"
+    },
+    {
+      "path": "frontend/src/pages/party/DocumentSaveRecovery.test.jsx",
+      "sha256": "163be1085d01d4aa1cb4b1c53ee88a719ed8ea3d37783ccdd3040572e9b12a6e"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyFormModal.jsx",
+      "sha256": "6018b812b63d458015693ac80fcd70c5b7912cbc19c1a38575d41a32116d740c"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyFormModal.test.jsx",
+      "sha256": "b4f7bfef1b8a8db969b5d20689ded766c319d167d73bce642dfb28272632ba80"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyFormPage.jsx",
+      "sha256": "6f01415a57bee6cde9b1537f1f1e69a6719696c20573e33897a16f01408ed792"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyPage.jsx",
+      "sha256": "66f3acc1cb0a70d38a9f9ed4d6f2506c0d58fe29f72ea025c4a814bf1dc0b2ea"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyReturnFlow.test.jsx",
+      "sha256": "14dca4e95b2b08ba08c96d8c22fe66cbefe99eb264e0dac394f2a4cc29315959"
+    },
+    {
+      "path": "frontend/src/pages/party/PartyTable.jsx",
+      "sha256": "35d1a462a1369249042080f1a514e39111c7e91607b96a2f6a4257c5ab2183a5"
+    },
+    {
+      "path": "frontend/src/pages/party/partyColumns.js",
+      "sha256": "395ee91bdb7fd62ddcace87db227811c451f6a4bd51fa076ffcb510764b6ab92"
+    },
+    {
+      "path": "frontend/src/pages/party/partyHelpers.js",
+      "sha256": "90c0fd4cc4f250014ee02ae5137e1056b805eaf23e91b9bf1afe8cedffbb25be"
+    },
+    {
+      "path": "frontend/src/pages/party/partyHelpers.test.js",
+      "sha256": "960ad3098fac1dd39c26011812f473dfba9f967b2d73ee6f713e029275e9dcbe"
+    },
+    {
+      "path": "frontend/src/pages/party/usePartySettings.js",
+      "sha256": "11a98696172f92acc332b4861c58ef8b20feabc60ae73edc13c54dfd56e93f9d"
+    },
+    {
+      "path": "frontend/src/pages/preferences/PreferencesPage.jsx",
+      "sha256": "c32f2b8348c194ac31aaadc62d24d28751f8dc81329c4e13d305c1d7a75cc720"
+    },
+    {
+      "path": "frontend/src/pages/procurement/bomMapping/BomMappingPage.jsx",
+      "sha256": "dad6c8d9c94cfce17f743e82be02f6b277347f19d514153c4fb200624dae2d19"
+    },
+    {
+      "path": "frontend/src/pages/procurement/settings/ProcurementSettingFormPage.jsx",
+      "sha256": "cfb53f0138feaf0448f45b8d2cda4d930fda6503dcc5cd678dcee0cbdd6618cd"
+    },
+    {
+      "path": "frontend/src/pages/profile/ProfilePage.jsx",
+      "sha256": "83467f5522ca5272b2137b53451ec551c5cd29fdb1d4e1dff9244c4a2022dc09"
+    },
+    {
+      "path": "frontend/src/pages/purchase/PurchaseLineItems.jsx",
+      "sha256": "5fb0e0003143e098f8e599484f4bfc11edae0c592cf3feb093ef46fff27d36fd"
+    },
+    {
+      "path": "frontend/src/pages/purchase/PurchaseMasterLookup.jsx",
+      "sha256": "5a0931e6ec0d7d24df12e6161929006d7c65b13e9ed0ee9dcd4051b17541e521"
+    },
+    {
+      "path": "frontend/src/pages/purchase/commerceTables.css",
+      "sha256": "d6e4266b732e62a8e5548ae6603ca60b8a05f5bb04464b312eba4fd2e9ae8620"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentDetailPage.jsx",
+      "sha256": "eb251d351c677c62787843ce850f1922a875d6e80173c13beb56ada8b2643aca"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentFormPage.jsx",
+      "sha256": "83f5dc6b9cf9cf1f30f7f9e2a68fb556473ce933c58244ecbeba39f04c629e45"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.jsx",
+      "sha256": "d16c70a009943da427c97d3c0ff4700775349a904531ef54039443da2685303e"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/PurchaseDocumentListPage.test.jsx",
+      "sha256": "bec25427a929f561f25c59205f5ae697e32661f0bb3d4a34b5b78c5e3f1535bc"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseDocumentSchema.js",
+      "sha256": "5355b9c7a10e14decd33bb20650738ffae7c39698718f057742674e5a59e1107"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseLifecycle.js",
+      "sha256": "bda3b9aed4329300a1981c21e9f8d298af91d92f55be1ce844ba84d43c45c62b"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseLifecycle.test.js",
+      "sha256": "73a2d1c87d18ba544405b87ba3e24ab6aa7e7a0a1a60d90cd2be9f1f7f9d1e39"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseReturnSource.js",
+      "sha256": "fbe2d0d458576ec4d3451f7619f28c810b85ac6c226d9d9bad74f349bba4562a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/documents/purchaseReturnSource.test.js",
+      "sha256": "36c9497fca0262b41aec107656b6ed484c8f7b87b0bcc8531e88930265f337e4"
+    },
+    {
+      "path": "frontend/src/pages/purchase/expenses/ExpensesPage.jsx",
+      "sha256": "710e79dc8f919295848ccc0ff4bcfa859369225225b360390d1bec199cc0c76a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/reports/PurchaseReportsPage.jsx",
+      "sha256": "c6e3031081f00c86ca8a8747fbabc522f9030720de9a17ce93789d17bfc8ab7a"
+    },
+    {
+      "path": "frontend/src/pages/purchase/supplierPayments/SupplierPaymentModal.test.jsx",
+      "sha256": "ac812374d148abb0c7eaacb724817a5334c81d04519dde399c425b15142b3917"
+    },
+    {
+      "path": "frontend/src/pages/purchase/supplierPayments/SupplierPaymentsPage.jsx",
+      "sha256": "84607f7c8fb5d1ebaceb65dda0587ee4dca692530383868e2a793e7457d4d770"
+    },
+    {
+      "path": "frontend/src/pages/rbac/permissions/Permissions.jsx",
+      "sha256": "43c95c213d38dcb10c0a23b946b98d5696784b8e162598e7839841dd2407c4a0"
+    },
+    {
+      "path": "frontend/src/pages/rbac/roles/Roles.jsx",
+      "sha256": "50983620c6b31882314905007f8b2d6577b4692749dafde138788751254dbc92"
+    },
+    {
+      "path": "frontend/src/pages/rbac/users/Users.jsx",
+      "sha256": "669ee91e97a96a1d105818daf53bc35391678e5ec2dc9ad41edb467af5db516e"
+    },
+    {
+      "path": "frontend/src/pages/rbac/users/Users.partialSave.test.jsx",
+      "sha256": "666eb9a38f93e49aff5a0784015027ba99d0d7985d38c93b6301cc434526ed0a"
+    },
+    {
+      "path": "frontend/src/pages/reports/ReportTable.jsx",
+      "sha256": "14e43fd889e1fd6d416eb8f0fd9da3ad80adb3ad4e1e91ed0dd6276b8f2cd769"
+    },
+    {
+      "path": "frontend/src/pages/reports/ReportView.jsx",
+      "sha256": "13e4a9c4db2c044ba5db6726d07965df6205369c4eaf6bd9ac940b5b82380390"
+    },
+    {
+      "path": "frontend/src/pages/reports/ReportViewPreferences.jsx",
+      "sha256": "45d5a2db5f5102394e63277db84995fb4cadfbf1e573be7c7e725246a69afdeb"
+    },
+    {
+      "path": "frontend/src/pages/reports/filters/ReportFilterBar.jsx",
+      "sha256": "c32196cbd0df272a5ed07de4ec435f780835f2ac6f273fb091b01691f4ee9b16"
+    },
+    {
+      "path": "frontend/src/pages/reports/filters/reportLookups.js",
+      "sha256": "f21e27e39e6356ac6a740068aee3bef10271670cdf2e731bb0f14109feec2441"
+    },
+    {
+      "path": "frontend/src/pages/reports/reportDrilldown.js",
+      "sha256": "c1552072d2238de6a3814e5ae152aecab4f1455db27e508cc55e3d5c24fedc43"
+    },
+    {
+      "path": "frontend/src/pages/reports/reportDrilldown.test.js",
+      "sha256": "80eae6a1e35626b05fb8b9e2040a9e4ca5f129afa1d5fa3c43a1d9ca4a34346e"
+    },
+    {
+      "path": "frontend/src/pages/reports/useReportViewPreferences.js",
+      "sha256": "07eda8a745918c8895070e10bed2271d00e4e6510320b73d8317d0a8cd272408"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/RojmelShared.jsx",
+      "sha256": "f759e7530b70d55a8343cc4ec86f3836401ace748d4ba6d598206993e8d9d9a6"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/components/TransactionEntryModal.jsx",
+      "sha256": "d50dcf39fb0a63e5f6605680c670b0483479834bdb598474bca3912717ad3178"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/myWallet/MyWalletPage.jsx",
+      "sha256": "09011f8bd124eff96041bab9d67d1206f53dd28ecc3ad6b1b997cedfb3b722d5"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/rojmelHelpers.js",
+      "sha256": "18ffb17ff66c6804eade9cb2d47650d1f5857440e6c68e615ac030d1327da793"
+    },
+    {
+      "path": "frontend/src/pages/rojmel/transfers/TransfersPage.jsx",
+      "sha256": "f48d7a4071742e4903e8245730a60284545798e52a35adffc89d581492b3a13d"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoiceTemplates/ClassicTemplate.jsx",
+      "sha256": "47b5ce73b0a724df6fc20b1864a0001dca42a7194569a393a78f6666e105e716"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoiceTemplates/InvoiceTemplateShared.jsx",
+      "sha256": "bcd94ec42e88f075c9109d5d9c52181ec3b0b3664eb65400899b0394f9c82dc7"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoiceTemplates/wewelInvoice.test.jsx",
+      "sha256": "a375bc1a5c3a27bee0b563fd0dfa1c6610d610bb8cf5a6d09c9d26dc5dedc5c7"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceDetailPage.jsx",
+      "sha256": "999cb00c931858ab7c4fe9771776645626a70b546661da555b438cdcdc6e6297"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceFilters.jsx",
+      "sha256": "d91c88de2d27b3a47cf55efeb2e612088969cefedb268099645a44d2d0fb8428"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceFormPage.jsx",
+      "sha256": "5f772d0cefa3eae60f73a055c747fe34882a08d643245023b7c32f45b51ac5c4"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/InvoiceTable.jsx",
+      "sha256": "64fe720ae9ead059f03aabf3a91c1f44d58f95e46f36f5d6cc91fbfa1caa955b"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/SalesInvoicesPage.jsx",
+      "sha256": "cb9a524af338d566de839bf527ae2f59169c71eef7c4f974d6adde010e488c8c"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/invoiceHelpers.js",
+      "sha256": "436fc6d679374e67d4738fddc53f2884d9704e2659ce348a612f394f8e454e24"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/invoiceLookupGuard.js",
+      "sha256": "e9e7647eb6be4c9bc58469dc5a0cad9135ee2a8ad8fde3faa8082a257363ce48"
+    },
+    {
+      "path": "frontend/src/pages/sales/invoices/invoiceLookupGuard.test.js",
+      "sha256": "bbe938eec6ed88b94e7b8d954755b482e44c54bf12dbcada932c326f4b691622"
+    },
+    {
+      "path": "frontend/src/pages/settings/sections/ItemSettingsSection.jsx",
+      "sha256": "a19c4a83aa9ad149e46be61a466f2913c0e48541467d0db4ae6e59a0e88af479"
+    },
+    {
+      "path": "frontend/src/pages/shipments/detail/ShipmentDetailPage.jsx",
+      "sha256": "6d2c59609a4f8ac9fea7f1f3552fb463a8d35da0bf6969174456f2b194f6a408"
+    },
+    {
+      "path": "frontend/src/pages/shipments/detail/ShipmentPackingTab.jsx",
+      "sha256": "1e47a7a865ad279c3c335d94b7d2507b920deb73ff42798534e27ee9f1323980"
+    },
+    {
+      "path": "frontend/src/pages/shipments/detail/ShipmentPackingTab.test.jsx",
+      "sha256": "7f2cbb0f29e7b4e2456893a4d6bec9bd34f39d89de5243c6d4c4417b5815557e"
+    },
+    {
+      "path": "frontend/src/pages/shipments/shipmentDisplay.js",
+      "sha256": "4fe6a9cc30a63c21647a629e951cda2e7c9fc55f959725d0fafc066a0d0d7f82"
+    },
+    {
+      "path": "frontend/src/pages/shipments/shipmentSchemas.js",
+      "sha256": "00ae847b11b07c6dbac656c98c6286e1f7b0b8bddc45626f4658b6c987808098"
+    },
+    {
+      "path": "frontend/src/pages/shipments/shipmentStatus.js",
+      "sha256": "b4dcb5ff8d47d364c7a806120dbd0a77e0d502f9330ba344b9478b5ad1c7bad7"
+    },
+    {
+      "path": "frontend/src/pages/shipments/shipmentStatus.test.js",
+      "sha256": "63e84c19a643d5922c236417fe19e6282304cb77e83a84133321d84e03c771c0"
+    },
+    {
+      "path": "frontend/src/pages/shipments/useShipmentCapabilities.js",
+      "sha256": "9b5514dd7d9b1b18340056be13590670c7bc375a75c675f929486d1c61f3a15d"
+    },
+    {
+      "path": "frontend/src/pages/shipments/workList/DispatchPlanShipmentFormPage.jsx",
+      "sha256": "468cd6577c251cbe9661df417e9cdb1cf6e7f2c825f40654db578cbd63c04273"
+    },
+    {
+      "path": "frontend/src/pages/shipments/workList/ManualShipmentFormPage.jsx",
+      "sha256": "218d4ed8276788c6b89a5f5989418cc78a80c7ee1ff56a0abeee25c6140c5305"
+    },
+    {
+      "path": "frontend/src/pages/supplyChain/packagingProfiles/PackagingProfileFormPage.jsx",
+      "sha256": "2746f7805a287b07859407ac69bfef79f8138bd5af0647ed11a9f0dae666181c"
+    },
+    {
+      "path": "frontend/src/pages/supplyChain/packagingProfiles/PackagingProfilesPage.jsx",
+      "sha256": "7eab4562b4c367f082a7f3e331ea36cc7e8df9ed305614aa4a7a73a3beead963"
+    },
+    {
+      "path": "frontend/src/pages/supplyChain/warehouses/WarehousesPage.jsx",
+      "sha256": "369144defe3ebe0dbd7b255d7c2f3984fd5dd7aa45c9a2a3bf6065876376df29"
+    },
+    {
+      "path": "frontend/src/pages/today/TodayPage.jsx",
+      "sha256": "dd3dec71f0b85e854172f90c738466cbefcabd5a809e4715c80e93b9bc046570"
+    },
+    {
+      "path": "frontend/src/pages/today/TodayQueues.jsx",
+      "sha256": "030c9bc3fa3e8b8a9f8d76794e8d87df299d49fa67442e31506a0991b30926e8"
+    },
+    {
+      "path": "frontend/src/pages/today/workspaces.js",
+      "sha256": "8102e00709b4942bfca2674d0789775c1377f2a9d07608d23bc7f96d9140b329"
+    },
+    {
+      "path": "frontend/src/pages/today/workspaces.test.js",
+      "sha256": "526021734aeef3c48c63c97e0237c2d48ddd07db3f247d02effcec55e643e8a9"
+    },
+    {
+      "path": "frontend/src/pages/website/WebsiteContentPreview.jsx",
+      "sha256": "500cb086d58971424e9d1d5741a5df109827e6fc1ef05b5e82a5d0508122649f"
+    },
+    {
+      "path": "frontend/src/pages/website/WebsiteContentPreview.test.jsx",
+      "sha256": "ca00329b3fc73f1479573f73a73730c810d2035862509ca2a35e419715f89b82"
+    },
+    {
+      "path": "frontend/src/pages/website/announcements/WebsiteAnnouncementsPage.jsx",
+      "sha256": "92f0b21ee2e756065e5011088073d8d2fda7c554f6c528b3b737cb04bea242e6"
+    },
+    {
+      "path": "frontend/src/pages/website/blog/WebsiteBlogPostFormPage.jsx",
+      "sha256": "59ba1f2ebacf48138dac4e2637b68fe9347fff9528e12968a1e2bf1ca59181ae"
+    },
+    {
+      "path": "frontend/src/pages/website/products/WebsiteProductFormPage.jsx",
+      "sha256": "9934ce89f820125391128090d05da9edc276269776fef3ac0099c3833af4ce31"
+    },
+    {
+      "path": "frontend/src/pages/website/settings/WebsiteSettingsPage.jsx",
+      "sha256": "af419f1db4a608a5dab69695c11398b4af0da0ad2165c8f1b695e945a038b5b5"
+    },
+    {
+      "path": "frontend/src/pages/website/settings/websiteSettingMetadata.js",
+      "sha256": "4c7f839b3e276de894d1e550e3bb324462c038f73e41af2b83f75c0e8c8bcd25"
+    },
+    {
+      "path": "frontend/src/pages/website/settings/websiteSettingMetadata.test.js",
+      "sha256": "68264a20706f12f9068c03107e9596c44844333dac2fb6faa935cb164dfb6499"
+    },
+    {
+      "path": "frontend/src/pages/website/warranty/WebsiteWarrantyPage.jsx",
+      "sha256": "d9f6bb125f5a1b0b51e3c7681453247ea7575760836e0eb616ba60ba1037279e"
+    },
+    {
+      "path": "frontend/src/pages/website/websiteFormat.js",
+      "sha256": "9f448bcc42fa8e4dde4247b8e1b2e8932e379e101de65146637e275c1de51100"
+    },
+    {
+      "path": "frontend/src/pages/website/websiteScheduling.js",
+      "sha256": "7a0059604cacc6ecfa67c3e3a063eafc54b8f2c784329745a5c0c820d0deeff6"
+    },
+    {
+      "path": "frontend/src/pages/website/websiteScheduling.test.js",
+      "sha256": "c5ada73ee4d70595de6f74be3e328f41b6d198195ef8d2fc615881557caa41fd"
+    },
+    {
+      "path": "frontend/src/routes/AppRoutes.jsx",
+      "sha256": "11b021922a042dea2253463dede45b349b1b3a2b1b86b9ec0209c57b926a916b"
+    },
+    {
+      "path": "frontend/src/routes/DefaultRouteRedirect.jsx",
+      "sha256": "0a01c1caf6124a52127794986e3ce7fe6c593a8e2beaa0079fd820049c67fff6"
+    },
+    {
+      "path": "frontend/src/services/dispatch/runService.js",
+      "sha256": "a1c0c5684625f37a7a5602632ba237a38feb89b1fcf9b82cdb68b015973f648b"
+    },
+    {
+      "path": "frontend/src/services/documentLookupService.js",
+      "sha256": "118375bb290bfe38c30b0521ae02a1f5360bf1b61ea168dd1e5902281ac4667d"
+    },
+    {
+      "path": "frontend/src/services/gst/gstService.js",
+      "sha256": "aebbbec0d92e9ba65960ce03f5b64224ba58cdbc50e77fc61a27c6baba783a6b"
+    },
+    {
+      "path": "frontend/src/services/gst/gstService.test.js",
+      "sha256": "0419938ff844910b7967ee181335ae2b53dc71b97c59286f588e1e72a2997a65"
+    },
+    {
+      "path": "frontend/src/services/gst/hsnGstService.js",
+      "sha256": "ff91b6bc5816d1b26f39d4976216d2bf2e985f2bd0db49eaee4937083b94f005"
+    },
+    {
+      "path": "frontend/src/services/gst/hsnGstService.test.js",
+      "sha256": "f37e050be3b7298ce7872d4051fc3b856ceef74d3cc7f06870caecfff62dd277"
+    },
+    {
+      "path": "frontend/src/services/hr/attendanceService.js",
+      "sha256": "fde3132c1b01a32cbb5851967dc871ac166cb0abc5d9a22e27e13842bd40a6f1"
+    },
+    {
+      "path": "frontend/src/services/hr/departmentService.js",
+      "sha256": "560cb4392a2ee4996e07150297c440b55e9c2e4498dda9855f551076ea03090a"
+    },
+    {
+      "path": "frontend/src/services/hr/designationService.js",
+      "sha256": "4d64d20950ea0af97f00a17fa196842ff5118281dc2ea377187170a673621296"
+    },
+    {
+      "path": "frontend/src/services/hr/employeeService.js",
+      "sha256": "f801e22bf503e72afecca6b4de722191ea1ce2b6672e7aa559e707ebedd7b8e0"
+    },
+    {
+      "path": "frontend/src/services/hr/hrServiceUtils.js",
+      "sha256": "cd5af5bb9e4f38a35c5c9b0a552e85f9b5087873ad50617b6a7089ef8d63c3e8"
+    },
+    {
+      "path": "frontend/src/services/hr/leaveService.js",
+      "sha256": "fcd09fadc436d9689df2cd12e78658dd4a134d6d622fd3a3103d5089ca31ff68"
+    },
+    {
+      "path": "frontend/src/services/hr/payrollService.js",
+      "sha256": "8ee060639888bc6091512d91565c3c626369585b37d998ca8ed0bfad294933ed"
+    },
+    {
+      "path": "frontend/src/services/hr/setupService.js",
+      "sha256": "660a999eee1150fb324d58fe626103f8ce697a10bae62b919b8eb185ffd38a4f"
+    },
+    {
+      "path": "frontend/src/services/hr/setupService.test.js",
+      "sha256": "77bb8939966f0df33bc7394cc945affc636c8d8b71ab924d95925afd812a91e0"
+    },
+    {
+      "path": "frontend/src/services/hr/shiftService.js",
+      "sha256": "6477883a1fa9bda7d752e4e83bca65b1b519a316e3cd3e042d07b3bab82048af"
+    },
+    {
+      "path": "frontend/src/services/inventory/categoryService.js",
+      "sha256": "0a196d47b974a6effb0b0b8819ad3aa358e64e26225440998d293aa38d81a0b2"
+    },
+    {
+      "path": "frontend/src/services/inventory/itemService.js",
+      "sha256": "c6da7c9f4044c3ee7430c4900e1016a79e484b83e7482b391fc162d864625b08"
+    },
+    {
+      "path": "frontend/src/services/inventory/masterCreatePrecision.test.js",
+      "sha256": "0a6e1f00b104419744c7d9c285502c0d2a512c2c0468d732dc1faa3f27e711ab"
+    },
+    {
+      "path": "frontend/src/services/inventory/unitService.js",
+      "sha256": "04c07bfb0de079f4723a3154f03a26013eea846d21b65de390677e5a91758c1e"
+    },
+    {
+      "path": "frontend/src/services/manufacturing/manufacturingService.js",
+      "sha256": "87e50e2c9bacae6dc597d0679f08af4f70731f291df1694a8661a8f561f50c73"
+    },
+    {
+      "path": "frontend/src/services/manufacturing/productionConfigurationService.js",
+      "sha256": "f4e202205777ede9182768d0af73013611cda4f3b1a5d1d84d3351043cc256c0"
+    },
+    {
+      "path": "frontend/src/services/manufacturing/productionConfigurationService.test.js",
+      "sha256": "d8720dc13b427de921541d8b493a2721db63251a56513e4d27c12c8b10f95852"
+    },
+    {
+      "path": "frontend/src/services/manufacturing/productionOrderService.js",
+      "sha256": "fe9ea38af3531a7509a80338407fab8af56df0b2474f44ef08e1d84b4b4fb11d"
+    },
+    {
+      "path": "frontend/src/services/manufacturing/productionWorkspaceService.js",
+      "sha256": "d2016940eaebb415416462ed96e4b5c0573f589b22d13a95aa261e98af63f45b"
+    },
+    {
+      "path": "frontend/src/services/oee/oeeDayAcknowledgementService.js",
+      "sha256": "8c36d74a3df98bb7d26304173ac5d20e3f0a4ecc0ae0543e4c8e61a076bbe444"
+    },
+    {
+      "path": "frontend/src/services/oee/oeeDowntimeReasonService.js",
+      "sha256": "46704acac38f2a90cb40bf4f0af8e1c9a0c58c152399033778d37652bc67e550"
+    },
+    {
+      "path": "frontend/src/services/oee/oeeMachineService.js",
+      "sha256": "6027b3b4caf6b1744e96a1f5d4217b8600349da8fd91bf833085cd411d58ea6c"
+    },
+    {
+      "path": "frontend/src/services/oee/oeeMouldService.js",
+      "sha256": "e6732620a2876c82c5ce98349c0c8dd791e46e2ce345694876438e989424aed3"
+    },
+    {
+      "path": "frontend/src/services/oee/oeeProductionEntryService.js",
+      "sha256": "3471b638a46f278556a4c9dfde9e35688027daf77bc5a856a0fc1dc21b73ecf3"
+    },
+    {
+      "path": "frontend/src/services/purchase/expenseCategoryService.js",
+      "sha256": "d695b75b3f050df50dc80c738a8ee0a3facf15e4297de4166faac08542cef2be"
+    },
+    {
+      "path": "frontend/src/services/purchase/expenseService.js",
+      "sha256": "c0c6917668f0e43939bb28b9900452b2f227d28fe3c4c8ac5c98c41eec78559b"
+    },
+    {
+      "path": "frontend/src/services/purchase/purchaseBillService.js",
+      "sha256": "ecb81b86feb09b4a072ec0f35d6fbb49d5f8cbc4c0adf4326ac0c490b230d406"
+    },
+    {
+      "path": "frontend/src/services/purchase/supplierPaymentService.js",
+      "sha256": "1651d480940e9dd9756f565fc1561b12a4d1b515009f77d4680cdcf2f9e45a5a"
+    },
+    {
+      "path": "frontend/src/services/reports/reportsService.js",
+      "sha256": "76b5d3311a3e9861e714960a5204b3732fd7bcfb8fbc8249a1964a565f0270ef"
+    },
+    {
+      "path": "frontend/src/services/shipments/activityService.js",
+      "sha256": "57fd02c117fc4900e58d23b189f232d38a7ba34a7bc60db5a9e719f3c1f7f825"
+    },
+    {
+      "path": "frontend/src/services/shipments/packingService.js",
+      "sha256": "dd603ceb70fc59ffc83d7e605afc93e1c128270fc6468fc5e725e3819a4d2f08"
+    },
+    {
+      "path": "frontend/src/services/shipments/shipmentPrecision.test.js",
+      "sha256": "1d45989380de566bd7b0a57080697ed60341554435c17f3107e449a45edadb0d"
+    },
+    {
+      "path": "frontend/src/services/shipments/shipmentService.js",
+      "sha256": "0331d88587d6b394f7c6f1ae3d9e4c5dfd9b415c05e0f25bb33edd179b2dec62"
+    },
+    {
+      "path": "frontend/src/services/shipments/shipmentWire.js",
+      "sha256": "2263eb7ecd7d62a08c5a89e0d9cb76f21b0eb7db4158e3706549a1b9cea5e2ac"
+    },
+    {
+      "path": "frontend/src/services/supplyChain/channelService.js",
+      "sha256": "74e16d92ccf5eb05ae7d7f2f859bf6c067a4056a0ad0e29925274f93a520cffb"
+    },
+    {
+      "path": "frontend/src/services/supplyChain/packagingProfileService.js",
+      "sha256": "b4628f21a72f1b13b01703ee7ea2bf6cf71bb8ea4e450290e04b5b9df0ea629c"
+    },
+    {
+      "path": "frontend/src/services/supplyChain/warehouseService.js",
+      "sha256": "3471b8da8a4ba18598a471607821cdeb886fb72349b19afe494d7589dacaac4d"
+    },
+    {
+      "path": "frontend/src/store/slices/hr/employeeSlice.js",
+      "sha256": "0021836d728e9dc3e7837a82e9473b7ca359c082fb554eb78ab65bfe82348973"
+    },
+    {
+      "path": "frontend/src/store/slices/inventory/inventorySliceHelpers.js",
+      "sha256": "d510b4e33993126b417a40c8d6a2752d7605a2290be06dffb6ae1b2e7ed6c45a"
+    },
+    {
+      "path": "frontend/src/store/slices/inventory/itemSlice.js",
+      "sha256": "a5ee2f0813c8939f15c16ce1798ebb170f3b52744db7e0649f5c94bfc0cd21d9"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseBillSlice.js",
+      "sha256": "334929de9868598453eb22c7783abe8d816154536cf38f2e266dbfcf7a7ac455"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseOrderSlice.js",
+      "sha256": "c83ff7037d13694b3aa20eb2469642f3763022516b3d8f0de1e230076a4a3af1"
+    },
+    {
+      "path": "frontend/src/store/slices/purchase/purchaseSliceFactory.js",
+      "sha256": "fd8c340784e4b76d3b76aad54fd4c1fa836c705ca6349b8c9d6ae835dda47a4e"
+    },
+    {
+      "path": "frontend/src/store/slices/sales/invoiceSlice.js",
+      "sha256": "b53286d68df0fbfbe97060342b07dac7783d0f20fba1a5765e8e1c19edf402c4"
+    },
+    {
+      "path": "frontend/src/store/slices/thunkFormErrorTransport.test.js",
+      "sha256": "c4341d45172b52e194efcb5cd94192ea43646b010760c0ea1471e043840ebc7f"
+    },
+    {
+      "path": "frontend/src/utils/authorizedRoute.js",
+      "sha256": "a662b653eee53ff93d5981f4e006c965874a45cec508aad2bd87bff0c87b5e94"
+    },
+    {
+      "path": "frontend/src/utils/dirtyWork.js",
+      "sha256": "ab8c44bd4f4b94b258d7dedf818ed31349ad499667ced2e6a26291605e519238"
+    },
+    {
+      "path": "frontend/src/utils/financialEntry.js",
+      "sha256": "d90859b272d38e86b605c0714e4aed9371e3445478b9c3689e1b320f4f7b0fe8"
+    },
+    {
+      "path": "frontend/src/utils/financialEntry.test.js",
+      "sha256": "e4d6be6827ebcafde91ec49c5a85bfa19306b5744de4dbfdbeef04b98fb20cad"
+    },
+    {
+      "path": "frontend/src/utils/formApiErrors.js",
+      "sha256": "a77cef118fe4f199daaaa2d75ae9b032ec23d51fac4151384fce5e0e956f7f81"
+    },
+    {
+      "path": "frontend/src/utils/formApiErrors.test.js",
+      "sha256": "a0446751083b9904bb17d341a2d8bb6e0596499da57eb891381ed02d70daa77b"
+    },
+    {
+      "path": "frontend/src/utils/gstCompliance.js",
+      "sha256": "f7b3945ac5506cc891db08ce87e65d0db77a9fe4b48afaf3afa380b888eb0efc"
+    },
+    {
+      "path": "frontend/src/utils/gstCompliance.test.js",
+      "sha256": "50fef54d1b54f2c074a97a56be7c4aebdc96a2823e443adb0fbc39a533c5d8d1"
+    },
+    {
+      "path": "frontend/src/utils/hrIdentifiers.js",
+      "sha256": "4a88a2200d96d09520ce535781d255a2a6ae51713dd4d1ec4f26d0d33afe1288"
+    },
+    {
+      "path": "frontend/src/utils/hrIdentifiers.test.js",
+      "sha256": "a08d11dff3a628bec0a044262a51701b587ec355d339cf6531cfc66859e46fb7"
+    },
+    {
+      "path": "frontend/src/utils/listReturnContext.js",
+      "sha256": "3fa57dd0b6ca1bee1bb5945ac408041b7cb2becd25e77838922cf37cf2173a1e"
+    },
+    {
+      "path": "frontend/src/utils/lookupPage.js",
+      "sha256": "fdbb451d5d2811917cf5d7148dea5d4b62dbaa396d14e5f18646398348100ca9"
+    },
+    {
+      "path": "frontend/src/utils/reportFormat.js",
+      "sha256": "de5054d7b0fe26fdfeb928b42e4f693e737521cf2af5ed4d8d63c16df37267a0"
+    },
+    {
+      "path": "frontend/src/utils/reportFormat.test.js",
+      "sha256": "33bb2070fa56baaa64f7fdf0f77e0a548069e1dc392578f0e5030247543d0325"
+    },
+    {
+      "path": "frontend/src/utils/shipmentOperations.js",
+      "sha256": "2a3b48abbddf2ec8dab3d9d2df47577ea274ba86889f3e20ebeb514133c10637"
+    },
+    {
+      "path": "frontend/src/utils/thunkFormError.js",
+      "sha256": "c4ff0f8f6b7b12e58dab0e96236030db400afa30251ec1da477578c3ee839fa7"
+    },
+    {
+      "path": "frontend/src/utils/userScope.js",
+      "sha256": "cabf7ba92c5002c1dd567f2b511f3ae437b7a77dc733683f7308b08b171e56b0"
+    },
+    {
+      "path": "frontend/src/utils/validationRules.test.js",
+      "sha256": "d567f7cc06d73354f082ecea216e2c006e36e0d0414e5e89f040cce1ad647f8e"
+    },
+    {
+      "path": "frontend/src/utils/validationSchemas.js",
+      "sha256": "90bd0e77c727659465e61c19eea1c245ef37c122ebcec2adc83a81e49cea77b4"
+    },
+    {
+      "path": "frontend/src/utils/websiteContent.js",
+      "sha256": "7aa66b9065d9ec6794167ac3172a341aed58a8538e7ad2a11cc1cc2f224318d4"
+    },
+    {
+      "path": "frontend/src/utils/websiteTime.js",
+      "sha256": "587e076cb9cc5c2ac8ef808967529a21f4635790bbdeb5c7dcbaa96dcab8b8a7"
+    },
+    {
+      "path": "frontend/src/utils/workReturnPath.js",
+      "sha256": "a3892e9b1c0e1efc2c8e805dab213d9cc00c449cf2aeb05540c469708e9bea20"
+    },
+    {
+      "path": "frontend/src/utils/workReturnPath.test.js",
+      "sha256": "ad62fd7be5729b701817d2f0749a54c77a2e1125c3441533d36ab6f56b551a74"
+    },
+    {
+      "path": "frontend/tests/browser/implementation.html",
+      "sha256": "a8cdc9deb8d6b65c63ebf9a600fc61c9209243654f5af98051ff9f6e442f18ad"
+    },
+    {
+      "path": "frontend/tests/browser/implementation.jsx",
+      "sha256": "39b70c21325d3fbcd8ae86bfa2139b94bb5fea17e55e4b6102e474f320dd0fec"
+    },
+    {
+      "path": "handoff/COSMOS_CLIENT_FLOW_GUIDE_GU.md",
+      "sha256": "75ebff3c59348b00d79c48720b5251c99a9489bd4bb1c9d6bd0b16dc02312d00"
+    }
+  ]
+}

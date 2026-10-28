@@ -1,0 +1,13 @@
+{
+  "findingCount": 56,
+  "coverageCount": 125,
+  "scenarioCount": 44,
+  "allFindingsEmbedded": true,
+  "allCoverageEmbedded": true,
+  "uniqueFindings": 56,
+  "inlineCanonicalRojmel": true,
+  "correctionPreserved": true,
+  "bytes": 261953,
+  "words": 28305,
+  "sha256": "742c3cb8616adf71adbb01dc242d6a0d2daf469944ec3c3acb3bf2e0c049cf4f"
+}

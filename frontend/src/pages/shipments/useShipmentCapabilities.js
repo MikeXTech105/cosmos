@@ -39,7 +39,7 @@ const useShipmentCapabilities = () => {
     canManageDockets: dockets.canCreate || dockets.canUpdate,
     canManageFreight: freight.canCreate || freight.canUpdate,
     canManageImports: imports.canCreate || imports.canUpdate,
-    canManagePacking: packing.canCreate || packing.canUpdate,
+    canManagePacking: packing.canUpdate,
     canManageReceipts: receipts.canCreate || receipts.canUpdate,
     canManageReturns: returns.canCreate || returns.canUpdate,
     canManageTracking: tracking.canCreate || tracking.canUpdate,

@@ -5,6 +5,7 @@ import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
 import { ITEM_CLASSIFICATION_OPTIONS } from "../../../utils/itemClassification";
 import { STATUS_OPTIONS } from "../inventoryHelpers";
+import CommerceFilterLookup from "../../party/CommerceFilterLookup";
 
 const ItemFilters = ({
   canCreateCategory = false,
@@ -34,17 +35,13 @@ const ItemFilters = ({
           placeholder="Search name, item code or barcode..."
         />
 
-        <AppSelect
+        <CommerceFilterLookup
+          kind="category"
           value={filters.CategoryId}
           onChange={(value) => onChange({ CategoryId: value })}
-          options={[
-            { value: "all", label: "All categories" },
-            ...categoryOptions,
-          ]}
+          initialOptions={categoryOptions}
           aria-label="Filter items by category"
-          creatable={canCreateCategory}
-          createLabel="Create new category"
-          onCreateClick={onCreateCategory}
+          onCreate={canCreateCategory ? onCreateCategory : undefined}
         />
 
         <AppSelect
