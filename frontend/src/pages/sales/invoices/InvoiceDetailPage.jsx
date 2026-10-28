@@ -1,4 +1,5 @@
 import GstDocumentLinks from "../../gst/GstDocumentLinks";
+import InvoiceOwnershipPanel from "../../manufacturing/integrations/InvoiceOwnershipPanel";
 import {
   ArrowLeft,
   Ban,
@@ -148,8 +149,10 @@ const InvoiceDetailPage = () => {
   });
 
   const loadInvoice = useCallback(async () => {
+    let invoiceLoaded = false;
     try {
       await dispatch(fetchInvoiceById(id)).unwrap();
+      invoiceLoaded = true;
     } catch (error) {
       toast.error(getActionError(error, "Unable to load invoice details."));
     }
@@ -159,6 +162,7 @@ const InvoiceDetailPage = () => {
     } catch {
       // The page still renders invoice details if payment history is unavailable.
     }
+    return invoiceLoaded;
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -422,6 +426,7 @@ const InvoiceDetailPage = () => {
       />
 
       {invoice && <GstDocumentLinks id={invoice.id} />}
+      {invoice && <InvoiceOwnershipPanel invoice={invoice} onSaved={loadInvoice} />}
       {invoice && (
         <div className="no-print grid gap-4 xl:grid-cols-[1fr_auto]">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

@@ -5,10 +5,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import { documentLookupService } from "../../../services/documentLookupService";
+import { quantityText } from "../../../utils/productionValues";
 import GstDocumentLinks from "../../gst/GstDocumentLinks";
 import PageHeader from "../../../components/common/PageHeader";
 import useCapabilities from "../../../hooks/useCapabilities";
-import { itemService } from "../../../services/inventory/itemService";
 import { purchaseBillService } from "../../../services/purchase/purchaseBillService";
 import {
   getPartyDisplayName,
@@ -19,7 +20,6 @@ import {
   extractItems,
   formatCurrency,
   formatDate,
-  formatNumber,
   getActionError,
   getBalanceAmount,
   getDocumentNumber,
@@ -38,6 +38,8 @@ import {
   PurchaseStatusPill,
 } from "../PurchaseShared";
 import PurchaseDocumentFormModal from "./PurchaseDocumentFormModal";
+import PurchasePhysicalPanel from "../../manufacturing/integrations/PurchasePhysicalPanel";
+import PurchaseBillReceiptPanel from "../../manufacturing/integrations/PurchaseBillReceiptPanel";
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -90,8 +92,10 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const loadRecord = useCallback(async () => {
     try {
       await dispatch(config.detailThunk(id)).unwrap();
+      return true;
     } catch (error) {
       toast.error(getActionError(error, "Unable to load details."));
+      return false;
     }
   }, [config, dispatch, id]);
 
@@ -118,7 +122,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
             IsActive: true,
           })
         : type === "items"
-          ? itemService.getItems({
+          ? documentLookupService.items({
               PageNumber: 1,
               PageSize: 200,
               IsActive: true,
@@ -187,7 +191,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const itemOptions = useMemo(
     () =>
       lookups.items.map((item) => ({
-        value: Number(item.id),
+        value: String(item.id),
         label: [item.name, item.itemCode].filter(Boolean).join(" - "),
       })),
     [lookups.items],
@@ -201,7 +205,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
   const billOptions = useMemo(
     () =>
       lookups.bills.map((bill) => ({
-        value: Number(bill.id),
+        value: String(bill.id),
         label: `${getDocumentNumber(bill, "PB")} - ${getSupplierName(bill)}`,
       })),
     [lookups.bills],
@@ -366,6 +370,8 @@ const PurchaseDocumentDetailPage = ({ config }) => {
       />
 
       {record && config.selectorKey === "purchaseBills" && <GstDocumentLinks id={record.id} purchase />}
+      {record && config.selectorKey === "purchaseOrders" && <PurchasePhysicalPanel record={record} onSaved={loadRecord} />}
+      {record && config.selectorKey === "purchaseBills" && <PurchaseBillReceiptPanel record={record} onSaved={loadRecord} />}
       {record && (
         <>
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -479,7 +485,7 @@ const PurchaseDocumentDetailPage = ({ config }) => {
                           {line.itemName || `Item ${index + 1}`}
                         </td>
                         <td className="px-3 py-3 text-right text-slate-600">
-                          {formatNumber(line.quantity)}
+                          {quantityText(line.quantity, { scale: 6 })}
                         </td>
                         <td className="px-3 py-3 text-right text-slate-600">
                           {formatCurrency(line.purchasePrice)}

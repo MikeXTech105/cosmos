@@ -19,4 +19,16 @@ describe("WEWEL billing documents", () => {
   it("keeps both line discounts in the printed taxable value", () => {
     expect(invoice.items[0].taxableAmount).toBe(175);
   });
+  it("keeps exact six-place quantities in every existing invoice template instead of rounding the printed source", () => {
+    const precise = buildTemplateInvoice({ id: 2, grandTotal: 0, items: [
+      { id: 1, itemId: 1, itemName: "Large", quantity: "9999999999999999.999999", rate: 0 },
+      { id: 2, itemId: 2, itemName: "Tiny", quantity: "0.000001", rate: 0 },
+    ] });
+    expect(precise.items.map(item => item.quantity)).toEqual(["9999999999999999.999999", "0.000001"]);
+    for (const { Component } of invoiceTemplates) {
+      const markup = renderToStaticMarkup(<Component invoice={precise} />);
+      expect(markup).toContain("9,999,999,999,999,999.999999");
+      expect(markup).toContain("0.000001");
+    }
+  });
 });

@@ -16,4 +16,6 @@ public sealed record ProductionOperationalReportRow(long SourceId, string Source
     public decimal? RequiredMinutes { get; init; }
     public DateOnly? DueDate { get; init; }
     public bool? OnTime { get; init; }
+    public long? SourceDocumentId { get; init; }
+    public string? SourceDocumentType { get; init; }
 }

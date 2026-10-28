@@ -12,6 +12,12 @@ namespace Cosmos.API.Controllers.Manufacturing;
 [Authorize, ApiExplorerSettings(GroupName = "procurement-planning"), Route("api/v1/procurement-planning")]
 public sealed class ProcurementContinuityController(IPhysicalInventoryService service) : ProductionWorkspaceApiControllerBase
 {
+    [HttpGet("plans/runs/{id:long}/purchase-orders")]
+    [RequirePermission(ProcurementPlanningPermissions.PlanningHistory, PermissionAction.View)]
+    [RequirePermission("PurchaseExpense.PurchaseOrder", PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<ProcurementPurchaseSourceContext>),200)]
+    public async Task<IActionResult> PurchaseSources(long id, CancellationToken ct) => FromResponse(await service.PurchaseSourcesAsync(id,ct));
+
     [HttpPost("plans/runs/{id:long}/purchase-orders")]
     [RequirePermission(ProcurementPlanningPermissions.PlanningHistory, PermissionAction.Approve)]
     [RequirePermission("PurchaseExpense.PurchaseOrder", PermissionAction.Create)]

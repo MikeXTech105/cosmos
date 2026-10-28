@@ -193,7 +193,7 @@ const PurchaseLineItems = ({
                         <AppSelect
                           value={itemField.value}
                           onChange={(value) => {
-                            itemField.onChange(Number(value));
+                            itemField.onChange(String(value ?? ""));
                             applyItemDetails(index, value);
                           }}
                           onBlur={itemField.onBlur}

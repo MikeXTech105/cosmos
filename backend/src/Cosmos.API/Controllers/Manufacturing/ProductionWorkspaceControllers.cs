@@ -12,6 +12,9 @@ namespace Cosmos.API.Controllers.Manufacturing;
 [Authorize, ApiExplorerSettings(GroupName = "manufacturing"), Route("api/v1/manufacturing")]
 public sealed class ProductionConfigurationController(IProductionWorkspaceService service) : ProductionWorkspaceApiControllerBase
 {
+    [HttpGet("shift-capacity/{id:long}/calendar"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.View)]
+    [ProducesResponseType(typeof(ApiResponse<CapacityCalendarContextDto>), 200)]
+    public async Task<IActionResult> CalendarContext(long id, [FromQuery] DateOnly businessDate, CancellationToken ct) => FromResponse(await service.CalendarContextAsync(id, businessDate, ct));
     [HttpPost("configuration/{kind}/{id:long}/effectivity"), RequirePermission(ManufacturingPermissions.Configuration, PermissionAction.Approve)]
     [ProducesResponseType(typeof(ApiResponse<ProductionCommandResult>), 200)]
     public async Task<IActionResult> EndEffectivity(string kind,long id,ProductionEffectivityRequest r,CancellationToken ct) => FromResponse(await service.EndEffectivityAsync(kind=="bom" ? "invalid" : kind,id,r,ct));

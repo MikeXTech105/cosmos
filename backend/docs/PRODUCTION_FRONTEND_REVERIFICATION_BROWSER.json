@@ -1,0 +1,14 @@
+{
+  "fixtureOnly": true,
+  "realSql": false,
+  "apiSummaryAliases": [
+    "QuantityTotals",
+    "DataQualityRows",
+    "CalculationVersion"
+  ],
+  "observedBrowserTotal": "On hand: 50",
+  "unit": "PCS",
+  "recordCount": 1,
+  "calculationVersion": "TEST-ONLY",
+  "noPhysicalTransactions": true
+}

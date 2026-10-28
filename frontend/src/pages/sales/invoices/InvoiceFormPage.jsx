@@ -1,3 +1,6 @@
+import useDocumentBusinessDefaults from "../../../hooks/useDocumentBusinessDefaults";
+import { documentLookupService } from "../../../services/documentLookupService";
+import { invoiceSchema } from "./invoiceSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -10,8 +13,6 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { z } from "zod";
-import { enumNumber, requiredDate, optionalDate, dateOrder } from "../../../utils/validationRules";
 
 import AppButton from "../../../components/common/AppButton";
 import AppInput from "../../../components/common/AppInput";
@@ -21,7 +22,7 @@ import useCapabilities from "../../../hooks/useCapabilities";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
 import { itemService } from "../../../services/inventory/itemService";
-import { gstService } from "../../../services/gst/gstService";
+import { hsnGstService } from "../../../services/gst/hsnGstService";
 import { unitService } from "../../../services/inventory/unitService";
 import CategoryFormModal from "../../inventory/categories/CategoryFormModal";
 import ItemFormModal from "../../inventory/items/ItemFormModal";
@@ -48,67 +49,6 @@ import {
   PAYMENT_MODE_OPTIONS,
   SALES_PAYMENT_MODE,
 } from "./invoiceHelpers";
-
-const invoiceLineSchema = z.object({
-  itemId: z.coerce.number().int().positive("Item is required"),
-  itemName: z.string().optional(),
-  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
-  rate: z.coerce.number().min(0, "Rate cannot be negative"),
-  discountPercentage: z.coerce
-    .number()
-    .min(0, "Discount cannot be negative")
-    .max(100, "Discount cannot exceed 100%"),
-  discountAmount: z.coerce
-    .number()
-    .min(0, "Discount amount cannot be negative"),
-  taxRateId: z.union([z.number(), z.string(), z.null()]).optional(),
-  taxPercentage: z.coerce.number().min(0, "Tax cannot be negative"),
-  hsnSacCode: z.string().optional(),
-  hsnSource: z.string().optional(),
-}).refine(line => line.discountAmount <= line.quantity * line.rate, { path: ["discountAmount"], message: "Discount cannot exceed line amount" });
-
-const initialPaymentSchema = z
-  .object({
-    paymentDate: z.string().optional(),
-    amount: z.coerce
-      .number()
-      .min(0, "Payment amount cannot be negative")
-      .optional(),
-    paymentMode: enumNumber(SALES_PAYMENT_MODE, "Payment mode"),
-    referenceNumber: z.string().max(100, "Reference is too long").optional(),
-    notes: z.string().max(500, "Payment notes are too long").optional(),
-  })
-  .superRefine((payment, context) => {
-    if (Number(payment.amount) > 0 && !payment.paymentDate) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Payment date is required",
-        path: ["paymentDate"],
-      });
-    }
-  });
-
-const invoiceSchema = z.object({
-  // Party identifiers are backend-owned and may be GUIDs or numeric/string ids.
-  customerPartyId: z.coerce.string().trim().min(1, "Customer is required"),
-  companyGstRegistrationId: z.union([z.coerce.number().int().positive(), z.literal(""), z.null()]).optional(),
-  placeOfSupplyStateCode: z.string().trim().regex(/^$|^[0-9]{2}$/, "Use a two-digit GST state code"),
-  placeOfSupplySource: z.string().trim().max(50, "Source is too long"),
-  priceBasis: z.union([z.literal(""), z.coerce.number().int().min(0).max(1)]).optional(),
-  invoiceNumber: z.string().optional(),
-  invoiceDate: requiredDate("Invoice date"),
-  dueDate: optionalDate,
-  discountAmount: z.coerce
-    .number()
-    .min(0, "Invoice discount cannot be negative"),
-  notes: z.string().max(1000, "Notes are too long").optional(),
-  termsAndConditions: z.string().max(2000, "Terms are too long").optional(),
-  initialPayment: initialPaymentSchema.optional(),
-  items: z.array(invoiceLineSchema).min(1, "Add at least one line item"),
-}).superRefine((values, context) => {
-  dateOrder(values, context, "invoiceDate", "dueDate", "Due date cannot be before invoice date");
-  if (values.placeOfSupplyStateCode && !values.placeOfSupplySource) context.addIssue({ code: z.ZodIssueCode.custom, path: ["placeOfSupplySource"], message: "Explain the reviewed place-of-supply selection." });
-});
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -204,6 +144,8 @@ const InvoiceFormPage = () => {
     register,
     reset,
     setValue,
+    getValues,
+    getFieldState,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(invoiceSchema),
@@ -220,7 +162,7 @@ const InvoiceFormPage = () => {
     const errorKey = isCustomers ? "customersError" : "itemsError";
     const request = isCustomers
       ? partyService.getParties({ PageNumber: 1, PageSize: 200, IsActive: true })
-      : itemService.getItems({ PageNumber: 1, PageSize: 200, IsActive: true });
+      : documentLookupService.items({ PageNumber: 1, PageSize: 200, IsActive: true });
 
     setLookups((current) => ({ ...current, [loadingKey]: true, [errorKey]: null }));
 
@@ -245,7 +187,7 @@ const InvoiceFormPage = () => {
 
   const loadRegistrations = useCallback(() => {
     setLookups((current) => ({ ...current, registrationsLoading: true, registrationsError: null }));
-    return gstService.registrations({ PageNumber: 1, PageSize: 200, Status: "Active" })
+    return documentLookupService.registrations({ PageNumber: 1, PageSize: 200, Status: "Active" })
       .then((response) => {
         setLookups((current) => ({ ...current, registrations: getLookupList(response).filter((entry) => entry?.id && String(entry.status ?? "Active").toLowerCase() === "active"), registrationsLoading: false }));
       })
@@ -285,16 +227,18 @@ const InvoiceFormPage = () => {
     }
   }, [detailInvoice, id, isEdit, reset]);
 
+  const businessContext = useDocumentBusinessDefaults({ enabled: !isEdit, fields: ["invoiceDate", "initialPayment.paymentDate"], getValues, getFieldState, setValue });
+
   const customerOptions = useMemo(
     () => lookups.customers.map((customer) => ({ value: customer.id, label: getPartyDisplayName(customer) })),
     [lookups.customers],
   );
   const itemOptions = useMemo(
-    () => lookups.items.map((item) => ({ value: Number(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
+    () => lookups.items.map((item) => ({ value: String(item.id), label: [item.name, item.itemCode].filter(Boolean).join(" - ") })),
     [lookups.items],
   );
   const registrationOptions = useMemo(() => lookups.registrations.map((registration) => ({
-    value: Number(registration.id),
+    value: String(registration.id),
     label: [registration.gstin, registration.legalName, registration.branchName || registration.city].filter(Boolean).join(" — "),
   })), [lookups.registrations]);
   const priceBasisOptions = [{ value: 0, label: "Tax Exclusive — entered price excludes GST" }, { value: 1, label: "Tax Inclusive — entered price includes GST" }];
@@ -318,11 +262,16 @@ const InvoiceFormPage = () => {
     applyItem(lookupItem);
 
     try {
-      const itemResponse = await itemService.getItemById(itemId);
-      const item = getResponseItem(itemResponse) ?? lookupItem;
-      applyItem(item);
-      setValue(`items.${index}.hsnSacCode`, item?.hsnCode ?? "", { shouldDirty: true });
-      setValue(`items.${index}.hsnSource`, item?.hsnCode ? "Item master" : "", { shouldDirty: true });
+      const [itemResult, classificationResult] = await Promise.allSettled([
+        documentLookupService.item(itemId),
+        hsnGstService.getEffectiveClassification(itemId, getValues("invoiceDate") || undefined),
+      ]);
+      const itemResponse = itemResult.status === "fulfilled" ? itemResult.value : null;
+      const classificationResponse = classificationResult.status === "fulfilled" ? classificationResult.value : null;
+      applyItem(getResponseItem(itemResponse) ?? lookupItem);
+      const classification = classificationResponse?.data ?? classificationResponse;
+      setValue(`items.${index}.hsnSacCode`, classification?.code ?? classification?.legacyHsnCode ?? "", { shouldDirty: true });
+      setValue(`items.${index}.hsnSource`, classification?.source ?? "", { shouldDirty: true });
     } catch {
       setValue(`items.${index}.hsnSacCode`, lookupItem?.hsnCode ?? "", { shouldDirty: true });
       setValue(`items.${index}.hsnSource`, lookupItem?.hsnCode ? "Item master" : "", { shouldDirty: true });
@@ -447,6 +396,7 @@ const InvoiceFormPage = () => {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit(submitForm)} noValidate>
+      {!businessContext.runtime && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">{businessContext.loading ? "Loading the company business date…" : "Company business date is unavailable. Enter invoice and payment dates explicitly."}</p>}
       <PageHeader
         badge="Sales / Invoices"
         title={title}
@@ -543,7 +493,7 @@ const InvoiceFormPage = () => {
                               <AppSelect
                                 value={itemField.value}
                                 onChange={(value) => {
-                                  itemField.onChange(Number(value));
+                                  itemField.onChange(String(value ?? ""));
                                   void applyItemDetails(index, value);
                                 }}
                                 onBlur={itemField.onBlur}
@@ -690,7 +640,7 @@ const InvoiceFormPage = () => {
             <AppSelect
               label="Seller GST registration"
               value={field.value ?? ""}
-              onChange={(value) => field.onChange(value ? Number(value) : null)}
+              onChange={(value) => field.onChange(value ? String(value) : null)}
               onBlur={field.onBlur}
               options={registrationOptions}
               placeholder={lookups.registrationsLoading ? "Loading GST registrations..." : "Select issuing GSTIN"}

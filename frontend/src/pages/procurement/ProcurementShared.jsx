@@ -416,6 +416,7 @@ export const ProcurementItemAutocomplete = ({
   excludeItemId,
   includeLegacy = false,
   label = "Item",
+  loader = itemService.getItems,
   mode = "any",
   onChange,
   placeholder = "Search by item code or name",
@@ -460,7 +461,7 @@ export const ProcurementItemAutocomplete = ({
           PageSize: 200,
           Search: query.trim() || undefined,
         };
-        const primaryRequest = itemService.getItems({
+        const primaryRequest = loader({
           ...baseParams,
           ProcurementClassification:
             mode === "finished"
@@ -469,7 +470,7 @@ export const ProcurementItemAutocomplete = ({
         });
         const legacyRequest =
           mode === "finished" && includeLegacy
-            ? itemService.getItems(baseParams)
+            ? loader(baseParams)
             : Promise.resolve({ data: [] });
         const [primary, legacy] = await Promise.all([
           primaryRequest,
@@ -516,7 +517,7 @@ export const ProcurementItemAutocomplete = ({
       window.clearTimeout(timeout);
       cancelRequest(requestId);
     };
-  }, [beginRequest, cancelRequest, disabled, excludeItemId, includeLegacy, isLatestRequest, mode, open, query, retryKey]);
+  }, [beginRequest, cancelRequest, disabled, excludeItemId, includeLegacy, isLatestRequest, loader, mode, open, query, retryKey]);
 
   useEffect(() => {
     const handlePointer = (event) => {
