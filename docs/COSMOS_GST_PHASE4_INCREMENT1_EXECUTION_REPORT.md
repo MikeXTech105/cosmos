@@ -97,6 +97,12 @@ The triggers write the actor from `CreatedBy`/`UpdatedBy`, the server UTC audit 
 
 Real SQL verification extended the guarded master test: Company and Branch creation produce one audit event; Company updates persist old/new values; forced `dbo.AuditLogs` trigger failures roll back both the Company and Branch write; and fixture cleanup removes all `ITP42%` master and audit rows. The focused master SQL test passed after the forced-failure checks.
 
+### Increment 1B — scope-assignment administration backend (initial execution)
+
+`backend/database/migrations/20261028_36_company_branch_scope_assignments.sql` was applied and rerun successfully on `CosmosSalesGstIntegrationTests_Local` only. It registers the separate `System.CompanyBranchScopeAssignments` page resource without granting it to ordinary roles, creates parameterized assignment read/effective-scope/grant/revoke procedures, and adds atomic assignment audit records through the existing `AuditLogs` table.
+
+The backend exposes `GET /api/v1/organization/scope-assignments/me`, `GET /api/v1/organization/scope-assignments/users/{userId}`, `POST /api/v1/organization/scope-assignments`, and `DELETE /api/v1/organization/scope-assignments/{assignmentId}`. Assignment mutation procedures recheck protected System Owner status and Company-level administrator scope under transaction locks, reject self-grants by delegated administrators, validate active target entities and branch/company matching, deactivate rather than delete revocations, and reject duplicate active grants. Assignment lifecycle SQL and HTTP-host tests remain required before this increment can be accepted.
+
 Not run / incomplete:
 
 - Full HTTP-host response-path tests are not yet implemented; the existing controller routes retain their page/action permission attributes and the SQL-backed service/procedure tests cover their record-scope boundary. User-scope assignment administration and frontend administration/selectors remain later Increment 1 work.
