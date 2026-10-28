@@ -232,6 +232,7 @@ const WebsiteWarranty = lazy(() => import("../pages/website/warranty/index.js"))
 const WebsiteWarrantyDetail = lazy(() => import("../pages/website/warranty/WebsiteWarrantyDetailPage.jsx"));
 const WebsiteSettings = lazy(() => import("../pages/website/settings/index.js"));
 const Settings = lazy(() => import("../pages/settings/index.js"));
+const OrganizationAdministration = lazy(() => import("../pages/organization/OrganizationAdministrationPage.jsx"));
 const Profile = lazy(() => import("../pages/profile/index.js"));
 const Preferences = lazy(() => import("../pages/preferences/index.js"));
 const AccessDeniedPage = lazy(
@@ -1287,6 +1288,14 @@ const AppRoutes = () => {
           <Route
             path="/website/settings"
             element={<PermissionGuard route="/website/settings" pageName="WebsiteManagement.Settings"><WebsiteSettings /></PermissionGuard>}
+          />
+          <Route
+            path="/settings/company-branches"
+            element={
+              <PermissionGuard route="/settings/company-branches" pageName="System.CompanyBranchScope">
+                <OrganizationAdministration />
+              </PermissionGuard>
+            }
           />
           <Route
             path="/settings"
