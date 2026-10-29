@@ -25,6 +25,8 @@ import { toast } from "sonner";
 
 import AppInput from "../../../components/common/AppInput";
 import AppSelect from "../../../components/common/AppSelect";
+import SubmissionCalendar from "../../../components/common/SubmissionCalendar";
+import useSubmissionMonth from "../../../hooks/useSubmissionMonth";
 import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
 import useScopedDraft from "../../../hooks/useScopedDraft";
 import { hrAttendanceService } from "../../../services/hr/attendanceService";
@@ -48,6 +50,8 @@ import {
   getHrSuccessMessage,
 } from "../hrHelpers";
 import useHrCapabilities from "../useHrCapabilities";
+import { getUserScope } from "../../../utils/userScope";
+import { submissionToday, validSubmissionDate } from "../../../utils/submissionCalendar";
 import {
   AdjustmentModal,
   DecisionModal,
@@ -61,14 +65,13 @@ import DepartmentAttendancePanel from "./DepartmentAttendancePanel";
 import { useSearchParams } from "react-router-dom";
 import {
   extractAttendanceItems,
-  formatLocalDateKey,
   getPagedResponseMeta,
   mergeEmployeesWithAttendance,
   shiftDateKey,
   summarizeAttendance,
 } from "./attendanceHelpers";
 
-const today = () => formatLocalDateKey(new Date());
+const today = () => submissionToday();
 
 const fetchEveryPage = async (request, params = {}) => {
   const pageSize = 200;
@@ -180,7 +183,9 @@ const AttendanceWorkspace = () => {
   });
   const workforceRequestRef = useRef(0);
   const dailyRequestRef = useRef(0);
-  const [selectedDate, setSelectedDate] = useState(() => /^\d{4}-\d{2}-\d{2}$/.test(searchParams.get("date") || "") ? searchParams.get("date") : today());
+  const [selectedDate, setSelectedDate] = useState(() => validSubmissionDate(searchParams.get("date")) ? searchParams.get("date") : today());
+  const [calendarMonth, setCalendarMonth] = useState(() => selectedDate.slice(0, 7));
+  const [calendarRevision, setCalendarRevision] = useState(0);
   const [filters, setFilters] = useState({
     departmentId: searchParams.get("departmentId") || "all",
     search: "",
@@ -210,15 +215,35 @@ const AttendanceWorkspace = () => {
   const hasDrafts = Object.keys(attendanceDrafts).length > 0;
   const { confirmLeave } = useUnsavedChanges({ when: hasDrafts || isBulkSaving, message: "Attendance has unsaved entries. Keep a draft or save before changing the date. Continue without these entries?" });
   const draft = useScopedDraft({ entity: "attendance-book", context: selectedDate, values: attendanceDrafts, enabled: hasDrafts });
+  const departmentId = filters.departmentId;
+  const loadCalendarPage = useCallback(async ({ fromDate, toDate, pageNumber, pageSize, signal }) => {
+    const response = await hrAttendanceService.getAttendance({
+      FromDate: fromDate,
+      ToDate: toDate,
+      DepartmentId: departmentId === "all" ? undefined : departmentId,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    }, { signal });
+    return response.data;
+  }, [departmentId]);
+  const submissionMonth = useSubmissionMonth({
+    month: calendarMonth,
+    loadPage: loadCalendarPage,
+    enabled: capabilities.canView,
+    revision: calendarRevision,
+    scope: `${getUserScope()}:attendance:${departmentId}`,
+  });
 
   const changeSelectedDate = useCallback((nextDate) => {
-    if (isBulkSaving) return;
+    const date = typeof nextDate === "function" ? nextDate(selectedDate) : nextDate;
+    if (isBulkSaving || !validSubmissionDate(date)) return;
     confirmLeave(() => {
       if (hasDrafts) draft.saveDraft();
-      setSelectedDate((current) => typeof nextDate === "function" ? nextDate(current) : nextDate);
+      setSelectedDate(date);
+      setCalendarMonth(date.slice(0, 7));
       setAttendanceDrafts({});
     });
-  }, [confirmLeave, draft, hasDrafts, isBulkSaving]);
+  }, [confirmLeave, draft, hasDrafts, isBulkSaving, selectedDate]);
 
   const loadWorkforce = useCallback(async () => {
     const requestId = ++workforceRequestRef.current;
@@ -275,6 +300,7 @@ const AttendanceWorkspace = () => {
 
       if (requestId === dailyRequestRef.current) {
         setDailyAttendance({ error: null, loading: false, records });
+        setCalendarRevision((value) => value + 1);
       }
     } catch (error) {
       if (requestId === dailyRequestRef.current) {
@@ -651,6 +677,24 @@ const AttendanceWorkspace = () => {
           )}
         </div>
       </div>
+
+      <SubmissionCalendar
+        month={calendarMonth}
+        onMonthChange={setCalendarMonth}
+        entries={submissionMonth.entries}
+        getDate={(record) => record.attendanceDate}
+        selectedDate={selectedDate}
+        onSelectDate={changeSelectedDate}
+        loading={submissionMonth.loading}
+        error={submissionMonth.error}
+        complete={submissionMonth.complete}
+        onRetry={submissionMonth.reload}
+        disabled={isBulkSaving}
+        title="Attendance submission calendar"
+        description="See which days have saved attendance, then open a date to review or fill the book."
+        recordLabel="attendance records"
+        note={`${departmentId === "all" ? "All departments" : "Selected department"} · Days with entries contain at least one saved record. Open a day to check employees still unmarked; holidays and weekly offs are not assumed.`}
+      />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <DailyStat

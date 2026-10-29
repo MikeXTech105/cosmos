@@ -15,6 +15,9 @@ import {
 } from "../../../store/slices/oee/oeeDowntimeReasonSlice";
 
 const downtimeReasonConfig = {
+  compact: true,
+  modalWidth: "max-w-lg",
+  searchPlaceholder: "Find a downtime or production reason…",
   activeIcon: CheckCircle2,
   addLabel: "Add Reason",
   columns: [

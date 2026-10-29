@@ -11,8 +11,14 @@ import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
 import PageHeader from "../../../components/common/PageHeader";
+import SubmissionCalendar from "../../../components/common/SubmissionCalendar";
+import useSubmissionMonth from "../../../hooks/useSubmissionMonth";
 import { RojmelCategoryType } from "../../../constants/rojmelEnums";
 import { userService } from "../../../services/rbac/userService";
+import { transactionService } from "../../../services/rojmel/transactionService";
+import { myWalletService } from "../../../services/rojmel/myWalletService";
+import { getUserScope } from "../../../utils/userScope";
+import { submissionToday } from "../../../utils/submissionCalendar";
 import {
   createMyRojmelExpense,
   createMyRojmelIncome,
@@ -71,6 +77,8 @@ const TransactionsPage = () => {
   const [users, setUsers] = useState([]);
   const activeState = capabilities.isAdmin ? adminState : myState.ledger;
   const [searchInput, setSearchInput] = useState(activeState.filters.Search);
+  const [calendarMonth, setCalendarMonth] = useState(() => submissionToday().slice(0, 7));
+  const [calendarRevision, setCalendarRevision] = useState(0);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -131,6 +139,29 @@ const TransactionsPage = () => {
         : dispatch(fetchMyRojmelLedger(query)),
     [capabilities.isAdmin, dispatch, query],
   );
+  const calendarWalletId = capabilities.isAdmin ? activeState.filters.WalletId : "own";
+  const calendarUserId = capabilities.isAdmin ? activeState.filters.LinkedUserId : "own";
+  const loadCalendarPage = useCallback(async ({ fromDate, toDate, pageNumber, pageSize, signal }) => {
+    const request = capabilities.isAdmin ? transactionService.getTransactions : myWalletService.getLedger;
+    const response = await request({
+      FromDate: fromDate,
+      ToDate: toDate,
+      WalletId: capabilities.isAdmin && calendarWalletId !== "all" ? calendarWalletId : undefined,
+      LinkedUserId: capabilities.isAdmin && calendarUserId !== "all" ? calendarUserId : undefined,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+      SortBy: "transactionDate",
+      SortDirection: "asc",
+    }, { signal });
+    return response.data;
+  }, [capabilities.isAdmin, calendarWalletId, calendarUserId]);
+  const submissionMonth = useSubmissionMonth({
+    month: calendarMonth,
+    loadPage: loadCalendarPage,
+    enabled: capabilities.canView,
+    revision: calendarRevision,
+    scope: `${getUserScope()}:rojmel:${capabilities.isAdmin}:${calendarWalletId}:${calendarUserId}`,
+  });
 
   useEffect(() => {
     void Promise.resolve().then(loadTransactions);
@@ -159,6 +190,7 @@ const TransactionsPage = () => {
   }));
 
   const refreshAfterMovement = async (walletId) => {
+    setCalendarRevision((value) => value + 1);
     if (capabilities.isAdmin) {
       await Promise.all([
         loadTransactions(),
@@ -273,7 +305,7 @@ const TransactionsPage = () => {
         }
         actions={
           <>
-            <AppButton className="h-10" disabled={activeState.loading} variant="secondary" onClick={loadTransactions}>
+            <AppButton className="h-10" disabled={activeState.loading} variant="secondary" onClick={() => { submissionMonth.reload(); void loadTransactions(); }}>
               <RefreshCw className={`h-4 w-4 ${activeState.loading ? "animate-spin" : ""}`} />
               Refresh
             </AppButton>
@@ -294,6 +326,25 @@ const TransactionsPage = () => {
             )}
           </>
         }
+      />
+
+      <SubmissionCalendar
+        month={calendarMonth}
+        onMonthChange={setCalendarMonth}
+        entries={submissionMonth.entries}
+        getDate={(record) => record.transactionDate}
+        selectedDate={activeState.filters.FromDate === activeState.filters.ToDate ? activeState.filters.FromDate : ""}
+        onSelectDate={(date) => updateFilters({ FromDate: date, ToDate: date })}
+        onClearSelection={() => updateFilters({ FromDate: submissionMonth.fromDate, ToDate: submissionMonth.toDate })}
+        loading={submissionMonth.loading}
+        error={submissionMonth.error}
+        complete={submissionMonth.complete}
+        onRetry={submissionMonth.reload}
+        title="Daily ledger calendar"
+        description="See the month's recorded activity and select a day to open its transactions."
+        recordLabel="transactions"
+        emptyLabel="No records"
+        note={`${capabilities.isAdmin ? "Selected wallet and linked-user scope" : "Your wallet only"} · Includes all categories and statuses. Days without records may have no financial activity. The table's other filters still apply.`}
       />
 
       <RojmelFilterBar

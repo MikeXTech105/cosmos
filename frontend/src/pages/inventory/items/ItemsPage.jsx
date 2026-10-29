@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
+import AppModal from "../../../components/common/AppModal";
 import PageHeader from "../../../components/common/PageHeader";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import { categoryService } from "../../../services/inventory/categoryService";
@@ -39,6 +40,7 @@ import ItemTable from "./ItemTable";
 import { getItemTypeLabel, isLowStock } from "./itemHelpers";
 import { documentIdText } from "../../../utils/documentPrecision";
 import useListReturnContext from "../../../hooks/useListReturnContext";
+import "./itemMaster.css";
 
 const getLookupList = (response) => {
   const data = response?.data;
@@ -65,6 +67,7 @@ const ItemsPage = () => {
     route: "/categories",
   });
   const [searchInput, setSearchInput] = useState(itemsState.filters.Search);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const restoreListFilters = useCallback(snapshot => {
     dispatch(setItemFilters(snapshot.filters));
     dispatch(setItemPageSize(snapshot.pageSize));
@@ -300,6 +303,7 @@ const ItemsPage = () => {
       }
 
       dispatch(setSelectedItem(item));
+      setDetailsOpen(true);
 
       try {
         await dispatch(fetchItemById(item.id)).unwrap();
@@ -349,7 +353,7 @@ const ItemsPage = () => {
   };
 
   return (
-    <section className="min-w-0 space-y-5">
+    <section className="item-master min-w-0 space-y-5">
       <PageHeader
         badge={
           <>
@@ -358,7 +362,7 @@ const ItemsPage = () => {
           </>
         }
         title="Items"
-        description="Manage your products and services."
+        description="Find an item, check its stock and pricing, and keep your catalogue up to date."
         actions={
           <>
             <AppButton
@@ -384,6 +388,8 @@ const ItemsPage = () => {
 
       <ItemStats {...stats} />
       {highlightId && <p role="status" className="flex items-center justify-between gap-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">Saved Item {highlightId}. Existing filters are retained.{!itemsState.list.some(item => String(item.id) === String(highlightId)) && " It is outside the current filtered page."}<button type="button" className="underline" onClick={clearHighlight}>Dismiss</button></p>}
+      <div className="item-master-catalogue">
+      <header className="item-master-catalogue-heading"><div><h2>Item catalogue</h2><p>Select an item to review its details.</p></div><span>{itemsState.totalCount} matching items</span></header>
       <ItemFilters
         canCreateCategory={canCreateCategory}
         categoryOptions={categoryOptions}
@@ -414,8 +420,6 @@ const ItemsPage = () => {
         }}
       />
 
-      <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <div className="h-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <ItemTable
             highlightId={highlightId}
             actions={{
@@ -443,16 +447,17 @@ const ItemsPage = () => {
             totalCount={itemsState.totalCount}
             totalPages={itemsState.totalPages}
           />
-        </div>
-        <div className="h-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      </div>
+      <AppModal isOpen={detailsOpen && capabilities.canView} title="Item details" maxWidth="item-master-dialog" onClose={() => setDetailsOpen(false)}>
           <ItemDetailsPanel
             canEdit={capabilities.canEdit}
             isLoading={itemsState.detailLoading}
+            error={itemsState.detailError}
             item={itemsState.selected}
             onEdit={openEdit}
+            onRetry={() => itemsState.selected && selectItem(itemsState.selected)}
           />
-        </div>
-      </div>
+      </AppModal>
 
       <CategoryFormModal
         category={null}

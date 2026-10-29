@@ -25,8 +25,8 @@ const ItemFilters = ({
   const hasActiveFilters = activeFilterCount > 0;
 
   return (
-    <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.4)]">
-      <div className="grid gap-3 xl:grid-cols-[minmax(240px,1fr)_200px_190px_160px_auto]">
+    <div className="item-master-filters">
+      <div className="item-master-filter-fields">
         <AppInput
           aria-label="Search inventory items"
           leadingIcon={Search}

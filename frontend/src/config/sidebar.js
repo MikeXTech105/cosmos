@@ -83,7 +83,6 @@ export const enabledModules = [
 
 export const sidebarCategories = [
   { id: "manufacturing", label: "Production", icon: "manufacturing", sortOrder: 54 },
-  { id: "deepDive", label: "Deep Dive", icon: "analytics", sortOrder: 81 },
   { id: "gst", label: "GST compliance", icon: "invoice", sortOrder: 57 },
   {
     id: "rbac",

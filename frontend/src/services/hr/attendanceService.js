@@ -4,9 +4,10 @@ import { normalizeParams, unwrapResponse } from "../apiServiceUtils";
 import { hrCommandIds, sanitizeHrListParams } from "./hrServiceUtils";
 
 export const hrAttendanceService = {
-  getAttendance: async (params) => {
+  getAttendance: async (params, { signal } = {}) => {
     const response = await axiosInstance.get(ENDPOINTS.HR_ATTENDANCE, {
       params: sanitizeHrListParams(params),
+      signal,
     });
 
     return unwrapResponse(response);

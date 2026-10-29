@@ -50,4 +50,15 @@ describe("sidebar route matching", () => {
     expect(result[0].hasActiveChild).toBe(true);
     expect(result[0].isActive).toBe(false);
   });
+
+  it.each([
+    "/deep-dive-analytics/executive-command-center",
+    "/deep-dive-analytics/oee-telemetry",
+    "/deep-dive-analytics/rojmel-financial-hub",
+    "/deep-dive-analytics/gst-intelligence",
+    "/deep-dive-analytics/cross-module-intelligence",
+  ])("keeps the single Deep Dive entry active for %s", (pathname) => {
+    const items = [{ id: "deepDive", route: "/deep-dive-analytics", children: [] }];
+    expect(getDirectlyActiveIds(markActiveSidebarItems(items, pathname))).toEqual(["deepDive"]);
+  });
 });

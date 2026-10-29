@@ -110,18 +110,22 @@ export const DEEP_PAGES = [
   },
 ].map((page) => ({ ...page, route: `/deep-dive-analytics/${page.slug}` }));
 
-export const deepDiveModules = Object.fromEntries(
-  DEEP_PAGES.map((page) => [
-    `deepDive_${page.id}`,
-    {
-      id: `deepDive_${page.id}`,
-      label: page.label,
-      route: page.route,
-      permissionTargets: page.sources.map((key) => DEEP_SOURCES[key]),
-      preservePresentation: true,
-      icon: page.icon,
-      categoryId: "deepDive",
-      sortOrder: DEEP_PAGES.indexOf(page) * 10,
-    },
-  ]),
-);
+export const getAvailableDeepDivePages = (access) =>
+  DEEP_PAGES.filter((page) => page.sources.some((key) => access[key]));
+
+// Keep one entry in the sidebar; each workspace is available through the
+// navigation inside Deep Dive. Its landing page chooses an authorized view.
+export const deepDiveModules = {
+  deepDive: {
+    id: "deepDive",
+    label: "Deep Dive",
+    route: "/deep-dive-analytics",
+    permissionTargets: [...new Map(
+      Object.values(DEEP_SOURCES).map((target) => [target.route, target]),
+    ).values()],
+    preservePresentation: true,
+    icon: "analytics",
+    description: "Command Center, Manufacturing, Financial Hub, GST Intelligence and Cross-Module analytics",
+    sortOrder: 81,
+  },
+};

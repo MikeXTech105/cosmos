@@ -10,7 +10,7 @@ import { oeeMachineService } from "../../../services/oee/oeeMachineService";
 import { oeeDayAcknowledgementService as service } from "../../../services/oee/oeeDayAcknowledgementService";
 const labels = { NotRun: "Not run", PlannedStop: "Planned stop", Withdrawn: "Withdrawn" };
 
-export default function OeeStoppedDayPanel({ productionDate, canView, canCreate, canUpdate, onDirtyChange }) {
+export default function OeeStoppedDayPanel({ productionDate, canView, canCreate, canUpdate, onDirtyChange, onSaved }) {
   const [records, setRecords] = useState([]), [machineId, setMachineId] = useState("");
   const [state, setState] = useState("NotRun"), [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false), [saving, setSaving] = useState(false), [error, setError] = useState(""), [notice, setNotice] = useState("");
@@ -37,6 +37,7 @@ export default function OeeStoppedDayPanel({ productionDate, canView, canCreate,
     setIntent(request); setSaving(true); setError(""); setNotice("");
     try {
       await service.save(request);
+      onSaved?.();
       if (!await load()) { setError("The acknowledgement was saved but its history could not be refreshed. Retry the same command or reload before another change."); return; }
       setIntent(null); setReason(""); setNotice("Machine day acknowledged. No runtime, shots, OEE result or stock movement was fabricated.");
     } catch (failure) { setError(getApiErrorMessage(failure, "Acknowledgement could not be confirmed. Retry the same reviewed command, or reload its history.")); }
@@ -53,7 +54,7 @@ export default function OeeStoppedDayPanel({ productionDate, canView, canCreate,
       <AppSelect label="Day acknowledgement" value={state} disabled={saving || Boolean(intent)} options={[{ value: "NotRun", label: "Not run" }, { value: "PlannedStop", label: "Planned stop" }, ...(previous ? [{ value: "Withdrawn", label: "Withdraw prior acknowledgement" }] : [])]} onChange={setState} />
       <AppInput label="Reason / evidence" required maxLength={700} value={reason} disabled={saving || Boolean(intent)} onChange={event => setReason(event.target.value)} /></div>
     {previous && <p className="text-xs text-slate-600">Current saved state: {labels[previous.state]} · {previous.reason}. A correction appends a linked revision; original evidence remains in history.</p>}
-    <div className="flex flex-wrap gap-3"><AppButton disabled={!canSave || saving || loading || !machineId || !reason.trim()} onClick={submit}>{saving ? "Saving…" : intent ? "Retry same acknowledgement" : "Reviewed: save acknowledgement"}</AppButton><AppButton variant="secondary" disabled={saving} onClick={async () => { if (await load()) { setIntent(null); setReason(""); } }}>Reload saved acknowledgements</AppButton>{!canSave && <p className="self-center text-xs text-amber-700">{previous ? "Editing an acknowledgement requires Production Entries edit permission." : "Acknowledging a machine day requires Production Entries create permission."}</p>}</div>
+    <div className="flex flex-wrap gap-3"><AppButton disabled={!canSave || saving || loading || !machineId || !reason.trim()} onClick={submit}>{saving ? "Saving…" : intent ? "Retry same acknowledgement" : "Reviewed: save acknowledgement"}</AppButton><AppButton variant="secondary" disabled={saving} onClick={async () => { if (await load()) { setIntent(null); setReason(""); onSaved?.(); } }}>Reload saved acknowledgements</AppButton>{!canSave && <p className="self-center text-xs text-amber-700">{previous ? "Editing an acknowledgement requires Production Entries edit permission." : "Acknowledging a machine day requires Production Entries create permission."}</p>}</div>
     <ul className="divide-y divide-slate-100">{records.map(row => <li className="py-2 text-sm" key={row.id}><strong>{row.machineCode} · {row.machineName}</strong> — {labels[row.state]} · {row.reason}</li>)}</ul>
     {loading && <p role="status" className="text-xs text-slate-500">Loading saved stopped-day evidence…</p>}
   </section>;

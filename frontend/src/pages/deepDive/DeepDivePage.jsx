@@ -6,7 +6,7 @@ import AppDateRangeFilter from "../../components/common/AppDateRangeFilter";
 import AppModal from "../../components/common/AppModal";
 import PageHeader from "../../components/common/PageHeader";
 import { insightPreset } from "../oee/insights/productionInsights";
-import { DEEP_PAGES, DEEP_SOURCES } from "./deepDiveConfig";
+import { DEEP_PAGES, DEEP_SOURCES, getAvailableDeepDivePages } from "./deepDiveConfig";
 import { validRange } from "./deepDiveData";
 import useDeepDive, { useDebounced, useFreshnessClock } from "./useDeepDive";
 import { Notice, Panel, Pill, RecordTable } from "./DeepDiveShared";
@@ -110,9 +110,7 @@ export default function DeepDivePage({ pageId = "executive" }) {
         }
       />
       <nav className="deep-navigation" aria-label="Deep Dive pages">
-        {DEEP_PAGES.filter((item) =>
-          item.sources.some((key) => access[key]),
-        ).map((item) => (
+        {getAvailableDeepDivePages(access).map((item) => (
           <Link
             key={item.id}
             to={link(item.id)}

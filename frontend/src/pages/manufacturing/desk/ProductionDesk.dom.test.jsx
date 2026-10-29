@@ -2,10 +2,11 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const f = vi.hoisted(() => ({ access: {}, runtime: {}, saved: false, contextFails: false, api: Object.fromEntries(["list", "context", "complete", "release", "bom"].map(name => [name, vi.fn()])) }));
+const f = vi.hoisted(() => ({ access: {}, runtime: {}, reports: true, history: vi.fn(), saved: false, contextFails: false, api: Object.fromEntries(["list", "context", "complete", "release", "bom"].map(name => [name, vi.fn()])) }));
 vi.mock("../../../services/manufacturing/productionOrderService", () => ({ default: f.api }));
 vi.mock("../../../hooks/useProductionRuntime", () => ({ default: () => f.runtime }));
-vi.mock("../../../hooks/useCapabilities", () => ({ default: () => ({ canView: true, canApprove: true }) }));
+vi.mock("../../../hooks/useCapabilities", () => ({ default: ({ pageName }) => ({ canView: pageName === "Manufacturing.Reports" ? f.reports : true, canApprove: true }) }));
+vi.mock("../../../services/reports/manufacturingReportsService", () => ({ manufacturingReportsService: { getProductionHistory: f.history } }));
 vi.mock("../../../utils/userScope", () => ({ getUserScope: () => "test-operator", getTrustedDraftScope: () => null }));
 vi.mock("../orders/orderHooks", async original => ({ ...(await original()), useOrderCapabilities: () => f.access, useOrderLookupAccess: () => ({ boms: false }), useItemLabels: () => Object.assign(id => `Item ${id}`, { canView: true, unitLabel: () => "PCS" }) }));
 vi.mock("../../../components/common/AppSelect", () => ({ default: ({ label, value, onChange, options, disabled }) => <label>{label}<select aria-label={label} value={value} disabled={disabled} onChange={event => onChange(event.target.value)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label> }));
@@ -20,6 +21,8 @@ beforeEach(() => {
   sessionStorage.clear();
   localStorage.clear();
   Object.values(f.api).forEach(mock => mock.mockReset());
+  f.reports = true;
+  f.history.mockReset().mockResolvedValue(page([]));
   f.access = { canView: true, canCreate: true, canApprove: true };
   f.runtime = { runtime: { businessDate: "2026-10-28", businessTimeZone: "India Standard Time", browserTimeZone: "Asia/Kolkata" }, error: "", loading: false, reload: vi.fn() };
   f.saved = false; f.contextFails = false;
@@ -36,6 +39,36 @@ const enter = async (good = "10", reject = "1") => {
   return screen.findByRole("dialog");
 };
 describe("daily production desk against actual command modal", () => {
+  it("checks saved production across the month and uses a selected day for entry without posting", async () => {
+    f.history.mockResolvedValue(page([{ id: 91, businessDate: "2026-10-25" }], 1));
+    mount();
+    const day = await screen.findByRole("button", { name: /Sunday, 25 October 2026: 1 production entry/ });
+    expect(f.history).toHaveBeenCalledWith({ fromDate: "2026-10-01", toDate: "2026-10-31", pageNumber: 1, pageSize: 200 }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    fireEvent.click(day);
+    const dialog = within(await enter("10", "0"));
+    expect(dialog.getByLabelText(/Actual timestamp with UTC offset/).value).toMatch(/^2026-10-25T/);
+    expect(f.api.complete).not.toHaveBeenCalled();
+  });
+  it("does not infer missing production days without report access", async () => {
+    f.reports = false;
+    mount();
+    await screen.findByRole("textbox", { name: "Accepted today PRO-7" });
+    expect(f.history).not.toHaveBeenCalled();
+    expect(screen.getByText(/Production report access is needed to check saved days/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /October 2026: No production entry/ })).toBeNull();
+  });
+  it("keeps the submission month aligned when the entry date picker changes months", async () => {
+    mount();
+    await screen.findByRole("textbox", { name: "Accepted today PRO-7" });
+    fireEvent.click(screen.getByLabelText("Entry date"));
+    const picker = within(screen.getByRole("dialog", { name: "Choose date" }));
+    fireEvent.change(picker.getByRole("combobox", { name: "Month" }), { target: { value: "8" } });
+    fireEvent.click(picker.getByRole("gridcell", { name: "15 September 2026" }));
+    expect(screen.getByLabelText("Calendar month").value).toBe("2026-09");
+    await waitFor(() => expect(f.history).toHaveBeenCalledWith({ fromDate: "2026-09-01", toDate: "2026-09-30", pageNumber: 1, pageSize: 200 }, expect.objectContaining({ signal: expect.any(AbortSignal) })));
+    expect(screen.getByRole("button", { name: /Tuesday, 15 September 2026:/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(f.api.complete).not.toHaveBeenCalled();
+  });
   it("recovers a company-scoped versioned draft only after explicit review and never posts it", async () => {
     f.runtime.runtime.companyKey = "fixture-company-a";
     const first = mount();

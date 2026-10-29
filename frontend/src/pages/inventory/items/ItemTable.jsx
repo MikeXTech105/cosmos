@@ -65,9 +65,9 @@ const ItemTable = ({
   }
 
   return (
-    <div className="flex h-full min-h-[420px] flex-col">
-      <div className="min-h-0 flex-1 overflow-x-auto">
-        <table className="w-full min-w-[1010px] table-fixed text-left">
+    <div className="flex h-full min-h-[320px] flex-col">
+      <div className="item-master-table-scroll min-h-0 flex-1">
+        <table className="item-master-table">
           <colgroup>
             {itemColumns.map((column) => (
               <col key={column.key} className={column.width} />
@@ -106,11 +106,13 @@ const ItemTable = ({
                     <tr
                       key={item.id}
                       data-record-id={String(item.id)}
+                      data-selected={isSelected || undefined}
                       data-saved-highlight={String(highlightId ?? "") === String(item.id) || undefined}
-                      tabIndex={0}
-                      onClick={() => onSelect(item)}
+                      tabIndex={actions.canView ? 0 : -1}
+                      aria-label={`View ${item.name}`}
+                      onClick={() => actions.canView && onSelect(item)}
                       onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
+                        if (event.target === event.currentTarget && actions.canView && (event.key === "Enter" || event.key === " ")) {
                           event.preventDefault();
                           onSelect(item);
                         }
@@ -121,20 +123,20 @@ const ItemTable = ({
                         String(highlightId ?? "") === String(item.id) ? "bg-emerald-50 ring-2 ring-inset ring-emerald-400" : "",
                       ].join(" ")}
                     >
-                      <td className="border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
+                      <td className="item-master-serial border-b border-slate-100 px-4 py-3.5 text-xs font-semibold tabular-nums text-slate-400">
                         {(pageNumber - 1) * pageSize + index + 1}
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3">
+                      <td className="item-master-identity border-b border-slate-100 px-3 py-3">
                         <div className="flex items-center gap-3">
                           <ItemImageThumbnail
                             src={item.imageUrl}
                             alt={item.name}
                           />
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-slate-900">
+                            <p className="item-master-item-name text-sm font-semibold text-slate-900">
                               {item.name}
                             </p>
-                            <p className="mt-1 truncate text-xs text-slate-400">
+                            <p className="item-master-item-meta mt-1 text-xs text-slate-400">
                               {[item.itemCode, item.categoryName]
                                 .filter(Boolean)
                                 .join(" - ") || "No code or category"}
@@ -142,7 +144,7 @@ const ItemTable = ({
                           </div>
                         </div>
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3">
+                      <td data-label="Type" className="item-master-type border-b border-slate-100 px-3 py-3">
                         <span
                           className={[
                             "inline-flex rounded-full px-2 py-1 text-[11px] font-semibold",
@@ -154,28 +156,29 @@ const ItemTable = ({
                           {itemType}
                         </span>
                       </td>
-                      <td className="border-b border-slate-100 px-4 py-3.5">
+                      <td data-label="Material" className="item-master-material border-b border-slate-100 px-4 py-3.5">
                         <MaterialTypePill
                           value={item.procurementClassification}
                         />
                       </td>
                       <td
                         className={[
-                          "border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold",
+                          "item-master-stock border-b border-slate-100 px-3 py-3 text-right text-sm font-semibold",
                           lowStock ? "text-red-600" : "text-slate-700",
                         ].join(" ")}
                       >
-                        {itemType === "Service"
+                        <span className="item-master-stock-label">Stock</span>{itemType === "Service"
                           ? "-"
                           : formatStockWithUnit(
                               item.currentStock,
                               item.unitShortName,
                             )}
+                        {lowStock && <small className="item-master-low-stock">Low stock</small>}
                       </td>
-                      <td className="border-b border-slate-100 px-3 py-3">
+                      <td className="item-master-status border-b border-slate-100 px-3 py-3">
                         <InventoryStatusPill isActive={item.isActive} />
                       </td>
-                      <td className="border-b border-slate-100 px-2 py-3">
+                      <td className="item-master-actions border-b border-slate-100 px-2 py-3">
                         <ItemActions item={item} {...actions} />
                       </td>
                     </tr>

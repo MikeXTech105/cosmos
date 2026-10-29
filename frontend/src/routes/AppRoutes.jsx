@@ -10,6 +10,7 @@ import { GST_PAGES } from "../utils/gstCompliance";
 import { DEEP_PAGES } from "../pages/deepDive/deepDiveConfig";
 
 const DeepDivePage = lazy(() => import("../pages/deepDive/DeepDivePage.jsx"));
+const DeepDiveLanding = lazy(() => import("../pages/deepDive/DeepDiveLanding.jsx"));
 const ProductionConfiguration = lazy(() => import("../pages/manufacturing/configuration/ConfigurationPage.jsx"));
 const ProductionOrders = lazy(() => import("../pages/manufacturing/orders/OrdersPage.jsx"));
 const ProductionDesk = lazy(() => import("../pages/manufacturing/desk/ProductionDeskPage.jsx"));
@@ -294,7 +295,7 @@ const AppRoutes = () => {
           <Route path="/manufacturing/imports" element={<PermissionGuard pageName="Manufacturing.Orders" route="/manufacturing/orders"><ProductionImports /></PermissionGuard>} />
           <Route path="/reports/manufacturing/operations" element={<PermissionGuard pageName="Manufacturing.Reports" route="/reports/manufacturing"><ProductionOperationalReports /></PermissionGuard>} />
           <Route path="/purchase/operations" element={<PermissionGuard pageName="PurchaseExpense.PurchaseOrder" route="/purchase/orders"><PurchaseOperations /></PermissionGuard>} />
-          <Route path="/deep-dive-analytics" element={<Navigate to="/deep-dive-analytics/executive-command-center" replace />} />
+          <Route path="/deep-dive-analytics" element={<DeepDiveLanding />} />
           {DEEP_PAGES.map(page => <Route key={page.id} path={page.route} element={<DeepDivePage key={page.id} pageId={page.id} />} />)}
           {GST_PAGES.map(page => <Route key={page.key} path={page.route} element={<PermissionGuard route={page.route} pageName={page.pageName}>{gstScreens[page.key]}</PermissionGuard>} />)}
           <Route

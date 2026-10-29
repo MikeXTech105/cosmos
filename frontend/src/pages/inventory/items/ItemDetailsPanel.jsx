@@ -1,199 +1,29 @@
-import {
-  Boxes,
-  CalendarDays,
-  Factory,
-  Pencil,
-  Tag,
-} from "lucide-react";
-
+import { AlertTriangle, Boxes, CalendarDays, Factory, Pencil, RefreshCw, Tag } from "lucide-react";
 import AppButton from "../../../components/common/AppButton";
 import MaterialTypePill from "../../../components/common/MaterialTypePill";
 import { InventoryStatusPill } from "../InventoryShared";
 import { formatDate } from "../inventoryHelpers";
-import {
-  formatCurrency,
-  formatStockWithUnit,
-  formatUnitDisplay,
-  getItemTypeLabel,
-  isLowStock,
-} from "./itemHelpers";
+import { formatCurrency, formatStockWithUnit, formatUnitDisplay, getItemTypeLabel, isLowStock } from "./itemHelpers";
 import ItemImageThumbnail from "./ItemImageThumbnail";
 
-const DetailRow = ({ label, value }) => {
-  return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 py-2.5 last:border-b-0">
-      <span className="text-xs font-medium text-slate-400">{label}</span>
-      <span className="text-right text-sm font-medium text-slate-700">
-        {value || "-"}
-      </span>
-    </div>
-  );
+const DetailRow = ({ label, value, low = false }) => <div className="item-master-detail-row"><dt>{label}</dt><dd className={low ? "is-low" : undefined}>{value === null || value === undefined || value === "" ? "—" : value}</dd></div>;
+const price = value => value === null || value === undefined ? "—" : formatCurrency(value);
+const stock = (value, unit) => value === null || value === undefined ? "—" : formatStockWithUnit(value, unit);
+
+const ItemDetailsPanel = ({ canEdit = false, item, isLoading, error, onEdit, onRetry }) => {
+  if (isLoading) return <div className="min-h-[350px] space-y-4 p-5" role="status" aria-label="Loading item details"><div className="h-20 animate-pulse rounded-xl bg-slate-100" />{Array.from({ length: 6 }, (_, index) => <div key={index} className="h-10 animate-pulse rounded-lg bg-slate-100" />)}</div>;
+  if (error) return <div className="item-master-detail-error" role="alert"><AlertTriangle size={25} className="mx-auto mb-3 text-amber-500" /><h3>Item details could not be loaded</h3><p>{typeof error === "string" ? error : error.message || "Retry to review the saved item details."}</p>{onRetry && <AppButton variant="secondary" onClick={onRetry}><RefreshCw size={14} />Retry details</AppButton>}</div>;
+  if (!item) return <div className="item-master-detail-error"><Boxes size={28} className="mx-auto mb-3 text-slate-300" /><h3>Select an item</h3><p>Choose a product or service to review its stock and pricing.</p></div>;
+  const lowStock = isLowStock(item), itemType = getItemTypeLabel(item.itemType);
+  return <div className="item-master-detail">
+    <div className="item-master-detail-identity"><ItemImageThumbnail src={item.imageUrl} alt={item.name} className="h-16 w-16 rounded-xl" iconClassName="h-6 w-6" /><div className="min-w-0"><h2>{item.name}</h2><p className="item-master-detail-code">{item.itemCode || "No item code"}</p></div></div>
+    <div className="item-master-detail-badges"><InventoryStatusPill isActive={item.isActive} /><span className="item-master-detail-classification"><Tag size={12} />{itemType}</span>{item.isManufactured && <span className="item-master-detail-classification"><Factory size={12} />Manufactured</span>}{lowStock && <span className="rounded-md bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700">Low stock</span>}</div>
+    <dl className="item-master-detail-prices"><div><dt>Sale price</dt><dd>{price(item.salesPrice)}</dd></div><div><dt>Purchase price</dt><dd>{price(item.purchasePrice)}</dd></div></dl>
+    {itemType !== "Service" && <section className="item-master-detail-section"><h3><Boxes size={14} />Inventory</h3><dl><DetailRow label="Current stock" value={stock(item.currentStock, item.unitShortName)} low={lowStock} /><DetailRow label="Reserved stock" value={stock(item.reservedStock, item.unitShortName)} /><DetailRow label="Minimum stock" value={stock(item.minimumStock, item.unitShortName)} /><DetailRow label="Opening stock value" value={price(item.openingStockValue)} /><DetailRow label="Inventory tracking" value={item.trackInventory === false ? "Off" : "On"} /></dl></section>}
+    <section className="item-master-detail-section"><h3><Tag size={14} />Classification & tax</h3><dl><DetailRow label="Category" value={item.categoryName} /><DetailRow label="Material type" value={<MaterialTypePill value={item.procurementClassification} />} /><DetailRow label="Unit" value={formatUnitDisplay(item.unitName, item.unitShortName)} /><DetailRow label="Barcode" value={item.barcode} /><DetailRow label="HSN code" value={item.hsnCode} /><DetailRow label="GST rate" value={item.gstRate == null ? "—" : `${item.gstRate}%`} /><DetailRow label="Manufacturing" value={item.isManufactured ? "Enabled" : "Not enabled"} /></dl></section>
+    {item.description && <section className="item-master-detail-section"><h3>Description</h3><p className="item-master-detail-description mt-3">{item.description}</p></section>}
+    {item.createdAt && <p className="item-master-detail-footer"><CalendarDays size={13} />Created {formatDate(item.createdAt)}</p>}
+    {canEdit && <div className="item-master-detail-edit"><AppButton onClick={() => onEdit(item)}><Pencil size={15} />Adjust / Edit Item</AppButton></div>}
+  </div>;
 };
-
-const ItemDetailsPanel = ({ canEdit = false, item, isLoading, onEdit }) => {
-  if (isLoading) {
-    return (
-      <div className="h-full min-h-[420px] space-y-4 p-5">
-        <div className="h-20 animate-pulse rounded-xl bg-slate-100" />
-        {Array.from({ length: 6 }, (_, index) => (
-          <div
-            key={index}
-            className="h-10 animate-pulse rounded-lg bg-slate-100"
-          />
-        ))}
-      </div>
-    );
-  }
-
-  if (!item) {
-    return (
-      <div className="flex h-full min-h-[420px] flex-col items-center justify-center px-6 py-12 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-          <Boxes className="h-6 w-6" />
-        </div>
-        <h3 className="mt-4 text-base font-semibold text-slate-900">
-          Select an item
-        </h3>
-        <p className="mt-1 max-w-xs text-sm leading-6 text-slate-500">
-          Choose a product or service from the list to see its pricing and
-          inventory details.
-        </p>
-      </div>
-    );
-  }
-
-  const lowStock = isLowStock(item);
-  const itemType = getItemTypeLabel(item.itemType);
-
-  return (
-    <div className="h-full min-h-[420px] p-5">
-      <div className="flex items-start gap-4">
-        <ItemImageThumbnail
-          src={item.imageUrl}
-          alt={item.name}
-          className="h-14 w-14 rounded-xl"
-          iconClassName="h-5 w-5"
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0">
-              <h2 className="truncate text-lg font-semibold text-slate-900">
-                {item.name}
-              </h2>
-              <p className="mt-1 text-xs font-medium text-slate-400">
-                {item.itemCode || "No item code"}
-              </p>
-            </div>
-            <InventoryStatusPill isActive={item.isActive} />
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-light px-2.5 py-1 text-xs font-semibold text-brand">
-              <Tag className="h-3 w-3" />
-              {itemType}
-            </span>
-            {lowStock && (
-              <span className="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
-                Low stock
-              </span>
-            )}
-            {item.isManufactured && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">
-                <Factory className="h-3 w-3" />
-                Manufactured
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs font-medium text-slate-400">Sale price</p>
-          <p className="mt-1 text-base font-semibold text-slate-900">
-            {formatCurrency(item.salesPrice)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs font-medium text-slate-400">Purchase price</p>
-          <p className="mt-1 text-base font-semibold text-slate-900">
-            {formatCurrency(item.purchasePrice)}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Item details
-        </p>
-        <div className="mt-2">
-          <DetailRow label="Item type" value={itemType} />
-          <DetailRow label="Manufacturing" value={item.isManufactured ? "Enabled" : "Not enabled"} />
-          <DetailRow
-            label="Material type"
-            value={
-              <MaterialTypePill
-                value={item.procurementClassification}
-              />
-            }
-          />
-          <DetailRow label="Category" value={item.categoryName} />
-          <DetailRow
-            label="Unit"
-            value={formatUnitDisplay(item.unitName, item.unitShortName)}
-          />
-          <DetailRow label="Barcode" value={item.barcode} />
-          <DetailRow label="HSN code" value={item.hsnCode} />
-          <p className="py-2 text-xs leading-5 text-slate-500">HSN and GST rate use the existing Item Master fields. Effective-date overrides and category mapping await the matching GST backend module. Historical invoice snapshots are unchanged.</p>
-          <DetailRow
-            label="GST rate"
-            value={`${Number(item.gstRate ?? 0)}%`}
-          />
-        </div>
-      </div>
-
-      {itemType !== "Service" && (
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Stock
-          </p>
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-slate-200 p-3">
-              <p className="text-xs text-slate-400">Current</p>
-              <p
-                className={[
-                  "mt-1 text-base font-semibold",
-                  lowStock ? "text-red-600" : "text-slate-900",
-                ].join(" ")}
-              >
-                {formatStockWithUnit(
-                  item.currentStock,
-                  item.unitShortName,
-                )}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 p-3">
-              <p className="text-xs text-slate-400">Stock value</p>
-              <p className="mt-1 text-base font-semibold text-slate-900">
-                {formatCurrency(item.openingStockValue)}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-5 flex items-center gap-2 text-xs text-slate-400">
-        <CalendarDays className="h-3.5 w-3.5" />
-        Created {formatDate(item.createdAt)}
-      </div>
-
-      {canEdit && (
-        <AppButton className="mt-5 w-full" onClick={() => onEdit(item)}>
-          <Pencil className="h-4 w-4" />
-          Adjust / Edit Item
-        </AppButton>
-      )}
-    </div>
-  );
-};
-
 export default ItemDetailsPanel;

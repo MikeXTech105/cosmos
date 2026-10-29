@@ -55,18 +55,24 @@ describe("buildMenuTree", () => {
     expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/daily");
     expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/manufacturing/board");
   });
-  it("groups Deep Dive aliases without granting unrelated financial or GST pages", () => {
+  it("shows one Deep Dive entry and keeps workspace navigation out of the sidebar", () => {
     const granted = page({ pageId: 901, pageName: "OEE.ProductionEntries", route: "/oee/production-entries" });
     const tree = buildMenuTree([granted], false);
-    const group = tree.find(item => item.label === "Deep Dive");
-    expect(flattenRoutes(group.children)).toEqual([
-      "/deep-dive-analytics/executive-command-center",
-      "/deep-dive-analytics/oee-telemetry",
-      "/deep-dive-analytics/cross-module-intelligence",
-    ]);
-    expect(new Set(group.children.map(item => item.id)).size).toBe(3);
+    const entry = tree.find(item => item.label === "Deep Dive");
+    expect(entry.id).toBe("deepDive");
+    expect(entry.route).toBe("/deep-dive-analytics");
+    expect(entry.children).toEqual([]);
+    expect(flattenRoutes(tree).filter(route => route.startsWith("/deep-dive-analytics"))).toEqual(["/deep-dive-analytics"]);
     expect(tree.find(item => item.label === "OEE")).toBeDefined();
     expect(buildMenuTree([], false).some(item => item.label === "Deep Dive")).toBe(false);
+  });
+  it("shows one Deep Dive shortcut for superadmins and source-specific grants", () => {
+    const adminEntries = buildMenuTree([], true).filter(item => item.label === "Deep Dive");
+    expect(adminEntries).toHaveLength(1);
+    expect(adminEntries[0].children).toEqual([]);
+    const granted = page({ pageId: 902, pageName: "GST.Configuration", route: "/gst/configuration" });
+    expect(flattenRoutes(buildMenuTree([granted], false))).toContain("/deep-dive-analytics");
+    expect(flattenRoutes(buildMenuTree([{ ...granted, canView: false }], false))).not.toContain("/deep-dive-analytics");
   });
   it("exposes Production Insights only with production entry read access, with a distinct label and id", () => {
     const granted = page({

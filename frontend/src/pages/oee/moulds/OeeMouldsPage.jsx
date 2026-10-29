@@ -35,11 +35,11 @@ const mouldConfig = {
     },
     {
       key: "targetShotPerDay",
-      label: "Target Shots/Day",
+      label: "Daily target",
       render: (mould) =>
-        formatOeeNumber(mould.targetShotPerDay, {
+        <><strong>{formatOeeNumber(mould.targetShotPerDay, {
           maximumFractionDigits: 2,
-        }),
+        })}</strong><small>shots / day</small></>,
     },
     {
       key: "cavity",
@@ -68,7 +68,8 @@ const mouldConfig = {
   createEntity: createOeeMould,
   deleteEntity: deleteOeeMould,
   description:
-    "Maintain mould targets, cavity count, and cycle time for production OEE.",
+    "Keep every mould's daily target, cavity count and cycle time clear for the production team.",
+  searchPlaceholder: "Search mould name…",
   emptyDescription:
     "Create mould masters such as RYNO CLIP, STANDARD HANGER, and FLEXI HANGER before entering shots.",
   entityKey: "mould",
@@ -83,6 +84,7 @@ const mouldConfig = {
     {
       name: "targetShotPerDay",
       label: "Target Shots/Day",
+      unit: "shots/day",
       type: "number",
       allowDecimal: true,
       required: true,
@@ -99,6 +101,7 @@ const mouldConfig = {
     {
       name: "cycleTime",
       label: "Cycle Time",
+      unit: "seconds",
       type: "number",
       allowDecimal: true,
       min: 0,
@@ -116,7 +119,7 @@ const mouldConfig = {
   getName: (mould) => mould?.mouldName ?? "",
   icon: Box,
   inactiveIcon: PauseCircle,
-  modalDescription: "Set the production target inputs used by backend OEE calculations.",
+  modalDescription: "Set the daily target, cavity count and cycle time used in production reporting.",
   permissionLabel: "OEE Moulds",
   permissionPageName: "OEE.Moulds",
   permissionResource: "oeeMoulds",

@@ -12,14 +12,12 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import AppButton from "../../../components/common/AppButton";
-import {
-  parseIsoDate,
-  toIsoDate,
-} from "../../../components/common/datePickerUtils";
 import AppInput from "../../../components/common/AppInput";
 import AppDateRangeFilter from "../../../components/common/AppDateRangeFilter";
 import AppModal from "../../../components/common/AppModal";
 import PageHeader from "../../../components/common/PageHeader";
+import SubmissionCalendar from "../../../components/common/SubmissionCalendar";
+import useSubmissionMonth from "../../../hooks/useSubmissionMonth";
 import useCreatePermission from "../../../hooks/useCreatePermission";
 import useUnsavedChanges from "../../../hooks/useUnsavedChanges";
 import { oeeDowntimeReasonService } from "../../../services/oee/oeeDowntimeReasonService";
@@ -46,11 +44,14 @@ import {
 import { OeeConfirmDialog, OeeNumberInput } from "../OeeShared";
 import useOeeCapabilities from "../useOeeCapabilities";
 import { oeeProductionEntryService } from "../../../services/oee/oeeProductionEntryService";
+import { oeeDayAcknowledgementService } from "../../../services/oee/oeeDayAcknowledgementService";
 import { loadDowntimeEntries } from "../dashboard/downtimeAnalysis";
 import ProductionHistoryByDate from "./ProductionHistoryByDate";
 import OeeStoppedDayPanel from "./OeeStoppedDayPanel";
 import AppLookup from "../../../components/common/AppLookup";
 import { lookupPage } from "../../../utils/lookupPage";
+import { getUserScope } from "../../../utils/userScope";
+import { submissionToday, validSubmissionDate } from "../../../utils/submissionCalendar";
 
 const getItems = (response) => {
   if (Array.isArray(response)) return response;
@@ -403,8 +404,9 @@ const OeeProductionEntriesPage = () => {
   const [searchParams] = useSearchParams();
   const [productionDate, setProductionDate] = useState(
     () =>
-      toIsoDate(parseIsoDate(searchParams.get("date"))) || getTodayInputValue(),
+      validSubmissionDate(searchParams.get("date")) ? searchParams.get("date") : submissionToday(),
   );
+  const [calendarMonth, setCalendarMonth] = useState(() => productionDate.slice(0, 7));
   const [lookups, setLookups] = useState({
     error: "",
     loading: false,
@@ -453,6 +455,60 @@ const OeeProductionEntriesPage = () => {
     () => setHistoryRevision((value) => value + 1),
     [],
   );
+  const calendarMachineId = production.filters.MachineId;
+  const loadCalendarPage = useCallback(async ({ fromDate, toDate, pageNumber, pageSize, signal }) => {
+    const response = await oeeProductionEntryService.getProductionEntries({
+      FromDate: fromDate,
+      ToDate: toDate,
+      MachineId: calendarMachineId || undefined,
+      Page: pageNumber,
+      PageSize: pageSize,
+      SortBy: "productionDate",
+      SortDirection: "asc",
+    }, { signal });
+    return response.data;
+  }, [calendarMachineId]);
+  const submissionMonth = useSubmissionMonth({
+    month: calendarMonth,
+    loadPage: loadCalendarPage,
+    enabled: capabilities.canView,
+    revision: historyRevision,
+    scope: `${getUserScope()}:oee-readings:${calendarMachineId || "all"}`,
+  });
+  const loadAcknowledgementPage = useCallback(async ({ fromDate, toDate, pageNumber, pageSize, signal }) => {
+    const response = await oeeDayAcknowledgementService.list({
+      FromDate: fromDate,
+      ToDate: toDate,
+      MachineId: calendarMachineId || undefined,
+      PageNumber: pageNumber,
+      PageSize: pageSize,
+    }, { signal });
+    return response.data;
+  }, [calendarMachineId]);
+  const acknowledgementMonth = useSubmissionMonth({
+    month: calendarMonth,
+    loadPage: loadAcknowledgementPage,
+    enabled: capabilities.canView,
+    revision: historyRevision,
+    scope: `${getUserScope()}:oee-acknowledgements:${calendarMachineId || "all"}`,
+  });
+  const calendarEntries = useMemo(() => [
+    ...submissionMonth.entries,
+    ...acknowledgementMonth.entries.filter(record => record.state !== "Withdrawn"),
+  ], [submissionMonth.entries, acknowledgementMonth.entries]);
+  const changeProductionDate = (date, filterHistory = false) => {
+    if (production.bulkSaving || !validSubmissionDate(date)) return;
+    confirmLeave(() => {
+      setProductionDate(date);
+      setCalendarMonth(date.slice(0, 7));
+      setRows(current => current.map(row => ({ ...row, isRunning: false, machineOnTime: "", mouldId: "", shotCount: "0", remarks: "" })));
+      setRowErrors({});
+      if (filterHistory) {
+        dispatch(setOeeProductionEntryFilters({ FromDate: date, ToDate: date }));
+        dispatch(setOeeProductionEntryPage(1));
+      }
+    });
+  };
 
   const loadLookups = useCallback(async () => {
     setLookups((current) => ({ ...current, error: "", loading: true }));
@@ -843,6 +899,24 @@ const OeeProductionEntriesPage = () => {
         }
       />
 
+      <SubmissionCalendar
+        month={calendarMonth}
+        onMonthChange={setCalendarMonth}
+        entries={calendarEntries}
+        getDate={(record) => record.productionDate}
+        selectedDate={productionDate}
+        onSelectDate={(date) => changeProductionDate(date, true)}
+        loading={submissionMonth.loading || acknowledgementMonth.loading}
+        error={submissionMonth.error || acknowledgementMonth.error}
+        complete={submissionMonth.complete && acknowledgementMonth.complete}
+        onRetry={() => { submissionMonth.reload(); acknowledgementMonth.reload(); }}
+        disabled={production.bulkSaving}
+        title="Production submission calendar"
+        description="Find dates with saved readings and days still to review. Select a day to enter or inspect its production."
+        recordLabel="machine updates"
+        note={`${calendarMachineId ? "Selected machine" : "All machines"} · Counts saved readings and active stopped-day acknowledgements across the whole month. Withdrawn notes are excluded. A day with updates may still have unentered machines; history filters apply below.`}
+      />
+
       {lookups.error && (
         <div className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100">
           {lookups.error}
@@ -850,7 +924,7 @@ const OeeProductionEntriesPage = () => {
       )}
       <p className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">Machine runtime and shots feed OEE analysis. They never post physical production stock. Record accepted output and material use in <a className="font-semibold underline" href="/manufacturing/daily">Daily Production</a>; retain legacy Item production for its separate stock history.</p>
       {moreMachines && <AppButton variant="secondary" disabled={machinesLoading || production.bulkSaving} onClick={loadMoreMachines}>{machinesLoading ? "Loading machines…" : "Load more machines"} · {rows.length} currently available</AppButton>}
-      <OeeStoppedDayPanel key={productionDate} productionDate={productionDate} canView={capabilities.canView} canCreate={capabilities.canCreate} canUpdate={capabilities.canUpdate} onDirtyChange={setAcknowledgementDirty} />
+      <OeeStoppedDayPanel key={productionDate} productionDate={productionDate} canView={capabilities.canView} canCreate={capabilities.canCreate} canUpdate={capabilities.canUpdate} onDirtyChange={setAcknowledgementDirty} onSaved={loadHistory} />
 
       <div className="oee-entry-form rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -876,7 +950,7 @@ const OeeProductionEntriesPage = () => {
               required
               value={productionDate}
               disabled={production.bulkSaving}
-              onChange={(event) => confirmLeave(() => { setProductionDate(event.target.value); setRows(current => current.map(row => ({ ...row, isRunning: false, machineOnTime: "", mouldId: "", shotCount: "0", remarks: "" }))); })}
+              onChange={(event) => changeProductionDate(event.target.value)}
               className="h-10"
             />
           </div>

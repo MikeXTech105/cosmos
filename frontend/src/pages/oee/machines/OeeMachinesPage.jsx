@@ -19,18 +19,11 @@ const machineConfig = {
   addLabel: "Add Machine",
   columns: [
     {
-      key: "machineCode",
-      label: "Code",
-      render: (machine) => (
-        <span className="font-semibold text-slate-900">
-          {machine.machineCode || "-"}
-        </span>
-      ),
-    },
-    {
       key: "machineName",
       label: "Machine",
-      render: (machine) => machine.machineName || "-",
+      render: (machine) => (
+        <span><strong>{machine.machineName || "Unnamed machine"}</strong><small>{machine.machineCode || "No code recorded"}</small></span>
+      ),
     },
     {
       key: "tonnage",
@@ -44,7 +37,7 @@ const machineConfig = {
     },
     {
       key: "displayOrder",
-      label: "Display Order",
+      label: "Entry sequence",
       render: (machine) =>
         formatOeeNumber(machine.displayOrder, { maximumFractionDigits: 0 }),
     },
@@ -59,7 +52,8 @@ const machineConfig = {
   createEntity: createOeeMachine,
   deleteEntity: deleteOeeMachine,
   description:
-    "Maintain injection-molding machines, tonnage, location, and dashboard order.",
+    "Your production floor at a glance. Keep machine capacity, location and entry sequence up to date.",
+  searchPlaceholder: "Search machine name, code or location…",
   emptyDescription:
     "Create machine masters such as IM-01, IM-02, and IM-03 before entering daily production.",
   entityKey: "machine",
