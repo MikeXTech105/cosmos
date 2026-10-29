@@ -7,6 +7,7 @@ import AppModal from "../../../components/common/AppModal";
 import useProductionText from "../../../hooks/useProductionText";
 import configurationMessages from "./configurationMessages";
 import { validDateRange } from "./configurationHelpers";
+import { generateUUID } from "../../../utils/uuid";
 export const CommandRecovery = ({ command, onReload, onRecovered }) => {
   const t = useProductionText(configurationMessages);
   const [reading, setReading] = useState(false);
@@ -88,7 +89,7 @@ export const EffectivityDialog = ({
   const t = useProductionText(configurationMessages);
   const [effectiveTo, setEffectiveTo] = useState("");
   const [reason, setReason] = useState("");
-  const [key] = useState(() => crypto.randomUUID());
+  const [key] = useState(() => generateUUID());
   const [attempt, setAttempt] = useState(null);
   const command = useCommand(async () => {
     const refreshed = await onSaved();
