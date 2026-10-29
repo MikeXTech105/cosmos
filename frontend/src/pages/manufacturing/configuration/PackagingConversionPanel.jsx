@@ -10,6 +10,7 @@ import { productionConfigurationService as service } from "../../../services/man
 import { ManufacturingCard } from "../ManufacturingShared";
 import { isDecimal, nameOf } from "./configurationHelpers";
 import { CommandRecovery, InlineMessage, RefreshButton, Version } from "./ConfigurationShared";
+import { generateUUID } from "../../../utils/uuid";
 const actions = ["view", "approve"];
 const PackagingConversionEditor = ({
   profileId,
@@ -69,7 +70,7 @@ const PackagingConversionEditor = ({
     }
     if (!attempt.current) attempt.current = {
       fingerprint,
-      key: crypto.randomUUID()
+      key: generateUUID()
     };
     void command.run(() => service.savePackagingConversion(profileId, {
       ...form,

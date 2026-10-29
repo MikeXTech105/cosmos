@@ -3,6 +3,7 @@ import { CompanyDraftScopeContext } from "./companyDraftScopeContext";
 import useScopedDraft from "./useScopedDraft";
 import { getTrustedDraftScope, getUserScope } from "../utils/userScope";
 import { getApiStatus } from "../utils/apiError";
+import { generateUUID } from "../utils/uuid";
 
 export const saveOutcomeIsUnknown = error => { const status = getApiStatus(error); return !status || status === 408 || status >= 500; };
 const storageWarning = "Save recovery storage is unavailable. Keep this window open and review saved history before retrying.";
@@ -113,7 +114,7 @@ export default function useUncertainSave({ entity, context = "new", recordId = n
       if (stored && !marker) setLocal({ ...work, marker: stored, running: false });
       return false;
     }
-    const next = { attemptId: crypto.randomUUID(), startedAt: new Date().toISOString(), recordId: work.recordId, phase: "AwaitingResponse" };
+    const next = { attemptId: generateUUID(), startedAt: new Date().toISOString(), recordId: work.recordId, phase: "AwaitingResponse" };
     bindings.current.set(binding, next.attemptId);
     const current = { work, originIdentity: identity, identity, marker: next, running: true, persisted: false, api: journal };
     attempt.current = current;

@@ -7,12 +7,13 @@ import AppSelect from "../../components/common/AppSelect";
 import { gstService } from "../../services/gst/gstService";
 import { getApiErrorMessage } from "../../utils/apiError";
 import { GST_STATE_CODE_MAP } from "../../constants/gstStateCodes";
+import { generateUUID } from "../../utils/uuid";
 
 const modes=[{value:"1",label:"Road"},{value:"2",label:"Rail"},{value:"3",label:"Air"},{value:"4",label:"Ship"},{value:"5",label:"Goods in transit / at warehouse"}];
 const fields=[["fromPlace","Current place"],["fromPincode","Current PIN code"],["remainingDistance","Remaining distance (km)"],["extensionReasonCode","Approved provider reason code"],["extensionRemark","Reason and circumstances"]];
 
 export default function EWayExtensionModal({ record, commandKey, onAttempt, onClose, onComplete, onRejected }) {
-  const [key,setKey]=useState(()=>commandKey??crypto.randomUUID());
+  const [key,setKey]=useState(()=>commandKey??generateUUID());
   const [uncertain,setUncertain]=useState(Boolean(commandKey));
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState("");
@@ -26,7 +27,7 @@ export default function EWayExtensionModal({ record, commandKey, onAttempt, onCl
       const response=await gstService.extendWayBill(payload);onComplete(response.data);
     }catch(failure){
       const data=failure?.response?.data?.data??failure?.apiError?.data;
-      if(data?.code==="GST_PROVIDER_REJECTED" || failure?.response?.status===400){setUncertain(false);setKey(crypto.randomUUID());onRejected?.();}
+      if(data?.code==="GST_PROVIDER_REJECTED" || failure?.response?.status===400){setUncertain(false);setKey(generateUUID());onRejected?.();}
       else setUncertain(true);
       setError(getApiErrorMessage(failure,"The extension result is unconfirmed. Use provider readback; do not submit it again."));
     }finally{setBusy(false);}
@@ -34,7 +35,7 @@ export default function EWayExtensionModal({ record, commandKey, onAttempt, onCl
   const reconcile=async()=>{
     if(busy)return;setBusy(true);setError("");
     try{const response=await gstService.reconcileWayBillExtension(key);onComplete(response.data);}
-    catch(failure){setError(getApiErrorMessage(failure,"Provider readback has not confirmed the extension. Keep this command for reconciliation."));if(failure?.response?.status===404){setUncertain(false);setKey(crypto.randomUUID());onRejected?.();}}
+    catch(failure){setError(getApiErrorMessage(failure,"Provider readback has not confirmed the extension. Keep this command for reconciliation."));if(failure?.response?.status===404){setUncertain(false);setKey(generateUUID());onRejected?.();}}
     finally{setBusy(false);}
   };
   return <AppModal isOpen title="Review E-Way Bill validity extension" isBusy={busy} onClose={onClose} maxWidth="max-w-3xl"><form className="space-y-4" onSubmit={handleSubmit(submit)}>

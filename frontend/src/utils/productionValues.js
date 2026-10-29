@@ -1,4 +1,5 @@
 import { LosslessNumber } from "lossless-json";
+import { generateUUID } from "./uuid";
 
 // Decimal inputs stay text until the transport writes an exact JSON number token.
 export function decimalText(value) {
@@ -64,7 +65,7 @@ export function quantityText(value, { scale = 6, group = true } = {}) {
     return (group ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : whole) + (fraction ? `.${fraction}` : "");
   } catch { return "Invalid quantity"; }
 }
-export const newCommandKey = () => globalThis.crypto.randomUUID();
+export const newCommandKey = () => generateUUID();
 
 export function assertBusinessDate(value, runtime) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "") || Number.isNaN(Date.parse(`${value}T12:00:00Z`)) || new Date(`${value}T12:00:00Z`).toISOString().slice(0, 10) !== value) throw new Error("Choose a valid business date.");

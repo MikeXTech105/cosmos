@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { getTrustedDraftScope } from "../utils/userScope";
 import { CompanyDraftScopeContext } from "./companyDraftScopeContext";
+import { generateUUID } from "../utils/uuid";
 
 const readDraft = (key) => {
   if (!key) return null;
@@ -24,7 +25,7 @@ export default function useScopedDraft({ entity, context = "new", version = 1, v
         setStorageError("A newer draft exists in another tab. Your current entries are kept here; review that draft before replacing it.");
         return false;
       }
-      const revision = crypto.randomUUID();
+      const revision = generateUUID();
       localStorage.setItem(key, JSON.stringify({ version, values: nextValues, revision, savedAt: new Date().toISOString() }));
       expected.current = { key, stamp: revision };
       setStorageError("");

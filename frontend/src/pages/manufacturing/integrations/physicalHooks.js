@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getApiErrorMessage, isConflictError } from "../../../utils/apiError";
+import { generateUUID } from "../../../utils/uuid";
 
 export function usePhysicalContext(read, id, enabled = true) {
   const [state, setState] = useState({ data: null, loading: true, error: "" });
@@ -42,7 +43,7 @@ export function createCommandIntent() {
     matches(action, payload) { return intent?.fingerprint === JSON.stringify({ action, payload }); },
     payload(action, payload) {
       const fingerprint = JSON.stringify({ action, payload });
-      if (intent?.fingerprint !== fingerprint) intent = { fingerprint, payload: { ...payload, idempotencyKey: globalThis.crypto.randomUUID() } };
+      if (intent?.fingerprint !== fingerprint) intent = { fingerprint, payload: { ...payload, idempotencyKey: generateUUID() } };
       return intent.payload;
     },
     complete() { intent = undefined; },
