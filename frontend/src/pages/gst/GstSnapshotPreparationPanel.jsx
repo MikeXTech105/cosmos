@@ -6,11 +6,12 @@ import useCapabilities from "../../hooks/useCapabilities";
 import { gstService } from "../../services/gst/gstService";
 import { gstError } from "../../utils/gstCompliance";
 import { formatCurrency } from "../../utils/reportFormat";
+import { generateUUID } from "../../utils/uuid";
 
 export default function GstSnapshotPreparationPanel({invoiceId,confirmed}) {
   const access=useCapabilities({actions:["view","create"],pageName:"GST.EInvoice",route:"/gst/e-invoices"});
   const [params,setParams]=useSearchParams();
-  const commandRef=useRef(params.get("gstPreparationKey")||crypto.randomUUID());
+  const commandRef=useRef(params.get("gstPreparationKey")||generateUUID());
   const [pending,setPending]=useState(Boolean(params.get("gstPreparationKey")));
   const [state,setState]=useState({busy:false,error:"",preparation:null,saved:null});
   const [reviewed,setReviewed]=useState(false);
@@ -23,7 +24,7 @@ export default function GstSnapshotPreparationPanel({invoiceId,confirmed}) {
   const load=()=>run(async()=>{const response=await gstService.snapshotPreparation(invoiceId);setState(current=>({...current,preparation:response.data}));setReviewed(false);});
   const readback=()=>run(async()=>{
     try{const response=await gstService.preparedSnapshot(invoiceId,commandRef.current);setState(current=>({...current,saved:response.data}));}
-    catch(error){if(error?.response?.status===404){setPending(false);commandRef.current=crypto.randomUUID();setParams(current=>{const next=new URLSearchParams(current);next.delete("gstPreparationKey");return next;},{replace:true});}throw error;}
+    catch(error){if(error?.response?.status===404){setPending(false);commandRef.current=generateUUID();setParams(current=>{const next=new URLSearchParams(current);next.delete("gstPreparationKey");return next;},{replace:true});}throw error;}
   });
   const freeze=()=>run(async()=>{
     if(!access.canCreate||!reviewed||!state.preparation||pending)return;
@@ -34,7 +35,7 @@ export default function GstSnapshotPreparationPanel({invoiceId,confirmed}) {
       setState(current=>({...current,saved:response.data}));
     }catch(error){
       // A 4xx validation/conflict proves no new snapshot was committed; transport failures require command readback.
-      if([400,409].includes(error?.response?.status)){setPending(false);commandRef.current=crypto.randomUUID();setParams(current=>{const next=new URLSearchParams(current);next.delete("gstPreparationKey");return next;},{replace:true});}
+      if([400,409].includes(error?.response?.status)){setPending(false);commandRef.current=generateUUID();setParams(current=>{const next=new URLSearchParams(current);next.delete("gstPreparationKey");return next;},{replace:true});}
       throw error;
     }
   });

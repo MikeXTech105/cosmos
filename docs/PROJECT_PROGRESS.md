@@ -1466,3 +1466,11 @@ Status: Implemented / Build Verified / Tests Verified (175/175) / SQL and runtim
 - Item HSN and GST defaults are now sourced only from `Items.HSNCode` and `Items.GSTRate` in the item and new-sales-invoice UI.
 - Separate HSN/SAC master, category mapping, and item override routes/screens are removed from the active application surface.
 - A guarded reconciliation migration and SQL verification script were added. No database environment was modified because the committed configuration has no connection string.
+
+# Frontend UUID compatibility fix — 2026-10-29
+
+- Root cause: the shared `useListReturnContext` hook used by Items called `crypto.randomUUID()` directly. That convenience API is unavailable from insecure HTTP origins, causing the Items production bundle to fail before the page rendered.
+- Added `frontend/src/utils/uuid.js`, which uses native `crypto.randomUUID()` when available and the maintained `uuid` package (backed by `crypto.getRandomValues`) when it is not.
+- Replaced every direct frontend UUID call, including list-return, drafts, command/idempotency keys, GST, shipment, OEE, and manufacturing configuration flows. No backend, API, or database behavior changed.
+- Added `frontend/src/utils/uuid.test.js` for native and HTTP-compatible fallback generation. The fallback remains cryptographically secure; browsers without `crypto.getRandomValues` cannot safely generate these IDs and must use a supported browser/secure context.
+- Docker/Nginx deployment remains compatible with `http://<server-ip>:3000`; HTTPS is still required for a secure transport channel and for browser features that independently require a secure context.

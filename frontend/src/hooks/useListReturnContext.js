@@ -3,6 +3,7 @@ import { useLocation, useNavigationType } from "react-router-dom";
 import useListReturnScope from "./useListReturnScope";
 import { LIST_RETURN_VERSION, armListReturnPop, disarmListReturnPop, listReturnStorageKey, locationPath, readListReturnSnapshot, validateListReturnContext, writeListReturnSnapshot } from "../utils/listReturnContext";
 import { workReturnPath } from "../utils/workReturnPath";
+import { generateUUID } from "../utils/uuid";
 
 /** Capture only on real route navigation. Existing URL query and the owning list's filter model remain authoritative. */
 export default function useListReturnContext({ key, filters, setFilters, ready = true, enabled = true }) {
@@ -26,7 +27,7 @@ export default function useListReturnContext({ key, filters, setFilters, ready =
   const capture = useCallback((extraState = {}) => {
     const target = workReturnPath(currentPath, auth);
     if (!enabled || !scope || !target) return { ...extraState, ...(target ? { returnTo: target } : {}) };
-    const context = { version: LIST_RETURN_VERSION, scope, key, token: crypto.randomUUID(), path: target };
+    const context = { version: LIST_RETURN_VERSION, scope, key, token: generateUUID(), path: target };
     const snapshot = { ...context, filters: JSON.parse(filterJson), scroll: { x: window.scrollX, y: window.scrollY }, entryKey: location.key, pendingReturn: true, capturedAt: new Date().toISOString() };
     const saved = writeListReturnSnapshot(snapshot);
     if (saved) armListReturnPop(snapshot);

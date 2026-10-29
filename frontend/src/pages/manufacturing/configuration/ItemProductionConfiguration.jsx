@@ -13,6 +13,7 @@ import { ManufacturingCard } from "../ManufacturingShared";
 import { RATE_BASES, isDecimal, lookupOptions, moveStep, validDateRange, validateRouting, validateRoutingReferences } from "./configurationHelpers";
 import { CommandRecovery, ActiveField, DateFields, EffectiveDates, EffectivityDialog, EmptyRows, InlineMessage, RefreshButton, Version } from "./ConfigurationShared";
 import RoutingPolicyExample from "./RoutingPolicyExample";
+import { generateUUID } from "../../../utils/uuid";
 const emptyStep = () => ({
   operationId: "",
   workCentreId: "",
@@ -22,7 +23,7 @@ const emptyStep = () => ({
   quantityBasis: "",
   machineId: "",
   mouldId: "",
-  key: crypto.randomUUID()
+  key: generateUUID()
 });
 const RoutingEditor = ({
   itemId,

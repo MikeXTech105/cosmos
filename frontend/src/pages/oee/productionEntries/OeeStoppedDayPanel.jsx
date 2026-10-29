@@ -8,6 +8,7 @@ import { lookupPage } from "../../../utils/lookupPage";
 import { getApiErrorMessage } from "../../../utils/apiError";
 import { oeeMachineService } from "../../../services/oee/oeeMachineService";
 import { oeeDayAcknowledgementService as service } from "../../../services/oee/oeeDayAcknowledgementService";
+import { generateUUID } from "../../../utils/uuid";
 const labels = { NotRun: "Not run", PlannedStop: "Planned stop", Withdrawn: "Withdrawn" };
 
 export default function OeeStoppedDayPanel({ productionDate, canView, canCreate, canUpdate, onDirtyChange }) {
@@ -33,7 +34,7 @@ export default function OeeStoppedDayPanel({ productionDate, canView, canCreate,
   const canSave = previous ? canUpdate : canCreate;
   const submit = async () => {
     if (saving || loading || !canSave || !machineId || !reason.trim() || state === "Withdrawn" && !previous) return;
-    const request = intent ?? { productionDate, machineId, state, reason: reason.trim(), previousId: previous?.id ?? null, commandKey: crypto.randomUUID() };
+    const request = intent ?? { productionDate, machineId, state, reason: reason.trim(), previousId: previous?.id ?? null, commandKey: generateUUID() };
     setIntent(request); setSaving(true); setError(""); setNotice("");
     try {
       await service.save(request);

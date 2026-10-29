@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import useListReturnScope from "./useListReturnScope";
 import { exactSavedRecordId, readListReturnSnapshot, sameListEntity, validateListReturnContext, writeListReturnSnapshot } from "../utils/listReturnContext";
 import { workReturnPath } from "../utils/workReturnPath";
+import { generateUUID } from "../utils/uuid";
 
 /** Propagate through create → existing detail → edit. Call savedState only after authoritative save/readback. */
 export default function useFormReturnContext(defaultPath) {
@@ -20,7 +21,7 @@ export default function useFormReturnContext(defaultPath) {
     if (context && id && sameListEntity(context.path, defaultPath)) {
       const snapshot = readListReturnSnapshot(scope, context.key);
       if (snapshot?.token === context.token && snapshot.path === context.path)
-        writeListReturnSnapshot({ ...snapshot, highlight: { id, token: crypto.randomUUID(), savedAt: new Date().toISOString() } });
+        writeListReturnSnapshot({ ...snapshot, highlight: { id, token: generateUUID(), savedAt: new Date().toISOString() } });
     }
     return returnState(extraState);
   }, [context, defaultPath, returnState, scope]);

@@ -10,6 +10,7 @@ import AppLookup from "../../../components/common/AppLookup";
 import { lookupPage } from "../../../utils/lookupPage";
 import AppTooltip from "../../../components/common/AppTooltip";
 import { shipmentPackingService } from "../../../services/shipments";
+import { generateUUID } from "../../../utils/uuid";
 import { supplyChainPackagingProfileService } from "../../../services/supplyChain/packagingProfileService";
 import { isConflictError } from "../../../utils/apiError";
 import {
@@ -428,7 +429,7 @@ const ShipmentPackingTab = ({ action, onWritten, shipment }) => {
       setRemoveError("Enter a reason and reload the current shipment version before removal.");
       return;
     }
-    const intent = removeIntent ?? { version: shipment.version, commandKey: crypto.randomUUID(), reason: removeReason.trim() };
+    const intent = removeIntent ?? { version: shipment.version, commandKey: generateUUID(), reason: removeReason.trim() };
     setRemoveIntent(intent);
     setRemoveBusy(true);
     setRemoveError("");
